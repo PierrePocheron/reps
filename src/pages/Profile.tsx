@@ -107,6 +107,13 @@ function Profile() {
               <div className="flex-1">
                 <h2 className="text-xl font-bold">{user.displayName}</h2>
                 <p className="text-muted-foreground">{user.email}</p>
+                <button
+                  onClick={() => navigate('/friends')}
+                  className="text-sm font-medium text-primary hover:underline mt-1 flex items-center gap-1"
+                >
+                  <Users className="h-3 w-3" />
+                  {user.friends?.length || 0} Amis
+                </button>
               </div>
               <Dialog>
                 <DialogTrigger asChild>
