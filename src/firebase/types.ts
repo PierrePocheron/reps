@@ -71,6 +71,7 @@ export interface UserStats {
   totalSessions: number;
   averageRepsPerSession: number;
   lastSessionDate?: Timestamp;
+  lastSessionReps?: number;
   currentStreak: number; // jours consécutifs
   longestStreak: number;
 }

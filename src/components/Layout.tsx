@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { useOffline } from '@/hooks/useOffline';
+import { BottomNav } from '@/components/BottomNav';
 import { AlertCircle } from 'lucide-react';
 
 interface LayoutProps {
@@ -24,6 +25,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
       )}
       {children}
+      <BottomNav />
     </>
   );
 }

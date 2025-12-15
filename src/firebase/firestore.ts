@@ -324,6 +324,7 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
       totalSessions,
       averageRepsPerSession: Math.round(averageRepsPerSession),
       lastSessionDate: firstSession ? firstSession.date : undefined,
+      lastSessionReps: firstSession ? firstSession.totalReps : undefined,
       currentStreak,
       longestStreak,
     };

@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useUserStore } from '@/store/userStore';
 import {
   signInWithEmail,
@@ -19,7 +18,6 @@ export function useAuth() {
     stats,
     isLoading,
     isAuthenticated,
-    initializeAuth,
     loadUserProfile,
     refreshStats,
   } = useUserStore();

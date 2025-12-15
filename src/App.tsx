@@ -1,4 +1,6 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import { PageTransition } from '@/components/PageTransition';
 import { Toaster } from '@/components/ui/toaster';
 import { AppInitializer } from '@/components/AppInitializer';
 import { Layout } from '@/components/Layout';
@@ -8,19 +10,51 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 
 function App() {
+  const location = useLocation();
+
   return (
-    <BrowserRouter>
+    <>
       <AppInitializer />
       <Layout>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/session" element={<Session />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route
+              path="/"
+              element={
+                <PageTransition>
+                  <Home />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/session"
+              element={
+                <PageTransition>
+                  <Session />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PageTransition>
+                  <Profile />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <PageTransition>
+                  <Settings />
+                </PageTransition>
+              }
+            />
+          </Routes>
+        </AnimatePresence>
       </Layout>
       <Toaster />
-    </BrowserRouter>
+    </>
   );
 }
 

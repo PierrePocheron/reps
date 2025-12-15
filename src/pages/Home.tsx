@@ -6,7 +6,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { EmptyState } from '@/components/EmptyState';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
-import { Plus, TrendingUp, Calendar, Activity } from 'lucide-react';
+import { Plus, Calendar, Activity, User } from 'lucide-react';
 
 function Home() {
   const navigate = useNavigate();
@@ -44,8 +44,10 @@ function Home() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Reps</h1>
-          <Button variant="ghost" size="icon" onClick={() => navigate('/profile')}>
-            <TrendingUp className="h-5 w-5" />
+          <Button variant="ghost" size="icon" onClick={() => navigate('/profile')} className="rounded-full">
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <User className="h-5 w-5 text-primary" />
+            </div>
           </Button>
         </div>
 
@@ -59,17 +61,25 @@ function Home() {
               <CardTitle>Dernière séance</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>
-                  {stats.lastSessionDate
-                    ? new Date(stats.lastSessionDate.toDate()).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })
-                    : 'Aucune séance'}
-                </span>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>
+                    {stats.lastSessionDate
+                      ? new Date(stats.lastSessionDate.toDate()).toLocaleDateString('fr-FR', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })
+                      : 'Aucune séance'}
+                  </span>
+                </div>
+                {stats.lastSessionReps !== undefined && (
+                  <div className="flex items-center gap-2 font-medium">
+                    <Activity className="h-4 w-4 text-primary" />
+                    <span>{stats.lastSessionReps} reps</span>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
