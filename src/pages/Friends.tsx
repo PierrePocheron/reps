@@ -492,11 +492,19 @@ export default function Friends() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10" onClick={() => handleAcceptRequest(request)}>
-                          <Check className="h-5 w-5" />
+                        <Button
+                          size="icon"
+                          className="h-8 w-8 bg-black text-white hover:bg-primary hover:text-primary-foreground rounded-full transition-colors shadow-sm"
+                          onClick={() => handleAcceptRequest(request)}
+                        >
+                          <Check className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-500/10" onClick={() => handleDeclineRequest(request.id)}>
-                          <X className="h-5 w-5" />
+                        <Button
+                          size="icon"
+                          className="h-8 w-8 bg-black text-white hover:bg-red-600 hover:text-white rounded-full transition-colors shadow-sm"
+                          onClick={() => handleDeclineRequest(request.id)}
+                        >
+                          <X className="h-4 w-4" />
                         </Button>
                       </div>
                     </CardContent>

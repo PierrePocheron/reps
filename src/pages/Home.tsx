@@ -45,15 +45,18 @@ function Home() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Reps</h1>
-          <Button variant="ghost" size="icon" onClick={() => navigate('/profile')} className="rounded-full">
+          <button
+            onClick={() => navigate('/profile')}
+            className="relative flex h-9 w-9 items-center justify-center rounded-full overflow-hidden border-none p-0 outline-none ring-offset-background transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
             {user?.photoURL ? (
-              <img src={user.photoURL} alt="Profil" className="h-8 w-8 rounded-full object-cover" />
+              <img src={user.photoURL} alt="Profil" className="h-full w-full object-cover block" />
             ) : (
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <div className="h-full w-full bg-primary/10 flex items-center justify-center">
                 <User className="h-5 w-5 text-primary" />
               </div>
             )}
-          </Button>
+          </button>
         </div>
 
         {/* Hero Section - Start/Resume Session */}
