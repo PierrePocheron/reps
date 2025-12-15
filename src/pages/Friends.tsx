@@ -24,7 +24,7 @@ import {
   removeFriend
 } from '@/firebase/firestore';
 import type { User, FriendRequest, Session } from '@/firebase/types';
-import { UserPlus, Search, Check, X, User as UserIcon, Users, Activity, Calendar, Dumbbell, Award, MoreVertical, UserMinus } from 'lucide-react';
+import { UserPlus, Search, Check, X, User as UserIcon, Users, Activity, Calendar, Dumbbell, Award, MoreVertical, UserMinus, Trophy, Medal } from 'lucide-react';
 
 export default function Friends() {
   const { user } = useUserStore();
@@ -35,7 +35,7 @@ export default function Friends() {
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  const [requests, setRequests] = useState<FriendRequest[]>([]);
+  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [friends, setFriends] = useState<User[]>([]);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
 
@@ -50,7 +50,7 @@ export default function Friends() {
       console.log('Received friend requests:', newRequests);
       // Filtrer les demandes provenant de personnes déjà amies
       const filteredRequests = newRequests.filter(req => !user.friends?.includes(req.fromUserId));
-      setRequests(filteredRequests);
+      setFriendRequests(filteredRequests);
     });
     return () => unsubscribe();
   }, [user]);
@@ -211,28 +211,51 @@ export default function Friends() {
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   };
 
+  // Calculer le classement
+  const leaderboard = [...friends, ...(user ? [user] : [])]
+    .sort((a, b) => (b.totalReps || 0) - (a.totalReps || 0));
+
+  const getRankStyle = (index: number) => {
+    switch (index) {
+      case 0: return "bg-yellow-500/10 border-yellow-500/50 text-yellow-600";
+      case 1: return "bg-gray-400/10 border-gray-400/50 text-gray-600";
+      case 2: return "bg-orange-500/10 border-orange-500/50 text-orange-600";
+      default: return "bg-card/50 border-transparent";
+    }
+  };
+
+  const getRankIcon = (index: number) => {
+    switch (index) {
+      case 0: return <Trophy className="h-6 w-6 text-yellow-500" />;
+      case 1: return <Medal className="h-6 w-6 text-gray-400" />;
+      case 2: return <Medal className="h-6 w-6 text-orange-500" />;
+      default: return <span className="font-bold text-muted-foreground w-6 text-center">{index + 1}</span>;
+    }
+  };
+
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-20">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4 pb-24">
+      <div className="max-w-md mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <BackButton to="/profile" />
+          <BackButton to="/" />
           <h1 className="text-2xl font-bold">Social</h1>
           <div className="w-10" />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="activity">Activité</TabsTrigger>
+            <TabsTrigger value="leaderboard">Top</TabsTrigger>
             <TabsTrigger value="friends">Amis</TabsTrigger>
             <TabsTrigger value="add">Ajouter</TabsTrigger>
             <TabsTrigger value="requests" className="relative">
               Demandes
-              {requests.length > 0 && (
+              {friendRequests.length > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white animate-pulse">
-                  {requests.length}
+                  {friendRequests.length}
                 </span>
               )}
             </TabsTrigger>
@@ -378,6 +401,61 @@ export default function Friends() {
             )}
           </TabsContent>
 
+          <TabsContent value="leaderboard" className="space-y-4 animate-in fade-in-50">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold flex items-center justify-center gap-2">
+                <Trophy className="h-6 w-6 text-yellow-500" />
+                Classement Général
+              </h2>
+              <p className="text-sm text-muted-foreground">Basé sur le nombre total de répétitions</p>
+            </div>
+
+            <div className="space-y-3">
+              {leaderboard.map((player, index) => (
+                <Card key={player.uid} className={`overflow-hidden border-2 shadow-sm transition-all ${getRankStyle(index)}`}>
+                  <CardContent className="p-4 flex items-center gap-4">
+                    <div className="flex-shrink-0 w-8 flex justify-center">
+                      {getRankIcon(index)}
+                    </div>
+
+                    {player.photoURL ? (
+                      <img src={player.photoURL} alt={player.displayName} className="w-12 h-12 rounded-full object-cover border-2 border-background" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center border-2 border-background">
+                        <UserIcon className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                    )}
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold truncate">{player.displayName}</h3>
+                        {player.uid === user?.uid && (
+                          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
+                            Moi
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs opacity-80 truncate">
+                        {player.totalSessions} séances
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="text-xl font-black block">{player.totalReps}</span>
+                      <span className="text-[10px] uppercase tracking-wider opacity-70">Reps</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+              {leaderboard.length === 0 && (
+                 <div className="text-center py-12 text-muted-foreground">
+                  <p>Aucun classement disponible.</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
           <TabsContent value="friends" className="space-y-4 animate-in fade-in-50">
             {isLoadingFriends ? (
               <div className="flex justify-center py-12">
@@ -483,8 +561,8 @@ export default function Friends() {
           </TabsContent>
 
           <TabsContent value="requests" className="space-y-4 animate-in fade-in-50">
-            {requests.length > 0 ? (
-              requests.map((request) => (
+            {friendRequests.length > 0 ? (
+              friendRequests.map((request) => (
                 <Card key={request.id} className="overflow-hidden border-none shadow-sm bg-card/50">
                   <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3 min-w-0">
