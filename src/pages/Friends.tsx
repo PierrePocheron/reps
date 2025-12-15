@@ -246,13 +246,10 @@ export default function Friends() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="activity">Activité</TabsTrigger>
-            <TabsTrigger value="leaderboard">Top</TabsTrigger>
-            <TabsTrigger value="friends">Amis</TabsTrigger>
-            <TabsTrigger value="add">Ajouter</TabsTrigger>
-            <TabsTrigger value="requests" className="relative">
-              Demandes
+            <TabsTrigger value="friends" className="relative">
+              Amis
               {friendRequests.length > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white animate-pulse">
                   {friendRequests.length}
@@ -401,200 +398,169 @@ export default function Friends() {
             )}
           </TabsContent>
 
-          <TabsContent value="leaderboard" className="space-y-4 animate-in fade-in-50">
-            <div className="text-center mb-6">
-              <h2 className="text-xl font-bold flex items-center justify-center gap-2">
-                <Trophy className="h-6 w-6 text-yellow-500" />
-                Classement Général
-              </h2>
-              <p className="text-sm text-muted-foreground">Basé sur le nombre total de répétitions</p>
-            </div>
-
-            <div className="space-y-3">
-              {leaderboard.map((player, index) => (
-                <Card key={player.uid} className={`overflow-hidden border-2 shadow-sm transition-all ${getRankStyle(index)}`}>
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <div className="flex-shrink-0 w-8 flex justify-center">
-                      {getRankIcon(index)}
-                    </div>
-
-                    {player.photoURL ? (
-                      <img src={player.photoURL} alt={player.displayName} className="w-12 h-12 rounded-full object-cover border-2 border-background" />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center border-2 border-background">
-                        <UserIcon className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                    )}
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-bold truncate">{player.displayName}</h3>
-                        {player.uid === user?.uid && (
-                          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
-                            Moi
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs opacity-80 truncate">
-                        {player.totalSessions} séances
-                      </p>
-                    </div>
-
-                    <div className="text-right">
-                      <span className="text-xl font-black block">{player.totalReps}</span>
-                      <span className="text-[10px] uppercase tracking-wider opacity-70">Reps</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {leaderboard.length === 0 && (
-                 <div className="text-center py-12 text-muted-foreground">
-                  <p>Aucun classement disponible.</p>
-                </div>
+          <TabsContent value="friends" className="space-y-6 animate-in fade-in-50">
+            {/* Barre de recherche */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher un ami..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 bg-card/50"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
               )}
             </div>
-          </TabsContent>
 
-          <TabsContent value="friends" className="space-y-4 animate-in fade-in-50">
-            {isLoadingFriends ? (
-              <div className="flex justify-center py-12">
-                <LoadingSpinner />
-              </div>
-            ) : friends.length > 0 ? (
-              <div className="grid gap-3">
-                {friends.map((friend) => (
-                  <Card key={friend.uid} className="overflow-hidden border-none shadow-sm bg-card/50">
-                    <CardContent className="p-3 flex items-center gap-4">
-                      {friend.photoURL ? (
-                        <img src={friend.photoURL} alt={friend.displayName} className="w-12 h-12 rounded-full object-cover border-2 border-background" />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center border-2 border-background">
-                          <UserIcon className="h-6 w-6 text-muted-foreground" />
+            {/* Résultats de recherche */}
+            {searchTerm.length >= 2 && (
+              <div className="space-y-4">
+                <h3 className="font-semibold text-sm text-muted-foreground">Résultats de recherche</h3>
+                {isSearching ? (
+                  <div className="flex justify-center py-4">
+                    <LoadingSpinner />
+                  </div>
+                ) : searchResults.length > 0 ? (
+                  searchResults.map((result) => (
+                    <Card key={result.uid} className="overflow-hidden border-none shadow-sm bg-card/50">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {result.photoURL ? (
+                            <img src={result.photoURL} alt={result.displayName} className="w-10 h-10 rounded-full object-cover border border-background" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
+                              <UserIcon className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-medium truncate">{result.displayName}</p>
+                            {user.friends?.includes(result.uid) ? (
+                              <p className="text-xs text-green-500 flex items-center gap-1">
+                                <Check className="h-3 w-3" /> Ami
+                              </p>
+                            ) : friendRequests.some(req => req.fromUserId === result.uid) ? (
+                              <p className="text-xs text-blue-500">Demande reçue</p>
+                            ) : (
+                              <p className="text-xs text-muted-foreground truncate">{result.email}</p>
+                            )}
+                          </div>
                         </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate">{friend.displayName}</h3>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {friend.totalSessions} séances • {friend.totalReps} reps
-                        </p>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreVertical className="h-4 w-4" />
+                        {!user.friends?.includes(result.uid) && !friendRequests.some(req => req.fromUserId === result.uid) && (
+                          <Button size="sm" variant="secondary" onClick={() => handleSendRequest(result.uid)} className="shrink-0">
+                            <UserPlus className="h-4 w-4 mr-2" />
+                            Ajouter
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => handleRemoveFriend(friend.uid)}>
-                            <UserMinus className="h-4 w-4 mr-2" />
-                            Supprimer
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>Aucun utilisateur trouvé.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Demandes d'amis (si pas de recherche active) */}
+            {searchTerm.length < 2 && friendRequests.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                  Demandes en attente
+                </h3>
+                {friendRequests.map((request) => (
+                  <Card key={request.id} className="overflow-hidden border-none shadow-sm bg-card/50 border-l-4 border-l-red-500">
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {request.fromPhotoURL ? (
+                          <img src={request.fromPhotoURL} alt={request.fromDisplayName} className="w-10 h-10 rounded-full object-cover border border-background" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
+                            <UserIcon className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{request.fromDisplayName}</p>
+                          <p className="text-xs text-muted-foreground">veut vous ajouter</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="icon" variant="ghost" className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10" onClick={() => handleAcceptRequest(request)}>
+                          <Check className="h-5 w-5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-500/10" onClick={() => handleDeclineRequest(request.id)}>
+                          <X className="h-5 w-5" />
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <div className="bg-muted/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="h-8 w-8 opacity-50" />
-                </div>
-                <p className="mb-2">Vous n'avez pas encore d'amis.</p>
-                <Button variant="link" onClick={() => setActiveTab('add')}>
-                  Trouver des amis
-                </Button>
-              </div>
             )}
-          </TabsContent>
 
-          <TabsContent value="add" className="space-y-6 animate-in fade-in-50">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher un pseudo ou email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-11 bg-muted/50 border-none focus-visible:ring-1"
-              />
-              {isSearching && (
-                <div className="absolute right-3 top-3">
-                  <LoadingSpinner size="sm" />
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-3">
-              {searchResults.map((result) => (
-                <Card key={result.uid} className="overflow-hidden border-none shadow-sm bg-card/50">
-                  <CardContent className="p-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3 min-w-0">
-                      {result.photoURL ? (
-                        <img src={result.photoURL} alt={result.displayName} className="w-10 h-10 rounded-full object-cover border border-background" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
-                          <UserIcon className="h-5 w-5 text-muted-foreground" />
+            {/* Liste d'amis (si pas de recherche active) */}
+            {searchTerm.length < 2 && (
+              <div className="space-y-3">
+                <h3 className="font-semibold text-sm text-muted-foreground">Mes Amis ({friends.length})</h3>
+                {isLoadingFriends ? (
+                  <div className="flex justify-center py-12">
+                    <LoadingSpinner />
+                  </div>
+                ) : friends.length > 0 ? (
+                  friends.map((friend) => (
+                    <Card key={friend.uid} className="overflow-hidden border-none shadow-sm bg-card/50">
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {friend.photoURL ? (
+                            <img src={friend.photoURL} alt={friend.displayName} className="w-10 h-10 rounded-full object-cover border border-background" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
+                              <UserIcon className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-medium truncate">{friend.displayName}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {friend.totalSessions} séances • {friend.totalReps} reps
+                            </p>
+                          </div>
                         </div>
-                      )}
-                      <span className="font-medium truncate">{result.displayName}</span>
-                    </div>
-                    <Button size="sm" variant="secondary" onClick={() => handleSendRequest(result.uid)} className="shrink-0">
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Ajouter
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-              {searchResults.length === 0 && searchTerm.length >= 2 && !isSearching && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>Aucun utilisateur trouvé.</p>
-                </div>
-              )}
-              {searchTerm.length < 2 && (
-                <div className="text-center py-12 text-muted-foreground opacity-50">
-                  <Search className="h-12 w-12 mx-auto mb-4" />
-                  <p>Recherchez vos amis pour les ajouter</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
 
-          <TabsContent value="requests" className="space-y-4 animate-in fade-in-50">
-            {friendRequests.length > 0 ? (
-              friendRequests.map((request) => (
-                <Card key={request.id} className="overflow-hidden border-none shadow-sm bg-card/50">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3 min-w-0">
-                      {request.fromPhotoURL ? (
-                        <img src={request.fromPhotoURL} alt={request.fromDisplayName} className="w-10 h-10 rounded-full object-cover border border-background" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
-                          <UserIcon className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <p className="font-medium truncate">{request.fromDisplayName}</p>
-                        <p className="text-xs text-muted-foreground">veut vous ajouter</p>
-                      </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-red-600 focus:text-red-600 focus:bg-red-100/10"
+                              onClick={() => handleRemoveFriend(friend.uid, friend.displayName)}
+                            >
+                              <UserMinus className="mr-2 h-4 w-4" />
+                              Supprimer
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <div className="bg-muted/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="h-8 w-8 opacity-50" />
                     </div>
-                    <div className="flex gap-2 shrink-0">
-                      <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full" onClick={() => handleDeclineRequest(request.id)}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                      <Button size="icon" className="h-8 w-8 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-sm" onClick={() => handleAcceptRequest(request)}>
-                        <Check className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <div className="bg-muted/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <UserPlus className="h-8 w-8 opacity-50" />
-                </div>
-                <p>Aucune demande en attente.</p>
+                    <p className="mb-2">Vous n'avez pas encore d'amis.</p>
+                    <p className="text-sm opacity-75">Utilisez la barre de recherche ci-dessus pour en ajouter !</p>
+                  </div>
+                )}
               </div>
             )}
           </TabsContent>
