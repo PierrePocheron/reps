@@ -901,3 +901,75 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
     return [];
   }
 }
+
+/**
+ * Obtenir les statistiques pour le classement (Leaderboard)
+ */
+export async function getLeaderboardStats(friendIds: string[], period: 'daily' | 'weekly' | 'monthly'): Promise<{ userId: string; totalReps: number; totalSessions: number }[]> {
+  try {
+    if (!friendIds || friendIds.length === 0) return [];
+
+    // Déterminer la date de début
+    const now = new Date();
+    let startDate = new Date();
+
+    if (period === 'daily') {
+      startDate.setHours(0, 0, 0, 0);
+    } else if (period === 'weekly') {
+      // Lundi de la semaine en cours
+      const day = startDate.getDay();
+      const diff = startDate.getDate() - day + (day === 0 ? -6 : 1); // ajuster si dimanche
+      startDate.setDate(diff);
+      startDate.setHours(0, 0, 0, 0);
+    } else if (period === 'monthly') {
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+    }
+
+    const startTimestamp = Timestamp.fromDate(startDate);
+
+    // Traiter par lots de 10 amis (limite Firestore 'in')
+    const chunks = [];
+    for (let i = 0; i < friendIds.length; i += 10) {
+      chunks.push(friendIds.slice(i, i + 10));
+    }
+
+    const allSessions: any[] = [];
+
+    for (const chunk of chunks) {
+      const q = query(
+        collectionGroup(db, 'userSessions'),
+        where('userId', 'in', chunk),
+        where('date', '>=', startTimestamp)
+      );
+      const snapshot = await getDocs(q);
+      snapshot.forEach(doc => allSessions.push({ userId: doc.data().userId, ...doc.data() }));
+    }
+
+    // Agréger les données
+    const statsMap = new Map<string, { totalReps: number; totalSessions: number }>();
+
+    // Initialiser pour tous les amis (même ceux sans activité)
+    friendIds.forEach(id => {
+      statsMap.set(id, { totalReps: 0, totalSessions: 0 });
+    });
+
+    allSessions.forEach(session => {
+      const current = statsMap.get(session.userId) || { totalReps: 0, totalSessions: 0 };
+      statsMap.set(session.userId, {
+        totalReps: current.totalReps + (session.totalReps || 0),
+        totalSessions: current.totalSessions + 1
+      });
+    });
+
+    // Convertir en tableau
+    return Array.from(statsMap.entries()).map(([userId, stats]) => ({
+      userId,
+      ...stats
+    }));
+
+  } catch (error) {
+    console.error('Erreur lors de la récupération du classement:', error);
+    throw error;
+  }
+}

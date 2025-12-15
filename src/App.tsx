@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Achievements from './pages/Achievements';
 import Friends from './pages/Friends';
+import Leaderboard from './pages/Leaderboard';
 
 function App() {
   const location = useLocation();
@@ -57,6 +58,14 @@ function App() {
               element={
                 <PageTransition>
                   <Friends />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/leaderboard"
+              element={
+                <PageTransition>
+                  <Leaderboard />
                 </PageTransition>
               }
             />

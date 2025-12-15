@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Plus, Users } from 'lucide-react';
+import { Home, Plus, Users, Trophy } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
 export function BottomNav() {
@@ -38,6 +38,17 @@ export function BottomNav() {
         >
           <Users className="h-6 w-6" />
           <span className="text-[10px] font-medium">Social</span>
+        </button>
+
+        <button
+          onClick={() => navigate('/leaderboard')}
+          className={cn(
+            'flex flex-col items-center justify-center gap-1 transition-colors',
+            isActive('/leaderboard') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          <Trophy className="h-6 w-6" />
+          <span className="text-[10px] font-medium">Top</span>
         </button>
       </div>
     </div>
