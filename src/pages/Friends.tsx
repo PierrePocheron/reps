@@ -8,16 +8,23 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useUserStore } from '@/store/userStore';
 import { useToast } from '@/hooks/use-toast';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   searchUsers,
   sendFriendRequest,
   subscribeToFriendRequests,
   acceptFriendRequest,
   declineFriendRequest,
   getFriendsDetails,
-  getFriendsActivity
+  getFriendsActivity,
+  removeFriend
 } from '@/firebase/firestore';
 import type { User, FriendRequest, Session } from '@/firebase/types';
-import { UserPlus, Search, Check, X, User as UserIcon, Users, Activity, Calendar, Dumbbell, Award } from 'lucide-react';
+import { UserPlus, Search, Check, X, User as UserIcon, Users, Activity, Calendar, Dumbbell, Award, MoreVertical, UserMinus } from 'lucide-react';
 
 export default function Friends() {
   const { user } = useUserStore();
@@ -167,6 +174,27 @@ export default function Friends() {
     }
   };
 
+  const handleRemoveFriend = async (friendId: string) => {
+    if (!user) return;
+    try {
+      if (!confirm('Êtes-vous sûr de vouloir supprimer cet ami ?')) return;
+
+      await removeFriend(user.uid, friendId);
+      toast({
+        title: 'Ami supprimé',
+        description: 'Cet utilisateur a été retiré de votre liste d\'amis.',
+      });
+      // Update local state
+      setFriends(prev => prev.filter(f => f.uid !== friendId));
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de supprimer l\'ami',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const getFriendDetails = (userId: string) => {
     return friends.find(f => f.uid === userId);
   };
@@ -219,6 +247,8 @@ export default function Friends() {
               <div className="space-y-4">
                 {activities.map((item: any) => {
                   const friend = getFriendDetails(item.userId);
+                  // Pour les événements 'new_friend', on veut afficher l'info même si on n'est pas (encore) ami avec la 3ème personne
+                  // Mais ici item.userId est celui qui a généré l'événement (donc notre ami).
                   if (!friend) return null;
 
                   if (item.type === 'badge_unlocked') {
@@ -247,6 +277,37 @@ export default function Friends() {
                               </p>
                             </div>
                             <Award className="h-8 w-8 text-yellow-500 opacity-50" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+
+                  if (item.type === 'new_friend') {
+                    return (
+                      <Card key={item.id} className="overflow-hidden border-none shadow-sm bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-l-4 border-l-blue-500">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-4">
+                            {friend.photoURL ? (
+                              <img src={friend.photoURL} alt={friend.displayName} className="w-10 h-10 rounded-full object-cover border border-background" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
+                                <UserIcon className="h-5 w-5 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <p className="text-sm">
+                                <span className="font-semibold">{friend.displayName}</span> a un nouvel ami !
+                              </p>
+                              <div className="flex items-center gap-2 mt-1 text-blue-600">
+                                <UserPlus className="h-4 w-4" />
+                                <span className="font-medium">Nouvelle connexion</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(item.createdAt)}
+                              </p>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -340,6 +401,19 @@ export default function Friends() {
                           {friend.totalSessions} séances • {friend.totalReps} reps
                         </p>
                       </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => handleRemoveFriend(friend.uid)}>
+                            <UserMinus className="h-4 w-4 mr-2" />
+                            Supprimer
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </CardContent>
                   </Card>
                 ))}

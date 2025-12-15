@@ -8,7 +8,7 @@ service cloud.firestore {
       allow update: if request.auth != null && (
         request.auth.uid == userId ||
         // Permettre à un utilisateur d'ajouter son ID dans la liste d'amis d'un autre
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends']))
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends', 'updatedAt']))
       );
     }
 

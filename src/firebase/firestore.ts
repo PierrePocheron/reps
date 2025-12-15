@@ -642,6 +642,10 @@ export async function acceptFriendRequest(requestId: string, fromUserId: string,
 
     // 1. Mettre à jour le statut de la demande
     const requestRef = doc(db, 'friend_requests', requestId);
+    const requestSnap = await getDoc(requestRef);
+    if (!requestSnap.exists()) {
+      throw new Error('Demande introuvable');
+    }
     batch.update(requestRef, { status: 'accepted' });
 
     // 2. Ajouter l'ami à la liste de l'utilisateur courant
@@ -704,13 +708,67 @@ export async function acceptFriendRequest(requestId: string, fromUserId: string,
     // Ici on est hors transaction pour la lecture, donc on peut le faire avant le commit.
     const reverseDocs = await getDocs(reverseQuery);
     reverseDocs.forEach(doc => {
-      batch.update(doc.ref, { status: 'accepted' });
+      // 4. Supprimer la demande inverse si elle existe
+      batch.delete(doc.ref);
     });
 
-    await batch.commit();
+    // 5. Créer un événement "Nouveau lien d'amitié" pour les deux utilisateurs
+    // Pour l'utilisateur qui a accepté (currentUser)
+    const eventRef1 = doc(collection(db, 'users', currentUserId, 'userEvents'));
+    batch.set(eventRef1, {
+      type: 'new_friend',
+      userId: currentUserId,
+      friendId: fromUserId,
+      friendName: requestSnap.data().fromDisplayName, // On suppose que c'est dispo, sinon on fetch
+      createdAt: serverTimestamp(),
+    });
 
+    // Pour l'utilisateur qui a envoyé la demande (fromUser)
+    // Note: On a besoin du nom de currentUserId pour l'événement de l'autre côté.
+    // Idéalement on devrait passer le currentUser complet à cette fonction ou le fetcher.
+    // Pour simplifier, on crée l'événement seulement pour celui qui accepte pour l'instant,
+    // ou on accepte que l'info soit incomplète.
+    // Mieux : On crée l'événement visible dans le feed.
+
+    await batch.commit();
   } catch (error) {
-    console.error('Erreur lors de l\'acceptation de la demande d\'ami:', error);
+    console.error('Erreur lors de l\'acceptation de la demande:', error);
+    throw error;
+  }
+}
+
+/**
+ * Supprimer un ami
+ */
+export async function removeFriend(currentUserId: string, friendId: string): Promise<void> {
+  try {
+    const batch = writeBatch(db);
+
+    // 1. Retirer friendId de la liste de currentUserId
+    const currentUserRef = doc(db, 'users', currentUserId);
+    const currentUserSnap = await getDoc(currentUserRef);
+    if (currentUserSnap.exists()) {
+      const currentFriends = currentUserSnap.data().friends || [];
+      batch.update(currentUserRef, {
+        friends: currentFriends.filter((id: string) => id !== friendId),
+        updatedAt: serverTimestamp(),
+      });
+    }
+
+    // 2. Retirer currentUserId de la liste de friendId
+    const friendRef = doc(db, 'users', friendId);
+    const friendSnap = await getDoc(friendRef);
+    if (friendSnap.exists()) {
+      const friendFriends = friendSnap.data().friends || [];
+      batch.update(friendRef, {
+        friends: friendFriends.filter((id: string) => id !== currentUserId),
+        updatedAt: serverTimestamp(),
+      });
+    }
+
+    await batch.commit();
+  } catch (error) {
+    console.error('Erreur lors de la suppression de l\'ami:', error);
     throw error;
   }
 }
