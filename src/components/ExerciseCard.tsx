@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { Trash2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,8 @@ interface ExerciseCardProps {
   onRemove?: () => void;
   isRemoving?: boolean;
   onLongPress?: () => void;
+  onCancelRemove?: () => void;
+  onConfirmRemove?: () => void;
   className?: string;
 }
 
@@ -18,14 +21,16 @@ interface ExerciseCardProps {
  * Carte d'exercice avec compteur de reps et boutons d'action
  * Supporte le long press pour la suppression
  */
-export function ExerciseCard({
+export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
   exercise,
   onAddReps,
   onRemove,
   isRemoving = false,
   onLongPress,
+  onCancelRemove,
+  onConfirmRemove,
   className,
-}: ExerciseCardProps) {
+}, ref) => {
   let longPressTimer: NodeJS.Timeout | null = null;
 
   const handleTouchStart = () => {
@@ -43,13 +48,18 @@ export function ExerciseCard({
 
   return (
     <motion.div
-      animate={isRemoving ? { scale: 0.95, opacity: 0.5 } : { scale: 1, opacity: 1 }}
+      ref={ref}
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={isRemoving ? { scale: 0.95, opacity: 1 } : { scale: 1, opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.2 }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onMouseDown={handleTouchStart}
       onMouseUp={handleTouchEnd}
       onMouseLeave={handleTouchEnd}
+      className="w-full"
     >
       <Card
         className={cn(
@@ -92,20 +102,25 @@ export function ExerciseCard({
             </div>
           </div>
 
-          {/* Bouton supprimer (visible en mode suppression) */}
-          {isRemoving && onRemove && (
+          {/* Overlay suppression (visible en mode suppression) */}
+          {isRemoving && (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="absolute top-2 right-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center gap-4 z-10"
             >
               <Button
-                variant="destructive"
-                size="icon"
-                onClick={onRemove}
-                className="h-8 w-8"
+                variant="outline"
+                onClick={onCancelRemove}
               >
-                <Trash2 className="h-4 w-4" />
+                Annuler
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={onConfirmRemove}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Supprimer
               </Button>
             </motion.div>
           )}
@@ -113,5 +128,6 @@ export function ExerciseCard({
       </Card>
     </motion.div>
   );
-}
+});
 
+ExerciseCard.displayName = 'ExerciseCard';

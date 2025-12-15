@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Plus, Users, Trophy } from 'lucide-react';
+import { Home, Users, Trophy, Dumbbell } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
 export function BottomNav() {
@@ -24,9 +24,9 @@ export function BottomNav() {
 
         <button
           onClick={() => navigate('/session')}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95"
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95 -mt-4 border-4 border-background"
         >
-          <Plus className="h-6 w-6" />
+          <Dumbbell className="h-7 w-7" />
         </button>
 
         <button

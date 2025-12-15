@@ -86,11 +86,18 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         totalReps,
       });
 
-      // Mettre à jour les stats de l'utilisateur
-      await updateUserStatsAfterSession(currentUser.uid, totalReps);
+      // Si la création réussit, on considère la session comme terminée localement
+      // même si les mises à jour de stats échouent
+      try {
+        // Mettre à jour les stats de l'utilisateur
+        await updateUserStatsAfterSession(currentUser.uid, totalReps);
 
-      // Rafraîchir les stats dans le store utilisateur
-      await useUserStore.getState().refreshStats();
+        // Rafraîchir les stats dans le store utilisateur
+        await useUserStore.getState().refreshStats();
+      } catch (statsError) {
+        console.error('Erreur lors de la mise à jour des stats:', statsError);
+        // On continue pour nettoyer la session locale
+      }
 
       // Réinitialiser la session
       get().resetSession();

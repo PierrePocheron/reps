@@ -51,6 +51,7 @@ export function getCurrentSessionFromLocal(): Partial<LocalSession> | null {
  */
 export function clearCurrentSessionFromLocal(): void {
   try {
+    localStorage.setItem(STORAGE_KEYS.CURRENT_SESSION, '');
     localStorage.removeItem(STORAGE_KEYS.CURRENT_SESSION);
   } catch (error) {
     console.error('Erreur lors de la suppression de la session:', error);
