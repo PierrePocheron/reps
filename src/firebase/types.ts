@@ -70,6 +70,8 @@ export interface UserStats {
   totalReps: number;
   totalSessions: number;
   averageRepsPerSession: number;
+  averageDuration: number; // en secondes
+  averageExercises: number;
   lastSessionDate?: Timestamp;
   lastSessionReps?: number;
   currentStreak: number; // jours consécutifs

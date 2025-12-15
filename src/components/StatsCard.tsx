@@ -42,10 +42,22 @@ export function StatsCard({ stats, className }: StatsCardProps) {
       color: 'text-orange-500',
     },
     {
+      label: 'Durée Moyenne',
+      value: `${Math.floor(stats.averageDuration / 60)}m`,
+      icon: Calendar,
+      color: 'text-purple-500',
+    },
+    {
+      label: 'Exos/Séance',
+      value: stats.averageExercises.toString(),
+      icon: Target,
+      color: 'text-blue-500',
+    },
+    {
       label: 'Série actuelle',
       value: `${stats.currentStreak} jours`,
       icon: Trophy,
-      color: 'text-purple-500',
+      color: 'text-yellow-500',
     },
   ];
 
@@ -55,7 +67,7 @@ export function StatsCard({ stats, className }: StatsCardProps) {
         <CardTitle>Statistiques</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {statItems.map((item) => {
             const Icon = item.icon;
             return (

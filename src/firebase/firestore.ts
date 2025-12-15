@@ -259,8 +259,13 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
     const sessions = await getUserSessions(userId, 1000); // Récupérer beaucoup de sessions pour les stats
 
     const totalReps = sessions.reduce((sum, session) => sum + session.totalReps, 0);
+    const totalDuration = sessions.reduce((sum, session) => sum + session.duration, 0);
+    const totalExercises = sessions.reduce((sum, session) => sum + session.exercises.length, 0);
     const totalSessions = sessions.length;
+
     const averageRepsPerSession = totalSessions > 0 ? totalReps / totalSessions : 0;
+    const averageDuration = totalSessions > 0 ? totalDuration / totalSessions : 0;
+    const averageExercises = totalSessions > 0 ? totalExercises / totalSessions : 0;
 
     // Calculer les streaks (jours consécutifs)
     let currentStreak = 0;
@@ -323,6 +328,8 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
       totalReps,
       totalSessions,
       averageRepsPerSession: Math.round(averageRepsPerSession),
+      averageDuration: Math.round(averageDuration),
+      averageExercises: parseFloat(averageExercises.toFixed(1)),
       lastSessionDate: firstSession ? firstSession.date : undefined,
       lastSessionReps: firstSession ? firstSession.totalReps : undefined,
       currentStreak,
