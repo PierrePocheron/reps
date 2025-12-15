@@ -3,7 +3,20 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Users
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (
+        request.auth.uid == userId ||
+        // Permettre à un utilisateur d'ajouter son ID dans la liste d'amis d'un autre
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends']))
+      );
+    }
+
+    // Friend Requests
+    match /friend_requests/{requestId} {
+      allow read: if request.auth != null && (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.fromUserId;
+      allow update: if request.auth != null && (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
     }
 
     // Sessions - structure: sessions/{userId}/userSessions/{sessionId}
@@ -20,8 +33,9 @@ service cloud.firestore {
 
     // Notifications
     match /notifications/{notificationId} {
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null;
+      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null; // Permettre à n'importe qui de créer une notif (ex: demande d'ami)
+      allow update: if request.auth != null && request.auth.uid == resource.data.userId; // Pour marquer comme lu
     }
 
     // Phrases motivantes (lecture publique, écriture admin uniquement)

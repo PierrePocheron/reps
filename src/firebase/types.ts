@@ -8,6 +8,7 @@ import { Timestamp } from 'firebase/firestore';
 export interface User {
   uid: string;
   displayName: string;
+  searchName?: string; // Lowercase display name for search
   photoURL?: string;
   email: string;
   age?: number;
@@ -46,6 +47,17 @@ export interface Session {
   duration: number; // en secondes
   exercises: SessionExercise[];
   totalReps: number;
+  createdAt: Timestamp;
+}
+
+// Type pour une demande d'ami
+export interface FriendRequest {
+  id: string;
+  fromUserId: string;
+  fromDisplayName: string;
+  fromPhotoURL?: string;
+  toUserId: string;
+  status: 'pending' | 'accepted' | 'rejected';
   createdAt: Timestamp;
 }
 

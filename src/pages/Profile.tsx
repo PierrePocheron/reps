@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { getUnlockedBadges, getNextBadge } from '@/utils/constants';
 import { formatNumber } from '@/utils/formatters';
-import { Settings, LogOut, Award, Target } from 'lucide-react';
+import { Settings, LogOut, Award, Target, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 function Profile() {
@@ -119,6 +119,13 @@ function Profile() {
                   <ProfileEditForm user={user} />
                 </DialogContent>
               </Dialog>
+            </div>
+
+            <div className="flex justify-center pb-6">
+              <Button variant="secondary" className="w-full" onClick={() => navigate('/friends')}>
+                <Users className="h-4 w-4 mr-2" />
+                Gérer les amis
+              </Button>
             </div>
 
             <div className="grid grid-cols-3 gap-4 border-t pt-4">

@@ -1,6 +1,8 @@
 {
   "projects": {
-    "default": "your-project-id"
-  }
+    "default": "your-project-id",
+    "reps": "pedro-reps"
+  },
+  "targets": {},
+  "etags": {}
 }
-

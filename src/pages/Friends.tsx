@@ -1,0 +1,307 @@
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BackButton } from '@/components/BackButton';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { useUserStore } from '@/store/userStore';
+import { useToast } from '@/hooks/use-toast';
+import {
+  searchUsers,
+  sendFriendRequest,
+  subscribeToFriendRequests,
+  acceptFriendRequest,
+  declineFriendRequest,
+  getFriendsDetails
+} from '@/firebase/firestore';
+import type { User, FriendRequest } from '@/firebase/types';
+import { UserPlus, Search, Check, X, User as UserIcon, Users } from 'lucide-react';
+
+export default function Friends() {
+  const { user } = useUserStore();
+  const { toast } = useToast();
+
+  const [activeTab, setActiveTab] = useState('friends');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const [requests, setRequests] = useState<FriendRequest[]>([]);
+  const [friends, setFriends] = useState<User[]>([]);
+  const [isLoadingFriends, setIsLoadingFriends] = useState(false);
+
+  // Subscribe to friend requests
+  useEffect(() => {
+    if (!user) return;
+    console.log('Subscribing to friend requests for:', user.uid);
+    const unsubscribe = subscribeToFriendRequests(user.uid, (newRequests) => {
+      console.log('Received friend requests:', newRequests);
+      // Filtrer les demandes provenant de personnes déjà amies
+      const filteredRequests = newRequests.filter(req => !user.friends?.includes(req.fromUserId));
+      setRequests(filteredRequests);
+    });
+    return () => unsubscribe();
+  }, [user]);
+
+  // Load friends
+  useEffect(() => {
+    if (!user || !user.friends || user.friends.length === 0) {
+      setFriends([]);
+      return;
+    }
+
+    const loadFriends = async () => {
+      setIsLoadingFriends(true);
+      try {
+        const friendsList = await getFriendsDetails(user.friends);
+        setFriends(friendsList);
+      } catch (error) {
+        console.error('Error loading friends:', error);
+      } finally {
+        setIsLoadingFriends(false);
+      }
+    };
+
+    loadFriends();
+  }, [user?.friends]);
+
+  // Debounced search
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchTerm.length < 2) {
+        setSearchResults([]);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const results = await searchUsers(searchTerm);
+        // Filter out self and existing friends
+        const filteredResults = results.filter(u =>
+          u.uid !== user?.uid &&
+          !user?.friends.includes(u.uid)
+        );
+        setSearchResults(filteredResults);
+      } catch (error) {
+        console.error('Search error:', error);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, user]);
+
+  const handleSendRequest = async (toUserId: string) => {
+    if (!user) return;
+    try {
+      await sendFriendRequest(user, toUserId);
+      toast({
+        title: 'Demande envoyée',
+        description: 'Votre demande d\'ami a été envoyée !',
+      });
+      // Remove from search results to give feedback
+      setSearchResults(prev => prev.filter(u => u.uid !== toUserId));
+    } catch (error: any) {
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Impossible d\'envoyer la demande',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleAcceptRequest = async (request: FriendRequest) => {
+    if (!user) return;
+    try {
+      await acceptFriendRequest(request.id, request.fromUserId, user.uid);
+      toast({
+        title: 'Ami ajouté',
+        description: `Vous êtes maintenant ami avec ${request.fromDisplayName}`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible d\'accepter la demande',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeclineRequest = async (requestId: string) => {
+    try {
+      await declineFriendRequest(requestId);
+      toast({
+        title: 'Demande refusée',
+        description: 'La demande d\'ami a été refusée',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de refuser la demande',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  if (!user) return null;
+
+  return (
+    <div className="min-h-screen bg-background p-4 pb-20">
+      <div className="max-w-2xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <BackButton to="/profile" />
+          <h1 className="text-2xl font-bold">Amis</h1>
+          <div className="w-10" />
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="friends">Mes Amis</TabsTrigger>
+            <TabsTrigger value="add">Ajouter</TabsTrigger>
+            <TabsTrigger value="requests" className="relative">
+              Demandes
+              {requests.length > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white animate-pulse">
+                  {requests.length}
+                </span>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="friends" className="space-y-4 animate-in fade-in-50">
+            {isLoadingFriends ? (
+              <div className="flex justify-center py-12">
+                <LoadingSpinner />
+              </div>
+            ) : friends.length > 0 ? (
+              <div className="grid gap-3">
+                {friends.map((friend) => (
+                  <Card key={friend.uid} className="overflow-hidden border-none shadow-sm bg-card/50">
+                    <CardContent className="p-3 flex items-center gap-4">
+                      {friend.photoURL ? (
+                        <img src={friend.photoURL} alt={friend.displayName} className="w-12 h-12 rounded-full object-cover border-2 border-background" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center border-2 border-background">
+                          <UserIcon className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{friend.displayName}</h3>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {friend.totalSessions} séances • {friend.totalReps} reps
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <div className="bg-muted/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="h-8 w-8 opacity-50" />
+                </div>
+                <p className="mb-2">Vous n'avez pas encore d'amis.</p>
+                <Button variant="link" onClick={() => setActiveTab('add')}>
+                  Trouver des amis
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="add" className="space-y-6 animate-in fade-in-50">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher un pseudo ou email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 h-11 bg-muted/50 border-none focus-visible:ring-1"
+              />
+              {isSearching && (
+                <div className="absolute right-3 top-3">
+                  <LoadingSpinner size="sm" />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {searchResults.map((result) => (
+                <Card key={result.uid} className="overflow-hidden border-none shadow-sm bg-card/50">
+                  <CardContent className="p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {result.photoURL ? (
+                        <img src={result.photoURL} alt={result.displayName} className="w-10 h-10 rounded-full object-cover border border-background" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
+                          <UserIcon className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <span className="font-medium truncate">{result.displayName}</span>
+                    </div>
+                    <Button size="sm" variant="secondary" onClick={() => handleSendRequest(result.uid)} className="shrink-0">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Ajouter
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+              {searchResults.length === 0 && searchTerm.length >= 2 && !isSearching && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>Aucun utilisateur trouvé.</p>
+                </div>
+              )}
+              {searchTerm.length < 2 && (
+                <div className="text-center py-12 text-muted-foreground opacity-50">
+                  <Search className="h-12 w-12 mx-auto mb-4" />
+                  <p>Recherchez vos amis pour les ajouter</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="requests" className="space-y-4 animate-in fade-in-50">
+            {requests.length > 0 ? (
+              requests.map((request) => (
+                <Card key={request.id} className="overflow-hidden border-none shadow-sm bg-card/50">
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {request.fromPhotoURL ? (
+                        <img src={request.fromPhotoURL} alt={request.fromDisplayName} className="w-10 h-10 rounded-full object-cover border border-background" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
+                          <UserIcon className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{request.fromDisplayName}</p>
+                        <p className="text-xs text-muted-foreground">veut vous ajouter</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 shrink-0">
+                      <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-full" onClick={() => handleDeclineRequest(request.id)}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" className="h-8 w-8 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-sm" onClick={() => handleAcceptRequest(request)}>
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <div className="bg-muted/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <UserPlus className="h-8 w-8 opacity-50" />
+                </div>
+                <p>Aucune demande en attente.</p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
