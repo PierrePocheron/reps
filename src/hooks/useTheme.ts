@@ -24,18 +24,24 @@ export function useTheme() {
   }, [theme, applyTheme]);
 
   // Appliquer la couleur de thème depuis le profil utilisateur si disponible
+  // 1. Synchroniser le store settings quand le profil utilisateur change
+  // (chargement initial ou mise à jour distante)
   useEffect(() => {
     if (user?.colorTheme) {
-      applyThemeColor(user.colorTheme);
-      // Synchroniser avec le store settings
+      // On ne met à jour que si la couleur est différente pour éviter les boucles
       if (user.colorTheme !== colorTheme) {
         setColorTheme(user.colorTheme);
       }
-    } else if (colorTheme) {
-      // Appliquer la couleur depuis les settings si pas de couleur utilisateur
+    }
+  }, [user?.colorTheme, setColorTheme]); // Retiré colorTheme des dépendances pour éviter le conflit
+
+  // 2. Appliquer la couleur visuellement quand le store settings change
+  // C'est la source de vérité pour l'affichage immédiat
+  useEffect(() => {
+    if (colorTheme) {
       applyThemeColor(colorTheme);
     }
-  }, [user?.colorTheme, colorTheme, setColorTheme]);
+  }, [colorTheme]);
 
   // Écouter les changements de préférences système si le thème est "system"
   useEffect(() => {
