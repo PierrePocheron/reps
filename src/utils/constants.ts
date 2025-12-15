@@ -39,25 +39,29 @@ export interface Badge {
   name: string;
   description: string;
   emoji: string;
-  threshold: number; // Nombre de reps total requis
+  threshold: number;
+  category: 'total_reps' | 'streak' | 'total_sessions';
   color: string;
 }
 
 export const BADGES: Badge[] = [
+  // Total Reps
   {
     id: 'mosquito',
-    name: "T'es un moustique",
+    name: "Tié un moustique",
     description: '1000 reps accomplies',
     emoji: '🦟',
     threshold: 1000,
+    category: 'total_reps',
     color: 'gray',
   },
   {
     id: 'tiger',
-    name: "T'es un tigre",
+    name: "Tié un tigre",
     description: '2000 reps accomplies',
     emoji: '🐯',
     threshold: 2000,
+    category: 'total_reps',
     color: 'orange',
   },
   {
@@ -66,6 +70,7 @@ export const BADGES: Badge[] = [
     description: '3000 reps accomplies',
     emoji: '💥',
     threshold: 3000,
+    category: 'total_reps',
     color: 'red',
   },
   {
@@ -74,6 +79,7 @@ export const BADGES: Badge[] = [
     description: '4000 reps accomplies',
     emoji: '🐆',
     threshold: 4000,
+    category: 'total_reps',
     color: 'yellow',
   },
   {
@@ -82,6 +88,7 @@ export const BADGES: Badge[] = [
     description: '5000 reps accomplies',
     emoji: '🧠',
     threshold: 5000,
+    category: 'total_reps',
     color: 'blue',
   },
   {
@@ -90,6 +97,7 @@ export const BADGES: Badge[] = [
     description: '6000 reps accomplies',
     emoji: '😌',
     threshold: 6000,
+    category: 'total_reps',
     color: 'green',
   },
   {
@@ -98,7 +106,66 @@ export const BADGES: Badge[] = [
     description: '7000 reps accomplies',
     emoji: '😤',
     threshold: 7000,
+    category: 'total_reps',
     color: 'purple',
+  },
+
+  // Streaks (Série actuelle)
+  {
+    id: 'streak-3',
+    name: 'Le début',
+    description: '3 jours consécutifs',
+    emoji: '🔥',
+    threshold: 3,
+    category: 'streak',
+    color: 'orange',
+  },
+  {
+    id: 'streak-7',
+    name: 'Semaine de feu',
+    description: '7 jours consécutifs',
+    emoji: '🧨',
+    threshold: 7,
+    category: 'streak',
+    color: 'red',
+  },
+  {
+    id: 'streak-30',
+    name: 'Discipline de fer',
+    description: '30 jours consécutifs',
+    emoji: '🗿',
+    threshold: 30,
+    category: 'streak',
+    color: 'gray',
+  },
+
+  // Total Sessions
+  {
+    id: 'sessions-10',
+    name: 'Régulier',
+    description: '10 séances terminées',
+    emoji: '📅',
+    threshold: 10,
+    category: 'total_sessions',
+    color: 'blue',
+  },
+  {
+    id: 'sessions-50',
+    name: 'Acharné',
+    description: '50 séances terminées',
+    emoji: '🏋️',
+    threshold: 50,
+    category: 'total_sessions',
+    color: 'purple',
+  },
+  {
+    id: 'sessions-100',
+    name: 'Légende',
+    description: '100 séances terminées',
+    emoji: '👑',
+    threshold: 100,
+    category: 'total_sessions',
+    color: 'yellow',
   },
 ];
 
@@ -119,15 +186,49 @@ export const DEFAULT_MOTIVATIONAL_PHRASES = [
 /**
  * Obtenir les badges débloqués selon le nombre total de reps
  */
-export function getUnlockedBadges(totalReps: number): Badge[] {
-  return BADGES.filter((badge) => totalReps >= badge.threshold);
+import type { UserStats } from '@/firebase/types';
+
+/**
+ * Obtenir les badges débloqués selon les stats de l'utilisateur
+ */
+export function getUnlockedBadges(stats: UserStats): Badge[] {
+  return BADGES.filter((badge) => {
+    switch (badge.category) {
+      case 'total_reps':
+        return stats.totalReps >= badge.threshold;
+      case 'streak':
+        return stats.currentStreak >= badge.threshold;
+      case 'total_sessions':
+        return stats.totalSessions >= badge.threshold;
+      default:
+        return false;
+    }
+  });
 }
 
 /**
- * Obtenir le prochain badge à débloquer
+ * Obtenir le prochain badge à débloquer (le plus proche)
  */
-export function getNextBadge(totalReps: number): Badge | null {
-  const unlockedBadges = getUnlockedBadges(totalReps);
-  const nextBadge = BADGES.find((badge) => !unlockedBadges.includes(badge));
-  return nextBadge || null;
+export function getNextBadge(stats: UserStats): Badge | undefined {
+  const unlockedBadges = getUnlockedBadges(stats);
+  const lockedBadges = BADGES.filter((badge) => !unlockedBadges.includes(badge));
+
+  if (lockedBadges.length === 0) return undefined;
+
+  // Trouver le badge le plus proche d'être débloqué
+  return lockedBadges.sort((a, b) => {
+    const getProgress = (badge: Badge) => {
+      switch (badge.category) {
+        case 'total_reps':
+          return stats.totalReps / badge.threshold;
+        case 'streak':
+          return stats.currentStreak / badge.threshold;
+        case 'total_sessions':
+          return stats.totalSessions / badge.threshold;
+        default:
+          return 0;
+      }
+    };
+    return getProgress(b) - getProgress(a); // Plus grand % en premier
+  })[0];
 }

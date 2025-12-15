@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import Session from './pages/Session';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import Achievements from './pages/Achievements';
 
 function App() {
   const location = useLocation();
@@ -39,6 +40,14 @@ function App() {
               element={
                 <PageTransition>
                   <Profile />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/achievements"
+              element={
+                <PageTransition>
+                  <Achievements />
                 </PageTransition>
               }
             />

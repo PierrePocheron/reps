@@ -74,8 +74,8 @@ function Profile() {
     );
   }
 
-  const unlockedBadges = getUnlockedBadges(user.totalReps);
-  const nextBadge = getNextBadge(user.totalReps);
+  const unlockedBadges = stats ? getUnlockedBadges(stats) : [];
+  const nextBadge = stats ? getNextBadge(stats) : null;
 
   return (
     <div className="min-h-screen bg-background p-4 pb-20">
@@ -143,11 +143,14 @@ function Profile() {
 
         {/* Badges */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg font-bold">
               <Award className="h-5 w-5" />
               Badges
             </CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/achievements')}>
+              Voir tout
+            </Button>
           </CardHeader>
           <CardContent>
             {unlockedBadges.length > 0 ? (
@@ -177,8 +180,11 @@ function Profile() {
                 <div className="flex-1">
                   <p className="font-semibold">Prochain badge</p>
                   <p className="text-sm text-muted-foreground">
-                    {nextBadge.name} - {formatNumber(nextBadge.threshold - user.totalReps)} reps
-                    restantes
+                    {nextBadge.name} - {
+                      nextBadge.category === 'total_reps' ? `${formatNumber(nextBadge.threshold - stats!.totalReps)} reps` :
+                      nextBadge.category === 'streak' ? `${nextBadge.threshold - stats!.currentStreak} jours` :
+                      `${nextBadge.threshold - stats!.totalSessions} séances`
+                    } restants
                   </p>
                 </div>
                 <span className="text-2xl">{nextBadge.emoji}</span>
