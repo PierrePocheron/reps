@@ -7,6 +7,7 @@ import { StatsCard } from '@/components/StatsCard';
 import { AuthForm } from '@/components/AuthForm';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { BackButton } from '@/components/BackButton';
+import { ProfileEditForm } from '@/components/ProfileEditForm';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { getUnlockedBadges, getNextBadge } from '@/utils/constants';
@@ -91,7 +92,7 @@ function Profile() {
         {/* Profil utilisateur */}
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 mb-6">
               {user.photoURL ? (
                 <img
                   src={user.photoURL}
@@ -106,6 +107,32 @@ function Profile() {
               <div className="flex-1">
                 <h2 className="text-xl font-bold">{user.displayName}</h2>
                 <p className="text-muted-foreground">{user.email}</p>
+              </div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">Modifier</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Modifier le profil</DialogTitle>
+                  </DialogHeader>
+                  <ProfileEditForm user={user} />
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 border-t pt-4">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">Âge</p>
+                <p className="font-semibold">{user.age ? `${user.age} ans` : '-'}</p>
+              </div>
+              <div className="text-center border-l border-r">
+                <p className="text-sm text-muted-foreground">Poids</p>
+                <p className="font-semibold">{user.weight ? `${user.weight} kg` : '-'}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">Taille</p>
+                <p className="font-semibold">{user.height ? `${user.height} cm` : '-'}</p>
               </div>
             </div>
           </CardContent>

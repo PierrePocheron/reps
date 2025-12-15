@@ -10,6 +10,9 @@ export interface User {
   displayName: string;
   photoURL?: string;
   email: string;
+  age?: number;
+  height?: number; // en cm
+  weight?: number; // en kg
   colorTheme?: 'violet' | 'orange' | 'green' | 'blue' | 'red' | 'pink';
   totalReps: number;
   totalSessions: number;
