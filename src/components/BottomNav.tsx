@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Plus, User } from 'lucide-react';
+import { Home, Plus, Users } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
 export function BottomNav() {
@@ -30,14 +30,14 @@ export function BottomNav() {
         </button>
 
         <button
-          onClick={() => navigate('/profile')}
+          onClick={() => navigate('/friends')}
           className={cn(
             'flex flex-col items-center justify-center gap-1 transition-colors',
-            isActive('/profile') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+            isActive('/friends') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
           )}
         >
-          <User className="h-6 w-6" />
-          <span className="text-[10px] font-medium">Profil</span>
+          <Users className="h-6 w-6" />
+          <span className="text-[10px] font-medium">Social</span>
         </button>
       </div>
     </div>

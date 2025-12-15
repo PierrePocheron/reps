@@ -17,9 +17,11 @@ import {
   serverTimestamp,
   writeBatch,
   documentId,
+  collectionGroup,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { User, Session, Exercise, Notification, MotivationalPhrase, UserStats } from './types';
+import type { User, Session, Exercise, Notification, MotivationalPhrase, UserStats, Badge } from './types';
+import { getUnlockedBadges } from '@/utils/constants';
 
 /**
  * Helpers Firestore pour les opérations CRUD
@@ -362,10 +364,48 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
 
     const stats = await calculateUserStats(userId);
 
-    await updateUserDocument(userId, {
-      totalReps: stats.totalReps,
-      totalSessions: stats.totalSessions,
-    });
+    // Vérifier les nouveaux badges
+    const currentBadges = user.badges || [];
+    const unlockedBadges = getUnlockedBadges(stats);
+    const newBadges = unlockedBadges.filter(b => !currentBadges.includes(b.id));
+
+    const updatedBadges = [...currentBadges, ...newBadges.map(b => b.id)];
+
+    // Créer des événements pour les nouveaux badges
+    if (newBadges.length > 0) {
+      const batch = writeBatch(db);
+
+      // 1. Mettre à jour le user
+      const userRef = doc(db, 'users', userId);
+      batch.update(userRef, {
+        totalReps: stats.totalReps,
+        totalSessions: stats.totalSessions,
+        badges: updatedBadges,
+        updatedAt: serverTimestamp(),
+      });
+
+      // 2. Créer les événements de badge
+      const eventsRef = collection(db, 'users', userId, 'userEvents');
+      newBadges.forEach(badge => {
+        const eventDoc = doc(eventsRef);
+        batch.set(eventDoc, {
+          type: 'badge_unlocked',
+          userId,
+          badgeId: badge.id,
+          badgeName: badge.name,
+          badgeEmoji: badge.emoji,
+          createdAt: serverTimestamp(),
+        });
+      });
+
+      await batch.commit();
+    } else {
+      // Juste mettre à jour les stats
+      await updateUserDocument(userId, {
+        totalReps: stats.totalReps,
+        totalSessions: stats.totalSessions,
+      });
+    }
   } catch (error) {
     console.error('Erreur lors de la mise à jour des stats:', error);
     throw error;
@@ -744,6 +784,62 @@ export async function getFriendsDetails(friendIds: string[]): Promise<User[]> {
     return friends;
   } catch (error) {
     console.error('Erreur lors de la récupération des amis:', error);
+    return [];
+  }
+}
+
+/**
+ * Obtenir l'activité récente des amis (Séances + Badges)
+ */
+export async function getFriendsActivity(friendIds: string[], limitCount = 20): Promise<(Session | any)[]> {
+  try {
+    if (!friendIds || friendIds.length === 0) return [];
+
+    const friendsSubset = friendIds.slice(0, 10);
+
+    // 1. Récupérer les sessions
+    const sessionsQuery = query(
+      collectionGroup(db, 'userSessions'),
+      where('userId', 'in', friendsSubset),
+      orderBy('createdAt', 'desc'),
+      limit(limitCount)
+    );
+
+    // 2. Récupérer les événements (badges)
+    // Note: Il faut un index pour userEvents aussi
+    const eventsQuery = query(
+      collectionGroup(db, 'userEvents'),
+      where('userId', 'in', friendsSubset),
+      orderBy('createdAt', 'desc'),
+      limit(limitCount)
+    );
+
+    const [sessionsSnap, eventsSnap] = await Promise.all([
+      getDocs(sessionsQuery),
+      getDocs(eventsQuery)
+    ]);
+
+    const sessions = sessionsSnap.docs.map(doc => ({
+      type: 'session',
+      sessionId: doc.id,
+      ...doc.data()
+    }));
+
+    const events = eventsSnap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Fusionner et trier
+    const allActivity = [...sessions, ...events].sort((a: any, b: any) => {
+      const dateA = a.createdAt?.toDate() || new Date(0);
+      const dateB = b.createdAt?.toDate() || new Date(0);
+      return dateB.getTime() - dateA.getTime();
+    });
+
+    return allActivity.slice(0, limitCount);
+  } catch (error) {
+    console.error('Erreur lors de la récupération de l\'activité des amis:', error);
     return [];
   }
 }

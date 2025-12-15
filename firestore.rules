@@ -12,6 +12,11 @@ service cloud.firestore {
       );
     }
 
+    // User Events (Badges, etc.)
+    match /users/{userId}/userEvents/{eventId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
     // Friend Requests
     match /friend_requests/{requestId} {
       allow read: if request.auth != null && (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
@@ -20,8 +25,18 @@ service cloud.firestore {
     }
 
     // Sessions - structure: sessions/{userId}/userSessions/{sessionId}
-    match /sessions/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // Sessions - structure: sessions/{userId}/userSessions/{sessionId}
+    match /sessions/{userId}/userSessions/{sessionId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Règle explicite pour les collectionGroup queries
+    match /{path=**}/userSessions/{sessionId} {
+      allow read: if request.auth != null;
+    }
+    match /{path=**}/userEvents/{eventId} {
+      allow read: if request.auth != null;
     }
 
     // Exercises

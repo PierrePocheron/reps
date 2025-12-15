@@ -13,16 +13,17 @@ import {
   subscribeToFriendRequests,
   acceptFriendRequest,
   declineFriendRequest,
-  getFriendsDetails
+  getFriendsDetails,
+  getFriendsActivity
 } from '@/firebase/firestore';
-import type { User, FriendRequest } from '@/firebase/types';
-import { UserPlus, Search, Check, X, User as UserIcon, Users } from 'lucide-react';
+import type { User, FriendRequest, Session } from '@/firebase/types';
+import { UserPlus, Search, Check, X, User as UserIcon, Users, Activity, Calendar, Dumbbell, Award } from 'lucide-react';
 
 export default function Friends() {
   const { user } = useUserStore();
   const { toast } = useToast();
 
-  const [activeTab, setActiveTab] = useState('friends');
+  const [activeTab, setActiveTab] = useState('activity');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -30,6 +31,9 @@ export default function Friends() {
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [friends, setFriends] = useState<User[]>([]);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
+
+  const [activities, setActivities] = useState<Session[]>([]);
+  const [isLoadingActivity, setIsLoadingActivity] = useState(false);
 
   // Subscribe to friend requests
   useEffect(() => {
@@ -65,6 +69,24 @@ export default function Friends() {
 
     loadFriends();
   }, [user?.friends]);
+
+  // Load activity when tab changes to 'activity' and friends are loaded
+  useEffect(() => {
+    if (activeTab === 'activity' && user?.friends && user.friends.length > 0) {
+      const loadActivity = async () => {
+        setIsLoadingActivity(true);
+        try {
+          const sessions = await getFriendsActivity(user.friends);
+          setActivities(sessions);
+        } catch (error) {
+          console.error('Error loading activity:', error);
+        } finally {
+          setIsLoadingActivity(false);
+        }
+      };
+      loadActivity();
+    }
+  }, [activeTab, user?.friends]);
 
   // Debounced search
   useEffect(() => {
@@ -145,6 +167,22 @@ export default function Friends() {
     }
   };
 
+  const getFriendDetails = (userId: string) => {
+    return friends.find(f => f.uid === userId);
+  };
+
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate();
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 1) return 'Aujourd\'hui';
+    if (diffDays <= 2) return 'Hier';
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  };
+
   if (!user) return null;
 
   return (
@@ -153,13 +191,14 @@ export default function Friends() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <BackButton to="/profile" />
-          <h1 className="text-2xl font-bold">Amis</h1>
+          <h1 className="text-2xl font-bold">Social</h1>
           <div className="w-10" />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="friends">Mes Amis</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsTrigger value="activity">Activité</TabsTrigger>
+            <TabsTrigger value="friends">Amis</TabsTrigger>
             <TabsTrigger value="add">Ajouter</TabsTrigger>
             <TabsTrigger value="requests" className="relative">
               Demandes
@@ -170,6 +209,113 @@ export default function Friends() {
               )}
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="activity" className="space-y-4 animate-in fade-in-50">
+            {isLoadingActivity ? (
+              <div className="flex justify-center py-12">
+                <LoadingSpinner />
+              </div>
+            ) : activities.length > 0 ? (
+              <div className="space-y-4">
+                {activities.map((item: any) => {
+                  const friend = getFriendDetails(item.userId);
+                  if (!friend) return null;
+
+                  if (item.type === 'badge_unlocked') {
+                    return (
+                      <Card key={item.id} className="overflow-hidden border-none shadow-sm bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-l-4 border-l-yellow-500">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-4">
+                            {friend.photoURL ? (
+                              <img src={friend.photoURL} alt={friend.displayName} className="w-10 h-10 rounded-full object-cover border border-background" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
+                                <UserIcon className="h-5 w-5 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <p className="text-sm">
+                                <span className="font-semibold">{friend.displayName}</span> a débloqué un badge !
+                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-2xl">{item.badgeEmoji}</span>
+                                <span className="font-bold text-primary">{item.badgeName}</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(item.createdAt)}
+                              </p>
+                            </div>
+                            <Award className="h-8 w-8 text-yellow-500 opacity-50" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+
+                  // C'est une session
+                  return (
+                    <Card key={item.sessionId} className="overflow-hidden border-none shadow-sm bg-card/50">
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-4">
+                          {friend.photoURL ? (
+                            <img src={friend.photoURL} alt={friend.displayName} className="w-10 h-10 rounded-full object-cover border border-background" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
+                              <UserIcon className="h-5 w-5 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h3 className="font-semibold text-sm">{friend.displayName}</h3>
+                                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {formatDate(item.date || item.createdAt)}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-lg font-bold text-primary">{item.totalReps}</span>
+                                <span className="text-xs text-muted-foreground ml-1">reps</span>
+                              </div>
+                            </div>
+
+                            <div className="mt-3 space-y-1">
+                              {item.exercises && item.exercises
+                                .sort((a: any, b: any) => b.reps - a.reps)
+                                .slice(0, 3)
+                                .map((exo: any, idx: number) => (
+                                <div key={idx} className="flex items-center justify-between text-sm bg-muted/30 p-1.5 rounded-md">
+                                  <span className="flex items-center gap-2 truncate">
+                                    <span>{exo.emoji}</span>
+                                    <span className="truncate">{exo.name}</span>
+                                  </span>
+                                  <span className="font-medium text-muted-foreground">{exo.reps}</span>
+                                </div>
+                              ))}
+                              {item.exercises && item.exercises.length > 3 && (
+                                <p className="text-xs text-center text-muted-foreground pt-1">
+                                  + {item.exercises.length - 3} autres exercices
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                <div className="bg-muted/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Activity className="h-8 w-8 opacity-50" />
+                </div>
+                <p className="mb-2">Aucune activité récente.</p>
+                <p className="text-sm opacity-75">Vos amis n'ont pas encore fait de sport !</p>
+              </div>
+            )}
+          </TabsContent>
 
           <TabsContent value="friends" className="space-y-4 animate-in fade-in-50">
             {isLoadingFriends ? (

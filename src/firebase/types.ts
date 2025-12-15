@@ -93,3 +93,13 @@ export interface UserStats {
   longestStreak: number;
 }
 
+// Type pour un badge
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  emoji: string;
+  threshold: number;
+  category: 'total_reps' | 'streak' | 'total_sessions';
+  color: string;
+}

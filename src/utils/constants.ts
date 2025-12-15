@@ -1,4 +1,4 @@
-import type { Exercise } from '@/firebase/types';
+import type { Exercise, Badge } from '@/firebase/types';
 
 /**
  * Exercices par défaut disponibles dans l'application
@@ -34,16 +34,6 @@ export const DEFAULT_EXERCISES: Exercise[] = [
 /**
  * Badges disponibles avec leurs seuils
  */
-export interface Badge {
-  id: string;
-  name: string;
-  description: string;
-  emoji: string;
-  threshold: number;
-  category: 'total_reps' | 'streak' | 'total_sessions';
-  color: string;
-}
-
 export const BADGES: Badge[] = [
   // Total Reps
   {
