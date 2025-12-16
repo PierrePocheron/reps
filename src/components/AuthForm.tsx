@@ -85,11 +85,10 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       onSuccess?.();
     } catch (error: unknown) {
       console.error('Erreur connexion Google:', error);
-      // @ts-ignore
-      console.error('Error details:', error.code, error.message);
+      const firebaseError = error as { code?: string; message?: string };
       toast({
         title: 'Erreur',
-        description: `Impossible de se connecter: ${(error as any).message}`,
+        description: `Impossible de se connecter: ${firebaseError.message || 'Erreur inconnue'}`,
         variant: 'destructive',
       });
     } finally {
@@ -252,11 +251,9 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         <div className="text-center text-sm">
           <button
             type="button"
-            onClick={() => {
               setIsSignUp(!isSignUp);
               setEmail('');
               setPassword('');
-              setDisplayName('');
             }}
             className="text-primary hover:underline"
           >

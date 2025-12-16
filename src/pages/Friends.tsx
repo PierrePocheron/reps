@@ -45,9 +45,7 @@ export default function Friends() {
   // Subscribe to friend requests
   useEffect(() => {
     if (!user) return;
-    console.log('Subscribing to friend requests for:', user.uid);
     const unsubscribe = subscribeToFriendRequests(user.uid, (newRequests) => {
-      console.log('Received friend requests:', newRequests);
       // Filtrer les demandes provenant de personnes déjà amies
       const filteredRequests = newRequests.filter(req => !user.friends?.includes(req.fromUserId));
       setFriendRequests(filteredRequests);

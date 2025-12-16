@@ -6,7 +6,6 @@ import { ExerciseCard } from '@/components/ExerciseCard';
 import { Timer } from '@/components/Timer';
 import { AddExerciseDialog } from '@/components/AddExerciseDialog';
 import { BackButton } from '@/components/BackButton';
-import { EmptyState } from '@/components/EmptyState';
 import { useSession } from '@/hooks/useSession';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
@@ -52,13 +51,7 @@ function Session() {
     return null;
   }
 
-  const handleStartSession = () => {
-    startSession();
-    toast({
-      title: 'Séance démarrée',
-      description: 'Bonne séance ! 💪',
-    });
-  };
+
 
   const handleEndSession = async () => {
     if (totalReps === 0) {
@@ -260,12 +253,9 @@ function Session() {
 
             <Button
               onClick={handleEndSession}
-              variant="default" // Changed from destructive to default based on feedback "gros carré rouge moche"
+              variant="default"
               size="lg"
-              className="w-full bg-red-600 hover:bg-red-700 text-white" // Custom styling to keep it red but maybe cleaner? Or maybe user wants it NOT red?
-              // User said: "le gros carré rouge pour terminer la seance c'est moche et a l'ancienne"
-              // So I should probably make it look different. Maybe a "Finish" button that isn't alarming.
-              // Let's try a primary button but with a specific style, or just "Terminer"
+              className="w-full bg-red-600 hover:bg-red-700 text-white"
             >
               <Square className="mr-2 h-4 w-4 fill-current" />
               Terminer la séance

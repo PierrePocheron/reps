@@ -115,7 +115,7 @@ export function onNetworkChange(callback: (isOnline: boolean) => void): () => vo
  */
 export async function syncLocalDataWithFirestore(userId: string): Promise<void> {
   if (isOffline()) {
-    console.log('Mode offline, synchronisation reportée');
+    // console.log('Mode offline, synchronisation reportée');
     return;
   }
 

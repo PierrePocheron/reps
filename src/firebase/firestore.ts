@@ -20,7 +20,7 @@ import {
   collectionGroup,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { User, Session, Exercise, Notification, MotivationalPhrase, UserStats, Badge } from './types';
+import type { User, Session, Exercise, Notification, MotivationalPhrase, UserStats } from './types';
 import { getUnlockedBadges } from '@/utils/constants';
 
 /**
@@ -807,7 +807,6 @@ export function subscribeToFriendRequests(userId: string, callback: (requests: a
       const timeB = b.createdAt?.seconds || 0;
       return timeB - timeA;
     });
-    console.log(`Friend requests fetched: ${requests.length}`);
     callback(requests);
   }, (error) => {
     console.error("ERREUR CRITIQUE lors de l'écoute des demandes d'amis:", error);
@@ -910,7 +909,6 @@ export async function getLeaderboardStats(friendIds: string[], period: 'daily' |
     if (!friendIds || friendIds.length === 0) return [];
 
     // Déterminer la date de début
-    const now = new Date();
     let startDate = new Date();
 
     if (period === 'daily') {
