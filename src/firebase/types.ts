@@ -8,10 +8,12 @@ import { Timestamp } from 'firebase/firestore';
 export interface User {
   uid: string;
   displayName: string;
+  firstName?: string;
+  lastName?: string;
   searchName?: string; // Lowercase display name for search
   photoURL?: string;
   email: string;
-  age?: number;
+  birthDate?: string; // YYYY-MM-DD
   height?: number; // en cm
   weight?: number; // en kg
   colorTheme?: 'violet' | 'orange' | 'green' | 'blue' | 'red' | 'pink';

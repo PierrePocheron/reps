@@ -100,12 +100,21 @@ function Profile() {
                   className="w-16 h-16 rounded-full"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-2xl">
-                  {user.displayName.charAt(0).toUpperCase()}
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-2xl font-bold text-primary">
+                    {user.displayName.charAt(0).toUpperCase()}
+                  </span>
                 </div>
               )}
               <div className="flex-1">
-                <h2 className="text-xl font-bold">{user.displayName}</h2>
+                <h2 className="text-xl font-bold">
+                  {user.firstName && user.lastName
+                    ? `${user.firstName} ${user.lastName}`
+                    : user.displayName}
+                </h2>
+                {(user.firstName || user.lastName) && (
+                  <p className="text-sm text-muted-foreground">@{user.displayName}</p>
+                )}
                 <p className="text-muted-foreground">{user.email}</p>
                 <button
                   onClick={() => navigate('/friends')}
@@ -138,7 +147,11 @@ function Profile() {
             <div className="grid grid-cols-3 gap-4 border-t pt-4">
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Âge</p>
-                <p className="font-semibold">{user.age ? `${user.age} ans` : '-'}</p>
+                <p className="font-semibold">
+                  {user.birthDate
+                    ? `${new Date().getFullYear() - new Date(user.birthDate).getFullYear()} ans`
+                    : '-'}
+                </p>
               </div>
               <div className="text-center border-l border-r">
                 <p className="text-sm text-muted-foreground">Poids</p>

@@ -16,7 +16,8 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithApple } = useAuth();
   const { toast } = useToast();
@@ -27,16 +28,16 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
 
     try {
       if (isSignUp) {
-        if (!displayName.trim()) {
+        if (!firstName.trim() || !lastName.trim()) {
           toast({
             title: 'Erreur',
-            description: 'Le nom d\'utilisateur est requis',
+            description: 'Le prénom et le nom sont requis',
             variant: 'destructive',
           });
           setIsLoading(false);
           return;
         }
-        await signUpWithEmail(email, password, displayName);
+        await signUpWithEmail(email, password, firstName, lastName);
         toast({
           title: 'Inscription réussie',
           description: 'Bienvenue sur Reps ! 🎉',
@@ -97,25 +98,13 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
   };
 
   const handleAppleSignIn = async () => {
-    setIsLoading(true);
-    try {
-      await signInWithApple();
-      toast({
-        title: 'Connexion réussie',
-        description: 'Bon retour ! 💪',
-      });
-      onSuccess?.();
-    } catch (error: unknown) {
-      console.error('Erreur connexion Apple:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de se connecter avec Apple',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    toast({
+      title: 'Bientôt disponible',
+      description: 'La connexion avec Apple n\'est pas encore implémentée.',
+    });
   };
+
+
 
   return (
     <Card className="w-full max-w-md">
@@ -181,25 +170,35 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         {/* Formulaire email/password */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {isSignUp && (
-            <div className="space-y-2">
-              <label htmlFor="displayName" className="text-sm font-medium">
-                Nom d'utilisateur
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <input
-                  id="displayName"
-                  type="text"
-                  placeholder="Votre nom"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  required={isSignUp}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      placeholder="Prénom"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <input
+                      type="text"
+                      placeholder="Nom"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
-
+            )}
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">
               Email

@@ -8,6 +8,7 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
   updateProfile,
+  getAdditionalUserInfo,
 } from 'firebase/auth';
 import { auth } from './config';
 import { createUserDocument, getUserDocument } from './firestore';
@@ -57,14 +58,19 @@ export async function signInWithEmail(email: string, password: string): Promise<
 /**
  * Inscription avec email et mot de passe
  */
+/**
+ * Inscription avec email et mot de passe
+ */
 export async function signUpWithEmail(
   email: string,
   password: string,
-  displayName: string
+  firstName: string,
+  lastName: string
 ): Promise<FirebaseUser> {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
+    const displayName = `${firstName} ${lastName}`.trim();
 
     // Mise à jour du profil avec le nom d'affichage
     await updateProfile(user, { displayName });
@@ -72,6 +78,8 @@ export async function signUpWithEmail(
     // Création du document utilisateur dans Firestore
     await createUserDocument(user.uid, {
       displayName,
+      firstName,
+      lastName,
       email: user.email || email,
       photoURL: user.photoURL || undefined,
     });
@@ -91,12 +99,35 @@ export async function signInWithGoogle(): Promise<FirebaseUser> {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
 
+    // Récupérer les infos supplémentaires (prénom, nom) depuis le profil Google
+    const additionalInfo = getAdditionalUserInfo(result);
+    const profile = additionalInfo?.profile as any;
+
+    let firstName = '';
+    let lastName = '';
+
+    if (profile) {
+      firstName = profile.given_name || '';
+      lastName = profile.family_name || '';
+    }
+
+    // Fallback si pas trouvé dans le profil (ex: ancien compte ou scope limité)
+    if (!firstName && user.displayName) {
+      const parts = user.displayName.split(' ');
+      if (parts.length > 0) {
+        firstName = parts[0];
+        lastName = parts.slice(1).join(' ');
+      }
+    }
+
     // Vérifier si l'utilisateur existe déjà dans Firestore
     const userDoc = await getUserDocument(user.uid);
     if (!userDoc) {
       // Créer le document utilisateur s'il n'existe pas
       await createUserDocument(user.uid, {
         displayName: user.displayName || 'Utilisateur',
+        firstName,
+        lastName,
         email: user.email || '',
         photoURL: user.photoURL || undefined,
       });

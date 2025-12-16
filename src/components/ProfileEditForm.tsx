@@ -14,7 +14,9 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     displayName: user.displayName,
-    age: user.age?.toString() || '',
+    firstName: user.firstName || '',
+    lastName: user.lastName || '',
+    birthDate: user.birthDate || '',
     weight: user.weight?.toString() || '',
     height: user.height?.toString() || '',
   });
@@ -27,7 +29,9 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
     try {
       const updates: Partial<User> = {
         displayName: formData.displayName,
-        age: formData.age ? parseInt(formData.age) : undefined,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        birthDate: formData.birthDate || undefined,
         weight: formData.weight ? parseFloat(formData.weight) : undefined,
         height: formData.height ? parseInt(formData.height) : undefined,
       };
@@ -63,15 +67,35 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
         />
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="firstName">Prénom</Label>
+          <Input
+            id="firstName"
+            value={formData.firstName}
+            onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+            placeholder="Prénom"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="lastName">Nom</Label>
+          <Input
+            id="lastName"
+            value={formData.lastName}
+            onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+            placeholder="Nom"
+          />
+        </div>
+      </div>
+
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="age">Âge</Label>
+          <Label htmlFor="birthDate">Date de naissance</Label>
           <Input
-            id="age"
-            type="number"
-            value={formData.age}
-            onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-            placeholder="Ans"
+            id="birthDate"
+            type="date"
+            value={formData.birthDate}
+            onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
           />
         </div>
         <div className="space-y-2">
