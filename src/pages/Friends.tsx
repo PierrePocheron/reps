@@ -251,7 +251,7 @@ export default function Friends() {
             <TabsTrigger value="friends" className="relative">
               Amis
               {friendRequests.length > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white animate-pulse">
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground animate-pulse">
                   {friendRequests.length}
                 </span>
               )}
@@ -472,11 +472,11 @@ export default function Friends() {
             {searchTerm.length < 2 && friendRequests.length > 0 && (
               <div className="space-y-3">
                 <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                   Demandes en attente
                 </h3>
                 {friendRequests.map((request) => (
-                  <Card key={request.id} className="overflow-hidden border-none shadow-sm bg-card/50 border-l-4 border-l-red-500">
+                  <Card key={request.id} className="overflow-hidden border-none shadow-sm bg-card/50 border-l-4 border-l-primary">
                     <CardContent className="p-4 flex items-center justify-between">
                       <div className="flex items-center gap-3 min-w-0">
                         {request.fromPhotoURL ? (

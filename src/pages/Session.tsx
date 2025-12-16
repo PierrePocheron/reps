@@ -255,7 +255,7 @@ function Session() {
               onClick={handleEndSession}
               variant="default"
               size="lg"
-              className="w-full bg-red-600 hover:bg-red-700 text-white"
+              className="w-full font-bold shadow-md"
             >
               <Square className="mr-2 h-4 w-4 fill-current" />
               Terminer la séance

@@ -42,7 +42,7 @@ export function BottomNav() {
           <div className="relative">
             <Users className="h-6 w-6" />
             {friendRequests.length > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white animate-pulse border border-background">
+              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground animate-pulse border border-background">
                 {friendRequests.length}
               </span>
             )}

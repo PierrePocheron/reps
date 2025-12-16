@@ -26,9 +26,9 @@
     --radius: 0.5rem;
 
     /* Couleur de thème personnalisable (violet par défaut) */
-    --theme-color: 262, 83%, 58%;
-    --theme-color-light: 262, 83%, 68%;
-    --theme-color-dark: 262, 83%, 48%;
+    --theme-color: 262 83% 58%;
+    --theme-color-light: 262 83% 68%;
+    --theme-color-dark: 262 83% 48%;
   }
 
   .dark {
@@ -53,9 +53,9 @@
     --ring: 212.7 26.8% 83.9%;
 
     /* Couleur de thème en mode sombre (légèrement ajustée) */
-    --theme-color: 262, 83%, 68%;
-    --theme-color-light: 262, 83%, 78%;
-    --theme-color-dark: 262, 83%, 58%;
+    --theme-color: 262 83% 68%;
+    --theme-color-light: 262 83% 78%;
+    --theme-color-dark: 262 83% 58%;
   }
 }
 

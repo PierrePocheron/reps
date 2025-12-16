@@ -146,6 +146,29 @@ export async function createSession(userId: string, sessionData: Omit<Session, '
 }
 
 /**
+ * Obtenir la dernière session d'un utilisateur
+ */
+export async function getLastSession(userId: string): Promise<Session | null> {
+  try {
+    const sessionsRef = collection(db, 'sessions', userId, 'userSessions');
+    const q = query(sessionsRef, orderBy('date', 'desc'), limit(1));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const sessionDoc = querySnapshot.docs[0];
+      return {
+        sessionId: sessionDoc.id,
+        ...sessionDoc.data(),
+      } as Session;
+    }
+    return null;
+  } catch (error) {
+    console.error('Erreur lors de la récupération de la dernière session:', error);
+    throw error;
+  }
+}
+
+/**
  * Obtenir toutes les sessions d'un utilisateur
  */
 export async function getUserSessions(userId: string, limitCount = 50): Promise<Session[]> {
@@ -154,9 +177,9 @@ export async function getUserSessions(userId: string, limitCount = 50): Promise<
     const q = query(sessionsRef, orderBy('date', 'desc'), limit(limitCount));
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map((doc) => ({
-      sessionId: doc.id,
-      ...doc.data(),
+    return querySnapshot.docs.map((sessionDoc) => ({
+      sessionId: sessionDoc.id,
+      ...sessionDoc.data(),
     })) as Session[];
   } catch (error) {
     console.error('Erreur lors de la récupération des sessions:', error);

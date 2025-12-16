@@ -60,31 +60,31 @@ function Home() {
         </div>
 
         {/* Hero Section - Start/Resume Session */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary/80 p-6 text-primary-foreground shadow-lg">
-          <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
-          <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-24 w-24 rounded-full bg-black/10 blur-xl" />
+        <div className="relative overflow-hidden rounded-2xl p-6 border border-primary/20 bg-primary/5 shadow-sm">
+          {/* Decorative background elements */}
+          <div className="absolute top-0 right-0 -mt-20 -mr-20 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
+          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
 
           <div className="relative z-10">
             {isActive ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="relative flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
                   </span>
-                  <h2 className="text-lg font-medium opacity-90">Séance en cours</h2>
+                  <h2 className="text-lg font-medium text-foreground">Séance en cours</h2>
                 </div>
 
-                <div className="flex items-end gap-2">
-                  <span className="text-4xl font-bold tracking-tight">
+                <div className="flex items-end gap-2 text-foreground">
+                  <span className="text-4xl font-bold tracking-tight font-heading">
                     {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
                   </span>
-                  <span className="mb-1 text-sm opacity-80">durée</span>
+                  <span className="mb-1 text-sm text-muted-foreground">durée</span>
                 </div>
 
                 <Button
                   onClick={() => navigate('/session')}
-                  variant="secondary"
                   size="lg"
                   className="w-full font-semibold shadow-sm"
                 >
@@ -94,13 +94,12 @@ function Home() {
             ) : (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold">Prêt à t'entraîner ?</h2>
-                  <p className="text-primary-foreground/80">Dépasse tes limites aujourd'hui.</p>
+                  <h2 className="text-2xl font-bold text-foreground font-heading">Prêt à t'entraîner ?</h2>
+                  <p className="text-muted-foreground">Dépasse tes limites aujourd'hui.</p>
                 </div>
 
                 <Button
                   onClick={() => navigate('/session')}
-                  variant="secondary"
                   size="lg"
                   className="w-full font-semibold shadow-sm h-12 text-lg"
                 >

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useUserStore } from '@/store/userStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { subscribeToFriendRequests } from '@/firebase/firestore';
+import { applyThemeColor } from '@/utils/theme-colors';
 
 /**
  * Composant d'initialisation de l'application
@@ -18,9 +19,13 @@ export function AppInitializer() {
     // Charger les paramètres depuis localStorage
     loadSettings();
 
-    // Appliquer le thème
-    applyTheme();
-  }, [initializeAuth, loadSettings, applyTheme]);
+    // Appliquer le thème (priorité au profil utilisateur si connecté, sinon localStorage)
+    if (user?.colorTheme) {
+      applyThemeColor(user.colorTheme);
+    } else {
+      applyTheme();
+    }
+  }, [initializeAuth, loadSettings, applyTheme, user?.colorTheme]);
 
   // Souscription aux demandes d'amis
   useEffect(() => {
