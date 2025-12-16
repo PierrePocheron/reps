@@ -1,16 +1,47 @@
 # 🏋️ Reps - Suivi Musculation
 
-Application Progressive Web App (PWA) pour suivre vos entraînements de musculation au poids du corps.
+> Application Progressive Web App (PWA) ultime pour suivre vos entraînements de musculation, vous mesurer à vos amis et rester motivé.
 
-## 🚀 Technologies
+[![Status](https://img.shields.io/badge/Status-Active-success)]() [![License](https://img.shields.io/badge/license-MIT-blue)]()
 
-- **React 18** + **Vite** + **TypeScript**
-- **TailwindCSS** + **shadcn/ui** pour l'UI
-- **Zustand** pour la gestion d'état
-- **Framer Motion** pour les animations
-- **Firebase** (Auth, Firestore, Cloud Messaging, Hosting)
-- **Capacitor** pour l'export iOS/Android
-- **PWA** avec service worker
+## ✨ Fonctionnalités
+
+### 🏋️ Suivi d'Entraînement Avancé
+- **Carnet numérique** : Créez et enregistrez vos séances (poids du corps, lesté, salle).
+- **Historique complet** : Retrouvez toutes vos performances passées.
+- **Templates** : Créez vos propres routines ou utilisez celles par défaut (Tractions, Dips, Pompes...).
+- **Chronomètre intégré** : Gestion automatique des temps de repos.
+
+### 🤝 Social & Communauté
+- **Système d'amis** : Ajoutez vos partenaires d'entraînement via recherche ou QR code (à venir).
+- **Fil d'actualité** : Suivez les séances de vos amis en temps réel.
+- **Leaderboard** : Classements interactifs (Jour, Semaine, Mois, Toujours) pour savoir qui est le plus fort.
+- **Encouragements** : Notifications lors des records ou des nouvelles amitiés.
+
+### 🏆 Gamification
+- **Badges** : Débloquez des succès uniques (ex: "Lève-tôt", "Machine de guerre", "Social Butterfly").
+- **Séries (Streaks)** : Maintenez votre flamme en vous entraînant régulièrement.
+- **Niveaux** : Gagnez de l'expérience à chaque rep.
+
+### 🎨 Design Premium & Personnalisation
+- **Thèmes Dynamiques** : Choisissez votre couleur (Violet, Orange, Vert, Bleu, Rouge, Rose).
+- **Mode Sombre/Clair** : S'adapte automatiquement à votre système.
+- **Interface Fluide** : Animations soignées avec Framer Motion pour une expérience app-like.
+
+## 📱 Aperçu
+
+| Accueil | Session | Classement |
+|:---:|:---:|:---:|
+| ![Home](/screenshots/home.png) | ![Session](/screenshots/session.png) | ![Leaderboard](/screenshots/leaderboard.png) |
+| *Votre tableau de bord* | *Suivi en temps réel* | *Défiez vos amis* |
+
+## 🚀 Stack Technique
+
+- **Frontend** : React 18, TypeScript, Vite
+- **UI/UX** : TailwindCSS, Shadcn/ui, Framer Motion, Lucide Icons
+- **State Management** : Zustand (léger et performant)
+- **Backend & Data** : Firebase (Auth, Firestore, Hosting)
+- **Mobile** : Capacitor (iOS/Android), PWA (Service Worker)
 
 ## 📋 Prérequis
 
