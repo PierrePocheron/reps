@@ -16,7 +16,6 @@ import {
 import {
   searchUsers,
   sendFriendRequest,
-  subscribeToFriendRequests,
   acceptFriendRequest,
   declineFriendRequest,
   getFriendsDetails,
@@ -24,7 +23,7 @@ import {
   removeFriend
 } from '@/firebase/firestore';
 import type { User, FriendRequest, Session } from '@/firebase/types';
-import { UserPlus, Search, Check, X, User as UserIcon, Users, Activity, Calendar, Dumbbell, Award, MoreVertical, UserMinus, Trophy, Medal } from 'lucide-react';
+import { UserPlus, Search, Check, X, User as UserIcon, Users, Activity, Calendar, Award, MoreVertical, UserMinus } from 'lucide-react';
 
 export default function Friends() {
   const { user, friendRequests } = useUserStore();
@@ -211,27 +210,11 @@ export default function Friends() {
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   };
 
-  // Calculer le classement
-  const leaderboard = [...friends, ...(user ? [user] : [])]
-    .sort((a, b) => (b.totalReps || 0) - (a.totalReps || 0));
 
-  const getRankStyle = (index: number) => {
-    switch (index) {
-      case 0: return "bg-yellow-500/10 border-yellow-500/50 text-yellow-600";
-      case 1: return "bg-gray-400/10 border-gray-400/50 text-gray-600";
-      case 2: return "bg-orange-500/10 border-orange-500/50 text-orange-600";
-      default: return "bg-card/50 border-transparent";
-    }
-  };
 
-  const getRankIcon = (index: number) => {
-    switch (index) {
-      case 0: return <Trophy className="h-6 w-6 text-yellow-500" />;
-      case 1: return <Medal className="h-6 w-6 text-gray-400" />;
-      case 2: return <Medal className="h-6 w-6 text-orange-500" />;
-      default: return <span className="font-bold text-muted-foreground w-6 text-center">{index + 1}</span>;
-    }
-  };
+
+
+
 
   if (!user) return null;
 
@@ -550,7 +533,7 @@ export default function Friends() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
                               className="text-red-600 focus:text-red-600 focus:bg-red-100/10"
-                              onClick={() => handleRemoveFriend(friend.uid, friend.displayName)}
+                              onClick={() => handleRemoveFriend(friend.uid)}
                             >
                               <UserMinus className="mr-2 h-4 w-4" />
                               Supprimer

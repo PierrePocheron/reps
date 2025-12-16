@@ -24,7 +24,7 @@ interface ExerciseCardProps {
 export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
   exercise,
   onAddReps,
-  onRemove,
+  // onRemove, // Removed unused prop to fix build error
   isRemoving = false,
   onLongPress,
   onCancelRemove,

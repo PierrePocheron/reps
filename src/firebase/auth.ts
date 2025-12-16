@@ -115,7 +115,7 @@ export async function signInWithGoogle(): Promise<FirebaseUser> {
     if (!firstName && user.displayName) {
       const parts = user.displayName.split(' ');
       if (parts.length > 0) {
-        firstName = parts[0];
+        firstName = parts[0] || '';
         lastName = parts.slice(1).join(' ');
       }
     }

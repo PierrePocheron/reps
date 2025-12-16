@@ -157,8 +157,8 @@ export async function getLastSession(userId: string): Promise<Session | null> {
     if (!querySnapshot.empty) {
       const sessionDoc = querySnapshot.docs[0];
       return {
-        sessionId: sessionDoc.id,
-        ...sessionDoc.data(),
+        sessionId: sessionDoc?.id,
+        ...sessionDoc?.data(),
       } as Session;
     }
     return null;

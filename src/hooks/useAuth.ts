@@ -39,8 +39,8 @@ export function useAuth() {
       await loadUserProfile();
     },
 
-    signUpWithEmail: async (email: string, password: string, displayName: string) => {
-      await signUpWithEmail(email, password, displayName);
+    signUpWithEmail: async (email: string, password: string, firstName: string, lastName: string) => {
+      await signUpWithEmail(email, password, firstName, lastName);
       await loadUserProfile();
     },
 

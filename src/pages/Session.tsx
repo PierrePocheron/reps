@@ -93,8 +93,14 @@ function Session() {
         lastSession.exercises.forEach(ex => {
           if (!hasExercise(ex.name)) {
             // On ajoute l'exercice sans les sets
-            const { sets, ...exerciseBase } = ex;
-            addExercise(exerciseBase);
+            // On ajoute l'exercice sans les sets (propriété inexistante dans SessionExercise mais présente dans l'ancien modèle)
+            // On génère un ID temporaire car addExercise attend un Exercise avec ID
+            const exerciseToAdd = {
+              id: ex.name.toLowerCase().replace(/\s+/g, '_'),
+              name: ex.name,
+              emoji: ex.emoji
+            };
+            addExercise(exerciseToAdd);
           }
         });
         toast({
