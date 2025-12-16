@@ -251,6 +251,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         <div className="text-center text-sm">
           <button
             type="button"
+            onClick={() => {
               setIsSignUp(!isSignUp);
               setEmail('');
               setPassword('');
