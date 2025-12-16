@@ -2,9 +2,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Users, Trophy, Dumbbell } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
+import { useUserStore } from '@/store/userStore';
+
 export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { friendRequests } = useUserStore();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -32,11 +35,18 @@ export function BottomNav() {
         <button
           onClick={() => navigate('/friends')}
           className={cn(
-            'flex flex-col items-center justify-center gap-1 transition-colors',
+            'relative flex flex-col items-center justify-center gap-1 transition-colors',
             isActive('/friends') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
           )}
         >
-          <Users className="h-6 w-6" />
+          <div className="relative">
+            <Users className="h-6 w-6" />
+            {friendRequests.length > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white animate-pulse border border-background">
+                {friendRequests.length}
+              </span>
+            )}
+          </div>
           <span className="text-[10px] font-medium">Social</span>
         </button>
 

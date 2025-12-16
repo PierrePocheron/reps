@@ -27,7 +27,7 @@ import type { User, FriendRequest, Session } from '@/firebase/types';
 import { UserPlus, Search, Check, X, User as UserIcon, Users, Activity, Calendar, Dumbbell, Award, MoreVertical, UserMinus, Trophy, Medal } from 'lucide-react';
 
 export default function Friends() {
-  const { user } = useUserStore();
+  const { user, friendRequests } = useUserStore();
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState('activity');
@@ -35,14 +35,15 @@ export default function Friends() {
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  // const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]); // Utilisation du store maintenant
   const [friends, setFriends] = useState<User[]>([]);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
 
   const [activities, setActivities] = useState<Session[]>([]);
   const [isLoadingActivity, setIsLoadingActivity] = useState(false);
 
-  // Subscribe to friend requests
+  // Subscribe to friend requests -> DÉPLACÉ DANS AppInitializer via userStore
+  /*
   useEffect(() => {
     if (!user) return;
     const unsubscribe = subscribeToFriendRequests(user.uid, (newRequests) => {
@@ -52,6 +53,7 @@ export default function Friends() {
     });
     return () => unsubscribe();
   }, [user]);
+  */
 
   // Load friends
   useEffect(() => {

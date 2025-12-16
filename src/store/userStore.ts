@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { User as FirebaseUser } from 'firebase/auth';
-import type { User, UserStats } from '@/firebase/types';
+import type { User, UserStats, FriendRequest } from '@/firebase/types';
 import {
   onAuthChange,
   getCurrentUserProfile,
@@ -15,6 +15,7 @@ interface UserState {
   user: User | null;
   currentUser: FirebaseUser | null;
   stats: UserStats | null;
+  friendRequests: FriendRequest[];
   isLoading: boolean;
   isAuthenticated: boolean;
 
@@ -22,6 +23,7 @@ interface UserState {
   setUser: (user: User | null) => void;
   setCurrentUser: (user: FirebaseUser | null) => void;
   setStats: (stats: UserStats | null) => void;
+  setFriendRequests: (requests: FriendRequest[]) => void;
   setLoading: (loading: boolean) => void;
   initializeAuth: () => Promise<void>;
   loadUserProfile: () => Promise<void>;
@@ -39,6 +41,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   user: null,
   currentUser: null,
   stats: null,
+  friendRequests: [],
   isLoading: true,
   isAuthenticated: false,
 
@@ -55,7 +58,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   setStats: (stats) => set({ stats }),
-
+  setFriendRequests: (requests) => set({ friendRequests: requests }),
   setLoading: (isLoading) => set({ isLoading }),
 
   /**
