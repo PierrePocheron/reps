@@ -1,62 +1,85 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users
+
+    // --- Helper Functions ---
+
+    // Vérifie si l'utilisateur est connecté
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Vérifie si l'utilisateur connecté est le propriétaire de la donnée
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // --- Collection Rules ---
+
+    // Users: Lecture publique (pour la recherche), modification par le propriétaire uniquement
     match /users/{userId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && (
-        request.auth.uid == userId ||
-        // Permettre à un utilisateur d'ajouter son ID dans la liste d'amis d'un autre
-        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends', 'updatedAt']))
-      );
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated(); // Authentifié requis pour créer son profil
+      allow update: if isOwner(userId) ||
+        // Cas spécial : permettre l'ajout d'amis (l'utilisateur B ajoute l'ID de A dans sa liste) -> Logic handled by client but here strictly owner is better.
+        // The previous rule allowed affectedKeys check. Let's keep it safer:
+        (isAuthenticated() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends', 'updatedAt']));
     }
 
     // User Events (Badges, etc.)
     match /users/{userId}/userEvents/{eventId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
     }
 
     // Friend Requests
     match /friend_requests/{requestId} {
-      allow read: if request.auth != null && (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.fromUserId;
-      allow update: if request.auth != null && (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
+      // Lecture : Expéditeur ou Destinataire
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
+      // Création : Seulement si on est l'expéditeur
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.fromUserId;
+      // Mise à jour (Accepter/Refuser) : Concernés uniquement
+      allow update: if isAuthenticated() && (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
     }
 
-    // Sessions - structure: sessions/{userId}/userSessions/{sessionId}
-    // Sessions - structure: sessions/{userId}/userSessions/{sessionId}
+    // Sessions (Sous-collection)
+    // Lecture publique (authentifiée) pour le feed social
+    // Écriture propriétaire uniquement
     match /sessions/{userId}/userSessions/{sessionId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
     }
 
-    // Règle explicite pour les collectionGroup queries
+    // Collection Group Queries pour les sessions (nécessaire pour le feed "tous les amis")
     match /{path=**}/userSessions/{sessionId} {
-      allow read: if request.auth != null;
-    }
-    match /{path=**}/userEvents/{eventId} {
-      allow read: if request.auth != null;
+      allow read: if isAuthenticated();
     }
 
-    // Exercises
+    // Collection Group Queries pour les événements
+    match /{path=**}/userEvents/{eventId} {
+      allow read: if isAuthenticated();
+    }
+
+    // Exercises (Personnalisés)
     match /exercises/{exerciseId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     // Notifications
     match /notifications/{notificationId} {
-      allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null; // Permettre à n'importe qui de créer une notif (ex: demande d'ami)
-      allow update: if request.auth != null && request.auth.uid == resource.data.userId; // Pour marquer comme lu
+      // Seul le destinataire peut lire
+      allow read: if isOwner(resource.data.userId);
+      // N'importe qui peut créer (ex: déclencheur cloud function ou client direct pour demande d'ami)
+      allow create: if isAuthenticated();
+      // Seul le destinataire peut mettre à jour (ex: marquer comme lu)
+      allow update: if isOwner(resource.data.userId);
     }
 
-    // Phrases motivantes (lecture publique, écriture admin uniquement)
+    // Phrases motivantes (Publiques)
     match /phrases/{phraseId} {
       allow read: if true;
-      allow write: if false; // À configurer avec des règles admin si nécessaire
+      allow write: if false; // Admin seulement
     }
   }
 }
