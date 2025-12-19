@@ -2,37 +2,47 @@
  * Couleurs de thème personnalisables pour l'application
  * Chaque couleur a des variantes light et dark pour s'adapter au mode clair/sombre
  */
-export type ThemeColor = 'violet' | 'orange' | 'green' | 'blue' | 'red' | 'pink';
+export type ThemeColor = 'violet' | 'orange' | 'green' | 'blue' | 'red' | 'pink' | 'grey' | 'yellow';
 
 export const themeColors: Record<ThemeColor, { name: string; emoji: string; hsl: string }> = {
   violet: {
     name: 'Violet',
-    emoji: '💜',
+    emoji: '😈',
     hsl: '262 83% 58%',
+  },
+  grey: {
+    name: 'Gris',
+    emoji: '💣',
+    hsl: '240 5% 50%', // Darker grey
+  },
+  yellow: {
+    name: 'Jaune',
+    emoji: '⚡️',
+    hsl: '45 93% 47%',
+  },
+  blue: {
+    name: 'Bleu',
+    emoji: '🌊',
+    hsl: '217 91% 60%',
   },
   orange: {
     name: 'Orange',
-    emoji: '🧡',
+    emoji: '💥',
     hsl: '25 95% 53%',
   },
   green: {
     name: 'Vert',
-    emoji: '💚',
-    hsl: '142 76% 36%',
-  },
-  blue: {
-    name: 'Bleu',
-    emoji: '💙',
-    hsl: '217 91% 60%',
+    emoji: '🧩',
+    hsl: '142 70% 50%',
   },
   red: {
     name: 'Rouge',
-    emoji: '❤️',
+    emoji: '👺',
     hsl: '0 84% 60%',
   },
   pink: {
     name: 'Rose',
-    emoji: '💗',
+    emoji: '🎀',
     hsl: '330 81% 60%',
   },
 };

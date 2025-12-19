@@ -16,7 +16,7 @@ export interface User {
   birthDate?: string; // YYYY-MM-DD
   height?: number; // en cm
   weight?: number; // en kg
-  colorTheme?: 'violet' | 'orange' | 'green' | 'blue' | 'red' | 'pink';
+  colorTheme?: 'violet' | 'orange' | 'green' | 'blue' | 'red' | 'pink' | 'grey' | 'yellow';
   totalReps: number;
   totalSessions: number;
   badges: string[];

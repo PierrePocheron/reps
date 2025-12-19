@@ -14,7 +14,7 @@ interface ColorPickerProps {
  */
 export function ColorPicker({ selectedColor, onColorChange, className }: ColorPickerProps) {
   return (
-    <div className={cn('grid grid-cols-3 gap-3', className)}>
+    <div className={cn('grid grid-cols-4 gap-2', className)}>
       {(Object.keys(themeColors) as ThemeColor[]).map((color) => {
         const themeColor = themeColors[color];
         const isSelected = selectedColor === color;
@@ -25,7 +25,7 @@ export function ColorPicker({ selectedColor, onColorChange, className }: ColorPi
             type="button"
             onClick={() => onColorChange(color)}
             className={cn(
-              'relative flex flex-col items-center justify-center gap-2 rounded-lg border-2 p-4 transition-all hover:scale-105',
+              'relative flex flex-col items-center justify-center gap-1.5 rounded-lg border-2 p-2 transition-all hover:scale-105',
               isSelected ? 'shadow-md' : 'border-border bg-card'
             )}
             style={{
@@ -43,8 +43,8 @@ export function ColorPicker({ selectedColor, onColorChange, className }: ColorPi
               }
             }}
           >
-            <span className="text-3xl">{themeColor.emoji}</span>
-            <span className="text-sm font-medium">{themeColor.name}</span>
+            <span className="text-2xl">{themeColor.emoji}</span>
+            <span className="text-[10px] font-medium truncate w-full text-center">{themeColor.name}</span>
             {isSelected && (
               <div
                 className="absolute right-2 top-2 rounded-full p-1"
