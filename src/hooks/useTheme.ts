@@ -33,6 +33,7 @@ export function useTheme() {
         setColorTheme(user.colorTheme);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.colorTheme, setColorTheme]); // Retiré colorTheme des dépendances pour éviter le conflit
 
   // 2. Appliquer la couleur visuellement quand le store settings change

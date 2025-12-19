@@ -46,5 +46,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button';
 
 export { Button };
+// eslint-disable-next-line react-refresh/only-export-components
 export { buttonVariants };
 

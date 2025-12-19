@@ -101,6 +101,7 @@ export async function signInWithGoogle(): Promise<FirebaseUser> {
 
     // Récupérer les infos supplémentaires (prénom, nom) depuis le profil Google
     const additionalInfo = getAdditionalUserInfo(result);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const profile = additionalInfo?.profile as any;
 
     let firstName = '';

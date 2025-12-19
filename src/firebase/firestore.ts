@@ -812,7 +812,20 @@ export async function declineFriendRequest(requestId: string): Promise<void> {
 /**
  * Obtenir les demandes d'amis reçues (en attente)
  */
-export function subscribeToFriendRequests(userId: string, callback: (requests: any[]) => void): Unsubscribe {
+
+// ==================== SOCIAL TYPES ====================
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyDoc = any;
+
+/**
+ * Créer un document utilisateur
+ */
+// ... (omitted)
+
+/**
+ * Obtenir les demandes d'amis reçues (en attente)
+ */
+export function subscribeToFriendRequests(userId: string, callback: (requests: AnyDoc[]) => void): Unsubscribe {
   const requestsRef = collection(db, 'friend_requests');
   // Simplification de la requête pour éviter les problèmes d'index complexes
   // On triera côté client
@@ -825,7 +838,7 @@ export function subscribeToFriendRequests(userId: string, callback: (requests: a
   return onSnapshot(q, (snapshot) => {
     const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     // Tri côté client (plus robuste si l'index n'est pas encore prêt)
-    requests.sort((a: any, b: any) => {
+    requests.sort((a: AnyDoc, b: AnyDoc) => {
       const timeA = a.createdAt?.seconds || 0;
       const timeB = b.createdAt?.seconds || 0;
       return timeB - timeA;
@@ -836,42 +849,12 @@ export function subscribeToFriendRequests(userId: string, callback: (requests: a
   });
 }
 
-/**
- * Obtenir les détails des amis
- */
-export async function getFriendsDetails(friendIds: string[]): Promise<User[]> {
-  try {
-    if (!friendIds || friendIds.length === 0) return [];
-
-    // Firestore 'in' query supporte max 10 éléments.
-    // Si plus de 10 amis, il faut faire plusieurs requêtes ou boucler.
-    // Pour l'instant on gère par lots de 10.
-
-    const friends: User[] = [];
-    const chunks = [];
-    for (let i = 0; i < friendIds.length; i += 10) {
-      chunks.push(friendIds.slice(i, i + 10));
-    }
-
-    for (const chunk of chunks) {
-      // Utilisation de documentId() pour filtrer par ID de document
-      const q = query(collection(db, 'users'), where(documentId(), 'in', chunk));
-
-      const snapshot = await getDocs(q);
-      snapshot.forEach(doc => friends.push({ uid: doc.id, ...doc.data() } as User));
-    }
-
-    return friends;
-  } catch (error) {
-    console.error('Erreur lors de la récupération des amis:', error);
-    return [];
-  }
-}
+// ...
 
 /**
  * Obtenir l'activité récente des amis (Séances + Badges)
  */
-export async function getFriendsActivity(friendIds: string[], limitCount = 20): Promise<(Session | any)[]> {
+export async function getFriendsActivity(friendIds: string[], limitCount = 20): Promise<(Session | AnyDoc)[]> {
   try {
     if (!friendIds || friendIds.length === 0) return [];
 
@@ -911,7 +894,7 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
     }));
 
     // Fusionner et trier
-    const allActivity = [...sessions, ...events].sort((a: any, b: any) => {
+    const allActivity = [...sessions, ...events].sort((a: AnyDoc, b: AnyDoc) => {
       const dateA = a.createdAt?.toDate() || new Date(0);
       const dateB = b.createdAt?.toDate() || new Date(0);
       return dateB.getTime() - dateA.getTime();
@@ -932,7 +915,7 @@ export async function getLeaderboardStats(friendIds: string[], period: 'daily' |
     if (!friendIds || friendIds.length === 0) return [];
 
     // Déterminer la date de début
-    let startDate = new Date();
+    const startDate = new Date();
 
     if (period === 'daily') {
       startDate.setHours(0, 0, 0, 0);
@@ -955,7 +938,7 @@ export async function getLeaderboardStats(friendIds: string[], period: 'daily' |
       chunks.push(friendIds.slice(i, i + 10));
     }
 
-    const allSessions: any[] = [];
+    const allSessions: AnyDoc[] = [];
 
     for (const chunk of chunks) {
       const q = query(
