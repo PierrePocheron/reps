@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import { Trash2, Plus } from 'lucide-react';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/utils/cn';
@@ -80,25 +81,38 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
             </div>
 
             {/* Boutons d'action */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onAddReps(5)}
-                className="h-12 w-12 rounded-full p-0 relative"
+            <div className="flex items-center gap-3">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  try {
+                    Haptics.impact({ style: ImpactStyle.Light });
+                  } catch (e) {
+                    // Ignore haptics error on web
+                  }
+                  onAddReps(5);
+                }}
+                className="h-14 w-16 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary flex flex-col items-center justify-center transition-colors relative"
               >
-                <Plus className="h-5 w-5" />
-                <span className="absolute -bottom-1 text-xs font-bold">+5</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onAddReps(10)}
-                className="h-12 w-12 rounded-full p-0 relative"
+                <Plus className="h-6 w-6 mb-1" />
+                <span className="text-xs font-bold leading-none">+5</span>
+              </motion.button>
+
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  try {
+                    Haptics.impact({ style: ImpactStyle.Medium });
+                  } catch (e) {
+                    // Ignore haptics error on web
+                  }
+                  onAddReps(10);
+                }}
+                className="h-14 w-16 rounded-2xl bg-primary text-primary-foreground shadow-md hover:bg-primary/90 flex flex-col items-center justify-center transition-colors relative"
               >
-                <Plus className="h-5 w-5" />
-                <span className="absolute -bottom-1 text-xs font-bold">+10</span>
-              </Button>
+                <Plus className="h-6 w-6 mb-1" />
+                <span className="text-xs font-bold leading-none">+10</span>
+              </motion.button>
             </div>
           </div>
 
