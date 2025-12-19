@@ -1,6 +1,6 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore, Firestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getMessaging, Messaging } from 'firebase/messaging';
 
 /**
@@ -48,23 +48,12 @@ if (existingApps.length === 0) {
 
 // Initialisation des services Firebase
 export const auth: Auth = getAuth(app);
-export const db: Firestore = getFirestore(app);
-
-// Activation de la persistance offline (IndexedDB)
-// Permet de travailler hors ligne et synchroniser automatiquement
-if (typeof window !== 'undefined') {
-  enableIndexedDbPersistence(db).catch((err) => {
-    if (err.code === 'failed-precondition') {
-      // Plusieurs onglets ouverts, la persistance ne peut être activée que dans un seul
-      console.warn('Firestore persistence déjà activée dans un autre onglet');
-    } else if (err.code === 'unimplemented') {
-      // Le navigateur ne supporte pas la persistance
-      console.warn('Firestore persistence non supportée par ce navigateur');
-    } else {
-      console.error('Erreur lors de l\'activation de la persistance Firestore:', err);
-    }
-  });
-}
+// Configuration de Firestore avec cache local persistant (nouvelle API)
+export const db: Firestore = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
+});
 
 // Initialisation de Firebase Cloud Messaging (uniquement côté client)
 export let messaging: Messaging | null = null;
