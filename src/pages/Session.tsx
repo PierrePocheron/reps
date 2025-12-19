@@ -12,6 +12,7 @@ import { useUserStore } from '@/store/userStore';
 import { Play, Square, Plus, Dumbbell } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/useSound';
+import confetti from 'canvas-confetti';
 
 function Session() {
   const navigate = useNavigate();
@@ -70,6 +71,11 @@ function Session() {
         description: `Bravo ! ${totalReps} reps accomplies 🎉`,
       });
       play('complete');
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
       // Petit délai pour laisser le temps au store de se mettre à jour
       setTimeout(() => {
         navigate('/');
