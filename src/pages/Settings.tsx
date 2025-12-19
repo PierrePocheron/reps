@@ -4,14 +4,14 @@ import { ColorPicker } from '@/components/ui/color-picker';
 import { BackButton } from '@/components/BackButton';
 import { useTheme } from '@/hooks/useTheme';
 import { useSettingsStore } from '@/store/settingsStore';
-import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell } from 'lucide-react';
+import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2 } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import { cn } from '@/utils/cn';
 
 function Settings() {
   const { theme, colorTheme, setTheme, setColorTheme } = useTheme();
   const { user, updateProfile } = useUserStore();
-  const { notificationsEnabled, notificationTime, hapticFeedback, setNotificationsEnabled, setNotificationTime, setHapticFeedback } = useSettingsStore();
+  const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled } = useSettingsStore();
 
   return (
     <div className="min-h-screen bg-background p-4 pb-20">
@@ -182,6 +182,25 @@ function Settings() {
                 onClick={() => setHapticFeedback(!hapticFeedback)}
               >
                 {hapticFeedback ? 'Activé' : 'Désactivé'}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t mt-4">
+              <div className="flex items-center gap-2">
+                <Volume2 className="h-5 w-5" />
+                <div>
+                  <p className="font-medium">Effets sonores</p>
+                  <p className="text-sm text-muted-foreground">
+                    Sons de l'interface
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant={soundEnabled ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSoundEnabled(!soundEnabled)}
+              >
+                {soundEnabled ? 'Activé' : 'Désactivé'}
               </Button>
             </div>
           </CardContent>

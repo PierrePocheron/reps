@@ -5,6 +5,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/utils/cn';
+import { useSound } from '@/hooks/useSound';
 import type { SessionExercise } from '@/firebase/types';
 
 interface ExerciseCardProps {
@@ -34,6 +35,7 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
   className,
   repButtons = [5, 10], // Default values
 }, ref) => {
+  const { play } = useSound();
   let longPressTimer: NodeJS.Timeout | null = null;
 
   const handleTouchStart = () => {
@@ -91,8 +93,9 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
                   onClick={() => {
                     try {
                       Haptics.impact({ style: ImpactStyle.Light });
+                      play('success');
                     } catch (e) {
-                      // Ignore haptics error on web
+                      // Ignore errors
                     }
                     onAddReps(value);
                   }}

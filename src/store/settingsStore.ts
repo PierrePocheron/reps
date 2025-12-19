@@ -8,6 +8,7 @@ interface SettingsState {
   notificationsEnabled: boolean;
   notificationTime: string; // Format HH:MM
   hapticFeedback: boolean;
+  soundEnabled: boolean;
 
   // Actions
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
@@ -15,6 +16,7 @@ interface SettingsState {
   setNotificationsEnabled: (enabled: boolean) => void;
   setNotificationTime: (time: string) => void;
   setHapticFeedback: (enabled: boolean) => void;
+  setSoundEnabled: (enabled: boolean) => void;
   loadSettings: () => void;
   saveSettings: () => void;
   applyTheme: () => void;
@@ -48,6 +50,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     notificationsEnabled: storedSettings.notificationsEnabled ?? false,
     notificationTime: storedSettings.notificationTime || '18:00',
     hapticFeedback: storedSettings.hapticFeedback ?? true,
+    soundEnabled: storedSettings.soundEnabled ?? true,
 
     // Actions
     setTheme: (theme) => {
@@ -83,6 +86,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
       get().saveSettings();
     },
 
+    setSoundEnabled: (enabled) => {
+      set({ soundEnabled: enabled });
+      get().saveSettings();
+    },
+
     /**
      * Charge les paramètres depuis localStorage
      */
@@ -109,6 +117,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
             notificationsEnabled,
             notificationTime,
             hapticFeedback,
+            soundEnabled: get().soundEnabled,
           })
         );
       } catch (error) {

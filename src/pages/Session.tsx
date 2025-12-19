@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { Play, Square, Plus, Dumbbell } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useSound } from '@/hooks/useSound';
 
 function Session() {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ function Session() {
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   const [isLoadingLastSession, setIsLoadingLastSession] = useState(false);
   const { user } = useUserStore();
+  const { play } = useSound();
 
   // Démarrage automatique de la session si elle n'est pas active
   // Démarrage automatique de la session si elle n'est pas active au chargement de la page
@@ -67,6 +69,7 @@ function Session() {
         title: 'Séance terminée',
         description: `Bravo ! ${totalReps} reps accomplies 🎉`,
       });
+      play('complete');
       // Petit délai pour laisser le temps au store de se mettre à jour
       setTimeout(() => {
         navigate('/');
