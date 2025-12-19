@@ -193,6 +193,7 @@ function Session() {
                 isRemoving={removingExercise === exercise.name}
                 onCancelRemove={() => setRemovingExercise(null)}
                 onConfirmRemove={() => handleRemoveExercise(exercise.name)}
+                repButtons={user?.repButtons || [5, 10]}
               />
             ))}
           </AnimatePresence>

@@ -16,6 +16,7 @@ interface ExerciseCardProps {
   onCancelRemove?: () => void;
   onConfirmRemove?: () => void;
   className?: string;
+  repButtons?: number[];
 }
 
 /**
@@ -31,6 +32,7 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
   onCancelRemove,
   onConfirmRemove,
   className,
+  repButtons = [5, 10], // Default values
 }, ref) => {
   let longPressTimer: NodeJS.Timeout | null = null;
 
@@ -81,38 +83,31 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
             </div>
 
             {/* Boutons d'action */}
-            <div className="flex items-center gap-3">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  try {
-                    Haptics.impact({ style: ImpactStyle.Light });
-                  } catch (e) {
-                    // Ignore haptics error on web
-                  }
-                  onAddReps(5);
-                }}
-                className="h-14 w-16 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary flex flex-col items-center justify-center transition-colors relative"
-              >
-                <Plus className="h-6 w-6 mb-1" />
-                <span className="text-xs font-bold leading-none">+5</span>
-              </motion.button>
-
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  try {
-                    Haptics.impact({ style: ImpactStyle.Medium });
-                  } catch (e) {
-                    // Ignore haptics error on web
-                  }
-                  onAddReps(10);
-                }}
-                className="h-14 w-16 rounded-2xl bg-primary text-primary-foreground shadow-md hover:bg-primary/90 flex flex-col items-center justify-center transition-colors relative"
-              >
-                <Plus className="h-6 w-6 mb-1" />
-                <span className="text-xs font-bold leading-none">+10</span>
-              </motion.button>
+            <div className="flex items-center gap-2">
+              {repButtons.map((value, index) => (
+                <motion.button
+                  key={value}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    try {
+                      Haptics.impact({ style: ImpactStyle.Light });
+                    } catch (e) {
+                      // Ignore haptics error on web
+                    }
+                    onAddReps(value);
+                  }}
+                  className={cn(
+                    "rounded-2xl flex flex-col items-center justify-center transition-colors relative",
+                    // Le dernier bouton est mis en avant (primaire), les autres sont secondaires
+                    index === repButtons.length - 1
+                      ? "h-14 w-16 bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
+                      : "h-14 w-14 bg-primary/10 hover:bg-primary/20 text-primary"
+                  )}
+                >
+                  <Plus className="h-5 w-5 mb-0.5" />
+                  <span className="text-xs font-bold leading-none">+{value}</span>
+                </motion.button>
+              ))}
             </div>
           </div>
 

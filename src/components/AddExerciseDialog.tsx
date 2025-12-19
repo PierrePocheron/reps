@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -53,6 +53,9 @@ export function AddExerciseDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Ajouter un exercice</DialogTitle>
+          <DialogDescription>
+            Choisissez un exercice dans la liste ou créez-en un nouveau.
+          </DialogDescription>
         </DialogHeader>
 
         {!showCustomForm ? (

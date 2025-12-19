@@ -4,10 +4,13 @@ import { ColorPicker } from '@/components/ui/color-picker';
 import { BackButton } from '@/components/BackButton';
 import { useTheme } from '@/hooks/useTheme';
 import { useSettingsStore } from '@/store/settingsStore';
-import { Moon, Sun, Monitor, Bell, Vibrate } from 'lucide-react';
+import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell } from 'lucide-react';
+import { useUserStore } from '@/store/userStore';
+import { cn } from '@/utils/cn';
 
 function Settings() {
   const { theme, colorTheme, setTheme, setColorTheme } = useTheme();
+  const { user, updateProfile } = useUserStore();
   const { notificationsEnabled, notificationTime, hapticFeedback, setNotificationsEnabled, setNotificationTime, setHapticFeedback } = useSettingsStore();
 
   return (
@@ -61,6 +64,59 @@ function Settings() {
             <div>
               <p className="text-sm font-medium mb-2">Couleur</p>
               <ColorPicker selectedColor={colorTheme} onColorChange={setColorTheme} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Session */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Dumbbell className="h-5 w-5" />
+              Session
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm font-medium mb-2">Boutons de répétitions</p>
+              <p className="text-xs text-muted-foreground mb-3">
+                Choisissez jusqu'à 4 boutons à afficher (min 1).
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {[1, 3, 5, 10, 20].map((value) => {
+                  const currentButtons = user?.repButtons || [5, 10];
+                  const isSelected = currentButtons.includes(value);
+                  const isDisabled = !isSelected && currentButtons.length >= 4;
+
+                  return (
+                    <Button
+                      key={value}
+                      variant={isSelected ? 'default' : 'outline'}
+                      className={cn(
+                        "h-10 w-10 p-0 rounded-full",
+                        isSelected && "ring-2 ring-offset-2 ring-primary"
+                      )}
+                      disabled={isDisabled}
+                      onClick={async () => {
+                        let newButtons;
+                        if (isSelected) {
+                          if (currentButtons.length <= 1) return; // Prevent removing last button
+                          newButtons = currentButtons.filter(b => b !== value);
+                        } else {
+                          newButtons = [...currentButtons, value].sort((a, b) => a - b);
+                        }
+                        try {
+                          await updateProfile({ repButtons: newButtons });
+                        } catch (e) {
+                          // Error handling managed by store/toast usually
+                        }
+                      }}
+                    >
+                      +{value}
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
           </CardContent>
         </Card>
