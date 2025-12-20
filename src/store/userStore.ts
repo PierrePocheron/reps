@@ -122,7 +122,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         await createUserDocument(currentUser.uid, {
           displayName: currentUser.displayName || 'Utilisateur',
           email: currentUser.email || '',
-          photoURL: currentUser.photoURL || undefined,
+          email: currentUser.email || '',
         });
 
         // Recharger le profil

@@ -44,7 +44,7 @@ export async function signInWithEmail(email: string, password: string): Promise<
       await createUserDocument(user.uid, {
         displayName: user.displayName || 'Utilisateur',
         email: user.email || email,
-        photoURL: user.photoURL || undefined,
+        email: user.email || email,
       });
     }
 
@@ -81,7 +81,7 @@ export async function signUpWithEmail(
       firstName,
       lastName,
       email: user.email || email,
-      photoURL: user.photoURL || undefined,
+      email: user.email || email,
     });
 
     return user;
@@ -130,7 +130,7 @@ export async function signInWithGoogle(): Promise<FirebaseUser> {
         firstName,
         lastName,
         email: user.email || '',
-        photoURL: user.photoURL || undefined,
+        email: user.email || '',
       });
     }
 
@@ -156,7 +156,7 @@ export async function signInWithApple(): Promise<FirebaseUser> {
       await createUserDocument(user.uid, {
         displayName: user.displayName || 'Utilisateur',
         email: user.email || '',
-        photoURL: user.photoURL || undefined,
+        email: user.email || '',
       });
     }
 

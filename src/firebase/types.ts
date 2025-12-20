@@ -11,7 +11,6 @@ export interface User {
   firstName?: string;
   lastName?: string;
   searchName?: string; // Lowercase display name for search
-  photoURL?: string; // @deprecated use avatarEmoji
   avatarEmoji?: string;
   email: string;
   birthDate?: string; // YYYY-MM-DD
@@ -59,7 +58,7 @@ export interface FriendRequest {
   id: string;
   fromUserId: string;
   fromDisplayName: string;
-  fromPhotoURL?: string;
+  fromAvatarEmoji?: string;
   toUserId: string;
   status: 'pending' | 'accepted' | 'rejected';
   createdAt: Timestamp;

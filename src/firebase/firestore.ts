@@ -42,7 +42,6 @@ export async function createUserDocument(
       displayName: userData.displayName || 'Utilisateur',
       searchName: (userData.displayName || 'Utilisateur').toLowerCase(),
       email: userData.email || '',
-      photoURL: userData.photoURL,
       avatarEmoji: '🐥',
       colorTheme: userData.colorTheme || 'blue',
       totalReps: 0,
@@ -636,7 +635,7 @@ export async function sendFriendRequest(fromUser: User, toUserId: string): Promi
     await addDoc(requestsRef, {
       fromUserId: fromUser.uid,
       fromDisplayName: fromUser.displayName,
-      fromPhotoURL: fromUser.photoURL || null,
+      fromAvatarEmoji: fromUser.avatarEmoji || '🐥',
       toUserId,
       status: 'pending',
       createdAt: serverTimestamp(),

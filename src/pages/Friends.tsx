@@ -439,7 +439,7 @@ export default function Friends() {
                   <Card key={request.id} className="overflow-hidden border-none shadow-sm bg-card/50 border-l-4 border-l-primary">
                     <CardContent className="p-4 flex items-center justify-between">
                       <div className="flex items-center gap-3 min-w-0">
-                        <UserAvatar user={{ displayName: request.fromDisplayName, photoURL: request.fromPhotoURL }} emoji="🐥" size="md" />
+                        <UserAvatar user={{ displayName: request.fromDisplayName }} emoji={request.fromAvatarEmoji} size="md" />
                         <div className="min-w-0">
                           <p className="font-medium truncate">{request.fromDisplayName}</p>
                           <p className="text-xs text-muted-foreground">veut vous ajouter</p>
