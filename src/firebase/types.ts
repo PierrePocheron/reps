@@ -11,7 +11,8 @@ export interface User {
   firstName?: string;
   lastName?: string;
   searchName?: string; // Lowercase display name for search
-  photoURL?: string;
+  photoURL?: string; // @deprecated use avatarEmoji
+  avatarEmoji?: string;
   email: string;
   birthDate?: string; // YYYY-MM-DD
   height?: number; // en cm

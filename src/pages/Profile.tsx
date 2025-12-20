@@ -14,6 +14,7 @@ import { getUnlockedBadges, getNextBadge } from '@/utils/constants';
 import { formatNumber } from '@/utils/formatters';
 import { Settings, LogOut, Award, Target, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { UserAvatar } from '@/components/UserAvatar';
 
 function Profile() {
   const navigate = useNavigate();
@@ -93,19 +94,7 @@ function Profile() {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-4 mb-6">
-              {user.photoURL ? (
-                <img
-                  src={user.photoURL}
-                  alt={user.displayName}
-                  className="w-16 h-16 rounded-full"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-primary">
-                    {user.displayName.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
+              <UserAvatar user={user} size="xl" />
               <div className="flex-1">
                 <h2 className="text-xl font-bold">
                   {user.firstName && user.lastName
@@ -236,7 +225,7 @@ function Profile() {
               <Button variant="outline" onClick={() => setShowLogoutDialog(false)} className="flex-1">
                 Annuler
               </Button>
-              <Button onClick={handleSignOut} variant="destructive" className="flex-1">
+              <Button onClick={handleSignOut} variant="default" className="flex-1">
                 Déconnexion
               </Button>
             </div>

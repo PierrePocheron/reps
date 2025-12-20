@@ -23,23 +23,11 @@ export default function Achievements() {
 
   const handleSetAvatar = async (emoji: string) => {
     try {
-      // Créer un SVG avec l'emoji centré
-      const svgString = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-          <rect width="100" height="100" fill="#f3f4f6" />
-          <text x="50" y="50" font-size="60" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif">${emoji}</text>
-        </svg>
-      `.trim();
-
-      // Convertir en Data URI base64
-      const base64Svg = btoa(unescape(encodeURIComponent(svgString)));
-      const avatarUrl = `data:image/svg+xml;base64,${base64Svg}`;
-
-      await updateProfile({ photoURL: avatarUrl });
+      await updateProfile({ avatarEmoji: emoji });
 
       toast({
         title: 'Avatar mis à jour',
-        description: `L'emoji ${emoji} est maintenant votre photo de profil !`,
+        description: `L'emoji ${emoji} est maintenant votre avatar !`,
       });
     } catch (error) {
       console.error(error);

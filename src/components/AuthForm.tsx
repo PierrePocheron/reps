@@ -39,8 +39,8 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         }
         await signUpWithEmail(email, password, firstName, lastName);
         toast({
-          title: 'Inscription réussie',
-          description: 'Bienvenue sur Reps ! 🎉',
+          title: 'Bienvenue !',
+          description: 'Votre aventure commence maintenant ! 🐥',
         });
       } else {
         await signInWithEmail(email, password);

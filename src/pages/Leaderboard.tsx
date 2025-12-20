@@ -5,8 +5,9 @@ import { BackButton } from '@/components/BackButton';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useUserStore } from '@/store/userStore';
 import { getLeaderboardStats, getFriendsDetails } from '@/firebase/firestore';
-import { Trophy, Medal, User as UserIcon, Calendar, TrendingUp } from 'lucide-react';
+import { Trophy, Medal, Calendar, TrendingUp } from 'lucide-react';
 import { User } from '@/firebase/types';
+import { UserAvatar } from '@/components/UserAvatar';
 
 export default function Leaderboard() {
   const { user } = useUserStore();
@@ -142,13 +143,7 @@ export default function Leaderboard() {
                           {getRankIcon(index)}
                         </div>
 
-                        {player.photoURL ? (
-                          <img src={player.photoURL} alt={player.displayName} className="w-12 h-12 rounded-full object-cover border-2 border-background" />
-                        ) : (
-                          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center border-2 border-background">
-                            <UserIcon className="h-6 w-6 text-muted-foreground" />
-                          </div>
-                        )}
+                        <UserAvatar user={player} size="lg" className="border-2 border-background" />
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">

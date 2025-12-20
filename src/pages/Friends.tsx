@@ -22,8 +22,9 @@ import {
   getFriendsActivity,
   removeFriend
 } from '@/firebase/firestore';
+import { UserAvatar } from '@/components/UserAvatar';
 import type { User, FriendRequest, Session } from '@/firebase/types';
-import { UserPlus, Search, Check, X, User as UserIcon, Users, Activity, Calendar, Award, MoreVertical, UserMinus } from 'lucide-react';
+import { UserPlus, Search, Check, X, Users, Activity, Calendar, Award, MoreVertical, UserMinus } from 'lucide-react';
 
 export default function Friends() {
   const { user, friendRequests } = useUserStore();
@@ -259,13 +260,7 @@ export default function Friends() {
                       <Card key={item.id} className="overflow-hidden border-none shadow-sm bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-l-4 border-l-yellow-500">
                         <CardContent className="p-4">
                           <div className="flex items-center gap-4">
-                            {friend.photoURL ? (
-                              <img src={friend.photoURL} alt={friend.displayName} className="w-10 h-10 rounded-full object-cover border border-background" />
-                            ) : (
-                              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
-                                <UserIcon className="h-5 w-5 text-muted-foreground" />
-                              </div>
-                            )}
+                            <UserAvatar user={friend} size="md" />
                             <div className="flex-1">
                               <p className="text-sm">
                                 <span className="font-semibold">{friend.displayName}</span> a débloqué un badge !
@@ -291,13 +286,7 @@ export default function Friends() {
                       <Card key={item.id} className="overflow-hidden border-none shadow-sm bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-l-4 border-l-blue-500">
                         <CardContent className="p-4">
                           <div className="flex items-center gap-4">
-                            {friend.photoURL ? (
-                              <img src={friend.photoURL} alt={friend.displayName} className="w-10 h-10 rounded-full object-cover border border-background" />
-                            ) : (
-                              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
-                                <UserIcon className="h-5 w-5 text-muted-foreground" />
-                              </div>
-                            )}
+                            <UserAvatar user={friend} size="md" />
                             <div className="flex-1">
                               <p className="text-sm">
                                 <span className="font-semibold">{friend.displayName}</span> a un nouvel ami !
@@ -322,13 +311,7 @@ export default function Friends() {
                     <Card key={item.sessionId} className="overflow-hidden border-none shadow-sm bg-card/50">
                       <CardContent className="p-4">
                         <div className="flex items-start gap-4">
-                          {friend.photoURL ? (
-                            <img src={friend.photoURL} alt={friend.displayName} className="w-10 h-10 rounded-full object-cover border border-background" />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
-                              <UserIcon className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                          )}
+                          <UserAvatar user={friend} size="md" />
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-start">
                               <div>
@@ -414,13 +397,7 @@ export default function Friends() {
                     <Card key={result.uid} className="overflow-hidden border-none shadow-sm bg-card/50">
                       <CardContent className="p-4 flex items-center justify-between">
                         <div className="flex items-center gap-3 min-w-0">
-                          {result.photoURL ? (
-                            <img src={result.photoURL} alt={result.displayName} className="w-10 h-10 rounded-full object-cover border border-background" />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
-                              <UserIcon className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                          )}
+                          <UserAvatar user={result} size="md" />
                           <div className="min-w-0">
                             <p className="font-medium truncate">{result.displayName}</p>
                             {user.friends?.includes(result.uid) ? (
@@ -462,13 +439,7 @@ export default function Friends() {
                   <Card key={request.id} className="overflow-hidden border-none shadow-sm bg-card/50 border-l-4 border-l-primary">
                     <CardContent className="p-4 flex items-center justify-between">
                       <div className="flex items-center gap-3 min-w-0">
-                        {request.fromPhotoURL ? (
-                          <img src={request.fromPhotoURL} alt={request.fromDisplayName} className="w-10 h-10 rounded-full object-cover border border-background" />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
-                            <UserIcon className="h-5 w-5 text-muted-foreground" />
-                          </div>
-                        )}
+                        <UserAvatar user={{ displayName: request.fromDisplayName, photoURL: request.fromPhotoURL }} emoji="🐥" size="md" />
                         <div className="min-w-0">
                           <p className="font-medium truncate">{request.fromDisplayName}</p>
                           <p className="text-xs text-muted-foreground">veut vous ajouter</p>
@@ -509,13 +480,7 @@ export default function Friends() {
                     <Card key={friend.uid} className="overflow-hidden border-none shadow-sm bg-card/50">
                       <CardContent className="p-4 flex items-center justify-between">
                         <div className="flex items-center gap-3 min-w-0">
-                          {friend.photoURL ? (
-                            <img src={friend.photoURL} alt={friend.displayName} className="w-10 h-10 rounded-full object-cover border border-background" />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-background">
-                              <UserIcon className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                          )}
+                          <UserAvatar user={friend} size="md" />
                           <div className="min-w-0">
                             <p className="font-medium truncate">{friend.displayName}</p>
                             <p className="text-xs text-muted-foreground truncate">

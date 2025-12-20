@@ -35,6 +35,17 @@ export const DEFAULT_EXERCISES: Exercise[] = [
  * Badges disponibles avec leurs seuils
  */
 export const BADGES: Badge[] = [
+  // Special
+  {
+    id: 'poussin',
+    name: "Poussin",
+    description: 'Bienvenue le sang',
+    emoji: '🐥',
+    threshold: 0,
+    category: 'total_reps', // Hack pour l'afficher, ou on pourrait ajouter une catégorie "special"
+    color: 'yellow',
+  },
+
   // Total Reps
   {
     id: 'mosquito',

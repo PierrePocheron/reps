@@ -17,6 +17,7 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
     firstName: user.firstName || '',
     lastName: user.lastName || '',
     birthDate: user.birthDate || '',
+    avatarEmoji: user.avatarEmoji || '🐥',
     weight: user.weight?.toString() || '',
     height: user.height?.toString() || '',
   });
@@ -31,6 +32,7 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
         displayName: formData.displayName,
         firstName: formData.firstName,
         lastName: formData.lastName,
+        avatarEmoji: formData.avatarEmoji,
         birthDate: formData.birthDate || undefined,
         weight: formData.weight ? parseFloat(formData.weight) : undefined,
         height: formData.height ? parseInt(formData.height) : undefined,
@@ -65,6 +67,23 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
           placeholder="Votre pseudo"
           required
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="avatarEmoji">Avatar (Emoji)</Label>
+        <div className="flex gap-2">
+          <Input
+            id="avatarEmoji"
+            value={formData.avatarEmoji}
+            onChange={(e) => setFormData({ ...formData, avatarEmoji: e.target.value })}
+            placeholder="🐥"
+            className="text-2xl text-center w-16"
+            maxLength={2}
+          />
+          <div className="text-sm text-muted-foreground flex items-center">
+            Choisissez un emoji pour votre profil
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">

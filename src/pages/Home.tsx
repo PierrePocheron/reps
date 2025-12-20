@@ -6,7 +6,8 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { useSession } from '@/hooks/useSession';
-import { Plus, Calendar, Activity, User } from 'lucide-react';
+import { Plus, Calendar, Activity } from 'lucide-react';
+import { UserAvatar } from '@/components/UserAvatar';
 
 function Home() {
   const navigate = useNavigate();
@@ -49,12 +50,8 @@ function Home() {
             onClick={() => navigate('/profile')}
             className="relative flex h-9 w-9 items-center justify-center rounded-full overflow-hidden border-none p-0 outline-none ring-offset-background transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            {user?.photoURL ? (
-              <img src={user.photoURL} alt="Profil" className="h-full w-full object-cover block" />
-            ) : (
-              <div className="h-full w-full bg-primary/10 flex items-center justify-center">
-                <User className="h-5 w-5 text-primary" />
-              </div>
+            {user && (
+              <UserAvatar user={user} size="sm" className="h-9 w-9 border-none" />
             )}
           </button>
         </div>
