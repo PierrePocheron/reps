@@ -60,6 +60,35 @@ export async function createUserDocument(
 }
 
 /**
+ * Vérifier la disponibilité d'un pseudo (displayName)
+ * Retourne true si le pseudo est disponible (ou s'il appartient déjà à l'utilisateur donné)
+ */
+export async function checkUsernameAvailability(username: string, currentUserId?: string): Promise<boolean> {
+  try {
+    const term = username.toLowerCase();
+    const usersRef = collection(db, 'users');
+
+    // Vérifier par searchName (qui est le lowercase du displayName)
+    const q = query(usersRef, where('searchName', '==', term));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return true;
+    }
+
+    // Si on trouve un utilisateur, on vérifie si c'est pas nous-même
+    if (currentUserId && querySnapshot.size === 1) {
+      return querySnapshot.docs[0].id === currentUserId;
+    }
+
+    return false;
+  } catch (error) {
+    console.error('Erreur lors de la vérification du pseudo:', error);
+    return false;
+  }
+}
+
+/**
  * Obtenir un document utilisateur
  */
 export async function getUserDocument(uid: string): Promise<User | null> {

@@ -22,6 +22,7 @@ export interface User {
   badges: string[];
   friends: string[];
   repButtons?: number[]; // Custom rep buttons (e.g. [5, 10])
+  lastUsernameChange?: Timestamp;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
