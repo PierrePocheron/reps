@@ -44,7 +44,6 @@ export async function signInWithEmail(email: string, password: string): Promise<
       await createUserDocument(user.uid, {
         displayName: user.displayName || 'Utilisateur',
         email: user.email || email,
-        email: user.email || email,
       });
     }
 
@@ -80,7 +79,6 @@ export async function signUpWithEmail(
       displayName,
       firstName,
       lastName,
-      email: user.email || email,
       email: user.email || email,
     });
 
@@ -130,7 +128,6 @@ export async function signInWithGoogle(): Promise<FirebaseUser> {
         firstName,
         lastName,
         email: user.email || '',
-        email: user.email || '',
       });
     }
 
@@ -155,7 +152,6 @@ export async function signInWithApple(): Promise<FirebaseUser> {
       // Créer le document utilisateur s'il n'existe pas
       await createUserDocument(user.uid, {
         displayName: user.displayName || 'Utilisateur',
-        email: user.email || '',
         email: user.email || '',
       });
     }
