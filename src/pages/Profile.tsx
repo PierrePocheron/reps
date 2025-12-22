@@ -15,6 +15,25 @@ import { formatNumber } from '@/utils/formatters';
 import { Settings, LogOut, Award, Target, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/UserAvatar';
+import type { User } from '@/firebase/types';
+
+function ProfileEditDialog({ user }: { user: User }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">Modifier</Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Modifier le profil</DialogTitle>
+        </DialogHeader>
+        <ProfileEditForm user={user} onSuccess={() => setOpen(false)} />
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function Profile() {
   const navigate = useNavigate();
@@ -113,17 +132,7 @@ function Profile() {
                   {user.friends?.length || 0} Amis
                 </button>
               </div>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">Modifier</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Modifier le profil</DialogTitle>
-                  </DialogHeader>
-                  <ProfileEditForm user={user} />
-                </DialogContent>
-              </Dialog>
+              <ProfileEditDialog user={user} />
             </div>
 
             <div className="flex justify-center pb-6">
