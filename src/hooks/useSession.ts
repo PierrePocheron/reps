@@ -36,6 +36,13 @@ export function useSession() {
 
     const interval = setInterval(() => {
       const newDuration = Math.floor((Date.now() - startTime) / 1000);
+
+      // Auto-finish après 2h (7200 secondes)
+      if (newDuration >= 7200) {
+        endSession();
+        return;
+      }
+
       useSessionStore.setState({ duration: newDuration });
     }, 1000);
 
