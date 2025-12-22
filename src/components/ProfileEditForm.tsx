@@ -113,6 +113,9 @@ export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
         height: formData.height ? parseInt(formData.height) : undefined,
       };
 
+      // Supprimer les champs undefined pour éviter l'erreur Firestore
+      Object.keys(updates).forEach(key => updates[key as keyof User] === undefined && delete updates[key as keyof User]);
+
       // Si le pseudo a changé, on met à jour le Timestamp
       if (username !== user.displayName) {
         updates.lastUsernameChange = Timestamp.now();

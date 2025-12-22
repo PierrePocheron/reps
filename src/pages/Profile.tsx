@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { StatsCard } from '@/components/StatsCard';
 import { AuthForm } from '@/components/AuthForm';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -28,6 +28,9 @@ function ProfileEditDialog({ user }: { user: User }) {
       <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Modifier le profil</DialogTitle>
+          <DialogDescription className="hidden">
+            Formulaire de modification du profil
+          </DialogDescription>
         </DialogHeader>
         <ProfileEditForm user={user} onSuccess={() => setOpen(false)} />
       </DialogContent>
@@ -229,6 +232,9 @@ function Profile() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Se déconnecter ?</DialogTitle>
+              <DialogDescription>
+                Êtes-vous sûr de vouloir vous déconnecter ?
+              </DialogDescription>
             </DialogHeader>
             <div className="flex gap-3 mt-4">
               <Button variant="outline" onClick={() => setShowLogoutDialog(false)} className="flex-1">
