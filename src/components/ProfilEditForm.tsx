@@ -8,12 +8,12 @@ import type { User } from '@/firebase/types';
 import { Timestamp } from 'firebase/firestore';
 import { BADGES } from '@/utils/constants';
 
-interface ProfileEditFormProps {
+interface ProfilEditFormProps {
   user: User;
   onSuccess?: () => void;
 }
 
-export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
+export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [formData, setFormData] = useState({

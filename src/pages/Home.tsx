@@ -33,7 +33,7 @@ function Home() {
         <p className="mb-8 text-center text-muted-foreground">
           Suivez vos entraînements de musculation au poids du corps
         </p>
-        <Button onClick={() => navigate('/profile')} size="lg">
+        <Button onClick={() => navigate('/profil')} size="lg">
           Se connecter
         </Button>
       </div>
@@ -47,7 +47,7 @@ function Home() {
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Reps</h1>
           <button
-            onClick={() => navigate('/profile')}
+            onClick={() => navigate('/profil')}
             className="relative flex h-9 w-9 items-center justify-center rounded-full overflow-hidden border-none p-0 outline-none ring-offset-background transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {user && (

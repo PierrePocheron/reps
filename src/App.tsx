@@ -6,7 +6,7 @@ import { AppInitializer } from '@/components/AppInitializer';
 import { Layout } from '@/components/Layout';
 import Home from './pages/Home';
 import Session from './pages/Session';
-import Profile from './pages/Profile';
+import Profil from './pages/Profil';
 import Settings from './pages/Settings';
 import Achievements from './pages/Achievements';
 import Friends from './pages/Friends';
@@ -38,11 +38,13 @@ function App() {
               }
             />
             <Route
-              path="/profile"
+              path="/profil"
               element={
-                <PageTransition>
-                  <Profile />
-                </PageTransition>
+                <Layout>
+                  <div className="safe-area-top">
+                    <Profil />
+                  </div>
+                </Layout>
               }
             />
             <Route

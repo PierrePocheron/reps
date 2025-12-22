@@ -18,7 +18,7 @@ function Settings() {
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <BackButton to="/profile" />
+          <BackButton to="/profil" />
           <h1 className="text-2xl font-bold">Paramètres</h1>
         </div>
 

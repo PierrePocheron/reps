@@ -7,7 +7,7 @@ import { StatsCard } from '@/components/StatsCard';
 import { AuthForm } from '@/components/AuthForm';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { BackButton } from '@/components/BackButton';
-import { ProfileEditForm } from '@/components/ProfileEditForm';
+import { ProfilEditForm } from '@/components/ProfilEditForm';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { getUnlockedBadges, getNextBadge } from '@/utils/constants';
@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/UserAvatar';
 import type { User } from '@/firebase/types';
 
-function ProfileEditDialog({ user }: { user: User }) {
+function ProfilEditDialog({ user }: { user: User }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -32,13 +32,13 @@ function ProfileEditDialog({ user }: { user: User }) {
             Formulaire de modification du profil
           </DialogDescription>
         </DialogHeader>
-        <ProfileEditForm user={user} onSuccess={() => setOpen(false)} />
+        <ProfilEditForm user={user} onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );
 }
 
-function Profile() {
+function Profil() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { toast } = useToast();
@@ -135,7 +135,7 @@ function Profile() {
                   {user.friends?.length || 0} Amis
                 </button>
               </div>
-              <ProfileEditDialog user={user} />
+              <ProfilEditDialog user={user} />
             </div>
 
             <div className="flex justify-center pb-6">
@@ -251,4 +251,4 @@ function Profile() {
   );
 }
 
-export default Profile;
+export default Profil;
