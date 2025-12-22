@@ -78,7 +78,7 @@ export async function checkUsernameAvailability(username: string, currentUserId?
 
     // Si on trouve un utilisateur, on vérifie si c'est pas nous-même
     if (currentUserId && querySnapshot.size === 1) {
-      return querySnapshot.docs[0].id === currentUserId;
+      return querySnapshot.docs[0]?.id === currentUserId;
     }
 
     return false;

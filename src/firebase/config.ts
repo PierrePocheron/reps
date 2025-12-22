@@ -1,6 +1,6 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
+import { Firestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getMessaging, Messaging } from 'firebase/messaging';
 
 /**
@@ -62,6 +62,25 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     messaging = getMessaging(app);
   } catch (err) {
     console.warn('Firebase Cloud Messaging non disponible:', err);
+  }
+}
+
+// Initialisation de App Check
+import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+
+// TODO: Remplacer par la clé de site ReCAPTCHA v3 depuis la console Firebase
+// Pour le développement local, on peut utiliser le token de debug
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'; // Clé de test/placeholder
+
+if (typeof window !== 'undefined') {
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),
+      isTokenAutoRefreshEnabled: true,
+    });
+    console.log('App Check initialisé');
+  } catch (err) {
+    console.warn('Erreur lors de l\'initialisation de App Check:', err);
   }
 }
 
