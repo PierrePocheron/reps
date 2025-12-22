@@ -69,7 +69,14 @@ export async function signUpWithEmail(
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    const displayName = `${firstName} ${lastName}`.trim();
+    const normalizedFirstName = firstName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    const normalizedLastName = lastName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    let displayName = `${normalizedFirstName}${normalizedLastName}`;
+
+    // Fallback si vide ou trop court
+    if (displayName.length < 3) {
+      displayName = `user${Math.floor(Math.random() * 10000)}`;
+    }
 
     // Mise à jour du profil avec le nom d'affichage
     await updateProfile(user, { displayName });
@@ -122,9 +129,14 @@ export async function signInWithGoogle(): Promise<FirebaseUser> {
     // Vérifier si l'utilisateur existe déjà dans Firestore
     const userDoc = await getUserDocument(user.uid);
     if (!userDoc) {
+      // Générer un pseudo valide (lowercase, sans espace)
+      let displayName = user.displayName || 'Utilisateur';
+      displayName = displayName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+      if (displayName.length < 3) displayName = `user${Math.floor(Math.random() * 10000)}`;
+
       // Créer le document utilisateur s'il n'existe pas
       await createUserDocument(user.uid, {
-        displayName: user.displayName || 'Utilisateur',
+        displayName,
         firstName,
         lastName,
         email: user.email || '',

@@ -58,7 +58,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       } else if (firebaseError.code === 'auth/wrong-password') {
         errorMessage = 'Mot de passe incorrect';
       } else if (firebaseError.code === 'auth/email-already-in-use') {
-        errorMessage = 'Cet email est déjà utilisé';
+        errorMessage = 'Cet email est déjà utilisé (avez-vous un compte Google ?)';
       } else if (firebaseError.code === 'auth/weak-password') {
         errorMessage = 'Le mot de passe est trop faible (minimum 6 caractères)';
       } else if (firebaseError.code === 'auth/invalid-email') {
