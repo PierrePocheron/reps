@@ -15,7 +15,7 @@
     "cap:add:android": "cap add android",
     "cap:open:ios": "cap open ios",
     "cap:open:android": "cap open android",
-    "deploy": "npm run build && firebase deploy"
+    "deploy": "yarn build && firebase deploy"
   },
   "dependencies": {
     "@capacitor/android": "^5.7.8",

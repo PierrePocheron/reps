@@ -17,19 +17,19 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: '18.x'
-        cache: 'npm'
+        cache: 'yarn'
 
     - name: Install dependencies
-      run: npm ci
+      run: yarn install --frozen-lockfile
 
     - name: Lint
-      run: npm run lint
+      run: yarn lint
 
     - name: Type Check
-      run: npm run type-check
+      run: yarn type-check
 
     - name: Build
-      run: npm run build
+      run: yarn build
 
     - name: Deploy to Firebase Hosting
       if: github.ref == 'refs/heads/main'
