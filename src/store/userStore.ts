@@ -109,26 +109,51 @@ export const useUserStore = create<UserState>((set, get) => ({
         // Calculer les stats
         await get().refreshStats();
 
-        // S'abonner aux mises à jour en temps réel
+        // S'abonner aux mises à jour en temps réel (si pas déjà fait ou géré par AppInitializer)
+        // Note: Idéalement on devrait nettoyer l'ancienne subscription si elle existe
         subscribeToUser(currentUser.uid, (updatedUser) => {
           if (updatedUser) {
             get().setUser(updatedUser);
           }
         });
       } else {
-        // Si le profil n'existe pas, créer un document par défaut
-        console.warn('Document utilisateur non trouvé, création en cours...');
-        const { createUserDocument } = await import('@/firebase');
-        await createUserDocument(currentUser.uid, {
-          displayName: currentUser.displayName || 'Utilisateur',
-          email: currentUser.email || '',
-        });
+        // Si le profil n'existe pas encore
+        // On attend un peu car la création peut être en cours via le processus d'inscription/connexion (auth.ts)
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const retryProfile = await getCurrentUserProfile();
 
-        // Recharger le profil
-        const newProfile = await getCurrentUserProfile();
-        if (newProfile) {
-          get().setUser(newProfile);
-          await get().refreshStats();
+        if (retryProfile) {
+           get().setUser(retryProfile);
+           await get().refreshStats();
+
+           // S'abonner
+            subscribeToUser(currentUser.uid, (updatedUser) => {
+              if (updatedUser) get().setUser(updatedUser);
+            });
+           return;
+        }
+
+        // Si toujours pas de profil après délai, on le crée (Fallback)
+        console.warn('Document utilisateur non trouvé après délai, création fallback...');
+        const { createUserDocument } = await import('@/firebase');
+        try {
+          await createUserDocument(currentUser.uid, {
+            displayName: currentUser.displayName || 'Utilisateur',
+            email: currentUser.email || '',
+          });
+
+          // Recharger le profil final
+          const newProfile = await getCurrentUserProfile();
+          if (newProfile) {
+            get().setUser(newProfile);
+            await get().refreshStats();
+             subscribeToUser(currentUser.uid, (updatedUser) => {
+              if (updatedUser) get().setUser(updatedUser);
+            });
+          }
+        } catch (createError) {
+           console.error("Impossible de créer le profil fallback (Permissions ou autre):", createError);
+           // On ne bloque pas l'app, l'utilisateur est auth mais sans profil complet
         }
       }
     } catch (error) {
@@ -201,6 +226,21 @@ export const useUserStore = create<UserState>((set, get) => ({
    * Réinitialise l'état du store
    */
   reset: () => {
+    // Nettoyer la session en cours (Zustand + LocalStorage)
+    try {
+      // Import dynamique pour éviter les dépendances circulaires top-level à l'initialisation
+      // (bien que l'import statique fonctionne souvent, restons prudents)
+      import('./sessionStore').then(({ useSessionStore }) => {
+        useSessionStore.getState().resetSession();
+      });
+
+      import('@/firebase').then(({ clearCurrentSessionFromLocal }) => {
+        clearCurrentSessionFromLocal();
+      });
+    } catch (e) {
+      console.error("Erreur lors du nettoyage de la session:", e);
+    }
+
     set({
       user: null,
       currentUser: null,
