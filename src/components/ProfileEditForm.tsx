@@ -69,19 +69,38 @@ export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
         }
       }
 
-      // Validation Poids / Taille
+      // Validation Poids
       if (formData.weight) {
         const weight = parseFloat(formData.weight);
-        if (isNaN(weight) || weight < 20 || weight > 300) {
-            throw new Error('Le poids doit être compris entre 20 et 300 kg.');
-        }
+        if (isNaN(weight)) throw new Error("C'est pas un chiffre ça...");
+        if (weight < 20) throw new Error("Mange encore un peu 🍔");
+        if (weight > 300) throw new Error("T'as pas ajouté un 0 en trop ? 👀");
       }
 
+      // Validation Taille
       if (formData.height) {
         const height = parseInt(formData.height);
-        if (isNaN(height) || height < 50 || height > 250) {
-            throw new Error('La taille doit être comprise entre 50 et 250 cm.');
-        }
+        if (isNaN(height)) throw new Error("C'est pas une taille ça...");
+        if (height < 50) throw new Error("Reviens quand tu pourras faire des tractions 😅");
+        if (height > 250) throw new Error("Ça va les chevilles ? 👀");
+      }
+
+      // Validation Age
+      if (formData.birthDate) {
+         const birthDate = new Date(formData.birthDate);
+         const today = new Date();
+         let age = today.getFullYear() - birthDate.getFullYear();
+         const m = today.getMonth() - birthDate.getMonth();
+         if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+             age--;
+         }
+
+         if (age < 5) {
+             throw new Error("T'es un peu jeune non ? 👶");
+         }
+         if (age > 100) {
+             throw new Error("T'abuses un peu sur l'âge 👀");
+         }
       }
 
       const updates: Partial<User> = {
