@@ -10,10 +10,12 @@ import { BADGES } from '@/utils/constants';
 
 interface ProfileEditFormProps {
   user: User;
+  onSuccess?: () => void;
 }
 
-export function ProfileEditForm({ user }: ProfileEditFormProps) {
+export function ProfileEditForm({ user, onSuccess }: ProfileEditFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [formData, setFormData] = useState({
     displayName: user.displayName,
     firstName: user.firstName || '',
@@ -103,11 +105,15 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
         title: 'Profil mis à jour',
         description: 'Vos informations ont été enregistrées.',
       });
-    } catch (error) {
+
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error: any) {
       console.error(error);
       toast({
         title: 'Erreur',
-        description: 'Impossible de mettre à jour le profil.',
+        description: error.message || 'Impossible de mettre à jour le profil.',
         variant: 'destructive',
       });
     } finally {
@@ -128,23 +134,6 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
           disabled={!canEditUsername}
           className={!canEditUsername ? "opacity-50 cursor-not-allowed" : ""}
         />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="avatarEmoji">Avatar (Emoji)</Label>
-        <div className="flex gap-2">
-          <Input
-            id="avatarEmoji"
-            value={formData.avatarEmoji}
-            onChange={(e) => setFormData({ ...formData, avatarEmoji: e.target.value })}
-            placeholder="🐥"
-            className="text-2xl text-center w-16"
-            maxLength={2}
-          />
-          <div className="text-sm text-muted-foreground flex items-center">
-            Choisissez un emoji pour votre profil
-          </div>
-        </div>
         {!canEditUsername && (
             <p className="text-xs text-muted-foreground text-orange-500">
                 Vous pourrez changer de pseudo dans {getDaysBeforeNextChange()} jours.
@@ -209,6 +198,76 @@ export function ProfileEditForm({ user }: ProfileEditFormProps) {
             placeholder="cm"
           />
         </div>
+      </div>
+
+      <div className="pt-2 border-t mt-4">
+        <Label className="mb-3 block font-semibold">Avatar</Label>
+        <div className="flex items-center justify-between p-3 rounded-lg bg-card/50 border border-border mb-2">
+             <div className="flex items-center gap-3">
+                 <div className="text-3xl w-12 h-12 flex items-center justify-center bg-muted rounded-full border border-border">
+                    {formData.avatarEmoji}
+                 </div>
+                 <div>
+                    <p className="text-sm font-medium">Avatar actuel</p>
+                    <p className="text-xs text-muted-foreground">
+                      {BADGES.find(b => b.emoji === formData.avatarEmoji)?.name || "Poussin"}
+                    </p>
+                 </div>
+             </div>
+             <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAvatarPicker(!showAvatarPicker)}
+             >
+                {showAvatarPicker ? 'Masquer' : 'Modifier'}
+             </Button>
+        </div>
+
+        {showAvatarPicker && (
+            <div className="p-4 rounded-lg bg-muted/30 border border-muted animate-in fade-in zoom-in-95 duration-200">
+            <div className="text-xs text-muted-foreground mb-3 font-medium">
+                Choisissez parmi vos badges débloqués :
+            </div>
+
+            <div className="grid grid-cols-6 gap-2">
+                {/* Toujours afficher le poussin */}
+                <button
+                type="button"
+                onClick={() => setFormData({ ...formData, avatarEmoji: '🐥' })}
+                className={`aspect-square flex items-center justify-center text-xl rounded-md transition-all ${
+                    formData.avatarEmoji === '🐥'
+                    ? 'bg-primary/20 ring-2 ring-primary scale-110'
+                    : 'bg-muted hover:bg-muted/80'
+                }`}
+                >
+                🐥
+                </button>
+
+                {/* Afficher les autres badges débloqués */}
+                {BADGES.filter(b => user.badges?.includes(b.id) && b.id !== 'poussin').map((badge) => (
+                <button
+                    key={badge.id}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, avatarEmoji: badge.emoji })}
+                    className={`aspect-square flex items-center justify-center text-xl rounded-md transition-all ${
+                    formData.avatarEmoji === badge.emoji
+                        ? 'bg-primary/20 ring-2 ring-primary scale-110'
+                        : 'bg-muted hover:bg-muted/80'
+                    }`}
+                    title={badge.name}
+                >
+                    {badge.emoji}
+                </button>
+                ))}
+            </div>
+            {BADGES.filter(b => user.badges?.includes(b.id)).length === 0 && (
+                <p className="text-xs text-center text-muted-foreground mt-2">
+                Débloquez des badges pour obtenir plus d'avatars !
+                </p>
+            )}
+            </div>
+         )}
       </div>
 
       <Button type="submit" className="w-full" disabled={isLoading}>
