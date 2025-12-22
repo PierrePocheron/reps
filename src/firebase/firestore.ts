@@ -41,6 +41,8 @@ export async function createUserDocument(
     const userDoc: Omit<User, 'uid'> = {
       displayName: userData.displayName || 'Utilisateur',
       searchName: (userData.displayName || 'Utilisateur').toLowerCase(),
+      firstName: userData.firstName,
+      lastName: userData.lastName,
       email: userData.email || '',
       avatarEmoji: '🐥',
       colorTheme: userData.colorTheme || 'blue',
@@ -50,9 +52,15 @@ export async function createUserDocument(
       friends: [],
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
+      ...userData // Écrase les valeurs par défaut si présentes dans userData
     };
 
-    await setDoc(userRef, userDoc);
+    // Nettoyage des champs undefined
+    Object.keys(userDoc).forEach(key => userDoc[key as keyof typeof userDoc] === undefined && delete userDoc[key as keyof typeof userDoc]);
+
+    // Utiliser merge: true pour ne pas écraser les données existantes si le document existe déjà
+    // (Protection contre les race conditions entre auth.ts et userStore.ts)
+    await setDoc(userRef, userDoc, { merge: true });
   } catch (error) {
     console.error('Erreur lors de la création du document utilisateur:', error);
     throw error;
