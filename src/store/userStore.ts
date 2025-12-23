@@ -109,13 +109,15 @@ export const useUserStore = create<UserState>((set, get) => ({
         // Calculer les stats
         await get().refreshStats();
 
-        // S'abonner aux mises à jour en temps réel (si pas déjà fait ou géré par AppInitializer)
-        // Note: Idéalement on devrait nettoyer l'ancienne subscription si elle existe
-        subscribeToUser(currentUser.uid, (updatedUser) => {
-          if (updatedUser) {
-            get().setUser(updatedUser);
-          }
-        });
+        // S'abonner aux mises à jour en temps réel
+        // On vérifie d'abord que l'utilisateur est bien celui connecté pour éviter les erreurs de permission
+        if (currentUser.uid === userProfile.uid) {
+             subscribeToUser(currentUser.uid, (updatedUser) => {
+              if (updatedUser) {
+                get().setUser(updatedUser);
+              }
+            });
+        }
       } else {
         // Si le profil n'existe pas encore
         // On attend un peu car la création peut être en cours via le processus d'inscription/connexion (auth.ts)

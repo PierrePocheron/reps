@@ -42,3 +42,5 @@ android/
 build/
 .vite/
 
+.vercel
+.env*.local

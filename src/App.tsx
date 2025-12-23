@@ -37,6 +37,7 @@ function App() {
                 </PageTransition>
               }
             />
+
             <Route
               path="/profil"
               element={

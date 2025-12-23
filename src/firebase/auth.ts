@@ -1,9 +1,10 @@
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail as firebaseSendPasswordResetEmail,
   signInWithPopup,
   GoogleAuthProvider,
-  OAuthProvider, // Pour Apple
+  OAuthProvider,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   User as FirebaseUser,
@@ -171,6 +172,18 @@ export async function signInWithApple(): Promise<FirebaseUser> {
     return user;
   } catch (error) {
     console.error('Erreur lors de la connexion Apple:', error);
+    throw error;
+  }
+}
+
+/**
+ * Envoyer un email de réinitialisation de mot de passe
+ */
+export async function sendPasswordResetEmail(email: string): Promise<void> {
+  try {
+    await firebaseSendPasswordResetEmail(auth, email);
+  } catch (error) {
+    console.error('Erreur lors de l\'envoi de l\'email de réinitialisation:', error);
     throw error;
   }
 }
