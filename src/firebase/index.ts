@@ -10,7 +10,6 @@ export {
   signInWithEmail,
   signUpWithEmail,
   signInWithGoogle,
-  signInWithApple,
   signOut,
   getCurrentUser,
   onAuthChange,
