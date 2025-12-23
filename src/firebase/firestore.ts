@@ -394,6 +394,36 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
       }
     }
 
+    // Caluler les sessions par créneau horaire
+    let morningSessions = 0;
+    let lunchSessions = 0;
+    let nightSessions = 0;
+
+    sessions.forEach(session => {
+        if (!session.date) return;
+        const date = session.date.toDate();
+        const hour = date.getHours();
+
+        // 7h - 9h (inclus 9h59 ?) -> "entre 7h et 9h" = 07:00 - 09:59 usually or 07:00-09:00?
+        // Let's go with literal 7, 8. (7:00 - 8:59). If user says "finish between 7 and 9", it might mean BEFORE 9.
+        // Let's assume inclusive of 7, exclusive of 9?
+        // Or inclusive of both? "Matin" usually means up to 10.
+        // Let's stick to strict 7 & 8 for "L'avenir appartient à ceux qui se lèvent tôt".
+        if (hour >= 7 && hour < 9) {
+            morningSessions++;
+        }
+
+        // 12h - 14h -> 12, 13
+        if (hour >= 12 && hour < 14) {
+            lunchSessions++;
+        }
+
+        // > 23h -> 23 + late night (0, 1, 2, 3, 4)
+        if (hour >= 23 || hour < 5) {
+            nightSessions++;
+        }
+    });
+
     const firstSession = sessions[0];
     return {
       totalReps,
@@ -405,6 +435,9 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
       lastSessionReps: firstSession ? firstSession.totalReps : undefined,
       currentStreak,
       longestStreak,
+      morningSessions,
+      lunchSessions,
+      nightSessions,
     };
   } catch (error) {
     console.error('Erreur lors du calcul des stats:', error);
@@ -442,6 +475,9 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
         totalSessions: stats.totalSessions,
         badges: updatedBadges,
         updatedAt: serverTimestamp(),
+        morningSessions: stats.morningSessions,
+        lunchSessions: stats.lunchSessions,
+        nightSessions: stats.nightSessions,
       });
 
       // 2. Créer les événements de badge
@@ -464,6 +500,9 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
       await updateUserDocument(userId, {
         totalReps: stats.totalReps,
         totalSessions: stats.totalSessions,
+        morningSessions: stats.morningSessions,
+        lunchSessions: stats.lunchSessions,
+        nightSessions: stats.nightSessions,
       });
     }
   } catch (error) {

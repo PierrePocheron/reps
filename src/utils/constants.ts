@@ -168,6 +168,35 @@ export const BADGES: Badge[] = [
     category: 'total_sessions',
     color: 'yellow',
   },
+
+  // Time Based
+  {
+    id: 'early_bird',
+    name: "L'avenir appartient à...",
+    description: '5 séances entre 7h et 9h',
+    emoji: '🌅',
+    threshold: 5,
+    category: 'time_morning',
+    color: 'orange',
+  },
+  {
+    id: 'lunch_break',
+    name: "Pas le temps de niaiser",
+    description: '5 séances entre 12h et 14h',
+    emoji: '🥪',
+    threshold: 5,
+    category: 'time_lunch',
+    color: 'blue',
+  },
+  {
+    id: 'night_owl',
+    name: "Déterminé",
+    description: '5 séances après 23h',
+    emoji: '🦉',
+    threshold: 5,
+    category: 'time_night',
+    color: 'purple',
+  },
 ];
 
 /**
@@ -201,6 +230,12 @@ export function getUnlockedBadges(stats: UserStats): Badge[] {
         return stats.currentStreak >= badge.threshold;
       case 'total_sessions':
         return stats.totalSessions >= badge.threshold;
+      case 'time_morning':
+        return (stats.morningSessions || 0) >= badge.threshold;
+      case 'time_lunch':
+        return (stats.lunchSessions || 0) >= badge.threshold;
+      case 'time_night':
+        return (stats.nightSessions || 0) >= badge.threshold;
       default:
         return false;
     }
@@ -226,6 +261,12 @@ export function getNextBadge(stats: UserStats): Badge | undefined {
           return stats.currentStreak / badge.threshold;
         case 'total_sessions':
           return stats.totalSessions / badge.threshold;
+        case 'time_morning':
+          return (stats.morningSessions || 0) / badge.threshold;
+        case 'time_lunch':
+          return (stats.lunchSessions || 0) / badge.threshold;
+        case 'time_night':
+          return (stats.nightSessions || 0) / badge.threshold;
         default:
           return 0;
       }

@@ -95,6 +95,9 @@ export interface UserStats {
   lastSessionReps?: number;
   currentStreak: number; // jours consécutifs
   longestStreak: number;
+  morningSessions: number; // 7h-9h
+  lunchSessions: number; // 12h-14h
+  nightSessions: number; // > 23h
 }
 
 // Type pour un badge
@@ -104,6 +107,6 @@ export interface Badge {
   description: string;
   emoji: string;
   threshold: number;
-  category: 'total_reps' | 'streak' | 'total_sessions';
+  category: 'total_reps' | 'streak' | 'total_sessions' | 'time_morning' | 'time_lunch' | 'time_night';
   color: string;
 }
