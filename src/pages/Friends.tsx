@@ -206,9 +206,10 @@ export default function Friends() {
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays <= 1) return 'Aujourd\'hui';
-    if (diffDays <= 2) return 'Hier';
-    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    if (diffDays <= 1) return `Aujourd'hui à ${timeStr}`;
+    if (diffDays <= 2) return `Hier à ${timeStr}`;
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) + ` à ${timeStr}`;
   };
 
 
