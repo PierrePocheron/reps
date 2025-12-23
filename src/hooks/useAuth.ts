@@ -3,7 +3,7 @@ import {
   signInWithEmail,
   signUpWithEmail,
   signInWithGoogle,
-  signInWithApple,
+
   signOut,
 } from '@/firebase';
 
@@ -49,10 +49,7 @@ export function useAuth() {
       await loadUserProfile();
     },
 
-    signInWithApple: async () => {
-      await signInWithApple();
-      await loadUserProfile();
-    },
+
 
     signOut: async () => {
       await signOut();

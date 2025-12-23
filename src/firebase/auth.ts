@@ -4,7 +4,7 @@ import {
   sendPasswordResetEmail as firebaseSendPasswordResetEmail,
   signInWithPopup,
   GoogleAuthProvider,
-  OAuthProvider,
+
   signOut as firebaseSignOut,
   onAuthStateChanged,
   User as FirebaseUser,
@@ -25,10 +25,7 @@ googleProvider.setCustomParameters({
   prompt: 'select_account',
 });
 
-// Provider Apple
-const appleProvider = new OAuthProvider('apple.com');
-appleProvider.addScope('email');
-appleProvider.addScope('name');
+
 
 /**
  * Connexion avec email et mot de passe
@@ -151,30 +148,7 @@ export async function signInWithGoogle(): Promise<FirebaseUser> {
   }
 }
 
-/**
- * Connexion avec Apple
- */
-export async function signInWithApple(): Promise<FirebaseUser> {
-  try {
-    const result = await signInWithPopup(auth, appleProvider);
-    const user = result.user;
 
-    // Vérifier si l'utilisateur existe déjà dans Firestore
-    const userDoc = await getUserDocument(user.uid);
-    if (!userDoc) {
-      // Créer le document utilisateur s'il n'existe pas
-      await createUserDocument(user.uid, {
-        displayName: user.displayName || 'Utilisateur',
-        email: user.email || '',
-      });
-    }
-
-    return user;
-  } catch (error) {
-    console.error('Erreur lors de la connexion Apple:', error);
-    throw error;
-  }
-}
 
 /**
  * Envoyer un email de réinitialisation de mot de passe
