@@ -8,12 +8,32 @@ import { useUserStore } from '@/store/userStore';
 import { useSession } from '@/hooks/useSession';
 import { Plus, Calendar, Activity } from 'lucide-react';
 import { UserAvatar } from '@/components/UserAvatar';
+import { getLastSession } from '@/firebase/firestore';
+import type { Session } from '@/firebase/types';
+import { useState, useEffect } from 'react';
 
 function Home() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
   const { user, stats } = useUserStore();
   const { isActive, duration } = useSession();
+
+  // Fetch Last Session Details
+  const [lastSessionDetail, setLastSessionDetail] = useState<Session | null>(null);
+
+  useEffect(() => {
+    async function fetchLastSession() {
+      if (user?.uid) {
+        try {
+          const session = await getLastSession(user.uid);
+          setLastSessionDetail(session);
+        } catch (err) {
+            console.error(err);
+        }
+      }
+    }
+    fetchLastSession();
+  }, [user?.uid, stats?.totalSessions]); // Re-fetch if stats update (e.g. after a new session)
 
   if (isLoading) {
     return (
@@ -26,6 +46,7 @@ function Home() {
     );
   }
 
+  // ... (Not authenticated check remains same) ...
   if (!isAuthenticated) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -112,40 +133,56 @@ function Home() {
         <StatsCard stats={stats} />
 
         {/* Last Session Card */}
-        {stats && stats.totalSessions > 0 && (
+        {lastSessionDetail && (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold px-1">Dernière activité</h3>
             <Card className="overflow-hidden border-none shadow-md bg-card/50 backdrop-blur-sm">
               <CardContent className="p-0">
                 <div className="flex items-stretch">
-                  <div className="w-2 bg-primary/20" />
-                  <div className="flex-1 p-5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        <span className="text-sm font-medium">
-                          {stats.lastSessionDate
-                            ? new Date(stats.lastSessionDate.toDate()).toLocaleDateString('fr-FR', {
+                  <div className="w-2 bg-primary/60" />
+                  <div className="flex-1 p-5 space-y-4">
+                    {/* Header: Date + Total Reps */}
+                    <div className="flex items-center justify-between border-b pb-3 border-border/50">
+                      <div className="flex items-center gap-2 text-foreground">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-semibold capitalize">
+                          {lastSessionDetail.date ? (
+                            <>
+                              {new Date(lastSessionDetail.date.toDate()).toLocaleDateString('fr-FR', {
                                 weekday: 'long',
                                 day: 'numeric',
                                 month: 'long',
-                              })
-                            : 'Date inconnue'}
+                              })}
+                              <span className="text-muted-foreground ml-2 font-normal">
+                                {new Date(lastSessionDetail.date.toDate()).toLocaleTimeString('fr-FR', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                            </>
+                          ) : (
+                            'Date inconnue'
+                          )}
                         </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 bg-background/50 px-2 py-1 rounded-md border border-border/50">
+                        <Activity className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm font-mono font-bold">{lastSessionDetail.totalReps}</span>
+                        <span className="text-[10px] uppercase text-muted-foreground font-medium">reps</span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6">
-                      {stats.lastSessionReps !== undefined && (
-                        <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Volume</p>
-                          <div className="flex items-center gap-2">
-                            <Activity className="h-5 w-5 text-primary" />
-                            <span className="text-2xl font-bold">{stats.lastSessionReps}</span>
-                            <span className="text-sm text-muted-foreground font-medium">reps</span>
-                          </div>
-                        </div>
-                      )}
+                    {/* Exercises Grid */}
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        {lastSessionDetail.exercises.map((exo, idx) => (
+                             <div key={idx} className="flex items-center gap-2 bg-background/40 p-2 rounded-lg border border-border/30">
+                                <span className="text-xl">{exo.emoji}</span>
+                                <div className="flex flex-col">
+                                    <span className="text-xs font-medium line-clamp-1">{exo.name}</span>
+                                    <span className="text-xs text-muted-foreground">{exo.reps} reps</span>
+                                </div>
+                             </div>
+                        ))}
                     </div>
                   </div>
                 </div>
