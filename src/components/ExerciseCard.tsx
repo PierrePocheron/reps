@@ -1,11 +1,12 @@
 import { forwardRef } from 'react';
 import { motion } from 'framer-motion';
-import { Trash2, Plus } from 'lucide-react';
-import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { Plus, Trash2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/utils/cn';
+import { useHaptic } from '@/hooks/useHaptic';
 import { useSound } from '@/hooks/useSound';
+import { cn } from '@/utils/cn';
 import type { SessionExercise } from '@/firebase/types';
 
 interface ExerciseCardProps {
@@ -36,6 +37,7 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
   repButtons = [5, 10], // Default values
 }, ref) => {
   const { play } = useSound();
+  const haptics = useHaptic();
   let longPressTimer: NodeJS.Timeout | null = null;
 
   const handleTouchStart = () => {
@@ -91,12 +93,8 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
                   key={value}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
-                    try {
-                      Haptics.impact({ style: ImpactStyle.Light });
+                      haptics.impact();
                       play('success');
-                    } catch (e) {
-                      // Ignore errors
-                    }
                     onAddReps(value);
                   }}
                   className={cn(

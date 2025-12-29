@@ -13,6 +13,7 @@ import { Play, Square, Plus, Dumbbell } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/useSound';
 import confetti from 'canvas-confetti';
+import { useHaptic } from '@/hooks/useHaptic';
 
 function Session() {
   const navigate = useNavigate();
@@ -38,6 +39,7 @@ function Session() {
   const [isLoadingLastSession, setIsLoadingLastSession] = useState(false);
   const { user } = useUserStore();
   const { play } = useSound();
+  const haptics = useHaptic();
 
   // Démarrage automatique de la session si elle n'est pas active
   // Démarrage automatique de la session si elle n'est pas active au chargement de la page
@@ -71,6 +73,7 @@ function Session() {
         description: `Bravo ! ${totalReps} reps accomplies 🎉`,
       });
       play('complete');
+      haptics.notification();
       confetti({
         particleCount: 100,
         spread: 70,

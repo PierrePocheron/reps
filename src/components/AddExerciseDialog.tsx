@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { DEFAULT_EXERCISES } from '@/utils/constants';
 import { Check, Plus } from 'lucide-react';
 
+import { useHaptic } from '@/hooks/useHaptic';
+
 interface AddExerciseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -14,9 +16,6 @@ interface AddExerciseDialogProps {
   hasExercise: (name: string) => boolean;
 }
 
-/**
- * Dialog pour ajouter un exercice (défaut ou personnalisé)
- */
 export function AddExerciseDialog({
   open,
   onOpenChange,
@@ -27,10 +26,12 @@ export function AddExerciseDialog({
   const [customName, setCustomName] = useState('');
   const [customEmoji, setCustomEmoji] = useState('💪');
   const [showCustomForm, setShowCustomForm] = useState(false);
+  const haptics = useHaptic();
 
   const handleAddDefault = (exerciseId: string) => {
     const exercise = DEFAULT_EXERCISES.find((ex) => ex.id === exerciseId);
     if (exercise && !hasExercise(exercise.name)) {
+      haptics.selection();
       onAddDefault(exerciseId);
       onOpenChange(false);
     }
@@ -38,6 +39,7 @@ export function AddExerciseDialog({
 
   const handleAddCustom = () => {
     if (customName.trim() && customEmoji) {
+      haptics.impact();
       onAddCustom(customName.trim(), customEmoji);
       setCustomName('');
       setCustomEmoji('💪');
@@ -112,7 +114,10 @@ export function AddExerciseDialog({
                   <button
                     key={emoji}
                     type="button"
-                    onClick={() => setCustomEmoji(emoji)}
+                    onClick={() => {
+                      haptics.selection();
+                      setCustomEmoji(emoji);
+                    }}
                     className={`text-2xl p-2 rounded-md border-2 transition-all ${
                       customEmoji === emoji
                         ? 'border-primary bg-primary/10'
