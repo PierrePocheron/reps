@@ -21,7 +21,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './config';
 import type { User, Session, Exercise, Notification, MotivationalPhrase, UserStats } from './types';
-import { getUnlockedBadges } from '@/utils/constants';
+import { getUnlockedBadges, DEFAULT_EXERCISES } from '@/utils/constants';
 
 /**
  * Helpers Firestore pour les opérations CRUD
@@ -406,21 +406,17 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
         const date = session.date.toDate();
         const hour = date.getHours();
 
-        // 7h - 9h (inclus 9h59 ?) -> "entre 7h et 9h" = 07:00 - 09:59 usually or 07:00-09:00?
-        // Let's go with literal 7, 8. (7:00 - 8:59). If user says "finish between 7 and 9", it might mean BEFORE 9.
-        // Let's assume inclusive of 7, exclusive of 9?
-        // Or inclusive of both? "Matin" usually means up to 10.
-        // Let's stick to strict 7 & 8 for "L'avenir appartient à ceux qui se lèvent tôt".
+        // 7h - 9h
         if (hour >= 7 && hour < 9) {
             morningSessions++;
         }
 
-        // 12h - 14h -> 12, 13
+        // 12h - 14h
         if (hour >= 12 && hour < 14) {
             lunchSessions++;
         }
 
-        // > 23h -> 23 + late night (0, 1, 2, 3, 4)
+        // > 23h
         if (hour >= 23 || hour < 5) {
             nightSessions++;
         }
