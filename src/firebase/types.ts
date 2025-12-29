@@ -25,6 +25,9 @@ export interface User {
   lastUsernameChange?: Timestamp;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  morningSessions?: number;
+  lunchSessions?: number;
+  nightSessions?: number;
 }
 
 // Type pour un exercice
