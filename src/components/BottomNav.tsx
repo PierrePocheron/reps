@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, Trophy, Dumbbell } from 'lucide-react';
+import { Home, Users, Trophy, Dumbbell, BarChart2 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
 import { useUserStore } from '@/store/userStore';
@@ -23,6 +23,17 @@ export function BottomNav() {
         >
           <Home className="h-6 w-6" />
           <span className="text-[10px] font-medium">Accueil</span>
+        </button>
+
+        <button
+          onClick={() => navigate('/statistics')}
+          className={cn(
+            'flex flex-col items-center justify-center gap-1 transition-colors',
+            isActive('/statistics') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          <BarChart2 className="h-6 w-6" />
+          <span className="text-[10px] font-medium">Stats</span>
         </button>
 
         <button

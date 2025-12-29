@@ -1,17 +1,20 @@
+import { ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/utils/cn';
 import type { UserStats } from '@/firebase/types';
-import { Trophy, Target, TrendingUp, Calendar } from 'lucide-react';
+import { Trophy, Target, TrendingUp, Calendar, Flame } from 'lucide-react';
 
 interface StatsCardProps {
   stats: UserStats | null;
   className?: string;
+  headerAction?: ReactNode;
+  limit?: number;
 }
 
 /**
  * Carte affichant les statistiques de l'utilisateur
  */
-export function StatsCard({ stats, className }: StatsCardProps) {
+export function StatsCard({ stats, className, headerAction, limit }: StatsCardProps) {
   if (!stats) {
     return (
       <Card className={cn(className)}>
@@ -67,14 +70,17 @@ export function StatsCard({ stats, className }: StatsCardProps) {
     },
   ];
 
+  const visibleItems = limit ? statItems.slice(0, limit) : statItems;
+
   return (
     <Card className={cn(className)}>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>Statistiques</CardTitle>
+        {headerAction}
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-3">
-          {statItems.map((item) => {
+          {visibleItems.map((item) => {
             const Icon = item.icon;
             return (
               <div key={item.label} className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50">
