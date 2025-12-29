@@ -65,7 +65,15 @@ export default function Achievements() {
 
         {/* Badges List */}
         <div className="grid grid-cols-1 gap-4">
-          {BADGES.map((badge) => {
+          {[...BADGES]
+            .sort((a, b) => {
+              const isUnlockedA = unlockedBadgeIds.includes(a.id);
+              const isUnlockedB = unlockedBadgeIds.includes(b.id);
+              if (isUnlockedA && !isUnlockedB) return -1;
+              if (!isUnlockedA && isUnlockedB) return 1;
+              return 0;
+            })
+            .map((badge) => {
             const isUnlocked = unlockedBadgeIds.includes(badge.id);
             const progress = !isUnlocked ? (() => {
                switch (badge.category) {
@@ -73,6 +81,9 @@ export default function Achievements() {
                 case 'streak': return (stats.currentStreak / badge.threshold) * 100;
                 case 'total_sessions': return (stats.totalSessions / badge.threshold) * 100;
                 case 'total_calories': return ((stats.totalCalories || 0) / badge.threshold) * 100;
+                case 'time_morning': return ((stats.morningSessions || 0) / badge.threshold) * 100;
+                case 'time_lunch': return ((stats.lunchSessions || 0) / badge.threshold) * 100;
+                case 'time_night': return ((stats.nightSessions || 0) / badge.threshold) * 100;
                 default: return 0;
               }
             })() : 100;
@@ -99,9 +110,9 @@ export default function Achievements() {
 
                     {!isUnlocked && (
                       <div className="space-y-1">
-                        <Progress value={progress} className="h-1.5" />
+                        <Progress value={Math.min(100, Math.max(0, progress))} className="h-1.5" />
                         <p className="text-[10px] text-muted-foreground text-right">
-                          {Math.round(progress)}%
+                          {Math.round(Math.min(100, Math.max(0, progress)))}%
                         </p>
                       </div>
                     )}
