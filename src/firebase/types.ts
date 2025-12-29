@@ -16,6 +16,7 @@ export interface User {
   birthDate?: string; // YYYY-MM-DD
   height?: number; // en cm
   weight?: number; // en kg
+  gender?: 'male' | 'female' | 'other';
   colorTheme?: 'violet' | 'orange' | 'green' | 'blue' | 'red' | 'pink' | 'grey' | 'yellow';
   totalReps: number;
   totalSessions: number;

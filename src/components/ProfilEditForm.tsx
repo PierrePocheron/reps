@@ -24,6 +24,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
     avatarEmoji: user.avatarEmoji || '🐥',
     weight: user.weight?.toString() || '',
     height: user.height?.toString() || '',
+    gender: user.gender || 'male',
   });
   const { toast } = useToast();
 
@@ -111,6 +112,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
         birthDate: formData.birthDate || undefined,
         weight: formData.weight ? parseFloat(formData.weight) : undefined,
         height: formData.height ? parseInt(formData.height) : undefined,
+        gender: formData.gender as 'male' | 'female' | 'other',
       };
 
       // Supprimer les champs undefined pour éviter l'erreur Firestore
@@ -189,7 +191,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="birthDate">Date de naissance</Label>
           <Input
@@ -199,6 +201,36 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
             onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
           />
         </div>
+        <div className="space-y-2">
+          <Label>Sexe</Label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, gender: 'male' })}
+              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors border ${
+                formData.gender === 'male'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background hover:bg-muted border-input'
+              }`}
+            >
+              Homme
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, gender: 'female' })}
+              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors border ${
+                formData.gender === 'female'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background hover:bg-muted border-input'
+              }`}
+            >
+              Femme
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="weight">Poids (kg)</Label>
           <Input
