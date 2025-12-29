@@ -8,10 +8,31 @@ import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2 } from 'lucide-rea
 import { useUserStore } from '@/store/userStore';
 import { cn } from '@/utils/cn';
 
+import { useNotifications } from '@/hooks/useNotifications';
+
 function Settings() {
   const { theme, colorTheme, setTheme, setColorTheme } = useTheme();
   const { user, updateProfile } = useUserStore();
   const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled } = useSettingsStore();
+  const { scheduleDailyReminder, cancelReminder } = useNotifications();
+
+  const handleNotificationToggle = async () => {
+    const newState = !notificationsEnabled;
+    setNotificationsEnabled(newState);
+
+    if (newState) {
+      await scheduleDailyReminder(notificationTime);
+    } else {
+      await cancelReminder();
+    }
+  };
+
+  const handleTimeChange = async (newTime: string) => {
+    setNotificationTime(newTime);
+    if (notificationsEnabled) {
+      await scheduleDailyReminder(newTime);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background p-4 pb-20">
@@ -134,13 +155,13 @@ function Settings() {
               <div>
                 <p className="font-medium">Rappels d'entraînement</p>
                 <p className="text-sm text-muted-foreground">
-                  Recevez des rappels pour vos séances
+                  Recevez des rappels pour vos séances (App mobile)
                 </p>
               </div>
               <Button
                 variant={notificationsEnabled ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                onClick={handleNotificationToggle}
               >
                 {notificationsEnabled ? 'Activé' : 'Désactivé'}
               </Button>
@@ -152,7 +173,7 @@ function Settings() {
                 <input
                   type="time"
                   value={notificationTime}
-                  onChange={(e) => setNotificationTime(e.target.value)}
+                  onChange={(e) => handleTimeChange(e.target.value)}
                   className="w-full p-2 border rounded-md"
                 />
               </div>
