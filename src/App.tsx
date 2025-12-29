@@ -9,6 +9,7 @@ import Session from './pages/Session';
 import Profil from './pages/Profil';
 import Settings from './pages/Settings';
 import Achievements from './pages/Achievements';
+import Statistics from './pages/Statistics';
 import Friends from './pages/Friends';
 import Leaderboard from './pages/Leaderboard';
 
@@ -69,6 +70,14 @@ function App() {
               element={
                 <PageTransition>
                   <Leaderboard />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/statistics"
+              element={
+                <PageTransition>
+                  <Statistics />
                 </PageTransition>
               }
             />
