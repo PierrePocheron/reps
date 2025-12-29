@@ -2,7 +2,7 @@
 
 > Application Progressive Web App (PWA) ultime pour suivre vos entraînements de musculation, vous mesurer à vos amis et rester motivé.
 
-[![Status](https://img.shields.io/badge/Status-Active-success)]() [![License](https://img.shields.io/badge/license-MIT-blue)]()
+[![Status](https://img.shields.io/badge/Status-Active-success)]() [![License](https://img.shields.io/badge/license-MIT-blue)]() [![CI/CD](https://github.com/PierrePocheron/reps/actions/workflows/ci.yml/badge.svg)](https://github.com/PierrePocheron/reps/actions/workflows/ci.yml) [![Vercel](https://vercel.com/button)](https://vercel.com/pierre-pocheron/reps)
 
 ## ✨ Fonctionnalités
 
