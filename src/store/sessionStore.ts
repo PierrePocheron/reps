@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import type { SessionExercise, Exercise } from '@/firebase/types';
+import { DEFAULT_EXERCISES } from '@/utils/constants';
+import { calculateDynamicCalories } from '@/utils/calories';
 import {
   createSession,
   updateUserStatsAfterSession,
@@ -70,7 +72,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         return;
       }
 
-      const { currentUser } = useUserStore.getState();
+      const { currentUser, user } = useUserStore.getState();
       if (!currentUser) {
         throw new Error('Aucun utilisateur connecté');
       }
@@ -78,12 +80,22 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       // Calculer la durée
       const duration = Math.floor((Date.now() - startTime) / 1000);
 
+      // Calculer les calories
+      const totalCalories = exercises.reduce((sum, sessionEx) => {
+        // Chercher l'exercice dans les défauts pour avoir les données MET/Time
+        // Pour les exercices custom (pas trouvés), on passera un objet vide qui déclenchera les fallbacks du calculateur
+        const defaultEx = DEFAULT_EXERCISES.find(e => e.name === sessionEx.name) || {} as Exercise;
+
+        return sum + calculateDynamicCalories(user, defaultEx, sessionEx.reps);
+      }, 0);
+
       // Créer la session dans Firestore
       await createSession(currentUser.uid, {
         date: Timestamp.now(),
         duration,
         exercises,
         totalReps,
+        totalCalories: Math.round(totalCalories),
       });
 
       // Si la création réussit, on considère la session comme terminée localement
