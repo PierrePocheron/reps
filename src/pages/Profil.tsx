@@ -167,7 +167,15 @@ function Profil() {
         </Card>
 
         {/* Stats */}
-        <StatsCard stats={stats} />
+        <StatsCard
+          stats={stats}
+          limit={4}
+          headerAction={
+            <Button variant="ghost" size="sm" onClick={() => navigate('/statistics')}>
+              Voir tout
+            </Button>
+          }
+        />
 
         {/* Badges */}
         <Card>
