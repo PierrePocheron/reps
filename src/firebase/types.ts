@@ -19,6 +19,7 @@ export interface User {
   colorTheme?: 'violet' | 'orange' | 'green' | 'blue' | 'red' | 'pink' | 'grey' | 'yellow';
   totalReps: number;
   totalSessions: number;
+  totalCalories?: number;
   badges: string[];
   friends: string[];
   repButtons?: number[]; // Custom rep buttons (e.g. [5, 10])
@@ -28,6 +29,13 @@ export interface User {
   morningSessions?: number;
   lunchSessions?: number;
   nightSessions?: number;
+  exercisesDistribution?: {
+    name: string;
+    emoji: string;
+    totalReps: number;
+    totalCalories: number;
+    count: number;
+  }[];
 }
 
 // Type pour un exercice
@@ -37,6 +45,10 @@ export interface Exercise {
   emoji: string;
   userId?: string; // undefined pour les exercices par défaut
   createdAt?: Timestamp;
+  // properties for dynamic calorie calculation
+  met?: number; // Metabolic Equivalent of Task
+  timePerRep?: number; // Time under tension per rep in seconds
+  caloriesPerRep?: number; // Legacy or fixed value fallback
 }
 
 // Type pour un exercice dans une session
@@ -54,6 +66,7 @@ export interface Session {
   duration: number; // en secondes
   exercises: SessionExercise[];
   totalReps: number;
+  totalCalories?: number;
   createdAt: Timestamp;
 }
 
@@ -91,6 +104,7 @@ export interface MotivationalPhrase {
 export interface UserStats {
   totalReps: number;
   totalSessions: number;
+  totalCalories?: number;
   averageRepsPerSession: number;
   averageDuration: number; // en secondes
   averageExercises: number;
@@ -101,6 +115,13 @@ export interface UserStats {
   morningSessions: number; // 7h-9h
   lunchSessions: number; // 12h-14h
   nightSessions: number; // > 23h
+  exercisesDistribution: {
+    name: string;
+    emoji: string;
+    totalReps: number;
+    totalCalories: number;
+    count: number; // Number of times performed (sessions)
+  }[];
 }
 
 // Type pour un badge
@@ -110,6 +131,6 @@ export interface Badge {
   description: string;
   emoji: string;
   threshold: number;
-  category: 'total_reps' | 'streak' | 'total_sessions' | 'time_morning' | 'time_lunch' | 'time_night';
+  category: 'total_reps' | 'streak' | 'total_sessions' | 'time_morning' | 'time_lunch' | 'time_night' | 'total_calories';
   color: string;
 }

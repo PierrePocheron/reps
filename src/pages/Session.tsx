@@ -9,11 +9,14 @@ import { BackButton } from '@/components/BackButton';
 import { useSession } from '@/hooks/useSession';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
-import { Play, Square, Plus, Dumbbell } from 'lucide-react';
+import { Play, Square, Plus, Dumbbell, Flame } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/useSound';
 import confetti from 'canvas-confetti';
 import { useHaptic } from '@/hooks/useHaptic';
+import { calculateDynamicCalories } from '@/utils/calories';
+import { DEFAULT_EXERCISES } from '@/utils/constants';
+import type { Exercise } from '@/firebase/types';
 
 function Session() {
   const navigate = useNavigate();
@@ -70,7 +73,7 @@ function Session() {
       await endSession();
       toast({
         title: 'Séance terminée',
-        description: `Bravo ! ${totalReps} reps accomplies 🎉`,
+        description: `Bravo ! ${totalReps} reps • ${Math.round(currentCalories)} kcal 🔥`,
       });
       play('complete');
       haptics.notification();
@@ -183,13 +186,28 @@ function Session() {
     return null; // ou un loader
   }
 
+  // Calculer les calories en temps réel
+  const currentCalories = exercises.reduce((sum, sessionEx) => {
+    const defaultEx = DEFAULT_EXERCISES.find(e => e.name === sessionEx.name) || {} as Exercise;
+    return sum + calculateDynamicCalories(user, defaultEx, sessionEx.reps);
+  }, 0);
+
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header Fixe */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b px-4 py-3 flex items-center justify-between">
-        <BackButton to="/" />
-        <h1 className="font-bold text-lg">Séance en cours</h1>
-        <Timer startTime={startTime} isActive={isActive} />
+      {/* Header Fixe */}
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+          <BackButton to="/" />
+          <div className="flex flex-col items-center">
+              <h1 className="font-bold text-lg leading-none">Séance</h1>
+              <div className="flex items-center gap-1 text-xs text-orange-500 font-medium animate-in fade-in slide-in-from-bottom-1">
+                  <Flame className="w-3 h-3 fill-current" />
+                  <span>{Math.round(currentCalories)} kcal</span>
+              </div>
+          </div>
+          <Timer startTime={startTime} isActive={isActive} />
+        </div>
       </div>
 
       <div className="p-4 max-w-2xl mx-auto space-y-6">

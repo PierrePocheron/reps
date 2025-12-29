@@ -6,7 +6,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { useSession } from '@/hooks/useSession';
-import { Plus, Calendar, Activity } from 'lucide-react';
+import { Plus, Calendar, Activity, Flame } from 'lucide-react';
 import { UserAvatar } from '@/components/UserAvatar';
 import { getLastSession } from '@/firebase/firestore';
 import type { Session } from '@/firebase/types';
@@ -113,7 +113,7 @@ function Home() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-foreground font-heading">Prêt à t'entraîner ?</h2>
-                  <p className="text-muted-foreground">Dépasse tes limites aujourd'hui.</p>
+                  <p className="text-muted-foreground">Chaque rep compte.</p>
                 </div>
 
                 <Button
@@ -165,10 +165,17 @@ function Home() {
                           )}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1.5 bg-background/50 px-2 py-1 rounded-md border border-border/50">
-                        <Activity className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-sm font-mono font-bold">{lastSessionDetail.totalReps}</span>
-                        <span className="text-[10px] uppercase text-muted-foreground font-medium">reps</span>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 bg-background/50 px-2 py-1 rounded-md border border-border/50">
+                          <Activity className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-sm font-mono font-bold">{lastSessionDetail.totalReps}</span>
+                          <span className="text-xs uppercase text-muted-foreground font-medium">reps</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-background/50 px-2 py-1 rounded-md border border-border/50">
+                          <Flame className="h-3.5 w-3.5 text-orange-500" />
+                          <span className="text-sm font-mono font-bold">{lastSessionDetail.totalCalories || 0}</span>
+                          <span className="text-xs uppercase text-muted-foreground font-medium">kcal</span>
+                        </div>
                       </div>
                     </div>
 

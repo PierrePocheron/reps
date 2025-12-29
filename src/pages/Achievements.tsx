@@ -72,6 +72,7 @@ export default function Achievements() {
                 case 'total_reps': return (stats.totalReps / badge.threshold) * 100;
                 case 'streak': return (stats.currentStreak / badge.threshold) * 100;
                 case 'total_sessions': return (stats.totalSessions / badge.threshold) * 100;
+                case 'total_calories': return ((stats.totalCalories || 0) / badge.threshold) * 100;
                 default: return 0;
               }
             })() : 100;

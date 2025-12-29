@@ -8,26 +8,36 @@ export const DEFAULT_EXERCISES: Exercise[] = [
     id: 'pushups',
     name: 'Pompes',
     emoji: '💪',
+    met: 4.5,
+    timePerRep: 2.2,
   },
   {
     id: 'dips',
     name: 'Dips',
     emoji: '🏋️',
+    met: 7.0,
+    timePerRep: 2.5,
   },
   {
     id: 'squats',
     name: 'Squats',
     emoji: '🦵',
+    met: 5.0,
+    timePerRep: 2.5,
   },
   {
     id: 'pullups',
     name: 'Tractions',
     emoji: '🤸',
+    met: 8.0,
+    timePerRep: 3.0,
   },
   {
     id: 'abs',
     name: 'Abdos',
     emoji: '🔥',
+    met: 3.0,
+    timePerRep: 2.0,
   },
 ];
 
@@ -169,6 +179,53 @@ export const BADGES: Badge[] = [
     color: 'yellow',
   },
 
+  // Calories
+  {
+    id: 'cal-cookie',
+    name: "La petite douceur",
+    description: '100 kcal brûlées',
+    emoji: '🍪',
+    threshold: 100,
+    category: 'total_calories',
+    color: 'yellow',
+  },
+  {
+    id: 'cal-burger',
+    name: "Menu XL",
+    description: '500 kcal brûlées',
+    emoji: '🍔',
+    threshold: 500,
+    category: 'total_calories',
+    color: 'orange',
+  },
+  {
+    id: 'cal-pizza',
+    name: "Pizza Party",
+    description: '1000 kcal brûlées',
+    emoji: '🍕',
+    threshold: 1000,
+    category: 'total_calories',
+    color: 'red',
+  },
+  {
+    id: 'cal-fire',
+    name: "Fournaise",
+    description: '5000 kcal brûlées',
+    emoji: '🔥',
+    threshold: 5000,
+    category: 'total_calories',
+    color: 'orange',
+  },
+  {
+    id: 'cal-nuclear',
+    name: "Centrale Nucléaire",
+    description: '10000 kcal brûlées',
+    emoji: '☢️',
+    threshold: 10000,
+    category: 'total_calories',
+    color: 'green',
+  },
+
   // Time Based
   {
     id: 'early_bird',
@@ -236,6 +293,8 @@ export function getUnlockedBadges(stats: UserStats): Badge[] {
         return (stats.lunchSessions || 0) >= badge.threshold;
       case 'time_night':
         return (stats.nightSessions || 0) >= badge.threshold;
+      case 'total_calories':
+        return (stats.totalCalories || 0) >= badge.threshold;
       default:
         return false;
     }
@@ -267,6 +326,8 @@ export function getNextBadge(stats: UserStats): Badge | undefined {
           return (stats.lunchSessions || 0) / badge.threshold;
         case 'time_night':
           return (stats.nightSessions || 0) / badge.threshold;
+        case 'total_calories':
+          return (stats.totalCalories || 0) / badge.threshold;
         default:
           return 0;
       }

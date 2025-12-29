@@ -211,6 +211,10 @@ function Profil() {
                     {nextBadge.name} - {
                       nextBadge.category === 'total_reps' ? `${formatNumber(nextBadge.threshold - stats!.totalReps)} reps` :
                       nextBadge.category === 'streak' ? `${nextBadge.threshold - stats!.currentStreak} jours` :
+                      nextBadge.category === 'total_calories' ? `${formatNumber(nextBadge.threshold - (stats!.totalCalories || 0))} kcal` :
+                      nextBadge.category === 'time_morning' ? `${nextBadge.threshold - (stats!.morningSessions || 0)} séances` :
+                      nextBadge.category === 'time_lunch' ? `${nextBadge.threshold - (stats!.lunchSessions || 0)} séances` :
+                      nextBadge.category === 'time_night' ? `${nextBadge.threshold - (stats!.nightSessions || 0)} séances` :
                       `${nextBadge.threshold - stats!.totalSessions} séances`
                     } restants
                   </p>

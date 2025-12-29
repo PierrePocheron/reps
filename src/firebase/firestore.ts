@@ -332,6 +332,7 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
     const totalReps = sessions.reduce((sum, session) => sum + session.totalReps, 0);
     const totalDuration = sessions.reduce((sum, session) => sum + session.duration, 0);
     const totalExercises = sessions.reduce((sum, session) => sum + session.exercises.length, 0);
+    const totalCalories = sessions.reduce((sum, session) => sum + (session.totalCalories || 0), 0);
     const totalSessions = sessions.length;
 
     const averageRepsPerSession = totalSessions > 0 ? totalReps / totalSessions : 0;
@@ -394,10 +395,11 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
       }
     }
 
-    // Caluler les sessions par créneau horaire
+    // Caluler les sessions par créneau horaire et par exercice
     let morningSessions = 0;
     let lunchSessions = 0;
     let nightSessions = 0;
+    const exerciseStatsMap = new Map<string, { emoji: string; reps: number; calories: number; count: number }>();
 
     sessions.forEach(session => {
         if (!session.date) return;
@@ -422,12 +424,38 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
         if (hour >= 23 || hour < 5) {
             nightSessions++;
         }
+
+        // Stats par exercice
+        if (session.exercises) {
+            session.exercises.forEach(ex => {
+                const current = exerciseStatsMap.get(ex.name) || { emoji: ex.emoji, reps: 0, calories: 0, count: 0 };
+                current.reps += ex.reps;
+                current.count += 1;
+
+                // Estimation calories (basique via constantes car pas d'historique précis stocké par exercice)
+                const def = DEFAULT_EXERCISES.find(d => d.name === ex.name);
+                // Si pas trouvé (custom), on met une valeur par défaut arbitraire (ex: 0.1 kcal/rep)
+                const calPerRep = def?.caloriesPerRep || 0.1;
+                current.calories += (ex.reps * calPerRep);
+
+                exerciseStatsMap.set(ex.name, current);
+            });
+        }
     });
+
+    const exercisesDistribution = Array.from(exerciseStatsMap.entries()).map(([name, data]) => ({
+        name,
+        emoji: data.emoji,
+        totalReps: data.reps,
+        totalCalories: Math.round(data.calories),
+        count: data.count
+    })).sort((a, b) => b.totalReps - a.totalReps);
 
     const firstSession = sessions[0];
     return {
       totalReps,
       totalSessions,
+      totalCalories,
       averageRepsPerSession: Math.round(averageRepsPerSession),
       averageDuration: Math.round(averageDuration),
       averageExercises: parseFloat(averageExercises.toFixed(1)),
@@ -438,6 +466,7 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
       morningSessions,
       lunchSessions,
       nightSessions,
+      exercisesDistribution,
     };
   } catch (error) {
     console.error('Erreur lors du calcul des stats:', error);
@@ -473,11 +502,13 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
       batch.update(userRef, {
         totalReps: stats.totalReps,
         totalSessions: stats.totalSessions,
+        totalCalories: stats.totalCalories || 0,
         badges: updatedBadges,
         updatedAt: serverTimestamp(),
         morningSessions: stats.morningSessions,
         lunchSessions: stats.lunchSessions,
         nightSessions: stats.nightSessions,
+        exercisesDistribution: stats.exercisesDistribution,
       });
 
       // 2. Créer les événements de badge
@@ -500,9 +531,11 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
       await updateUserDocument(userId, {
         totalReps: stats.totalReps,
         totalSessions: stats.totalSessions,
+        totalCalories: stats.totalCalories || 0,
         morningSessions: stats.morningSessions,
         lunchSessions: stats.lunchSessions,
         nightSessions: stats.nightSessions,
+        exercisesDistribution: stats.exercisesDistribution,
       });
     }
   } catch (error) {

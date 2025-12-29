@@ -24,7 +24,7 @@ import {
 } from '@/firebase/firestore';
 import { UserAvatar } from '@/components/UserAvatar';
 import type { User, FriendRequest, Session } from '@/firebase/types';
-import { UserPlus, Search, Check, X, Users, Activity, Calendar, Award, MoreVertical, UserMinus } from 'lucide-react';
+import { UserPlus, Search, Check, X, Users, Activity, Calendar, Award, MoreVertical, UserMinus, Flame } from 'lucide-react';
 
 export default function Friends() {
   const { user, friendRequests } = useUserStore();
@@ -325,6 +325,12 @@ export default function Friends() {
                               <div className="text-right">
                                 <span className="text-lg font-bold text-primary">{item.totalReps}</span>
                                 <span className="text-xs text-muted-foreground ml-1">reps</span>
+                                {(item.totalCalories || 0) > 0 && (
+                                  <div className="flex items-center justify-end gap-1 text-orange-500 mt-1">
+                                    <Flame className="h-3 w-3" />
+                                    <span className="text-xs font-bold">{item.totalCalories} kcal</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
 

@@ -30,6 +30,12 @@ export function StatsCard({ stats, className }: StatsCardProps) {
       color: 'text-blue-500',
     },
     {
+      label: 'Calories',
+      value: (stats.totalCalories || 0).toLocaleString(),
+      icon: Flame, // Ensure Flame is imported
+      color: 'text-orange-500',
+    },
+    {
       label: 'Séances',
       value: stats.totalSessions.toString(),
       icon: Calendar,
