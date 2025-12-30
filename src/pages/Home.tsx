@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { StatsCard } from '@/components/StatsCard';
+
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
@@ -129,8 +129,7 @@ function Home() {
           </div>
         </div>
 
-        {/* Stats Card */}
-        <StatsCard stats={stats} />
+
 
         {/* Last Session Card */}
         {lastSessionDetail && (
