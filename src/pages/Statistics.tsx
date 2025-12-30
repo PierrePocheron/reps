@@ -233,7 +233,7 @@ export default function Statistics() {
                         <div className="h-2 bg-secondary rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-orange-500 rounded-full"
-                                style={{ width: `${Math.min(100, ((user.morningSessions || 0) / (user.totalSessions || 1)) * 100)}%` }}
+                                style={{ width: `${Math.min(100, ((user.morningSessions || 0) / ((user.morningSessions || 0) + (user.lunchSessions || 0) + (user.nightSessions || 0) || 1)) * 100)}%` }}
                             />
                         </div>
                     </div>
@@ -251,7 +251,7 @@ export default function Statistics() {
                          <div className="h-2 bg-secondary rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-blue-500 rounded-full"
-                                style={{ width: `${Math.min(100, ((user.lunchSessions || 0) / (user.totalSessions || 1)) * 100)}%` }}
+                                style={{ width: `${Math.min(100, ((user.lunchSessions || 0) / ((user.morningSessions || 0) + (user.lunchSessions || 0) + (user.nightSessions || 0) || 1)) * 100)}%` }}
                             />
                         </div>
                     </div>
@@ -269,7 +269,7 @@ export default function Statistics() {
                          <div className="h-2 bg-secondary rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-indigo-500 rounded-full"
-                                style={{ width: `${Math.min(100, ((user.nightSessions || 0) / (user.totalSessions || 1)) * 100)}%` }}
+                                style={{ width: `${Math.min(100, ((user.nightSessions || 0) / ((user.morningSessions || 0) + (user.lunchSessions || 0) + (user.nightSessions || 0) || 1)) * 100)}%` }}
                             />
                         </div>
                     </div>
