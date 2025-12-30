@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { StatsCard } from '@/components/StatsCard';
-import { AuthForm } from '@/components/AuthForm';
+
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { BackButton } from '@/components/BackButton';
 import { ProfilEditForm } from '@/components/ProfilEditForm';
@@ -73,29 +73,7 @@ function Profil() {
     );
   }
 
-  if (!user) {
-    // Page de connexion
-    return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="mx-auto max-w-md space-y-6">
-          <div className="text-center">
-            <h1 className="mb-2 text-3xl font-bold">🏋️ Reps</h1>
-            <p className="text-muted-foreground">
-              Suivez vos entraînements de musculation au poids du corps
-            </p>
-          </div>
-          <AuthForm
-            onSuccess={() => {
-              navigate('/');
-            }}
-          />
-          <p className="text-center text-xs text-muted-foreground">
-            En vous connectant, vous acceptez nos conditions d'utilisation
-          </p>
-        </div>
-      </div>
-    );
-  }
+  if (!user) return null;
 
   const unlockedBadges = stats ? getUnlockedBadges(stats) : [];
   const nextBadge = stats ? getNextBadge(stats) : null;

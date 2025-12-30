@@ -12,6 +12,8 @@ import Achievements from './pages/Achievements';
 import Statistics from './pages/Statistics';
 import Friends from './pages/Friends';
 import Leaderboard from './pages/Leaderboard';
+import Login from './pages/Login';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 function App() {
   const location = useLocation();
@@ -19,79 +21,94 @@ function App() {
   return (
     <>
       <AppInitializer />
-      <Layout>
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route
-              path="/"
-              element={
-                <PageTransition>
-                  <Home />
-                </PageTransition>
-              }
-            />
-            <Route
-              path="/session"
-              element={
-                <PageTransition>
-                  <Session />
-                </PageTransition>
-              }
-            />
+      <Routes>
+        <Route path="/login" element={
+          <PageTransition>
+            <Login />
+          </PageTransition>
+        } />
 
-            <Route
-              path="/profil"
-              element={
-                <Layout>
-                  <div className="safe-area-top">
-                    <Profil />
-                  </div>
-                </Layout>
-              }
-            />
-            <Route
-              path="/achievements"
-              element={
-                <PageTransition>
-                  <Achievements />
-                </PageTransition>
-              }
-            />
-            <Route
-              path="/friends"
-              element={
-                <PageTransition>
-                  <Friends />
-                </PageTransition>
-              }
-            />
-            <Route
-              path="/leaderboard"
-              element={
-                <PageTransition>
-                  <Leaderboard />
-                </PageTransition>
-              }
-            />
-            <Route
-              path="/statistics"
-              element={
-                <PageTransition>
-                  <Statistics />
-                </PageTransition>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <PageTransition>
-                  <Settings />
-                </PageTransition>
-              }
-            />
-          </Routes>
-        </AnimatePresence>
-      </Layout>
+        <Route
+          path="/*"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <AnimatePresence mode="wait">
+                  <Routes location={location} key={location.pathname}>
+                    <Route
+                      path="/"
+                      element={
+                        <PageTransition>
+                          <Home />
+                        </PageTransition>
+                      }
+                    />
+                    <Route
+                      path="/session"
+                      element={
+                        <PageTransition>
+                          <Session />
+                        </PageTransition>
+                      }
+                    />
+
+                    <Route
+                      path="/profil"
+                      element={
+                        <PageTransition>
+                          <div className="safe-area-top">
+                            <Profil />
+                          </div>
+                        </PageTransition>
+                      }
+                    />
+                    <Route
+                      path="/achievements"
+                      element={
+                        <PageTransition>
+                          <Achievements />
+                        </PageTransition>
+                      }
+                    />
+                    <Route
+                      path="/friends"
+                      element={
+                        <PageTransition>
+                          <Friends />
+                        </PageTransition>
+                      }
+                    />
+                    <Route
+                      path="/leaderboard"
+                      element={
+                        <PageTransition>
+                          <Leaderboard />
+                        </PageTransition>
+                      }
+                    />
+                    <Route
+                      path="/statistics"
+                      element={
+                        <PageTransition>
+                          <Statistics />
+                        </PageTransition>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <PageTransition>
+                          <Settings />
+                        </PageTransition>
+                      }
+                    />
+                  </Routes>
+                </AnimatePresence>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
       <Toaster />
     </>
   );
