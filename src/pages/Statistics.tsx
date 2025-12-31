@@ -112,14 +112,14 @@ export default function Statistics() {
            className="bg-card border rounded-xl p-4 flex items-center justify-between"
         >
              <div className="flex items-center gap-4">
-                 <div className="bg-orange-500/10 p-3 rounded-full">
-                    <Zap className="w-6 h-6 text-orange-500" />
+                 <div className="bg-primary/10 p-3 rounded-full">
+                    <Zap className="w-6 h-6 text-primary" />
                  </div>
                  <div className="text-left">
                      <p className="text-sm font-medium text-muted-foreground">Moyenne par séance</p>
                      <p className="text-2xl font-bold">
                         {((user.totalCalories || 0) / (user.totalSessions || 1)).toFixed(0)}
-                        <span className="text-sm font-medium text-orange-500 ml-1">kcal</span>
+                        <span className="text-sm font-medium text-primary ml-1">kcal</span>
                      </p>
                  </div>
              </div>
@@ -129,7 +129,7 @@ export default function Statistics() {
         {stats?.exercisesDistribution && stats.exercisesDistribution.length > 0 && (
           <div className="space-y-4">
             <h3 className="text-sm font-semibold flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-yellow-500" />
+              <Trophy className="w-4 h-4 text-primary" />
               Exercices Favoris
             </h3>
 
@@ -176,7 +176,7 @@ export default function Statistics() {
                        </div>
                        <div className="flex gap-4 text-right shrink-0">
                            <span className="w-12 font-bold">{ex.totalReps}</span>
-                           <div className="w-12 flex items-center justify-end gap-1 text-orange-500">
+                           <div className="w-12 flex items-center justify-end gap-1 text-primary">
                               <span>{ex.totalCalories}</span>
                               <Flame className="w-3 h-3" />
                            </div>
@@ -222,8 +222,8 @@ export default function Statistics() {
             </h3>
             <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                    <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-full">
-                        <Sunrise className="w-4 h-4 text-orange-500" />
+                    <div className="bg-primary/10 p-2 rounded-full">
+                        <Sunrise className="w-4 h-4 text-primary" />
                     </div>
                     <div className="flex-1">
                         <div className="flex justify-between text-sm mb-1.5">
@@ -232,7 +232,7 @@ export default function Statistics() {
                         </div>
                         <div className="h-2 bg-secondary rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-orange-500 rounded-full"
+                                className="h-full bg-primary rounded-full"
                                 style={{ width: `${Math.min(100, ((user.morningSessions || 0) / ((user.morningSessions || 0) + (user.lunchSessions || 0) + (user.nightSessions || 0) || 1)) * 100)}%` }}
                             />
                         </div>
@@ -240,8 +240,8 @@ export default function Statistics() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-full">
-                        <Sun className="w-4 h-4 text-blue-500" />
+                    <div className="bg-primary/10 p-2 rounded-full">
+                        <Sun className="w-4 h-4 text-primary" />
                     </div>
                     <div className="flex-1">
                         <div className="flex justify-between text-sm mb-1.5">
@@ -250,7 +250,7 @@ export default function Statistics() {
                         </div>
                          <div className="h-2 bg-secondary rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-blue-500 rounded-full"
+                                className="h-full bg-primary rounded-full"
                                 style={{ width: `${Math.min(100, ((user.lunchSessions || 0) / ((user.morningSessions || 0) + (user.lunchSessions || 0) + (user.nightSessions || 0) || 1)) * 100)}%` }}
                             />
                         </div>
@@ -258,8 +258,8 @@ export default function Statistics() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-full">
-                        <Moon className="w-4 h-4 text-indigo-500" />
+                    <div className="bg-primary/10 p-2 rounded-full">
+                        <Moon className="w-4 h-4 text-primary" />
                     </div>
                     <div className="flex-1">
                         <div className="flex justify-between text-sm mb-1.5">
@@ -268,7 +268,7 @@ export default function Statistics() {
                         </div>
                          <div className="h-2 bg-secondary rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-indigo-500 rounded-full"
+                                className="h-full bg-primary rounded-full"
                                 style={{ width: `${Math.min(100, ((user.nightSessions || 0) / ((user.morningSessions || 0) + (user.lunchSessions || 0) + (user.nightSessions || 0) || 1)) * 100)}%` }}
                             />
                         </div>
@@ -293,27 +293,27 @@ export default function Statistics() {
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 opacity-80">
                 <div className="flex justify-between">
                     <span>Tractions</span>
-                    <span className="text-orange-500 font-medium">~5.0 kcal</span>
+                    <span className="text-primary font-medium">~5.0 kcal</span>
                 </div>
                 <div className="flex justify-between">
                     <span>Dips</span>
-                    <span className="text-orange-500 font-medium">~3.6 kcal</span>
+                    <span className="text-primary font-medium">~3.6 kcal</span>
                 </div>
                  <div className="flex justify-between">
                     <span>Squats</span>
-                    <span className="text-orange-500 font-medium">~2.6 kcal</span>
+                    <span className="text-primary font-medium">~2.6 kcal</span>
                 </div>
                 <div className="flex justify-between">
                     <span>Pompes</span>
-                    <span className="text-orange-500 font-medium">~2.1 kcal</span>
+                    <span className="text-primary font-medium">~2.1 kcal</span>
                 </div>
                  <div className="flex justify-between">
                     <span>Abdos</span>
-                    <span className="text-orange-500 font-medium">~1.3 kcal</span>
+                    <span className="text-primary font-medium">~1.3 kcal</span>
                 </div>
                 <div className="flex justify-between">
                     <span>Fentes</span>
-                    <span className="text-orange-500 font-medium">~3.0 kcal</span>
+                    <span className="text-primary font-medium">~3.0 kcal</span>
                 </div>
             </div>
           </div>
