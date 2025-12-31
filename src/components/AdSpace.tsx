@@ -1,6 +1,6 @@
 import { Capacitor } from '@capacitor/core';
-import { AdMob, BannerAdSize, BannerAdPosition, BannerAdOptions } from '@capacitor-community/admob';
-import { useEffect, useRef, useState } from 'react';
+import { AdMob } from '@capacitor-community/admob';
+import { useState } from 'react';
 
 interface AdSpaceProps {
     className?: string;
@@ -9,6 +9,7 @@ interface AdSpaceProps {
 
 export function AdSpace({ className = "", description = "Publicité" }: AdSpaceProps) {
     const isNative = Capacitor.isNativePlatform();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [adLoaded, setAdLoaded] = useState(false);
 
     // Placeholder pour le développement / Web
@@ -52,7 +53,6 @@ export async function initializeAdMob() {
     if (Capacitor.isNativePlatform()) {
         try {
             await AdMob.initialize({
-                requestTrackingAuthorization: true,
                 testingDevices: ['2077ef9a63d2b398840261c8221a0c9b'], // Exemple ID
                 initializeForTesting: true,
             });
