@@ -1,6 +1,5 @@
 import { Capacitor } from '@capacitor/core';
 import { AdMob } from '@capacitor-community/admob';
-import { useState } from 'react';
 
 interface AdSpaceProps {
     className?: string;
@@ -9,8 +8,6 @@ interface AdSpaceProps {
 
 export function AdSpace({ className = "", description = "Publicité" }: AdSpaceProps) {
     const isNative = Capacitor.isNativePlatform();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [adLoaded, setAdLoaded] = useState(false);
 
     // Placeholder pour le développement / Web
     // En production Web, on remplacerait ça par le vrai script AdSense
