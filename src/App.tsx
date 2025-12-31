@@ -15,8 +15,15 @@ import Leaderboard from './pages/Leaderboard';
 import Login from './pages/Login';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
+import { useEffect } from 'react';
+import { initializeAdMob } from '@/components/AdSpace';
+
 function App() {
   const location = useLocation();
+
+  useEffect(() => {
+    initializeAdMob();
+  }, []);
 
   return (
     <>

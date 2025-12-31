@@ -8,6 +8,7 @@ import { getLeaderboardStats, getFriendsDetails } from '@/firebase/firestore';
 import { Trophy, Medal, Calendar, TrendingUp } from 'lucide-react';
 import { User } from '@/firebase/types';
 import { UserAvatar } from '@/components/UserAvatar';
+import { AdSpace } from '@/components/AdSpace';
 
 export default function Leaderboard() {
   const { user } = useUserStore();
@@ -138,42 +139,54 @@ export default function Leaderboard() {
                   if (!player) return null;
 
                   return (
-                    <Card key={stat.userId} className={`overflow-hidden border-2 shadow-sm transition-all ${getRankStyle(index)}`}>
-                      <CardContent className="p-4 flex items-center gap-4">
-                        <div className="flex-shrink-0 w-8 flex justify-center">
-                          {getRankIcon(index)}
-                        </div>
+                    <div key={stat.userId}>
+                        <Card className={`overflow-hidden border-2 shadow-sm transition-all ${getRankStyle(index)}`}>
+                        <CardContent className="p-4 flex items-center gap-4">
+                            <div className="flex-shrink-0 w-8 flex justify-center">
+                            {getRankIcon(index)}
+                            </div>
 
-                        <UserAvatar user={player} size="lg" className="border-2 border-background" />
+                            <UserAvatar user={player} size="lg" className="border-2 border-background" />
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-bold truncate">{player.displayName}</h3>
-                            {player.uid === user.uid && (
-                              <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
-                                Moi
-                              </span>
+                            <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                                <h3 className="font-bold truncate">{player.displayName}</h3>
+                                {player.uid === user.uid && (
+                                <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
+                                    Moi
+                                </span>
+                                )}
+                            </div>
+                            <p className="text-xs opacity-80 truncate">
+                                {stat.totalSessions} séances
+                            </p>
+                            </div>
+
+                            <div className="text-right flex flex-col items-end">
+                            <span className="text-xl font-black block leading-none">{stat.totalReps}</span>
+                            <span className="text-[10px] uppercase tracking-wider opacity-70 mb-1">Reps</span>
+
+                            {stat.totalCalories > 0 && (
+                                <span className="text-xs font-medium text-orange-500 flex items-center gap-0.5">
+                                    {Math.round(stat.totalCalories)} kcal
+                                </span>
                             )}
-                          </div>
-                          <p className="text-xs opacity-80 truncate">
-                            {stat.totalSessions} séances
-                          </p>
-                        </div>
+                            </div>
+                        </CardContent>
+                        </Card>
 
-                        <div className="text-right flex flex-col items-end">
-                          <span className="text-xl font-black block leading-none">{stat.totalReps}</span>
-                          <span className="text-[10px] uppercase tracking-wider opacity-70 mb-1">Reps</span>
-
-                          {stat.totalCalories > 0 && (
-                              <span className="text-xs font-medium text-orange-500 flex items-center gap-0.5">
-                                  {Math.round(stat.totalCalories)} kcal
-                              </span>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+                        {/* Publicité après le 3ème (index 2) et le 7ème (index 6) */}
+                        {((index === 2) || (index === 6)) && (
+                            <AdSpace className="my-3" description="Soutenez l'app en regardant une pub" />
+                        )}
+                    </div>
                   );
                 })}
+
+                {/* Publicité par défaut si moins de 3 utilisateurs */}
+                {stats.length > 0 && stats.length < 3 && (
+                    <AdSpace className="mt-4" description="Soutenez l'app" />
+                )}
 
                 {stats.length === 0 && (
                    <div className="text-center py-12 text-muted-foreground">
