@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { StatsCard } from '@/components/StatsCard';
+
 
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { BackButton } from '@/components/BackButton';
@@ -144,16 +144,7 @@ function Profil() {
           </CardContent>
         </Card>
 
-        {/* Stats */}
-        <StatsCard
-          stats={stats}
-          limit={4}
-          headerAction={
-            <Button variant="ghost" size="sm" onClick={() => navigate('/statistics')}>
-              Voir tout
-            </Button>
-          }
-        />
+
 
         {/* Badges */}
         <Card>
