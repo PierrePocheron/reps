@@ -79,8 +79,8 @@ export default function Statistics() {
               transition={{ delay: 0.1 }}
               className="bg-card/50 border rounded-xl p-4 flex flex-col items-center justify-center text-center gap-2"
             >
-              <div className="bg-primary/10 p-2 rounded-full">
-                <Dumbbell className="w-5 h-5 text-primary" />
+              <div className="bg-red-500/10 p-2 rounded-full">
+                <Dumbbell className="w-5 h-5 text-red-500" />
               </div>
               <div className="space-y-0.5">
                 <span className="text-2xl font-bold block">{user.totalReps}</span>
