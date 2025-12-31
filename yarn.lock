@@ -817,12 +817,12 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.28.5"
 
-"@capacitor-community/admob@6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@capacitor-community/admob/-/admob-6.0.0.tgz#f57fec494944367a36bcf8c02f901ab21233c64b"
-  integrity sha512-coM3dx9Xw2fQgMCXAvR76Mv+Fe1C6JFA8A7k+7FJ1ZbJbN/y9DW7A7bF8EBcFdTyDa2LjDRIDxmjzHZYYgDl0g==
+"@capacitor-community/admob@7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/@capacitor-community/admob/-/admob-7.0.0.tgz#45bb9ca0c5c6c895e98f55b963573b5f902b9dfa"
+  integrity sha512-wkTMNKB0Lhf7RSUBxz8aCg3jisPq97FO+mQFs3d3VraKd0rY6dMDE3YBLUETLWtO4yRuobwayQTnxqGwuGwCvw==
   dependencies:
-    "@capacitor/core" "^6.0.0"
+    "@capacitor/core" "^7.0.0"
 
 "@capacitor/android@^5.7.8":
   version "5.7.8"
@@ -864,10 +864,10 @@
   dependencies:
     tslib "^2.1.0"
 
-"@capacitor/core@^6.0.0":
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/@capacitor/core/-/core-6.2.1.tgz#7f1cbf438e55d3c32940eac26abd307c19f8bdee"
-  integrity sha512-urZwxa7hVE/BnA18oCFAdizXPse6fCKanQyEqpmz6cBJ2vObwMpyJDG5jBeoSsgocS9+Ax+9vb4ducWJn0y2qQ==
+"@capacitor/core@^7.0.0":
+  version "7.4.4"
+  resolved "https://registry.yarnpkg.com/@capacitor/core/-/core-7.4.4.tgz#b752dd7a12141e40d1c8ce2e37a79571d9f83518"
+  integrity sha512-xzjxpr+d2zwTpCaN0k+C6wKSZzWFAb9OVEUtmO72ihjr/NEDoLvsGl4WLfjWPcCO2zOy0b2X52tfRWjECFUjtw==
   dependencies:
     tslib "^2.1.0"
 
