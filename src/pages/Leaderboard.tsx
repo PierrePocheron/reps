@@ -12,7 +12,7 @@ import { UserAvatar } from '@/components/UserAvatar';
 export default function Leaderboard() {
   const { user } = useUserStore();
   const [activeTab, setActiveTab] = useState('all_time');
-  const [stats, setStats] = useState<{ userId: string; totalReps: number; totalSessions: number }[]>([]);
+  const [stats, setStats] = useState<{ userId: string; totalReps: number; totalSessions: number; totalCalories: number }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [friendsDetails, setFriendsDetails] = useState<User[]>([]);
 
@@ -38,7 +38,8 @@ export default function Leaderboard() {
           ].map(u => ({
             userId: u.uid,
             totalReps: u.totalReps || 0,
-            totalSessions: u.totalSessions || 0
+            totalSessions: u.totalSessions || 0,
+            totalCalories: u.totalCalories || 0
           }));
 
           setStats(leaderboardData.sort((a, b) => b.totalReps - a.totalReps));
@@ -159,9 +160,15 @@ export default function Leaderboard() {
                           </p>
                         </div>
 
-                        <div className="text-right">
-                          <span className="text-xl font-black block">{stat.totalReps}</span>
-                          <span className="text-[10px] uppercase tracking-wider opacity-70">Reps</span>
+                        <div className="text-right flex flex-col items-end">
+                          <span className="text-xl font-black block leading-none">{stat.totalReps}</span>
+                          <span className="text-[10px] uppercase tracking-wider opacity-70 mb-1">Reps</span>
+
+                          {stat.totalCalories > 0 && (
+                              <span className="text-xs font-medium text-orange-500 flex items-center gap-0.5">
+                                  {Math.round(stat.totalCalories)} kcal
+                              </span>
+                          )}
                         </div>
                       </CardContent>
                     </Card>

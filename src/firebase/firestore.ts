@@ -1042,7 +1042,7 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
 /**
  * Obtenir les statistiques pour le classement (Leaderboard)
  */
-export async function getLeaderboardStats(friendIds: string[], period: 'daily' | 'weekly' | 'monthly'): Promise<{ userId: string; totalReps: number; totalSessions: number }[]> {
+export async function getLeaderboardStats(friendIds: string[], period: 'daily' | 'weekly' | 'monthly'): Promise<{ userId: string; totalReps: number; totalSessions: number; totalCalories: number }[]> {
   try {
     if (!friendIds || friendIds.length === 0) return [];
 
@@ -1083,18 +1083,19 @@ export async function getLeaderboardStats(friendIds: string[], period: 'daily' |
     }
 
     // Agréger les données
-    const statsMap = new Map<string, { totalReps: number; totalSessions: number }>();
+    const statsMap = new Map<string, { totalReps: number; totalSessions: number; totalCalories: number }>();
 
     // Initialiser pour tous les amis (même ceux sans activité)
     friendIds.forEach(id => {
-      statsMap.set(id, { totalReps: 0, totalSessions: 0 });
+      statsMap.set(id, { totalReps: 0, totalSessions: 0, totalCalories: 0 });
     });
 
     allSessions.forEach(session => {
-      const current = statsMap.get(session.userId) || { totalReps: 0, totalSessions: 0 };
+      const current = statsMap.get(session.userId) || { totalReps: 0, totalSessions: 0, totalCalories: 0 };
       statsMap.set(session.userId, {
         totalReps: current.totalReps + (session.totalReps || 0),
-        totalSessions: current.totalSessions + 1
+        totalSessions: current.totalSessions + 1,
+        totalCalories: current.totalCalories + (session.totalCalories || 0)
       });
     });
 
