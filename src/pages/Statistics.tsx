@@ -12,7 +12,7 @@ export default function Statistics() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b px-4 py-3">
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <BackButton to="/profil" />
           <h1 className="font-bold text-lg">Statistiques</h1>
