@@ -130,7 +130,7 @@ export default function Statistics() {
         {stats?.exercisesDistribution && stats.exercisesDistribution.length > 0 && (
           <div className="space-y-4">
              {/* Pub avant Exercices Favoris */}
-            <AdSpace description="Découvrez nos partenaires" />
+            <AdSpace adId="ca-app-pub-1431137074985627/2893707245" />
 
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <Trophy className="w-4 h-4 text-primary" />
@@ -222,7 +222,7 @@ export default function Statistics() {
         {/* Habitudes (Distribution) */}
 
         {/* Pub avant Habitudes (Carte séparée) */}
-        <AdSpace description="Publicité" />
+        <AdSpace adId="ca-app-pub-1431137074985627/2893707245" />
 
         <div className="bg-card border rounded-xl p-5">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
