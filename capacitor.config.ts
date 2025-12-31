@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.reps.app',
+  appId: 'com.pierre.reps.app',
   appName: 'Reps',
   webDir: 'dist',
   server: {
