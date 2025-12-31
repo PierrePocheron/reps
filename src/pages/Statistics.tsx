@@ -287,6 +287,36 @@ export default function Statistics() {
             <li>Formule : ACSM (American College of Sports Medicine)</li>
             <li>Facteurs : Poids, Taille, MET, Temps sous tension</li>
           </ul>
+
+          <div className="mt-4 pt-4 border-t border-border/50">
+            <p className="font-semibold mb-2">Moyenne pour 10 reps (75kg) :</p>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 opacity-80">
+                <div className="flex justify-between">
+                    <span>Tractions</span>
+                    <span className="text-orange-500 font-medium">~5.0 kcal</span>
+                </div>
+                <div className="flex justify-between">
+                    <span>Dips</span>
+                    <span className="text-orange-500 font-medium">~3.6 kcal</span>
+                </div>
+                 <div className="flex justify-between">
+                    <span>Squats</span>
+                    <span className="text-orange-500 font-medium">~2.6 kcal</span>
+                </div>
+                <div className="flex justify-between">
+                    <span>Pompes</span>
+                    <span className="text-orange-500 font-medium">~2.1 kcal</span>
+                </div>
+                 <div className="flex justify-between">
+                    <span>Abdos</span>
+                    <span className="text-orange-500 font-medium">~1.3 kcal</span>
+                </div>
+                <div className="flex justify-between">
+                    <span>Fentes</span>
+                    <span className="text-orange-500 font-medium">~3.0 kcal</span>
+                </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
