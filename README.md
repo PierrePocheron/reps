@@ -30,10 +30,10 @@
 
 ## 📱 Aperçu
 
-| Accueil | Session | Classement |
-|:---:|:---:|:---:|
-| ![Home](/screenshots/home.png) | ![Session](/screenshots/session.png) | ![Leaderboard](/screenshots/leaderboard.png) |
-| *Votre tableau de bord* | *Suivi en temps réel* | *Défiez vos amis* |
+| Accueil | Session | Classement | Statistiques |
+|:---:|:---:|:---:|:---:|
+| ![Home](/screenshots/home.png) | ![Session](/screenshots/session.png) | ![Leaderboard](/screenshots/leaderboard.png) | ![Statistics](/screenshots/statistics.png) |
+| *Votre tableau de bord* | *Suivi en temps réel* | *Défiez vos amis* | *Statistiques* |
 
 ## 🚀 Stack Technique
 
