@@ -24,7 +24,9 @@ export function Layout({ children }: LayoutProps) {
           </div>
         </div>
       )}
-      {children}
+      <main className="pt-safe min-h-screen">
+        {children}
+      </main>
       <BottomNav />
     </>
   );

@@ -24,7 +24,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+    <div className="min-h-screen bg-background p-4 pt-safe flex items-center justify-center">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
           <h1 className="mb-2 text-3xl font-bold">🏋️ Reps</h1>
