@@ -40,6 +40,9 @@ export function AdSpace({ className = "", slotId, adId }: AdSpaceProps) {
                 hideBanner();
             };
         }
+
+        // Explicit return for consistency
+        return undefined;
     }, [isNative, slotId, isEnabled, adId, showBanner, hideBanner]);
 
     // Si les pubs sont désactivées globalement, on ne rend rien

@@ -12,7 +12,7 @@ export function BottomNav() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-lg pb-safe">
+    <div className="w-full border-t bg-background/80 backdrop-blur-lg pb-safe">
       <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
         <button
           onClick={() => navigate('/')}
