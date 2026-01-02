@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { useOffline } from '@/hooks/useOffline';
 import { BottomNav } from '@/components/BottomNav';
 import { AlertCircle } from 'lucide-react';
+import { useAdStore } from '@/store/adStore';
 
 interface LayoutProps {
   children: ReactNode;
@@ -12,6 +13,7 @@ interface LayoutProps {
  */
 export function Layout({ children }: LayoutProps) {
   const { isOffline } = useOffline();
+  const { bannerHeight } = useAdStore();
 
   return (
     <>
@@ -24,10 +26,22 @@ export function Layout({ children }: LayoutProps) {
           </div>
         </div>
       )}
-      <main className="pt-safe min-h-screen">
+
+      {/* Contenu principal avec padding dynamique pour la pub */}
+      <main
+        className="pt-safe min-h-screen transition-all duration-300"
+        style={{ paddingBottom: bannerHeight > 0 ? `${bannerHeight}px` : undefined }}
+      >
         {children}
       </main>
-      <BottomNav />
+
+      {/* BottomNav remontée si pub active */}
+      <div
+        className="fixed left-0 right-0 z-50 transition-all duration-300"
+        style={{ bottom: bannerHeight > 0 ? `${bannerHeight}px` : 0 }}
+      >
+        <BottomNav />
+      </div>
     </>
   );
 }
