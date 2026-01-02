@@ -1,34 +1,22 @@
-# 🏋️ Reps - Suivi Musculation
+# 🏋️ Reps - L'expérience Musculation Ultime
 
-> Application Progressive Web App (PWA) ultime pour suivre vos entraînements de musculation, vous mesurer à vos amis et rester motivé.
+> **Plus qu'une simple application de suivi, Reps est une expérience sociale et gamifiée conçue pour pousser vos limites.**
+> Une Application Web (PWA) propulsée en natif sur iOS et Android, alliant la flexibilité du Web à la puissance du Natif.
 
 [![Status](https://img.shields.io/badge/Status-Active-success)]() [![License](https://img.shields.io/badge/license-MIT-blue)]() [![CI/CD](https://github.com/PierrePocheron/reps/actions/workflows/ci.yml/badge.svg)](https://github.com/PierrePocheron/reps/actions/workflows/ci.yml) [![Vercel](https://vercel.com/button)](https://vercel.com/pierre-pocheron/reps)
 
-## ✨ Fonctionnalités
+<div align="center">
+  <a href="https://reps-app.vercel.app">
+    <img src="https://img.shields.io/badge/iOS_PWA-Add_to_Home_Screen-black?style=for-the-badge&logo=apple" alt="iOS PWA" height="40" />
+  </a>
+  <a href="https://github.com/PierrePocheron/reps/releases/latest">
+    <img src="https://img.shields.io/badge/Android-Download_APK-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" height="40" />
+  </a>
+</div>
 
-### 🏋️ Suivi d'Entraînement Avancé
-- **Carnet numérique** : Créez et enregistrez vos séances (poids du corps, lesté, salle).
-- **Historique complet** : Retrouvez toutes vos performances passées.
-- **Templates** : Créez vos propres routines ou utilisez celles par défaut (Tractions, Dips, Pompes...).
-- **Chronomètre intégré** : Gestion automatique des temps de repos.
+---
 
-### 🤝 Social & Communauté
-- **Système d'amis** : Ajoutez vos partenaires d'entraînement via recherche ou QR code (à venir).
-- **Fil d'actualité** : Suivez les séances de vos amis en temps réel.
-- **Leaderboard** : Classements interactifs (Jour, Semaine, Mois, Toujours) pour savoir qui est le plus fort.
-- **Encouragements** : Notifications lors des records ou des nouvelles amitiés.
-
-### 🏆 Gamification
-- **Badges** : Débloquez des succès uniques (ex: "Lève-tôt", "Machine de guerre", "Social Butterfly").
-- **Séries (Streaks)** : Maintenez votre flamme en vous entraînant régulièrement.
-- **Niveaux** : Gagnez de l'expérience à chaque rep.
-
-### 🎨 Design Premium & Personnalisation
-- **Thèmes Dynamiques** : Choisissez votre couleur (Violet, Orange, Vert, Bleu, Rouge, Rose).
-- **Mode Sombre/Clair** : S'adapte automatiquement à votre système.
-- **Interface Fluide** : Animations soignées avec Framer Motion pour une expérience app-like.
-
-## 📱 Aperçu
+## 📱 Aperçu & Interface
 
 | Accueil | Session | Classement | Statistiques |
 |:---:|:---:|:---:|:---:|
@@ -40,231 +28,92 @@
 | ![Friends](/screenshots/reps_social.png) | ![Achievements](/screenshots/reps_achievements.png) | ![Profile](/screenshots/reps_profil.png) | ![Settings](/screenshots/reps_settings.png) |
 | *Amis et fil d'actualité* | *Achievements et badges* | *Profil* | *Paramètres* |
 
-## 🚀 Stack Technique
+---
 
-- **Frontend** : React 18, TypeScript, Vite
-- **UI/UX** : TailwindCSS, Shadcn/ui, Framer Motion, Lucide Icons
-- **State Management** : Zustand (léger et performant)
-- **Backend & Data** : Firebase (Auth, Firestore, Hosting)
-- **Mobile** : Capacitor (iOS/Android), PWA (Service Worker)
+## ⚡️ Stack Technologique & Outils
 
-## 📋 Prérequis
+Ce projet est une démonstration technique utilisant un écosystème moderne pour garantir performance, fluidité et maintenabilité.
 
-- Node.js 18+ et npm/yarn/pnpm
-- Compte Firebase avec projet créé
-- (Optionnel) Xcode pour iOS / Android Studio pour Android
+### 💻 Cœur & Frontend
+*   **[React 18](https://react.dev/) & [TypeScript](https://www.typescriptlang.org/)** : Architecture robuste, typée et composants réactifs.
+*   **[Vite](https://vitejs.dev/)** : Environnement de développement ultra-rapide et build optimisé.
+*   **[TailwindCSS](https://tailwindcss.com/)** : Styling "Utility-first" pour un Design System sur-mesure et cohérent.
+*   **[Framer Motion](https://www.framer.com/motion/)** : Moteur d'animations fluide (60fps) pour les transitions de pages et micro-interactions.
+*   **[Shadcn/ui](https://ui.shadcn.com/)** : Composants UI accessibles et personnalisables (basés sur Radix Primitives).
+*   **[Zustand](https://github.com/pmndrs/zustand)** : Gestion d'état global minimaliste et performante.
 
-## 🛠️ Installation
+### 📲 Mobile & Natif (iOS / Android)
+L'application exploite **[Capacitor](https://capacitorjs.com/)** (v5) pour offrir une véritable expérience native.
+*   **Plugins Natifs** :
+    *   `@codetrix-studio/capacitor-google-auth` : Authentification Google native (OAuth2) sans redirection web.
+    *   `@capacitor-community/admob` : Levier de monétisation native (Bannières publicitaires) pour iOS et Android.
+    *   `@capacitor/haptics` : Retours haptiques (vibrations) précis.
+    *   `@capacitor/local-notifications` : Rappels d'entraînements et motivation.
+*   **Monétisation Hybride** :
+    *   **AdMob** : Publicités natives optimisées pour les stores.
+    *   **Google AdSense** : Revenus complémentaires sur la version Web/Desktop.
+*   **Outils de Build** :
+    *   **Xcode** & **Swift** : Configuration iOS profonde (Capabilities, Info.plist, Safe Areas).
+    *   **CocoaPods** : Gestion des dépendances natives iOS.
+    *   **Android Studio** & **Gradle** : Pipeline de build Android optimisé.
 
-1. **Cloner et installer les dépendances**
+### 🔥 Backend & Infrastructure
+*   **[Firebase](https://firebase.google.com/)** :
+    *   **Firestore** : Base de données NoSQL temps réel pour la synchro instantanée entre appareils.
+    *   **Authentication** : Gestion sécurisée des identités.
+    *   **Hosting** : Déploiement global sur CDN.
 
-```bash
-npm install
-# ou
-yarn install
-# ou
-pnpm install
-```
+### 🎨 Design & Production
+*   **[Shorts.so](https://shorts.so/)** : Génération des mockups de présentation haute fidélité.
+*   **Lucide React** : Set d'icônes vectorielles léger et cohérent.
+*   **Canvas Confetti** : Effets de particules pour la gamification (Célébrations).
 
-2. **Configurer Firebase**
+---
 
-Créez un fichier `.env` à la racine du projet avec vos variables Firebase :
+## 💎 Principes de Développement
+
+Ce projet met en œuvre des concepts avancés pour gommer la frontière Web/Natif :
+
+1.  **Native Feel First** :
+    *   Suppression du "Rubber-banding" (scroll élastique) excessif.
+    *   Désactivation du Zoom tactile et sélection de texte.
+    *   Gestion précise des **Safe Areas** (Notch, Dynamic Island) via CSS `env()`.
+2.  **Gamification Poussée** :
+    *   Système de leveling algorithmique.
+    *   **Badge System** dynamique (15+ succès à débloquer).
+    *   Calcul de "Streaks" (Séries) pour la rétention utilisateur.
+3.  **Performance UX** :
+    *   Optimistic UI pour une réactivité immédiate sans attendre le réseau.
+    *   Mode Offline partiel.
+
+---
+
+## 🛠️ Configuration Développement
+
+Pour les développeurs souhaitant explorer le code source.
+
+### 1. Variables d'environnement
+Créez un fichier `.env` à la racine du projet contenant vos clés Firebase :
 
 ```env
-VITE_FIREBASE_API_KEY=your_api_key_here
-VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
+VITE_FIREBASE_API_KEY=votre_api_key
+VITE_FIREBASE_AUTH_DOMAIN=projet.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=votre_projet_id
+VITE_FIREBASE_STORAGE_BUCKET=projet.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=votre_sender_id
+VITE_FIREBASE_APP_ID=votre_app_id
 VITE_APP_ENV=development
 ```
 
-Pour obtenir ces valeurs :
-- Allez sur [Firebase Console](https://console.firebase.google.com)
-- Sélectionnez votre projet
-- Project Settings > General > Your apps > Web app
-
-3. **Lancer le serveur de développement**
+### 2. Installation & Lancement
 
 ```bash
-npm run dev
+# Installation des dépendances JS
+yarn install
+
+# Lancer en mode Web
+yarn dev
+
+# Synchroniser les projets natifs (nécessite les IDEs installés)
+yarn cap:sync
 ```
-
-L'application sera accessible sur `http://localhost:5173`
-
-## 📦 Scripts disponibles
-
-- `npm run dev` - Lance le serveur de développement
-- `npm run build` - Build de production
-- `npm run preview` - Prévisualise le build de production
-- `npm run lint` - Vérifie le code avec ESLint
-- `npm run format` - Formate le code avec Prettier
-- `npm run type-check` - Vérifie les types TypeScript
-- `npm run cap:sync` - Synchronise avec Capacitor
-- `npm run cap:add:ios` - Ajoute la plateforme iOS
-- `npm run cap:add:android` - Ajoute la plateforme Android
-- `npm run cap:open:ios` - Ouvre le projet iOS dans Xcode
-- `npm run cap:open:android` - Ouvre le projet Android dans Android Studio
-
-## 🏗️ Structure du projet
-
-```
-/src
-  /components       # Composants UI réutilisables
-  /pages            # Pages principales (Home, Session, Profile, Settings)
-  /store            # Stores Zustand (user, session, settings)
-  /firebase         # Configuration Firebase + helpers
-  /hooks            # Hooks personnalisés (useAuth, useSession, useTheme)
-  /utils            # Utilitaires (formatters, constants, storage)
-  /assets           # Icons, images, emojis
-  /styles           # Styles globaux et configuration Tailwind
-```
-
-## 🔥 Configuration Firebase
-
-### Firestore Collections
-
-L'application utilise les collections suivantes :
-
-- `users/{uid}` - Profils utilisateurs
-- `sessions/{uid}/{sessionId}` - Sessions d'entraînement
-- `exercises/{exerciseId}` - Exercices personnalisés
-- `notifications/` - Notifications push
-- `phrases/` - Phrases motivantes pour notifications
-
-### Règles de sécurité Firestore
-
-Configurez vos règles de sécurité dans Firebase Console :
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Users
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Sessions
-    match /sessions/{userId}/{sessionId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Exercises
-    match /exercises/{exerciseId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-    }
-
-    // Notifications
-    match /notifications/{notificationId} {
-      allow read, write: if request.auth != null;
-    }
-
-    // Phrases
-    match /phrases/{phraseId} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-  }
-}
-```
-
-## 📱 Déploiement
-
-### Firebase Hosting
-
-1. **Installer Firebase CLI**
-
-```bash
-npm install -g firebase-tools
-```
-
-2. **Se connecter**
-
-```bash
-firebase login
-```
-
-3. **Initialiser Firebase Hosting**
-
-```bash
-firebase init hosting
-```
-
-4. **Déployer**
-
-```bash
-npm run build
-firebase deploy
-```
-
-### Export mobile (Capacitor)
-
-1. **Build de production**
-
-```bash
-npm run build
-```
-
-2. **Synchroniser avec Capacitor**
-
-```bash
-npm run cap:sync
-```
-
-3. **Ajouter une plateforme (si pas déjà fait)**
-
-```bash
-npm run cap:add:ios
-# ou
-npm run cap:add:android
-```
-
-4. **Ouvrir dans l'IDE natif**
-
-```bash
-npm run cap:open:ios
-# ou
-npm run cap:open:android
-```
-
-## 🎨 Personnalisation
-
-L'application supporte :
-- Mode clair/sombre automatique
-- Choix de couleur dominante (violet, orange, vert, bleu, etc.)
-- Personnalisation via le profil utilisateur
-
-## 📝 Convention de code
-
-- **TypeScript strict** activé
-- **ESLint** + **Prettier** configurés
-- **camelCase** pour fonctions/variables
-- **PascalCase** pour composants
-- Commentaires en français
-
-## 🐛 Dépannage
-
-### Erreurs Firebase
-
-- Vérifiez que votre fichier `.env` contient toutes les variables nécessaires
-- Vérifiez que les règles de sécurité Firestore sont correctement configurées
-- Vérifiez que l'authentification est activée dans Firebase Console
-
-### Erreurs PWA
-
-- Vérifiez que le build de production fonctionne : `npm run build && npm run preview`
-- Vérifiez que les icônes PWA sont présentes dans `/public`
-
-### Erreurs Capacitor
-
-- Assurez-vous d'avoir fait un build avant de synchroniser : `npm run build && npm run cap:sync`
-- Vérifiez que les dépendances natives sont installées
-
-## 📄 Licence
-
-MIT
-
