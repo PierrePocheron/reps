@@ -62,7 +62,7 @@ function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-24">
+    <div className="bg-background p-4 pb-24">
       <div className="mx-auto max-w-2xl space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
