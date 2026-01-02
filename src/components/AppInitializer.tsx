@@ -16,6 +16,8 @@ export function AppInitializer() {
     // Initialiser l'authentification
     initializeAuth();
 
+
+
     // Charger les paramètres depuis localStorage
     loadSettings();
 

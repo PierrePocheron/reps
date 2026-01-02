@@ -4,7 +4,7 @@ import {
   sendPasswordResetEmail as firebaseSendPasswordResetEmail,
   signInWithPopup,
   GoogleAuthProvider,
-
+  signInWithCredential,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   User as FirebaseUser,
@@ -14,6 +14,8 @@ import {
 import { auth } from './config';
 import { createUserDocument, getUserDocument } from './firestore';
 import type { User } from './types';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { Capacitor } from '@capacitor/core';
 
 /**
  * Helpers pour l'authentification Firebase
@@ -52,9 +54,6 @@ export async function signInWithEmail(email: string, password: string): Promise<
   }
 }
 
-/**
- * Inscription avec email et mot de passe
- */
 /**
  * Inscription avec email et mot de passe
  */
@@ -97,58 +96,81 @@ export async function signUpWithEmail(
 /**
  * Connexion avec Google
  */
-export async function signInWithGoogle(): Promise<FirebaseUser> {
+export async function signInWithGoogle(): Promise<FirebaseUser | undefined> {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
+    if (Capacitor.isNativePlatform()) {
+      // Sur mobile, on utilise le plugin natif qui gère le flux Google Sign-In correctement
+      const googleUser = await GoogleAuth.signIn();
+      const idToken = googleUser.authentication.idToken;
+      const credential = GoogleAuthProvider.credential(idToken);
 
-    // Récupérer les infos supplémentaires (prénom, nom) depuis le profil Google
-    const additionalInfo = getAdditionalUserInfo(result);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const profile = additionalInfo?.profile as any;
-
-    let firstName = '';
-    let lastName = '';
-
-    if (profile) {
-      firstName = profile.given_name || '';
-      lastName = profile.family_name || '';
+      const result = await signInWithCredential(auth, credential);
+      return handleGoogleSignInResult(result.user, result);
+    } else {
+      // Sur web, popup classique
+      const result = await signInWithPopup(auth, googleProvider);
+      return handleGoogleSignInResult(result.user, result);
     }
-
-    // Fallback si pas trouvé dans le profil (ex: ancien compte ou scope limité)
-    if (!firstName && user.displayName) {
-      const parts = user.displayName.split(' ');
-      if (parts.length > 0) {
-        firstName = parts[0] || '';
-        lastName = parts.slice(1).join(' ');
-      }
-    }
-
-    // Vérifier si l'utilisateur existe déjà dans Firestore
-    const userDoc = await getUserDocument(user.uid);
-    if (!userDoc) {
-      // Générer un pseudo valide (lowercase, sans espace)
-      let displayName = user.displayName || 'Utilisateur';
-      displayName = displayName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
-      if (displayName.length < 3) displayName = `user${Math.floor(Math.random() * 10000)}`;
-
-      // Créer le document utilisateur s'il n'existe pas
-      await createUserDocument(user.uid, {
-        displayName,
-        firstName,
-        lastName,
-        email: user.email || '',
-      });
-    }
-
-    return user;
   } catch (error) {
     console.error('Erreur lors de la connexion Google:', error);
     throw error;
   }
 }
 
+/**
+ * Traite le résultat d'une connexion Google (création profil, etc.)
+ * Utilisé par signInWithPopup et par getRedirectResult
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function handleGoogleSignInResult(user: FirebaseUser, result?: any): Promise<FirebaseUser> {
+    try {
+        let firstName = '';
+        let lastName = '';
 
+        // Si on a le résultat complet (Popup ou Redirect), on essaie d'extraire les infos
+        if (result) {
+            const additionalInfo = getAdditionalUserInfo(result);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const profile = additionalInfo?.profile as any;
+
+            if (profile) {
+              firstName = profile.given_name || '';
+              lastName = profile.family_name || '';
+            }
+        }
+
+        // Fallback si pas trouvé dans le profil
+        if (!firstName && user.displayName) {
+          const parts = user.displayName.split(' ');
+          if (parts.length > 0) {
+            firstName = parts[0] || '';
+            lastName = parts.slice(1).join(' ');
+          }
+        }
+
+        // Vérifier si l'utilisateur existe déjà dans Firestore
+        const userDoc = await getUserDocument(user.uid);
+        if (!userDoc) {
+          // Générer un pseudo valide (lowercase, sans espace)
+          let displayName = user.displayName || 'Utilisateur';
+          displayName = displayName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+          if (displayName.length < 3) displayName = `user${Math.floor(Math.random() * 10000)}`;
+
+          // Créer le document utilisateur s'il n'existe pas
+          await createUserDocument(user.uid, {
+            displayName,
+            firstName,
+            lastName,
+            email: user.email || '',
+          });
+        }
+
+        return user;
+    } catch (error) {
+        console.error("Erreur lors du traitement du résultat Google:", error);
+        throw error;
+    }
+}
 
 /**
  * Envoyer un email de réinitialisation de mot de passe
@@ -167,6 +189,14 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
  */
 export async function signOut(): Promise<void> {
   try {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await GoogleAuth.signOut();
+      } catch (e) {
+        // Ignorer si pas connecté ou erreur plugin
+        console.warn('GoogleAuth signOut error', e);
+      }
+    }
     await firebaseSignOut(auth);
   } catch (error) {
     console.error('Erreur lors de la déconnexion:', error);
@@ -203,4 +233,3 @@ export async function getCurrentUserProfile(): Promise<User | null> {
 
   return await getUserDocument(user.uid);
 }
-

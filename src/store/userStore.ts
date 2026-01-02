@@ -67,8 +67,17 @@ export const useUserStore = create<UserState>((set, get) => ({
   initializeAuth: async () => {
     set({ isLoading: true });
 
+    // Fallback: Si onAuthChange ne répond pas après 5s, on débloque
+    const timeout = setTimeout(() => {
+      if (get().isLoading) {
+        set({ isLoading: false });
+      }
+    }, 5000);
+
     // Observer les changements d'authentification
     onAuthChange(async (firebaseUser: FirebaseUser | null) => {
+      clearTimeout(timeout);
+
       const { setCurrentUser, loadUserProfile } = get();
 
       setCurrentUser(firebaseUser);
@@ -76,13 +85,15 @@ export const useUserStore = create<UserState>((set, get) => ({
       if (firebaseUser) {
         // Charger le profil utilisateur
         try {
+          console.log('[DEBUG_IOS] Calling loadUserProfile...');
           await loadUserProfile();
         } catch (error) {
-          console.error('Erreur lors du chargement du profil:', error);
+          console.error('[DEBUG_IOS] Erreur lors du chargement du profil:', error);
           set({ isLoading: false });
         }
       } else {
         // Réinitialiser l'état si déconnecté
+        console.log('[DEBUG_IOS] Resetting state (logged out)');
         get().reset();
       }
 
@@ -96,21 +107,26 @@ export const useUserStore = create<UserState>((set, get) => ({
   loadUserProfile: async () => {
     try {
       const { currentUser } = get();
+      console.log('[UserStore] Starting loadUserProfile', currentUser?.uid);
+
       if (!currentUser) {
+        console.log('[UserStore] No currentUser, resetting state');
         set({ user: null, stats: null, isLoading: false });
         return;
       }
 
       // Récupérer le profil
+      console.log('[UserStore] Fetching getCurrentUserProfile...');
       const userProfile = await getCurrentUserProfile();
+      console.log('[UserStore] getCurrentUserProfile result:', userProfile ? 'Found' : 'Null');
+
       if (userProfile) {
         get().setUser(userProfile);
 
-        // Calculer les stats
+        console.log('[UserStore] Refreshing stats...');
         await get().refreshStats();
+        console.log('[UserStore] Stats refreshed');
 
-        // S'abonner aux mises à jour en temps réel
-        // On vérifie d'abord que l'utilisateur est bien celui connecté pour éviter les erreurs de permission
         if (currentUser.uid === userProfile.uid) {
              subscribeToUser(currentUser.uid, (updatedUser) => {
               if (updatedUser) {
@@ -119,24 +135,24 @@ export const useUserStore = create<UserState>((set, get) => ({
             });
         }
       } else {
-        // Si le profil n'existe pas encore
-        // On attend un peu car la création peut être en cours via le processus d'inscription/connexion (auth.ts)
+        console.log('[UserStore] Profile not found, waiting 1s...');
         await new Promise(resolve => setTimeout(resolve, 1000));
+
+        console.log('[UserStore] Retrying fetch...');
         const retryProfile = await getCurrentUserProfile();
 
         if (retryProfile) {
+           console.log('[UserStore] Retry successful');
            get().setUser(retryProfile);
            await get().refreshStats();
 
-           // S'abonner
             subscribeToUser(currentUser.uid, (updatedUser) => {
               if (updatedUser) get().setUser(updatedUser);
             });
            return;
         }
 
-        // Si toujours pas de profil après délai, on le crée (Fallback)
-        console.warn('Document utilisateur non trouvé après délai, création fallback...');
+        console.warn('[UserStore] Document utilisateur non trouvé après délai, création fallback...');
         const { createUserDocument } = await import('@/firebase');
         try {
           await createUserDocument(currentUser.uid, {
@@ -144,7 +160,7 @@ export const useUserStore = create<UserState>((set, get) => ({
             email: currentUser.email || '',
           });
 
-          // Recharger le profil final
+          console.log('[UserStore] Fallback profile created, re-fetching...');
           const newProfile = await getCurrentUserProfile();
           if (newProfile) {
             get().setUser(newProfile);
@@ -154,12 +170,11 @@ export const useUserStore = create<UserState>((set, get) => ({
             });
           }
         } catch (createError) {
-           console.error("Impossible de créer le profil fallback (Permissions ou autre):", createError);
-           // On ne bloque pas l'app, l'utilisateur est auth mais sans profil complet
+           console.error("[UserStore] Impossible de créer le profil fallback:", createError);
         }
       }
     } catch (error) {
-      console.error('Erreur lors du chargement du profil:', error);
+      console.error('[UserStore] Erreur lors du chargement du profil:', error);
       set({ user: null, stats: null, isLoading: false });
     }
   },

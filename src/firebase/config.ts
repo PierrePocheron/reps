@@ -1,5 +1,5 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
+import { Auth } from 'firebase/auth';
 import { Firestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getMessaging, Messaging } from 'firebase/messaging';
 
@@ -47,7 +47,14 @@ if (existingApps.length === 0) {
 }
 
 // Initialisation des services Firebase
-export const auth: Auth = getAuth(app);
+import { initializeAuth as initializeFirebaseAuth, indexedDBLocalPersistence, browserLocalPersistence } from 'firebase/auth';
+import { Capacitor } from '@capacitor/core';
+
+// Configuration explicite de la persistance pour Capacitor
+export const auth: Auth = initializeFirebaseAuth(app, {
+  persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+});
+
 // Configuration de Firestore avec cache local persistant (nouvelle API)
 export const db: Firestore = initializeFirestore(app, {
   localCache: persistentLocalCache({
@@ -57,7 +64,7 @@ export const db: Firestore = initializeFirestore(app, {
 
 // Initialisation de Firebase Cloud Messaging (uniquement côté client)
 export let messaging: Messaging | null = null;
-if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator && !Capacitor.isNativePlatform()) {
   try {
     messaging = getMessaging(app);
   } catch (err) {
