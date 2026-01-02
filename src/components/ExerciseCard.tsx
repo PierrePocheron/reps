@@ -76,18 +76,20 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
         )}
       >
         <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            {/* Info exercice */}
-            <div className="flex items-center gap-3 flex-1">
-              <span className="text-3xl">{exercise.emoji}</span>
-              <div>
-                <h3 className="font-semibold text-lg">{exercise.name}</h3>
-                <p className="text-2xl font-bold text-primary">{exercise.reps}</p>
+          <div className="flex flex-col gap-4">
+            {/* Info exercice + Reps */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="text-3xl flex-shrink-0">{exercise.emoji}</span>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-lg truncate pr-2">{exercise.name}</h3>
+                </div>
               </div>
+              <p className="text-2xl font-bold text-primary flex-shrink-0 ml-2">{exercise.reps}</p>
             </div>
 
             {/* Boutons d'action */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar">
               {repButtons.map((value, index) => (
                 <motion.button
                   key={value}
@@ -98,11 +100,11 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
                     onAddReps(value);
                   }}
                   className={cn(
-                    "rounded-2xl flex flex-col items-center justify-center transition-colors relative",
+                    "rounded-2xl flex flex-col items-center justify-center transition-colors relative flex-1 min-w-[3.5rem]",
                     // Le dernier bouton est mis en avant (primaire), les autres sont secondaires
                     index === repButtons.length - 1
-                      ? "h-14 w-16 bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
-                      : "h-14 w-14 bg-primary/10 hover:bg-primary/20 text-primary"
+                      ? "h-14 bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
+                      : "h-14 bg-primary/10 hover:bg-primary/20 text-primary"
                   )}
                 >
                   <Plus className="h-5 w-5 mb-0.5" />
