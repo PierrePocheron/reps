@@ -193,10 +193,9 @@ function Session() {
   }, 0);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="bg-background pb-24">
       {/* Header Fixe */}
-      {/* Header Fixe */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b">
+      <div className="sticky top-[env(safe-area-inset-top)] z-10 bg-background/80 backdrop-blur-md border-b">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <BackButton to="/" />
           <div className="flex flex-col items-center">
