@@ -36,7 +36,7 @@
 | *Votre tableau de bord* | *Suivi en temps réel* | *Défiez vos amis* | *Statistiques* |
 
 | Friends | Achievements | Profile | Settings |
-|:---:|:---:|:---:|
+|:---:|:---:|:---:|:---:|
 | ![Friends](/screenshots/reps_social.png) | ![Achievements](/screenshots/reps_achievements.png) | ![Profile](/screenshots/reps_profil.png) | ![Settings](/screenshots/reps_settings.png) |
 | *Amis et fil d'actualité* | *Achievements et badges* | *Profil* | *Paramètres* |
 
