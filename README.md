@@ -32,7 +32,7 @@
 
 | Accueil | Session | Classement | Statistiques |
 |:---:|:---:|:---:|:---:|
-| ![Home](/screenshots/home.png) | ![Session](/screenshots/session.png) | ![Leaderboard](/screenshots/leaderboard.png) | ![Statistics](/screenshots/statistics.png) |
+| ![Home](/screenshots/reps_home.png) | ![Session](/screenshots/reps_session.png) | ![Leaderboard](/screenshots/reps_top.png) | ![Statistics](/screenshots/reps_stats.png) |
 | *Votre tableau de bord* | *Suivi en temps réel* | *Défiez vos amis* | *Statistiques* |
 
 ## 🚀 Stack Technique
