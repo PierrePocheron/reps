@@ -56,17 +56,34 @@ import {
 import { Capacitor } from '@capacitor/core';
 
 // Configuration explicite de la persistance pour Capacitor
-export const auth: Auth = initializeFirebaseAuth(app, {
-  persistence: [indexedDBLocalPersistence, browserLocalPersistence],
-  popupRedirectResolver: browserPopupRedirectResolver, // Nécessaire pour signInWithPopup
-});
+// Configuration explicite de la persistance pour Capacitor
+import { getAuth } from 'firebase/auth';
+let authInstance: Auth;
+try {
+  // Tente de récupérer l'instance existante (HMR safety)
+  authInstance = getAuth(app);
+} catch {
+  // Si non initialisé, on initialise avec la conf
+  authInstance = initializeFirebaseAuth(app, {
+    persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+    popupRedirectResolver: browserPopupRedirectResolver, // Nécessaire pour signInWithPopup
+  });
+}
+export const auth = authInstance;
 
 // Configuration de Firestore avec cache local persistant (nouvelle API)
-export const db: Firestore = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
-});
+import { getFirestore } from 'firebase/firestore';
+let dbInstance: Firestore;
+try {
+  dbInstance = getFirestore(app);
+} catch {
+  dbInstance = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager()
+    })
+  });
+}
+export const db = dbInstance;
 
 // Initialisation de Firebase Cloud Messaging (uniquement côté client)
 export let messaging: Messaging | null = null;
