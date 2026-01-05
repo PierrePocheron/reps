@@ -93,7 +93,7 @@ export default function Leaderboard() {
 
   return (
     <div className="min-h-screen bg-background p-4 pb-24">
-      <div className="max-w-md mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <BackButton to="/" />
           <h1 className="text-2xl font-bold">Classement</h1>

@@ -79,7 +79,7 @@ function Profil() {
   const nextBadge = stats ? getNextBadge(stats) : null;
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-20">
+    <div className="min-h-screen bg-background p-4 pb-24">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
