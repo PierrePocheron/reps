@@ -8,6 +8,7 @@ interface AdState {
   isBannerVisible: boolean;
   bannerHeight: number;
   activeRequests: number; // Compteur pour gérer les transitions entre pages
+  reset: () => void;
   showBanner: (adId?: string) => Promise<void>;
   hideBanner: () => Promise<void>;
 }
@@ -17,15 +18,22 @@ export const useAdStore = create<AdState>((set, get) => ({
   bannerHeight: 0,
   activeRequests: 0,
 
+  reset: () => {
+    set({ activeRequests: 0, isBannerVisible: false, bannerHeight: 0 });
+    // Force hide native banner just in case
+    if (Capacitor.isNativePlatform()) {
+        AdMob.hideBanner().catch(() => {});
+    }
+  },
+
   showBanner: async (adId) => {
     // Si ads désactivées ou non-natif, on ne fait rien
-    if (!ADS_CONFIG.ENABLED || !Capacitor.isNativePlatform()) return;
+    if (!ADS_CONFIG.ENABLED || !ADS_CONFIG.ENABLED_MOBILE || !Capacitor.isNativePlatform()) return;
 
-    // Incrémenter le compteur de demandes
-    const currentRequests = get().activeRequests;
-    set({ activeRequests: currentRequests + 1 });
+    // Atomic increment
+    set((state) => ({ activeRequests: state.activeRequests + 1 }));
 
-    // Si la bannière est DÉJÀ visible, on ne fait rien de plus (elle reste là)
+    // Si la bannière est DÉJÀ visible, on ne fait rien de plus
     if (get().isBannerVisible) return;
 
     try {
@@ -49,28 +57,23 @@ export const useAdStore = create<AdState>((set, get) => ({
         set({ isBannerVisible: true, bannerHeight: 60 });
     } catch (error) {
         console.error('Failed to show AdMob banner:', error);
-        // En cas d'erreur, on reset pas forcément tout de suite pour éviter boucle,
-        // mais on peut marquer comme invisible
-        set({ isBannerVisible: false, bannerHeight: 0 });
+        set((state) => ({ ...state, isBannerVisible: false, bannerHeight: 0 }));
     }
   },
 
   hideBanner: async () => {
     if (!Capacitor.isNativePlatform()) return;
 
-    // Décrémenter le compteur
-    const currentRequests = get().activeRequests;
-    const newCount = Math.max(0, currentRequests - 1);
-    set({ activeRequests: newCount });
+    set((state) => {
+        const newCount = Math.max(0, state.activeRequests - 1);
 
-    // Si il reste des demandes (ex: navigation page A -> B très rapide), on NE CACHE PAS
-    if (newCount > 0) return;
+        // Side effect: Hide banner if count reaches 0
+        if (newCount === 0 && state.isBannerVisible) {
+            AdMob.hideBanner().catch(console.error);
+            return { activeRequests: 0, isBannerVisible: false, bannerHeight: 0 };
+        }
 
-    try {
-        await AdMob.hideBanner();
-        set({ isBannerVisible: false, bannerHeight: 0 });
-    } catch (error) {
-        console.error('Failed to hide AdMob banner:', error);
-    }
+        return { activeRequests: newCount };
+    });
   },
 }));

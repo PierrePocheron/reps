@@ -47,7 +47,12 @@ if (existingApps.length === 0) {
 }
 
 // Initialisation des services Firebase
-import { initializeAuth as initializeFirebaseAuth, indexedDBLocalPersistence, browserLocalPersistence } from 'firebase/auth';
+import {
+  initializeAuth as initializeFirebaseAuth,
+  indexedDBLocalPersistence,
+  browserLocalPersistence,
+  browserPopupRedirectResolver
+} from 'firebase/auth';
 import { Capacitor } from '@capacitor/core';
 
 // Configuration explicite de la persistance pour Capacitor

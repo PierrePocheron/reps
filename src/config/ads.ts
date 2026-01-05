@@ -1,6 +1,8 @@
 export const ADS_CONFIG = {
   // Master toggle pour activer/désactiver les publicités globalement
   ENABLED: true,
+  // Toggle spécifique mobile (pour validation stores)
+  ENABLED_MOBILE: false,
 
   // Configuration AdSense (Web)
   ADSENSE: {

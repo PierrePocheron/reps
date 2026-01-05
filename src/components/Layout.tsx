@@ -11,9 +11,23 @@ interface LayoutProps {
 /**
  * Layout principal de l'application avec gestion du mode offline
  */
+import { useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+
+// ... (imports)
+
 export function Layout({ children }: LayoutProps) {
   const { isOffline } = useOffline();
-  const { bannerHeight } = useAdStore();
+  const { bannerHeight, reset } = useAdStore();
+  const location = useLocation();
+
+  // Fail-safe: Si on est sur la home ('/'), on force le reset des pubs
+  // au cas où le compteur serait désynchronisé
+  useEffect(() => {
+    if (location.pathname === '/') {
+       reset();
+    }
+  }, [location.pathname, reset]);
 
   return (
     <>
