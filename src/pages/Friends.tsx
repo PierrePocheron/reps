@@ -253,7 +253,7 @@ export default function Friends() {
             ) : activities.length > 0 ? (
               <div className="space-y-4">
                 {activities.map((activityItem) => {
-                  const item = activityItem as unknown as Session & { type?: string; badgeName?: string; badgeEmoji?: string };
+                  const item = activityItem as unknown as Session & { id?: string; type?: string; badgeName?: string; badgeEmoji?: string };
                   const friend = getFriendDetails(item.userId);
                   // Pour les événements 'new_friend', on veut afficher l'info même si on n'est pas (encore) ami avec la 3ème personne
                   // Mais ici item.userId est celui qui a généré l'événement (donc notre ami).
