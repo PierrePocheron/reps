@@ -53,6 +53,7 @@ import { Capacitor } from '@capacitor/core';
 // Configuration explicite de la persistance pour Capacitor
 export const auth: Auth = initializeFirebaseAuth(app, {
   persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+  popupRedirectResolver: browserPopupRedirectResolver, // Nécessaire pour signInWithPopup
 });
 
 // Configuration de Firestore avec cache local persistant (nouvelle API)
