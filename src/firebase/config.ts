@@ -91,7 +91,6 @@ if (typeof window !== 'undefined') {
       provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),
       isTokenAutoRefreshEnabled: true,
     });
-    console.log('App Check initialisé');
   } catch (err) {
     console.warn('Erreur lors de l\'initialisation de App Check:', err);
   }

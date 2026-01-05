@@ -3,7 +3,7 @@ import { useUserStore } from '@/store/userStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { subscribeToFriendRequests } from '@/firebase/firestore';
 import { applyThemeColor } from '@/utils/theme-colors';
-import { initializeAdMob } from '@/components/AdSpace';
+import { initializeAdMob } from '@/utils/admob';
 
 /**
  * Composant d'initialisation de l'application

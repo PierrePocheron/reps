@@ -47,7 +47,7 @@ export function useSession() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isActive, startTime]);
+  }, [isActive, startTime, endSession]);
 
   return {
     // État

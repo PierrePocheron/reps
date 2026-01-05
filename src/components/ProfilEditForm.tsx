@@ -133,11 +133,12 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
       if (onSuccess) {
         onSuccess();
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
+      const err = error as Error;
       toast({
         title: 'Erreur',
-        description: error.message || 'Impossible de mettre à jour le profil.',
+        description: err.message || 'Impossible de mettre à jour le profil.',
         variant: 'destructive',
       });
     } finally {

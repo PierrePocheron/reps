@@ -16,7 +16,7 @@ import Login from './pages/Login';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 import { useEffect } from 'react';
-import { initializeAdMob } from '@/components/AdSpace';
+import { initializeAdMob } from '@/utils/admob';
 
 function App() {
   const location = useLocation();

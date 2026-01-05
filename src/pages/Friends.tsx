@@ -75,7 +75,7 @@ export default function Friends() {
     };
 
     loadFriends();
-  }, [user?.friends]);
+  }, [user, user?.friends]);
 
   // Load activity when tab changes to 'activity' and friends are loaded
   useEffect(() => {
@@ -132,10 +132,11 @@ export default function Friends() {
       });
       // Remove from search results to give feedback
       setSearchResults(prev => prev.filter(u => u.uid !== toUserId));
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as Error;
       toast({
         title: 'Erreur',
-        description: error.message || 'Impossible d\'envoyer la demande',
+        description: err.message || 'Impossible d\'envoyer la demande',
         variant: 'destructive',
       });
     }
@@ -199,6 +200,7 @@ export default function Friends() {
     return friends.find(f => f.uid === userId);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '';
     const date = timestamp.toDate();
@@ -250,7 +252,8 @@ export default function Friends() {
               </div>
             ) : activities.length > 0 ? (
               <div className="space-y-4">
-                {activities.map((item: any) => {
+                {activities.map((activityItem) => {
+                  const item = activityItem as unknown as Session & { type?: string; badgeName?: string; badgeEmoji?: string };
                   const friend = getFriendDetails(item.userId);
                   // Pour les événements 'new_friend', on veut afficher l'info même si on n'est pas (encore) ami avec la 3ème personne
                   // Mais ici item.userId est celui qui a généré l'événement (donc notre ami).
@@ -336,9 +339,9 @@ export default function Friends() {
 
                             <div className="mt-3 space-y-1">
                               {item.exercises && item.exercises
-                                .sort((a: any, b: any) => b.reps - a.reps)
+                                .sort((a, b) => b.reps - a.reps)
                                 .slice(0, 3)
-                                .map((exo: any, idx: number) => (
+                                .map((exo, idx) => (
                                 <div key={idx} className="flex items-center justify-between text-sm bg-muted/30 p-1.5 rounded-md">
                                   <span className="flex items-center gap-2 truncate">
                                     <span>{exo.emoji}</span>

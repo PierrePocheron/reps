@@ -63,7 +63,7 @@ export default function Leaderboard() {
     };
 
     fetchStats();
-  }, [user, activeTab]);
+  }, [user, activeTab, friendsDetails.length]);
 
   const getUserDetails = (userId: string) => {
     if (user && userId === user.uid) return user;

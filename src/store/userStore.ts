@@ -85,7 +85,6 @@ export const useUserStore = create<UserState>((set, get) => ({
       if (firebaseUser) {
         // Charger le profil utilisateur
         try {
-          console.log('[DEBUG_IOS] Calling loadUserProfile...');
           await loadUserProfile();
         } catch (error) {
           console.error('[DEBUG_IOS] Erreur lors du chargement du profil:', error);
@@ -93,7 +92,6 @@ export const useUserStore = create<UserState>((set, get) => ({
         }
       } else {
         // Réinitialiser l'état si déconnecté
-        console.log('[DEBUG_IOS] Resetting state (logged out)');
         get().reset();
       }
 
@@ -107,25 +105,19 @@ export const useUserStore = create<UserState>((set, get) => ({
   loadUserProfile: async () => {
     try {
       const { currentUser } = get();
-      console.log('[UserStore] Starting loadUserProfile', currentUser?.uid);
 
       if (!currentUser) {
-        console.log('[UserStore] No currentUser, resetting state');
         set({ user: null, stats: null, isLoading: false });
         return;
       }
 
       // Récupérer le profil
-      console.log('[UserStore] Fetching getCurrentUserProfile...');
       const userProfile = await getCurrentUserProfile();
-      console.log('[UserStore] getCurrentUserProfile result:', userProfile ? 'Found' : 'Null');
 
       if (userProfile) {
         get().setUser(userProfile);
 
-        console.log('[UserStore] Refreshing stats...');
         await get().refreshStats();
-        console.log('[UserStore] Stats refreshed');
 
         if (currentUser.uid === userProfile.uid) {
              subscribeToUser(currentUser.uid, (updatedUser) => {
@@ -135,14 +127,12 @@ export const useUserStore = create<UserState>((set, get) => ({
             });
         }
       } else {
-        console.log('[UserStore] Profile not found, waiting 1s...');
+        // Retry logic...
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        console.log('[UserStore] Retrying fetch...');
         const retryProfile = await getCurrentUserProfile();
 
         if (retryProfile) {
-           console.log('[UserStore] Retry successful');
            get().setUser(retryProfile);
            await get().refreshStats();
 
