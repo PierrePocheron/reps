@@ -118,10 +118,6 @@ function Session() {
             addExercise(exerciseToAdd);
           }
         });
-        toast({
-          title: 'Exercices importés',
-          description: 'Les exercices de votre dernière séance ont été ajoutés.',
-        });
       } else {
         toast({
           title: 'Aucune séance trouvée',
@@ -152,11 +148,6 @@ function Session() {
       if (!hasExercise(ex.name)) {
         addExercise(ex);
       }
-    });
-
-    toast({
-      title: 'Template chargé',
-      description: 'Tractions, Dips et Pompes ajoutés !',
     });
   };
 
