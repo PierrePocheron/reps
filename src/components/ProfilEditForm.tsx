@@ -150,15 +150,18 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="displayName">Pseudo</Label>
-        <Input
-          id="displayName"
-          value={formData.displayName}
-          onChange={(e) => setFormData({ ...formData, displayName: e.target.value.toLowerCase() })} // Force lowercase input visual
-          placeholder="pseudo_unique"
-          required
-          disabled={!canEditUsername}
-          className={!canEditUsername ? "opacity-50 cursor-not-allowed" : ""}
-        />
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium select-none">@</span>
+          <Input
+            id="displayName"
+            value={formData.displayName}
+            onChange={(e) => setFormData({ ...formData, displayName: e.target.value.toLowerCase() })} // Force lowercase input visual
+            placeholder="pseudo_unique"
+            required
+            disabled={!canEditUsername}
+            className={`pl-8 ${!canEditUsername ? "opacity-50 cursor-not-allowed" : ""}`}
+          />
+        </div>
         {!canEditUsername && (
             <p className="text-xs text-muted-foreground text-orange-500">
                 Vous pourrez changer de pseudo dans {getDaysBeforeNextChange()} jours.
