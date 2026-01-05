@@ -8,6 +8,12 @@ export const ADS_CONFIG = {
   ADSENSE: {
     CLIENT_ID: 'ca-pub-1431137074985627',
     TEST_MODE: import.meta.env.DEV, // En dev, on évite de charger les vraies pubs ou on met un mode test
+    // IDs des blocs d'annonces (à créer dans la console AdSense)
+    SLOTS: {
+      LEADERBOARD_FEED: '9834891243', // Test ad classement
+      STATISTICS_TOP: '7111513229',   // Ad stats top
+      STATISTICS_BOTTOM: '2509923230' // Ad stats bottom
+    }
   },
 
   // Configuration AdMob (Mobile)

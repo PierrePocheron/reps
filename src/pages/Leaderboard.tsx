@@ -9,6 +9,7 @@ import { Trophy, Medal, Calendar, TrendingUp } from 'lucide-react';
 import { User } from '@/firebase/types';
 import { UserAvatar } from '@/components/UserAvatar';
 import { AdSpace } from '@/components/AdSpace';
+import { ADS_CONFIG } from '@/config/ads';
 
 export default function Leaderboard() {
   const { user } = useUserStore();
@@ -177,7 +178,11 @@ export default function Leaderboard() {
 
                         {/* Publicité après le 3ème (index 2) et le 7ème (index 6) */}
                         {((index === 2) || (index === 6)) && (
-                            <AdSpace className="my-3" adId="ca-app-pub-1431137074985627/2893707245" />
+                            <AdSpace
+                              className="my-3"
+                              adId="ca-app-pub-1431137074985627/2893707245"
+                              slotId={ADS_CONFIG.ADSENSE.SLOTS.LEADERBOARD_FEED}
+                            />
                         )}
                     </div>
                   );
@@ -185,7 +190,11 @@ export default function Leaderboard() {
 
                 {/* Publicité par défaut si moins de 3 utilisateurs */}
                 {stats.length > 0 && stats.length < 3 && (
-                    <AdSpace className="mt-4" adId="ca-app-pub-1431137074985627/2893707245" />
+                    <AdSpace
+                      className="mt-4"
+                      adId="ca-app-pub-1431137074985627/2893707245"
+                      slotId={ADS_CONFIG.ADSENSE.SLOTS.LEADERBOARD_FEED}
+                    />
                 )}
 
                 {stats.length === 0 && (

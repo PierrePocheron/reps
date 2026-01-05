@@ -4,6 +4,7 @@ import { BackButton } from '@/components/BackButton';
 import { useUserStore } from '@/store/userStore';
 import { Flame, Dumbbell, Calendar, Zap, AlertTriangle, Trophy, Sunrise, Sun, Moon } from 'lucide-react';
 import { AdSpace } from '@/components/AdSpace';
+import { ADS_CONFIG } from '@/config/ads';
 
 export default function Statistics() {
   const { user, stats } = useUserStore();
@@ -130,7 +131,10 @@ export default function Statistics() {
         {stats?.exercisesDistribution && stats.exercisesDistribution.length > 0 && (
           <div className="space-y-4">
              {/* Pub avant Exercices Favoris */}
-            <AdSpace adId="ca-app-pub-1431137074985627/2893707245" />
+            <AdSpace
+              adId="ca-app-pub-1431137074985627/2893707245"
+              slotId={ADS_CONFIG.ADSENSE.SLOTS.STATISTICS_TOP}
+            />
 
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <Trophy className="w-4 h-4 text-primary" />
@@ -222,7 +226,10 @@ export default function Statistics() {
         {/* Habitudes (Distribution) */}
 
         {/* Pub avant Habitudes (Carte séparée) */}
-        <AdSpace adId="ca-app-pub-1431137074985627/2893707245" />
+        <AdSpace
+          adId="ca-app-pub-1431137074985627/2893707245"
+          slotId={ADS_CONFIG.ADSENSE.SLOTS.STATISTICS_BOTTOM}
+        />
 
         <div className="bg-card border rounded-xl p-5">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
