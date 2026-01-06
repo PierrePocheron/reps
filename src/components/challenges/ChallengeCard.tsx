@@ -155,9 +155,10 @@ export function ChallengeCard({ activeChallenge, userId, detailed }: ChallengeCa
                              def.difficulty === 'medium' ? 'Moyen' : 'Facile'}
                         </span>
 
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Calendar className="w-3 h-3" />
-                            <span>J{Math.min(dayIndex + 1, def.durationDays)}/{def.durationDays}</span>
+                        <div className="flex items-center gap-1">
+                            <span className="bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border">
+                                J {Math.min(dayIndex + 1, def.durationDays)} / {def.durationDays}
+                            </span>
                         </div>
                     </div>
                 </div>
