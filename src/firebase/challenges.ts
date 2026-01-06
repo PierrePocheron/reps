@@ -10,7 +10,8 @@ import {
   runTransaction
 } from 'firebase/firestore';
 import { db } from './config';
-import { SessionExercise } from './types';
+import { calculateDynamicCalories } from '@/utils/calories';
+import { User, SessionExercise } from './types';
 import { DEFAULT_EXERCISES } from '@/utils/constants';
 
 // --- Types ---
@@ -255,15 +256,18 @@ export const validateChallengeDay = async (
             const userRef = doc(db, 'users', userId);
             const userDoc = await transaction.get(userRef);
             if (!userDoc.exists()) throw new Error("User not found");
+            const userData = userDoc.data() as User;
 
-            // Calculate Calories roughly
-            const met = exerciseDef.met || 3.0;
-            const calories = Math.round(reps * (met / 2)); // Simplified algo
+            // Calculate Calories precisely
+            const calories = Math.round(calculateDynamicCalories(userData, exerciseDef, reps));
 
             // E. Updates
 
             // 1. Create Session
-            transaction.set(sessionRef, sessionData);
+            transaction.set(sessionRef, {
+                ...sessionData,
+                totalCalories: calories // Add computed calories to session document
+            });
 
             // 2. Update User Stats
             transaction.update(userRef, {

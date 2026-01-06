@@ -20,7 +20,7 @@ function Home() {
   const { isAuthenticated, isLoading } = useAuth();
   const { user, stats } = useUserStore();
   const { isActive, duration } = useSession();
-  const { activeChallenges, isLoading: isLoadingChallenges } = useChallenges();
+  const { activeChallenges } = useChallenges();
   const [motivationalPhrase] = useState(() => DEFAULT_MOTIVATIONAL_PHRASES[Math.floor(Math.random() * DEFAULT_MOTIVATIONAL_PHRASES.length)]);
 
   // Fetch Last Session Details
@@ -94,10 +94,28 @@ function Home() {
 
         {/* Section Challenge */}
         <div>
-            <ChallengeCard
-                userId={user?.uid || ''}
-                activeChallenge={activeChallenges.length > 0 ? activeChallenges[0] : undefined}
-            />
+            {activeChallenges.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    {activeChallenges
+                        .sort((a, b) => {
+                            // Sort logic: Not completed today FIRST
+                            const todayStr = new Date().toISOString().split('T')[0];
+                            const aDone = a.history.some(h => h.date === todayStr && h.completed);
+                            const bDone = b.history.some(h => h.date === todayStr && h.completed);
+                            if (aDone === bDone) return 0;
+                            return aDone ? 1 : -1;
+                        })
+                        .map(challenge => (
+                        <ChallengeCard
+                            key={challenge.id}
+                            userId={user?.uid || ''}
+                            activeChallenge={challenge}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <ChallengeCard userId={user?.uid || ''} />
+            )}
         </div>
 
         {/* Hero Section - Start/Resume Session */}

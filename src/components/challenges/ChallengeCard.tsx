@@ -142,7 +142,7 @@ export function ChallengeCard({ activeChallenge, userId }: ChallengeCardProps) {
         </div>
 
         {/* Action Area */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-3 mt-4">
             <div className={`flex flex-col ${isDoneToday ? 'opacity-50' : ''}`}>
                 <span className="text-xs font-semibold uppercase text-muted-foreground">Objectif</span>
                 <div className="flex items-baseline gap-1">
@@ -152,11 +152,12 @@ export function ChallengeCard({ activeChallenge, userId }: ChallengeCardProps) {
             </div>
 
             {isDoneToday ? (
-                <Button variant="outline" className="flex-1 bg-green-500/10 border-green-500/20 text-green-700 hover:bg-green-500/20" disabled>
-                    Validé pour aujourd'hui
+                <Button variant="outline" className="flex-1 bg-green-500/10 border-green-500/20 text-green-700 hover:bg-green-500/20 px-2" disabled>
+                    <CheckCircle2 className="w-4 h-4 mr-1.5" />
+                    Validé
                 </Button>
             ) : (
-                <Button onClick={handleValidate} disabled={isValidating} className="flex-1">
+                <Button onClick={handleValidate} disabled={isValidating} className="flex-1 px-2">
                     {isValidating ? <LoadingSpinner size="sm"/> : "Valider"}
                 </Button>
             )}
