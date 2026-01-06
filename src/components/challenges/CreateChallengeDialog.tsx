@@ -10,7 +10,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { DEFAULT_EXERCISES } from '@/utils/constants';
-import { createCustomChallenge, ChallengeDifficulty } from '@/firebase/challenges';
+import { createCustomChallenge, ChallengeDifficulty, getCustomChallengeParams } from '@/firebase/challenges';
 import { useUserStore } from '@/store/userStore';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -63,14 +63,7 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
     };
 
     const getDifficultyParams = (diff: ChallengeDifficulty) => {
-        let base = 1, inc = 1;
-        switch (diff) {
-            case 'easy': base = 5; inc = 1; break;
-            case 'medium': base = 10; inc = 2; break;
-            case 'hard': base = 20; inc = 3; break;
-            case 'extreme': base = 30; inc = 5; break;
-        }
-        return { base, inc };
+        return getCustomChallengeParams(diff, selectedExercise || 'pushups');
     }
 
     const getEstimatedTotal = (diff: ChallengeDifficulty, days: number): number => {
@@ -131,7 +124,7 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                     {/* STEP 2: DURATION */}
                     {step === 2 && (
                         <div className="space-y-3">
-                            {[7, 30, 60, 90, 365].map(d => {
+                            {[7, 30, 60, 180, 365].map(d => {
                                 const isSelected = duration === d;
                                 let title = '', desc = '';
                                 let baseColor = '', dotColor = '';
@@ -148,8 +141,8 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                                     title = '60 Jours'; desc = 'Pour ancrer l\'habitude';
                                     baseColor = 'text-yellow-500 border-yellow-500/30 bg-yellow-500/5'; dotColor = 'bg-yellow-500';
                                 }
-                                if (d === 90) {
-                                    title = '90 Jours'; desc = 'Transformation complète';
+                                if (d === 180) {
+                                    title = '6 Mois'; desc = 'Transformation complète';
                                     baseColor = 'text-orange-500 border-orange-500/30 bg-orange-500/5'; dotColor = 'bg-orange-500';
                                 }
                                 if (d === 365) {
