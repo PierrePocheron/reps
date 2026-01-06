@@ -13,6 +13,7 @@ import Statistics from './pages/Statistics';
 import Friends from './pages/Friends';
 import Leaderboard from './pages/Leaderboard';
 import Login from './pages/Login';
+import Challenges from './pages/Challenges';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 import { useEffect } from 'react';
@@ -109,6 +110,16 @@ function App() {
                         </PageTransition>
                       }
                     />
+                      <Route
+                        path="/challenges"
+                        element={
+                          <PageTransition>
+                            <div className="safe-area-top">
+                              <Challenges />
+                            </div>
+                          </PageTransition>
+                        }
+                      />
                   </Routes>
                 </AnimatePresence>
               </Layout>

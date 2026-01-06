@@ -39,6 +39,13 @@ export const DEFAULT_EXERCISES: Exercise[] = [
     met: 3.0,
     timePerRep: 2.0,
   },
+  {
+    id: 'lateral_raises',
+    name: 'Élévations Lat.',
+    emoji: '🦅',
+    met: 3.5,
+    timePerRep: 2.5,
+  },
 ];
 
 /**

@@ -11,12 +11,17 @@ import { UserAvatar } from '@/components/UserAvatar';
 import { getLastSession } from '@/firebase/firestore';
 import type { Session } from '@/firebase/types';
 import { useState, useEffect } from 'react';
+import { ChallengeCard } from '@/components/challenges/ChallengeCard';
+import { useChallenges } from '@/hooks/useChallenges';
+import { DEFAULT_MOTIVATIONAL_PHRASES } from '@/utils/constants';
 
 function Home() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
   const { user, stats } = useUserStore();
   const { isActive, duration } = useSession();
+  const { activeChallenges, isLoading: isLoadingChallenges } = useChallenges();
+  const [motivationalPhrase] = useState(() => DEFAULT_MOTIVATIONAL_PHRASES[Math.floor(Math.random() * DEFAULT_MOTIVATIONAL_PHRASES.length)]);
 
   // Fetch Last Session Details
   const [lastSessionDetail, setLastSessionDetail] = useState<Session | null>(null);
@@ -75,6 +80,24 @@ function Home() {
               <UserAvatar user={user} size="sm" className="h-9 w-9 border-none" />
             )}
           </button>
+        </div>
+
+        {/* Message de bienvenue */}
+        <div className="mb-2">
+            <h2 className="text-xl font-medium text-muted-foreground">
+                Bonjour <span className="text-foreground font-bold">{user?.displayName}</span>
+            </h2>
+            {motivationalPhrase && (
+                <p className="text-sm text-muted-foreground">{motivationalPhrase.text} {motivationalPhrase.emoji}</p>
+            )}
+        </div>
+
+        {/* Section Challenge */}
+        <div>
+            <ChallengeCard
+                userId={user?.uid || ''}
+                activeChallenge={activeChallenges.length > 0 ? activeChallenges[0] : undefined}
+            />
         </div>
 
         {/* Hero Section - Start/Resume Session */}
