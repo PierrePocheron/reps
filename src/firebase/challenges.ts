@@ -221,19 +221,11 @@ export const joinChallenge = async (userId: string, challengeId: string): Promis
   return newChallengeRef.id;
 };
 
-// 1.5 Create Custom Challenge
-export const createCustomChallenge = async (
-    userId: string,
-    exerciseId: string,
-    duration: number,
-    difficulty: 'easy' | 'medium' | 'hard' | 'extreme'
-): Promise<string> => {
-    // A. Determine Parameters based on Difficulty
+// Helper to determine custom challenge params (Centralized for consistency)
+export const getCustomChallengeParams = (difficulty: 'easy' | 'medium' | 'hard' | 'extreme', exerciseId: string) => {
     let base = 1;
     let inc = 1;
 
-    // Logic multipliers (generic, can be tweaked per exercise type later if needed)
-    // For now, simple scaling.
     switch (difficulty) {
         case 'easy': base = 5; inc = 1; break;
         case 'medium': base = 10; inc = 2; break;
@@ -246,6 +238,19 @@ export const createCustomChallenge = async (
         base = Math.max(1, Math.round(base / 3));
         inc = Math.max(1, Math.round(inc / 2));
     }
+
+    return { base, inc };
+};
+
+// 1.5 Create Custom Challenge
+export const createCustomChallenge = async (
+    userId: string,
+    exerciseId: string,
+    duration: number,
+    difficulty: 'easy' | 'medium' | 'hard' | 'extreme'
+): Promise<string> => {
+    // A. Determine Parameters
+    const { base, inc } = getCustomChallengeParams(difficulty, exerciseId);
 
     // B. Build Definition
     const exerciseDef = DEFAULT_EXERCISES.find(e => e.id === exerciseId);
