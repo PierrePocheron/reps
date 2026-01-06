@@ -12,7 +12,7 @@ import {
 import { db } from './config';
 import { calculateDynamicCalories } from '@/utils/calories';
 import { User, SessionExercise } from './types';
-import { DEFAULT_EXERCISES } from '@/utils/constants';
+import { DEFAULT_EXERCISES, MAX_ACTIVE_CHALLENGES } from '@/utils/constants';
 
 // --- Types ---
 
@@ -191,6 +191,17 @@ export const joinChallenge = async (userId: string, challengeId: string): Promis
   const def = getChallengeDef(challengeId);
   if (!def) throw new Error("Challenge template not found");
 
+  // Check Limit
+  const activeQ = query(
+    collection(db, 'user_challenges'),
+    where('userId', '==', userId),
+    where('status', '==', 'active')
+  );
+  const activeSnap = await getDocs(activeQ);
+  if (activeSnap.size >= MAX_ACTIVE_CHALLENGES) {
+      throw new Error(`Limite atteinte : Vous ne pouvez avoir que ${MAX_ACTIVE_CHALLENGES} défis actifs en même temps.`);
+  }
+
   // Check if already active
   const q = query(
     collection(db, 'user_challenges'),
@@ -251,6 +262,17 @@ export const createCustomChallenge = async (
 ): Promise<string> => {
     // A. Determine Parameters
     const { base, inc } = getCustomChallengeParams(difficulty, exerciseId);
+
+    // Check Limit
+    const activeQ = query(
+        collection(db, 'user_challenges'),
+        where('userId', '==', userId),
+        where('status', '==', 'active')
+    );
+    const activeSnap = await getDocs(activeQ);
+    if (activeSnap.size >= MAX_ACTIVE_CHALLENGES) {
+        throw new Error(`Limite atteinte : Vous ne pouvez avoir que ${MAX_ACTIVE_CHALLENGES} défis actifs en même temps.`);
+    }
 
     // B. Build Definition
     const exerciseDef = DEFAULT_EXERCISES.find(e => e.id === exerciseId);

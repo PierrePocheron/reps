@@ -3,6 +3,8 @@ import type { Exercise, Badge } from '@/firebase/types';
 /**
  * Exercices par défaut disponibles dans l'application
  */
+export const MAX_ACTIVE_CHALLENGES = 6;
+
 export const DEFAULT_EXERCISES: Exercise[] = [
   {
     id: 'pushups',
