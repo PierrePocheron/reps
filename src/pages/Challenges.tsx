@@ -19,6 +19,9 @@ function Challenges() {
   const { toast } = useToast();
   const { user } = useUserStore();
   const { activeChallenges, isLoading, refreshChallenges } = useChallenges();
+  const dailyDoneCount = activeChallenges.filter(c =>
+    c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed)
+  ).length;
   const [isJoining, setIsJoining] = useState<string | null>(null);
 
   const handleJoin = async (challengeId: string) => {
@@ -76,7 +79,7 @@ function Challenges() {
             <div className="mb-8">
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-yellow-500" />
-                    En cours ({activeChallenges.length})
+                    En cours <span className="text-muted-foreground text-sm font-normal">({dailyDoneCount}/{activeChallenges.length})</span>
                 </h2>
 
                 <div className="space-y-4">

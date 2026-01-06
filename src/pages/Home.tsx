@@ -21,6 +21,9 @@ function Home() {
   const { user, stats } = useUserStore();
   const { isActive, duration } = useSession();
   const { activeChallenges } = useChallenges();
+  const dailyDoneCount = activeChallenges.filter(c =>
+    c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed)
+  ).length;
   const [motivationalPhrase] = useState(() => DEFAULT_MOTIVATIONAL_PHRASES[Math.floor(Math.random() * DEFAULT_MOTIVATIONAL_PHRASES.length)]);
 
   // Fetch Last Session Details
@@ -99,7 +102,7 @@ function Home() {
                     <div className="flex items-center justify-between">
                          <h2 className="text-lg font-semibold flex items-center gap-2">
                             <Trophy className="w-5 h-5 text-yellow-500" />
-                            Défis en cours
+                            Défis en cours <span className="text-muted-foreground text-sm font-normal">({dailyDoneCount}/{activeChallenges.length})</span>
                         </h2>
                         {activeChallenges.length > 6 && (
                              <Button variant="ghost" size="sm" onClick={() => navigate('/challenges')} className="text-xs h-8">
