@@ -52,79 +52,103 @@ export interface UserChallenge {
   history: ChallengeHistoryEntry[];
 }
 
-// --- Configuration (Templates) ---
-
+// --- Templates ---
 export const CHALLENGE_TEMPLATES: ChallengeDefinition[] = [
-  // Pompes
+  // EASY (2)
   {
-    id: 'pushups_easy',
-    exerciseId: 'pushups',
-    title: 'Défi Pompes',
-    description: '1 pompe le premier jour, +1 chaque jour. Idéal pour débuter.',
+    id: 'c_squats_easy',
+    exerciseId: 'squats',
+    title: 'Squats Débutant',
+    description: '14 jours pour renforcer tes jambes en douceur.',
     difficulty: 'easy',
     logic: 'progressive',
-    durationDays: 30,
-    baseAmount: 1,
-    increment: 1,
+    durationDays: 14,
+    baseAmount: 20,
+    increment: 2
   },
   {
-    id: 'pushups_medium',
+    id: 'c_abs_easy',
+    exerciseId: 'abs',
+    title: 'Abdos Express',
+    description: 'Une routine de 3 semaines pour un core solide.',
+    difficulty: 'easy',
+    logic: 'progressive',
+    durationDays: 21,
+    baseAmount: 10,
+    increment: 2
+  },
+
+  // MEDIUM (2)
+  {
+    id: 'c_pushups_medium',
     exerciseId: 'pushups',
-    title: 'Défi Pompes',
-    description: '5 pompes le premier jour, +2 chaque jour. Ça commence à chauffer.',
+    title: 'Pompes Classique',
+    description: 'Le grand classique pour des pecs en acier.',
+    difficulty: 'medium',
+    logic: 'progressive',
+    durationDays: 30,
+    baseAmount: 15,
+    increment: 1
+  },
+  {
+    id: 'c_dips_medium',
+    exerciseId: 'dips',
+    title: 'Dips Progression',
+    description: 'Développe tes triceps et tes épaules.',
     difficulty: 'medium',
     logic: 'progressive',
     durationDays: 30,
     baseAmount: 5,
-    increment: 2,
+    increment: 1
   },
+
+  // HARD (2)
   {
-    id: 'pushups_hard',
-    exerciseId: 'pushups',
-    title: 'Défi Pompes',
-    description: '10 pompes le premier jour, +3 chaque jour. Pour les vrais.',
+    id: 'c_pullups_hard',
+    exerciseId: 'pullups',
+    title: 'Tractions Pro',
+    description: 'L\'exercice roi pour le dos.',
     difficulty: 'hard',
     logic: 'progressive',
-    durationDays: 30,
-    baseAmount: 10,
-    increment: 3,
-  },
-   // Tractions
-  {
-    id: 'pullups_easy',
-    exerciseId: 'pullups',
-    title: 'Défi Tractions',
-    description: '1 traction le premier jour, +1 chaque jour.',
-    difficulty: 'easy',
-    logic: 'progressive',
-    durationDays: 30,
-    baseAmount: 1,
-    increment: 1,
-  },
-  // Squats
-  {
-    id: 'squats_easy',
-    exerciseId: 'squats',
-    title: 'Défi Squats',
-    description: '5 squats le premier jour, +2 chaque jour.',
-    difficulty: 'easy',
-    logic: 'progressive',
-    durationDays: 30,
+    durationDays: 45,
     baseAmount: 5,
-    increment: 2,
+    increment: 1
   },
-   // Élévations Latérales
   {
-    id: 'lateral_easy',
+    id: 'c_lateral_hard',
     exerciseId: 'lateral_raises',
     title: 'Épaules 3D',
-    description: '5 reps le premier jour, +1 chaque jour.',
-    difficulty: 'easy',
+    description: 'Volume maximal pour des épaules larges.',
+    difficulty: 'hard',
     logic: 'progressive',
-    durationDays: 30,
-    baseAmount: 5,
-    increment: 1,
+    durationDays: 60,
+    baseAmount: 15,
+    increment: 3
   },
+
+  // EXTREME (2)
+  {
+    id: 'c_pushups_extreme',
+    exerciseId: 'pushups',
+    title: 'Pompes Spartan',
+    description: '100 jours pour devenir une machine.',
+    difficulty: 'extreme',
+    logic: 'progressive',
+    durationDays: 100,
+    baseAmount: 20,
+    increment: 2
+  },
+  {
+    id: 'c_pullups_extreme',
+    exerciseId: 'pullups',
+    title: 'Tractions Elite',
+    description: 'Un défi mental et physique hors normes.',
+    difficulty: 'extreme',
+    logic: 'progressive',
+    durationDays: 180,
+    baseAmount: 8,
+    increment: 2
+  }
 ];
 
 // --- Helpers ---
@@ -312,11 +336,7 @@ export const validateChallengeDay = async (
                 duration: 0, // Quick validation = 0 duration or minimal
                 exercises: [{
                      id: def.exerciseId,
-                     name: def.exerciseId === 'lateral_raises' ? 'Élévations Lat.' :
-                           def.exerciseId === 'pushups' ? 'Pompes' :
-                           def.exerciseId === 'pullups' ? 'Tractions' :
-                           def.exerciseId === 'squats' ? 'Squats' :
-                           def.exerciseId === 'dips' ? 'Dips' : def.exerciseId,
+                     name: exerciseDef.name,
                      emoji: exerciseDef.emoji,
                      sets: 1,
                      reps: reps,

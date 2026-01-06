@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { BackButton } from '@/components/BackButton';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
@@ -12,7 +10,7 @@ import {
     ChallengeDefinition
 } from '@/firebase/challenges';
 import { useChallenges } from '@/hooks/useChallenges';
-import { Trophy, Clock, CheckCircle2, ChevronDown } from 'lucide-react';
+import { Trophy, CheckCircle2, ChevronDown } from 'lucide-react';
 import { ChallengeCard } from '@/components/challenges/ChallengeCard';
 import { CreateChallengeDialog } from '@/components/challenges/CreateChallengeDialog';
 
@@ -144,48 +142,15 @@ function Section({ title, challenges, onJoin, isJoining }: { title: string, chal
     return (
         <div>
              <h2 className="text-lg font-semibold mb-3">{title}</h2>
-             <div className="grid gap-3">
+             <div className="grid grid-cols-2 gap-3">
                 {challenges.map(challenge => (
-                    <Card key={challenge.id} className="hover:border-primary/50 transition-colors">
-                        <CardContent className="p-4">
-                            <div className="flex justify-between items-start mb-2">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-2xl h-10 w-10 flex items-center justify-center bg-muted rounded-full">
-                                        {challenge.exerciseId === 'pushups' ? '💪' :
-                                         challenge.exerciseId === 'pullups' ? '🧗' :
-                                         challenge.exerciseId === 'squats' ? '🦵' :
-                                         challenge.exerciseId === 'dips' ? '♣️' :
-                                         challenge.exerciseId === 'abs' ? '🍫' :
-                                         challenge.exerciseId === 'lateral_raises' ? '🥥' : '🦅'}
-                                    </span>
-                                    <div>
-                                        <h3 className="font-bold">{challenge.title}</h3>
-                                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                                            <span className="flex items-center gap-1">
-                                                <Clock className="w-3 h-3" /> {challenge.durationDays} jours
-                                            </span>
-                                            <span className="bg-muted px-1.5 py-0.5 rounded text-[10px] uppercase font-bold tracking-wide">
-                                                +{challenge.increment} / jour
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <p className="text-sm text-muted-foreground mb-4">
-                                {challenge.description}
-                            </p>
-
-                            <Button
-                                className="w-full"
-                                variant="secondary"
-                                disabled={isJoining !== null}
-                                onClick={() => onJoin(challenge.id)}
-                            >
-                                {isJoining === challenge.id ? <LoadingSpinner size="sm" /> : "Relever le défi"}
-                            </Button>
-                        </CardContent>
-                    </Card>
+                    <ChallengeCard
+                        key={challenge.id}
+                        userId="" // Not needed for template mode
+                        template={challenge}
+                        onJoin={onJoin}
+                        isJoining={isJoining === challenge.id}
+                    />
                 ))}
             </div>
         </div>
