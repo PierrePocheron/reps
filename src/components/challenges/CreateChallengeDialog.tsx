@@ -130,21 +130,59 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
 
                     {/* STEP 2: DURATION */}
                     {step === 2 && (
-                        <div className="grid grid-cols-2 gap-3">
-                            {[30, 60, 90, 365].map(d => (
-                                <button
-                                    key={d}
-                                    onClick={() => setDuration(d)}
-                                    className={`p-4 rounded-lg border-2 flex flex-col items-center gap-2 transition-all ${
-                                        duration === d
-                                            ? 'border-primary bg-primary/10'
-                                            : 'border-muted hover:border-primary/50'
-                                    }`}
-                                >
-                                    <Calendar className="w-6 h-6 text-primary" />
-                                    <span className="font-bold">{d === 365 ? '1 An' : `${d} Jours`}</span>
-                                </button>
-                            ))}
+                        <div className="space-y-3">
+                            {[7, 30, 60, 90, 365].map(d => {
+                                const isSelected = duration === d;
+                                let title = '', desc = '';
+                                let baseColor = '', dotColor = '';
+
+                                if (d === 7) {
+                                    title = '7 Jours'; desc = 'Découverte express';
+                                    baseColor = 'text-sky-500 border-sky-500/30 bg-sky-500/5'; dotColor = 'bg-sky-500';
+                                }
+                                if (d === 30) {
+                                    title = '30 Jours'; desc = 'Idéal pour commencer';
+                                    baseColor = 'text-green-500 border-green-500/30 bg-green-500/5'; dotColor = 'bg-green-500';
+                                }
+                                if (d === 60) {
+                                    title = '60 Jours'; desc = 'Pour ancrer l\'habitude';
+                                    baseColor = 'text-yellow-500 border-yellow-500/30 bg-yellow-500/5'; dotColor = 'bg-yellow-500';
+                                }
+                                if (d === 90) {
+                                    title = '90 Jours'; desc = 'Transformation complète';
+                                    baseColor = 'text-orange-500 border-orange-500/30 bg-orange-500/5'; dotColor = 'bg-orange-500';
+                                }
+                                if (d === 365) {
+                                    title = '1 An'; desc = 'Mode Spartan activé';
+                                    baseColor = 'text-red-500 border-red-500/30 bg-red-500/5'; dotColor = 'bg-red-500';
+                                }
+
+                                // Style logic matching Step 3
+                                let finalClass = 'border-muted hover:bg-muted/50';
+                                if (isSelected) {
+                                     // Override border to be solid color
+                                    finalClass = `border-2 ${baseColor.replace('/30', '')} ${baseColor.split(' ')[0]} ${baseColor.split(' ')[2]}`;
+                                }
+
+                                return (
+                                    <button
+                                        key={d}
+                                        onClick={() => setDuration(d)}
+                                        className={`w-full p-3 rounded-lg border-2 flex items-center justify-between transition-all ${finalClass}`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isSelected ? `text-white ${dotColor}` : 'bg-muted text-muted-foreground'}`}>
+                                                <Calendar className="w-5 h-5" />
+                                            </div>
+                                            <div className="text-left">
+                                                <div className="font-bold">{title}</div>
+                                                <div className="text-xs text-muted-foreground">{desc}</div>
+                                            </div>
+                                        </div>
+                                        {isSelected && <div className={`h-3 w-3 rounded-full ${dotColor}`} />}
+                                    </button>
+                                );
+                            })}
                         </div>
                     )}
 
@@ -155,19 +193,36 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                                 const total = getEstimatedTotal(diff, duration);
                                 const isSelected = difficulty === diff;
 
-                                let colorClass = '';
-                                if (diff === 'easy') colorClass = 'text-green-500 border-green-500/30 bg-green-500/5';
-                                if (diff === 'medium') colorClass = 'text-yellow-500 border-yellow-500/30 bg-yellow-500/5';
-                                if (diff === 'hard') colorClass = 'text-orange-500 border-orange-500/30 bg-orange-500/5';
-                                if (diff === 'extreme') colorClass = 'text-red-500 border-red-500/30 bg-red-500/5';
+                                let baseColor = '';
+                                let dotColor = '';
+                                let label = '';
+
+                                if (diff === 'easy') { baseColor = 'text-green-500 border-green-500/30 bg-green-500/5'; dotColor = 'bg-green-500'; label = 'Facile'; }
+                                if (diff === 'medium') { baseColor = 'text-yellow-500 border-yellow-500/30 bg-yellow-500/5'; dotColor = 'bg-yellow-500'; label = 'Moyen'; }
+                                if (diff === 'hard') { baseColor = 'text-orange-500 border-orange-500/30 bg-orange-500/5'; dotColor = 'bg-orange-500'; label = 'Difficile'; }
+                                if (diff === 'extreme') { baseColor = 'text-red-500 border-red-500/30 bg-red-500/5'; dotColor = 'bg-red-500'; label = 'Extrême'; }
+
+                                // If selected, use strong border matching the color instead of ring-primary
+                                const activeClass = isSelected
+                                    ? `border-2 ${baseColor.replace('/30', '')} ${baseColor.split(' ')[0]} ${baseColor.split(' ')[2]}` // Remove /30 from border, keep text/bg
+                                    : 'border-muted hover:bg-muted/50';
+
+                                // Simplify activeClass logic:
+                                // If selected: border-[color] (solid), bg-[color]/5, text-[color]
+                                let finalClass = 'border-muted hover:bg-muted/50';
+                                if (isSelected) {
+                                     // Override border to be solid color
+                                     if (diff === 'easy') finalClass = 'border-green-500 bg-green-500/5 text-green-500';
+                                     if (diff === 'medium') finalClass = 'border-yellow-500 bg-yellow-500/5 text-yellow-500';
+                                     if (diff === 'hard') finalClass = 'border-orange-500 bg-orange-500/5 text-orange-500';
+                                     if (diff === 'extreme') finalClass = 'border-red-500 bg-red-500/5 text-red-500';
+                                }
 
                                 return (
                                     <button
                                         key={diff}
                                         onClick={() => setDifficulty(diff)}
-                                        className={`w-full p-3 rounded-lg border-2 flex items-center justify-between transition-all ${
-                                            isSelected ? `ring-2 ring-primary ${colorClass}` : 'border-muted hover:bg-muted/50'
-                                        }`}
+                                        className={`w-full p-3 rounded-lg border-2 flex items-center justify-between transition-all ${finalClass}`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <Zap className={`w-5 h-5 ${
@@ -176,12 +231,12 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                                                 diff === 'hard' ? 'text-orange-500' : 'text-red-500'
                                             }`} />
                                             <div className="text-left">
-                                                <div className="font-bold capitalize">{diff === 'extreme' ? 'Extrême' : diff}</div>
+                                                <div className="font-bold capitalize">{label}</div>
                                                 <div className="text-xs text-foreground/80 font-medium">{getDifficultyText(diff)}</div>
                                                 <div className="text-xs text-muted-foreground">Total ≈ {total.toLocaleString()} reps</div>
                                             </div>
                                         </div>
-                                        {isSelected && <div className="h-3 w-3 rounded-full bg-primary" />}
+                                        {isSelected && <div className={`h-3 w-3 rounded-full ${dotColor}`} />}
                                     </button>
                                 );
                             })}
