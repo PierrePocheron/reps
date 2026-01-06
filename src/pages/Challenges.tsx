@@ -12,7 +12,7 @@ import {
     ChallengeDefinition
 } from '@/firebase/challenges';
 import { useChallenges } from '@/hooks/useChallenges';
-import { Trophy, Clock } from 'lucide-react';
+import { Trophy, Clock, CheckCircle2, ChevronDown } from 'lucide-react';
 import { ChallengeCard } from '@/components/challenges/ChallengeCard';
 import { CreateChallengeDialog } from '@/components/challenges/CreateChallengeDialog';
 
@@ -80,25 +80,45 @@ function Challenges() {
                     <Trophy className="w-5 h-5 text-yellow-500" />
                     En cours ({activeChallenges.length})
                 </h2>
-                <div className="grid grid-cols-2 gap-3">
-                    {activeChallenges
-                        .sort((a, b) => {
-                             // Sort logic: Not completed today FIRST
-                             const todayStr = new Date().toISOString().split('T')[0];
-                             const aDone = a.history.some(h => h.date === todayStr && h.completed);
-                             const bDone = b.history.some(h => h.date === todayStr && h.completed);
-                             if (aDone === bDone) return 0;
-                             return aDone ? 1 : -1;
-                        })
-                        .map(ac => (
-                         <ChallengeCard
-                            key={ac.id}
-                            userId={user?.uid || ''}
-                            activeChallenge={ac}
-                            detailed={true}
-                        />
-                    ))}
-                </div>
+
+                <div className="space-y-4">
+                     {/* Todo Challenges */}
+                     <div className="grid grid-cols-2 gap-3">
+                        {activeChallenges
+                            .filter(c => !c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed))
+                            .map(ac => (
+                             <ChallengeCard
+                                key={ac.id}
+                                userId={user?.uid || ''}
+                                activeChallenge={ac}
+                                detailed={true}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Collapsible Done Challenges */}
+                    {activeChallenges.some(c => c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed)) && (
+                        <details className="group">
+                            <summary className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors py-2 select-none">
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span>Défis validés aujourd'hui</span>
+                                <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
+                            </summary>
+                            <div className="grid grid-cols-2 gap-3 mt-3 animate-in slide-in-from-top-2 fade-in duration-200">
+                                {activeChallenges
+                                    .filter(c => c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed))
+                                    .map(ac => (
+                                    <ChallengeCard
+                                        key={ac.id}
+                                        userId={user?.uid || ''}
+                                        activeChallenge={ac}
+                                        detailed={true}
+                                    />
+                                ))}
+                            </div>
+                        </details>
+                    )}
+                 </div>
             </div>
         )}
 
