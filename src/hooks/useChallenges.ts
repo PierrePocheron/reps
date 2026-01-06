@@ -17,9 +17,7 @@ export function useChallenges() {
     const fetchChallenges = async () => {
       try {
         setIsLoading(true);
-        console.log("Fetching challenges for user:", user.uid);
         const challenges = await getUserActiveChallenges(user.uid);
-        console.log("Fetched challenges:", challenges);
         setActiveChallenges(challenges);
       } catch (error) {
         console.error("Error fetching challenges:", error);

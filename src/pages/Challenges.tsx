@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useUserStore } from '@/store/userStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,11 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 import {
     CHALLENGE_TEMPLATES,
     joinChallenge,
-    UserChallenge,
     ChallengeDefinition
 } from '@/firebase/challenges';
 import { useChallenges } from '@/hooks/useChallenges';
-import { CheckCircle2, Trophy, Clock, ChevronRight } from 'lucide-react';
+import { Trophy, Clock } from 'lucide-react';
 
 function Challenges() {
   const navigate = useNavigate();
@@ -22,8 +20,6 @@ function Challenges() {
   const { user } = useUserStore();
   const { activeChallenges, isLoading, refreshChallenges } = useChallenges();
   const [isJoining, setIsJoining] = useState<string | null>(null);
-
-  console.log("Challenges Page Render:", { user: user?.uid, activeChallenges, isLoading });
 
   const handleJoin = async (challengeId: string) => {
     if (!user) return;
@@ -56,13 +52,6 @@ function Challenges() {
   const easyChallenges = availableChallenges.filter(c => c.difficulty === 'easy');
   const mediumChallenges = availableChallenges.filter(c => c.difficulty === 'medium');
   const hardChallenges = availableChallenges.filter(c => c.difficulty === 'hard');
-
-  console.log("Challenges Debug:", {
-    totalTemplates: CHALLENGE_TEMPLATES.length,
-    activeCount: activeChallenges.length,
-    availableCount: availableChallenges.length,
-    easyCount: easyChallenges.length
-  });
 
   if (isLoading) {
     return (
