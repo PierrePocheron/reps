@@ -62,13 +62,24 @@ export function BottomNav() {
         </button>
 
         <button
+          onClick={() => navigate('/challenges')}
+          className={cn(
+            'flex flex-col items-center justify-center gap-1 transition-colors',
+            isActive('/challenges') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          <Trophy className="h-6 w-6" />
+          <span className="text-[10px] font-medium">Défis</span>
+        </button>
+
+        <button
           onClick={() => navigate('/leaderboard')}
           className={cn(
             'flex flex-col items-center justify-center gap-1 transition-colors',
             isActive('/leaderboard') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
           )}
         >
-          <Trophy className="h-6 w-6" />
+          <BarChart2 className="h-6 w-6" />
           <span className="text-[10px] font-medium">Top</span>
         </button>
       </div>
