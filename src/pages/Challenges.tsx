@@ -13,6 +13,8 @@ import {
 } from '@/firebase/challenges';
 import { useChallenges } from '@/hooks/useChallenges';
 import { Trophy, Clock } from 'lucide-react';
+import { ChallengeCard } from '@/components/challenges/ChallengeCard';
+import { CreateChallengeDialog } from '@/components/challenges/CreateChallengeDialog';
 
 function Challenges() {
   const navigate = useNavigate();
@@ -76,35 +78,37 @@ function Challenges() {
             <div className="mb-8">
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-yellow-500" />
-                    En cours
+                    En cours ({activeChallenges.length})
                 </h2>
-                <div className="space-y-4">
-                    {activeChallenges.map(ac => {
-                        const template = CHALLENGE_TEMPLATES.find(t => t.id === ac.challengeId);
-                        if (!template) return null;
-
-                        return (
-                           <Card key={ac.id} className="border-primary/20 bg-primary/5">
-                                <CardContent className="p-4 flex items-center justify-between">
-                                    <div>
-                                        <h3 className="font-bold">{template.title}</h3>
-                                        <p className="text-sm text-muted-foreground">
-                                           {Math.round((ac.totalProgress / (template.durationDays * template.baseAmount)) * 10 || 0)}% complété
-                                        </p>
-                                    </div>
-                                    <Button size="sm" variant="outline" onClick={() => navigate('/')}>
-                                        Voir
-                                    </Button>
-                                </CardContent>
-                           </Card>
-                        );
-                    })}
+                <div className="grid grid-cols-2 gap-3">
+                    {activeChallenges
+                        .sort((a, b) => {
+                             // Sort logic: Not completed today FIRST
+                             const todayStr = new Date().toISOString().split('T')[0];
+                             const aDone = a.history.some(h => h.date === todayStr && h.completed);
+                             const bDone = b.history.some(h => h.date === todayStr && h.completed);
+                             if (aDone === bDone) return 0;
+                             return aDone ? 1 : -1;
+                        })
+                        .map(ac => (
+                         <ChallengeCard
+                            key={ac.id}
+                            userId={user?.uid || ''}
+                            activeChallenge={ac}
+                            detailed={true}
+                        />
+                    ))}
                 </div>
             </div>
         )}
 
         {/* Available Challenges */}
         <div className="space-y-8">
+            <CreateChallengeDialog onChallengeCreated={() => {
+                refreshChallenges();
+                navigate('/'); // Redirect home after creation
+            }} />
+
             <Section title="Pour commencer (Facile)" challenges={easyChallenges} onJoin={handleJoin} isJoining={isJoining} />
             <Section title="Pour progresser (Moyen)" challenges={mediumChallenges} onJoin={handleJoin} isJoining={isJoining} />
             <Section title="Pour les guerriers (Difficile)" challenges={hardChallenges} onJoin={handleJoin} isJoining={isJoining} />
@@ -129,7 +133,10 @@ function Section({ title, challenges, onJoin, isJoining }: { title: string, chal
                                     <span className="text-2xl h-10 w-10 flex items-center justify-center bg-muted rounded-full">
                                         {challenge.exerciseId === 'pushups' ? '💪' :
                                          challenge.exerciseId === 'pullups' ? '🧗' :
-                                         challenge.exerciseId === 'squats' ? '🦵' : '🦅'}
+                                         challenge.exerciseId === 'squats' ? '🦵' :
+                                         challenge.exerciseId === 'dips' ? '♣️' :
+                                         challenge.exerciseId === 'abs' ? '🍫' :
+                                         challenge.exerciseId === 'lateral_raises' ? '🥥' : '🦅'}
                                     </span>
                                     <div>
                                         <h3 className="font-bold">{challenge.title}</h3>

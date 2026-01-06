@@ -17,8 +17,8 @@ import { DEFAULT_EXERCISES } from '@/utils/constants';
 // --- Types ---
 
 export type ChallengeLogic = 'progressive' | 'fixed';
-export type ChallengeType = 'reps'; // Can be extended to 'time', 'distance' etc.
-export type ChallengeDifficulty = 'easy' | 'medium' | 'hard';
+export type ChallengeType = 'reps';
+export type ChallengeDifficulty = 'easy' | 'medium' | 'hard' | 'extreme'; // Added extreme
 
 export interface ChallengeDefinition {
   id: string;
@@ -28,8 +28,8 @@ export interface ChallengeDefinition {
   difficulty: ChallengeDifficulty;
   logic: ChallengeLogic;
   durationDays: number;
-  baseAmount: number; // e.g. 1 rep
-  increment: number;  // e.g. +1 rep/day
+  baseAmount: number;
+  increment: number;
 }
 
 export interface ChallengeHistoryEntry {
@@ -43,11 +43,11 @@ export interface UserChallenge {
   id: string;
   userId: string;
   challengeId: string;
+  definitionSnapshot?: ChallengeDefinition; // Helper for custom challenges
   startDate: Timestamp;
   lastLogDate: Timestamp | null;
   // Index of current day (0 to durationDays - 1)
-  // Can be calculated from startDate, but useful to store progress
-  totalProgress: number; // Total reps done
+  totalProgress: number;
   status: 'active' | 'completed' | 'abandoned';
   history: ChallengeHistoryEntry[];
 }
@@ -59,7 +59,7 @@ export const CHALLENGE_TEMPLATES: ChallengeDefinition[] = [
   {
     id: 'pushups_easy',
     exerciseId: 'pushups',
-    title: 'Défi Pompes (Starter)',
+    title: 'Défi Pompes',
     description: '1 pompe le premier jour, +1 chaque jour. Idéal pour débuter.',
     difficulty: 'easy',
     logic: 'progressive',
@@ -70,7 +70,7 @@ export const CHALLENGE_TEMPLATES: ChallengeDefinition[] = [
   {
     id: 'pushups_medium',
     exerciseId: 'pushups',
-    title: 'Défi Pompes (Initié)',
+    title: 'Défi Pompes',
     description: '5 pompes le premier jour, +2 chaque jour. Ça commence à chauffer.',
     difficulty: 'medium',
     logic: 'progressive',
@@ -81,7 +81,7 @@ export const CHALLENGE_TEMPLATES: ChallengeDefinition[] = [
   {
     id: 'pushups_hard',
     exerciseId: 'pushups',
-    title: 'Défi Pompes (Guerrier)',
+    title: 'Défi Pompes',
     description: '10 pompes le premier jour, +3 chaque jour. Pour les vrais.',
     difficulty: 'hard',
     logic: 'progressive',
@@ -93,7 +93,7 @@ export const CHALLENGE_TEMPLATES: ChallengeDefinition[] = [
   {
     id: 'pullups_easy',
     exerciseId: 'pullups',
-    title: 'Défi Tractions (Starter)',
+    title: 'Défi Tractions',
     description: '1 traction le premier jour, +1 chaque jour.',
     difficulty: 'easy',
     logic: 'progressive',
@@ -105,7 +105,7 @@ export const CHALLENGE_TEMPLATES: ChallengeDefinition[] = [
   {
     id: 'squats_easy',
     exerciseId: 'squats',
-    title: 'Défi Squats (Starter)',
+    title: 'Défi Squats',
     description: '5 squats le premier jour, +2 chaque jour.',
     difficulty: 'easy',
     logic: 'progressive',
@@ -117,7 +117,7 @@ export const CHALLENGE_TEMPLATES: ChallengeDefinition[] = [
   {
     id: 'lateral_easy',
     exerciseId: 'lateral_raises',
-    title: 'Épaules 3D (Starter)',
+    title: 'Épaules 3D',
     description: '5 reps le premier jour, +1 chaque jour.',
     difficulty: 'easy',
     logic: 'progressive',
@@ -137,6 +137,18 @@ export const getTargetForDay = (challenge: ChallengeDefinition, dayIndex: number
   return challenge.baseAmount + (dayIndex * challenge.increment);
 };
 
+// Calculate total expected reps for the entire duration
+export const calculateChallengeTotalReps = (def: ChallengeDefinition): number => {
+    if (def.logic === 'fixed') {
+        return def.baseAmount * def.durationDays;
+    }
+    // Arithmetic progression sum: S = n/2 * (2a + (n-1)d)
+    const n = def.durationDays;
+    const a = def.baseAmount;
+    const d = def.increment;
+    return Math.round((n / 2) * (2 * a + (n - 1) * d));
+};
+
 export const getDayIndex = (startDate: Timestamp, targetDate: Date = new Date()): number => {
   const start = startDate.toDate();
   start.setHours(0, 0, 0, 0);
@@ -150,8 +162,11 @@ export const getDayIndex = (startDate: Timestamp, targetDate: Date = new Date())
 
 // --- Firestore Functions ---
 
-// 1. Join a Challenge
+// 1. Join a Challenge (Standard)
 export const joinChallenge = async (userId: string, challengeId: string): Promise<string> => {
+  const def = getChallengeDef(challengeId);
+  if (!def) throw new Error("Challenge template not found");
+
   // Check if already active
   const q = query(
     collection(db, 'user_challenges'),
@@ -170,6 +185,7 @@ export const joinChallenge = async (userId: string, challengeId: string): Promis
     id: newChallengeRef.id,
     userId,
     challengeId,
+    definitionSnapshot: def, // Snapshot standard templates too
     startDate: Timestamp.now(),
     lastLogDate: null,
     totalProgress: 0,
@@ -179,6 +195,66 @@ export const joinChallenge = async (userId: string, challengeId: string): Promis
 
   await setDoc(newChallengeRef, userChallenge);
   return newChallengeRef.id;
+};
+
+// 1.5 Create Custom Challenge
+export const createCustomChallenge = async (
+    userId: string,
+    exerciseId: string,
+    duration: number,
+    difficulty: 'easy' | 'medium' | 'hard' | 'extreme'
+): Promise<string> => {
+    // A. Determine Parameters based on Difficulty
+    let base = 1;
+    let inc = 1;
+
+    // Logic multipliers (generic, can be tweaked per exercise type later if needed)
+    // For now, simple scaling.
+    switch (difficulty) {
+        case 'easy': base = 5; inc = 1; break;
+        case 'medium': base = 10; inc = 2; break;
+        case 'hard': base = 20; inc = 3; break;
+        case 'extreme': base = 30; inc = 5; break;
+    }
+
+    // Adjust for specific exercises (e.g. Pullups/Dips are harder than Pushups/Squats)
+    if (exerciseId === 'pullups' || exerciseId === 'dips') {
+        base = Math.max(1, Math.round(base / 3));
+        inc = Math.max(1, Math.round(inc / 2));
+    }
+
+    // B. Build Definition
+    const exerciseDef = DEFAULT_EXERCISES.find(e => e.id === exerciseId);
+    const exerciseName = exerciseDef?.name || 'Exercice';
+
+    const definition: ChallengeDefinition = {
+        id: `custom_${Date.now()}`, // Unique ID for this custom instance
+        exerciseId,
+        title: `Défi ${exerciseName}`,
+        description: `Objectif personnalisé : ${difficulty.toUpperCase()}.`,
+        difficulty,
+        logic: 'progressive',
+        durationDays: duration,
+        baseAmount: base,
+        increment: inc
+    };
+
+    // C. Create UserChallenge
+    const newChallengeRef = doc(collection(db, 'user_challenges'));
+    const userChallenge: UserChallenge = {
+        id: newChallengeRef.id,
+        userId,
+        challengeId: definition.id,
+        definitionSnapshot: definition,
+        startDate: Timestamp.now(),
+        lastLogDate: null,
+        totalProgress: 0,
+        status: 'active',
+        history: []
+    };
+
+    await setDoc(newChallengeRef, userChallenge);
+    return newChallengeRef.id;
 };
 
 // 2. Get User Active Challenges
@@ -209,7 +285,9 @@ export const validateChallengeDay = async (
             if (!challengeDoc.exists()) throw new Error("Challenge not found");
 
             const userChallenge = challengeDoc.data() as UserChallenge;
-            const def = getChallengeDef(userChallenge.challengeId);
+
+            // USE SNAPSHOT FIRST
+            const def = userChallenge.definitionSnapshot || getChallengeDef(userChallenge.challengeId);
             if (!def) throw new Error("Definition not found");
 
             // B. Calculate Day Index & Target
