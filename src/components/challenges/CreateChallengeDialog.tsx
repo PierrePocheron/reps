@@ -14,7 +14,7 @@ import { createCustomChallenge, ChallengeDifficulty, getCustomChallengeParams } 
 import { useUserStore } from '@/store/userStore';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { Plus, Trophy, Calendar, Zap } from 'lucide-react';
+import { Plus, Calendar, Zap } from 'lucide-react';
 
 interface CreateChallengeDialogProps {
     onChallengeCreated: () => void;
@@ -186,19 +186,15 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                                 const total = getEstimatedTotal(diff, duration);
                                 const isSelected = difficulty === diff;
 
-                                let baseColor = '';
                                 let dotColor = '';
                                 let label = '';
 
-                                if (diff === 'easy') { baseColor = 'text-green-500 border-green-500/30 bg-green-500/5'; dotColor = 'bg-green-500'; label = 'Facile'; }
-                                if (diff === 'medium') { baseColor = 'text-yellow-500 border-yellow-500/30 bg-yellow-500/5'; dotColor = 'bg-yellow-500'; label = 'Moyen'; }
-                                if (diff === 'hard') { baseColor = 'text-orange-500 border-orange-500/30 bg-orange-500/5'; dotColor = 'bg-orange-500'; label = 'Difficile'; }
-                                if (diff === 'extreme') { baseColor = 'text-red-500 border-red-500/30 bg-red-500/5'; dotColor = 'bg-red-500'; label = 'Extrême'; }
+                                if (diff === 'easy') { dotColor = 'bg-green-500'; label = 'Facile'; }
+                                if (diff === 'medium') { dotColor = 'bg-yellow-500'; label = 'Moyen'; }
+                                if (diff === 'hard') { dotColor = 'bg-orange-500'; label = 'Difficile'; }
+                                if (diff === 'extreme') { dotColor = 'bg-red-500'; label = 'Extrême'; }
 
-                                // If selected, use strong border matching the color instead of ring-primary
-                                const activeClass = isSelected
-                                    ? `border-2 ${baseColor.replace('/30', '')} ${baseColor.split(' ')[0]} ${baseColor.split(' ')[2]}` // Remove /30 from border, keep text/bg
-                                    : 'border-muted hover:bg-muted/50';
+
 
                                 // Simplify activeClass logic:
                                 // If selected: border-[color] (solid), bg-[color]/5, text-[color]
