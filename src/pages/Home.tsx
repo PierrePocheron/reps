@@ -6,7 +6,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { useSession } from '@/hooks/useSession';
-import { Plus, Calendar, Activity, Flame } from 'lucide-react';
+import { Plus, Calendar, Activity, Flame, Trophy, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { UserAvatar } from '@/components/UserAvatar';
 import { getLastSession } from '@/firebase/firestore';
 import type { Session } from '@/firebase/types';
@@ -95,23 +95,54 @@ function Home() {
         {/* Section Challenge */}
         <div>
             {activeChallenges.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                    {activeChallenges
-                        .sort((a, b) => {
-                            // Sort logic: Not completed today FIRST
-                            const todayStr = new Date().toISOString().split('T')[0];
-                            const aDone = a.history.some(h => h.date === todayStr && h.completed);
-                            const bDone = b.history.some(h => h.date === todayStr && h.completed);
-                            if (aDone === bDone) return 0;
-                            return aDone ? 1 : -1;
-                        })
-                        .map(challenge => (
-                        <ChallengeCard
-                            key={challenge.id}
-                            userId={user?.uid || ''}
-                            activeChallenge={challenge}
-                        />
-                    ))}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                         <h2 className="text-lg font-semibold flex items-center gap-2">
+                            <Trophy className="w-5 h-5 text-yellow-500" />
+                            Défis en cours
+                        </h2>
+                        {activeChallenges.length > 6 && (
+                             <Button variant="ghost" size="sm" onClick={() => navigate('/challenges')} className="text-xs h-8">
+                                Voir tout ({activeChallenges.length})
+                            </Button>
+                        )}
+                    </div>
+
+                    {/* Todo Challenges */}
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                        {activeChallenges
+                            .filter(c => !c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed))
+                            .slice(0, 6)
+                            .map(challenge => (
+                            <ChallengeCard
+                                key={challenge.id}
+                                userId={user?.uid || ''}
+                                activeChallenge={challenge}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Collapsible Done Challenges */}
+                    {activeChallenges.some(c => c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed)) && (
+                        <details className="group">
+                            <summary className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors py-2 select-none">
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span>Défis validés aujourd'hui</span>
+                                <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
+                            </summary>
+                            <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-3 animate-in slide-in-from-top-2 fade-in duration-200">
+                                {activeChallenges
+                                    .filter(c => c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed))
+                                    .map(challenge => (
+                                    <ChallengeCard
+                                        key={challenge.id}
+                                        userId={user?.uid || ''}
+                                        activeChallenge={challenge}
+                                    />
+                                ))}
+                            </div>
+                        </details>
+                    )}
                 </div>
             ) : (
                 <ChallengeCard userId={user?.uid || ''} />
