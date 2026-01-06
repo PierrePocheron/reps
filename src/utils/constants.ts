@@ -3,6 +3,8 @@ import type { Exercise, Badge } from '@/firebase/types';
 /**
  * Exercices par défaut disponibles dans l'application
  */
+export const MAX_ACTIVE_CHALLENGES = 6;
+
 export const DEFAULT_EXERCISES: Exercise[] = [
   {
     id: 'pushups',
@@ -14,7 +16,7 @@ export const DEFAULT_EXERCISES: Exercise[] = [
   {
     id: 'dips',
     name: 'Dips',
-    emoji: '🏋️',
+    emoji: '♣️',
     met: 7.0,
     timePerRep: 2.5,
   },
@@ -28,16 +30,23 @@ export const DEFAULT_EXERCISES: Exercise[] = [
   {
     id: 'pullups',
     name: 'Tractions',
-    emoji: '🤸',
+    emoji: '🧗',
     met: 8.0,
     timePerRep: 3.0,
   },
   {
     id: 'abs',
     name: 'Abdos',
-    emoji: '🔥',
+    emoji: '🍫',
     met: 3.0,
     timePerRep: 2.0,
+  },
+  {
+    id: 'lateral_raises',
+    name: 'Élévations Lat.',
+    emoji: '🥥',
+    met: 3.5,
+    timePerRep: 2.5,
   },
 ];
 

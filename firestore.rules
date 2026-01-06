@@ -31,6 +31,15 @@ service cloud.firestore {
       allow read, write: if isOwner(userId);
     }
 
+    // User Challenges
+    match /user_challenges/{challengeId} {
+      // Lecture : Propriétaire uniquement
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // Écriture : Création par soi-même, modif par soi-même
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
     // Friend Requests
     match /friend_requests/{requestId} {
       // Lecture : Expéditeur ou Destinataire
