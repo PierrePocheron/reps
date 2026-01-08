@@ -98,16 +98,25 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
 
   if (isActive && activeChallenge) {
       const today = new Date();
-      dayIndex = getDayIndex(activeChallenge.startDate, today);
+      // Calendar Day (Theoretical Position)
+      const calendarDayIndex = Math.min(getDayIndex(activeChallenge.startDate, today), def.durationDays - 1);
+
+      // Actual Progress based on History Count (Catch-up Model)
+      const stepsCompleted = activeChallenge.history.length;
+      dayIndex = stepsCompleted; // The step we are about to do (0-indexed)
+
+      // If we finished all days, cap it
+      if (dayIndex >= def.durationDays) dayIndex = def.durationDays - 1;
+
       target = getTargetForDay(def, dayIndex);
       totalTargetRepetitions = calculateChallengeTotalReps(def);
       percentTotal = Math.min(100, Math.round((activeChallenge.totalProgress / totalTargetRepetitions) * 100));
 
-      const todayStr = today.toISOString().split('T')[0];
-      isDoneToday = activeChallenge.history.some(h => h.date === todayStr && h.completed);
+      // We are caught up if we have completed up to the current calendar day
+      const isCaughtUp = stepsCompleted > calendarDayIndex;
+      isDoneToday = isCaughtUp;
 
-      const lastLog = activeChallenge.lastLogDate?.toDate() || activeChallenge.startDate.toDate();
-      lateDays = getDayIndex(Timestamp.fromDate(lastLog), today) - (isDoneToday ? 0 : 1);
+      lateDays = Math.max(0, calendarDayIndex - stepsCompleted);
       isLate = lateDays > 0;
   } else {
       // For templates, calculate Total Reps for display
@@ -118,12 +127,14 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
     if (!activeChallenge) return;
     setIsValidating(true);
     try {
-        await validateChallengeDay(activeChallenge.id, userId, getTargetForDay(def, getDayIndex(activeChallenge.startDate, new Date())), new Date());
+        const stepIndex = activeChallenge.history.length;
+        await validateChallengeDay(activeChallenge.id, userId, getTargetForDay(def, stepIndex), new Date());
         toast({
-            title: "Bien joué ! 🔥",
-            description: `Jour validé !`,
+            title: isLate ? "Rattrapage réussi ! 💪" : "Bien joué ! 🔥",
+            description: `Jour ${stepIndex + 1} validé !`,
         });
     } catch (error) {
+        console.error(error);
         toast({
             title: "Erreur",
             description: "Impossible de valider le défi.",
@@ -168,8 +179,18 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
        else actionButtonClass = 'bg-red-500/10 border-red-500/20 text-red-700 hover:bg-red-500/20 dark:text-red-400 border';
   }
 
+  // Stack Effect for Late Days
+  let stackClasses = '';
+  if (isActive && isLate) {
+       // Colored stack for "Late" status (Orange/Red theme)
+       stackClasses = 'after:absolute after:w-full after:h-full after:bg-orange-100 dark:after:bg-orange-900/40 after:border after:border-dashed after:border-orange-300 dark:after:border-orange-700/50 after:rounded-xl after:top-1.5 after:left-1.5 after:-z-10';
+       if (lateDays > 1) {
+           stackClasses += ' before:absolute before:w-full before:h-full before:bg-orange-50 dark:before:bg-orange-900/20 before:border before:border-dashed before:border-orange-200 dark:before:border-orange-800/30 before:rounded-xl before:top-3 before:left-3 before:-z-20';
+       }
+  }
+
   return (
-    <Card className={`overflow-hidden border-2 ${borderColor} relative transition-all hover:scale-[1.01]`}>
+    <Card className={`overflow-visible border-2 ${borderColor} relative transition-all ${stackClasses}`}>
       <CardContent className="p-5">
         <div className="flex justify-between items-start mb-2">
             <div className="flex items-start gap-3">
@@ -194,6 +215,14 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                                  def.difficulty === 'hard' ? 'Difficile' :
                                  def.difficulty === 'medium' ? 'Moyen' : 'Facile'}
                             </span>
+
+                            {/* Late Badge */}
+                            {isActive && isLate && (
+                                <span className="bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-400 dark:border-orange-500/30 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    Retard: {lateDays}j
+                                </span>
+                            )}
 
                             {/* Active: Progress Badge */}
                             {isActive && (
@@ -267,7 +296,9 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
             {isActive ? (
                 <>
                     <div className={`flex flex-col ${isDoneToday ? 'opacity-50' : ''}`}>
-                        <span className="text-xs font-semibold uppercase text-muted-foreground">Aujourd'hui</span>
+                        <span className="text-xs font-semibold uppercase text-muted-foreground">
+                            {isLate ? "Rattrapage" : "Aujourd'hui"}
+                        </span>
                         <div className="flex items-baseline gap-1">
                             <span className="text-2xl font-bold">{target}</span>
                             <span className="text-xs font-medium">Reps</span>
@@ -280,8 +311,8 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                             Validé
                         </Button>
                     ) : (
-                        <Button onClick={handleValidate} disabled={isValidating} className="flex-1 px-2">
-                            {isValidating ? <LoadingSpinner size="sm"/> : "Valider"}
+                        <Button onClick={handleValidate} disabled={isValidating} className={`flex-1 px-2 ${isLate ? 'bg-orange-500 hover:bg-orange-600' : ''}`}>
+                            {isValidating ? <LoadingSpinner size="sm"/> : (isLate ? `Rattraper J${dayIndex + 1}` : "Valider")}
                         </Button>
                     )}
                 </>

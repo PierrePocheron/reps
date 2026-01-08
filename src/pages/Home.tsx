@@ -9,6 +9,7 @@ import { useSession } from '@/hooks/useSession';
 import { Plus, Calendar, Activity, Flame, Trophy, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { UserAvatar } from '@/components/UserAvatar';
 import { getLastSession } from '@/firebase/firestore';
+import { getDayIndex, getChallengeDef } from '@/firebase/challenges';
 import type { Session } from '@/firebase/types';
 import { useState, useEffect } from 'react';
 import { ChallengeCard } from '@/components/challenges/ChallengeCard';
@@ -21,10 +22,20 @@ function Home() {
   const { user, stats } = useUserStore();
   const { isActive, duration } = useSession();
   const { activeChallenges } = useChallenges();
+
+  // Count challenges that are "Up to date" (ahead or equal to calendar day)
+  // Actually, if I am late, I am NOT up to date.
+  // The count should show "How many are DONE for today".
+  // If I am late, I am NOT done.
+  // So > getDayIndex is correct.
   const dailyDoneCount = activeChallenges.filter(c =>
-    c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed)
+    c.history.length > getDayIndex(c.startDate, new Date())
   ).length;
+
   const [motivationalPhrase] = useState(() => DEFAULT_MOTIVATIONAL_PHRASES[Math.floor(Math.random() * DEFAULT_MOTIVATIONAL_PHRASES.length)]);
+
+
+
 
   // Fetch Last Session Details
   const [lastSessionDetail, setLastSessionDetail] = useState<Session | null>(null);
@@ -114,7 +125,7 @@ function Home() {
                     {/* Todo Challenges */}
                     <div className="grid grid-cols-2 gap-3 sm:gap-4">
                         {activeChallenges
-                            .filter(c => !c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed))
+                            .filter(c => c.history.length <= getDayIndex(c.startDate, new Date()))
                             .slice(0, 6)
                             .map(challenge => (
                             <ChallengeCard
@@ -126,7 +137,7 @@ function Home() {
                     </div>
 
                     {/* Collapsible Done Challenges */}
-                    {activeChallenges.some(c => c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed)) && (
+                    {activeChallenges.some(c => c.history.length > getDayIndex(c.startDate, new Date())) && (
                         <details className="group">
                             <summary className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors py-2 select-none">
                                 <CheckCircle2 className="w-4 h-4" />
@@ -135,7 +146,7 @@ function Home() {
                             </summary>
                             <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-3 animate-in slide-in-from-top-2 fade-in duration-200">
                                 {activeChallenges
-                                    .filter(c => c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed))
+                                    .filter(c => c.history.length > getDayIndex(c.startDate, new Date()))
                                     .map(challenge => (
                                     <ChallengeCard
                                         key={challenge.id}

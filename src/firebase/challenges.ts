@@ -345,9 +345,12 @@ export const validateChallengeDay = async (
             const now = Timestamp.now();
             const dateStr = validationDate.toISOString().split('T')[0];
 
-            // Check if already validated for this date
-            if (userChallenge.history.some(h => h.date === dateStr && h.completed)) {
-               throw new Error("Déjà validé pour cette date !");
+            // Check Pace (Allow catch-up, prevent future)
+            const currentStepIndex = userChallenge.history.length;
+            const maxAllowedIndex = getDayIndex(userChallenge.startDate, new Date());
+
+            if (currentStepIndex > maxAllowedIndex) {
+               throw new Error("Vous êtes déjà à jour ! Revenez demain pour la suite.");
             }
 
             // C. Create Session (Social + Stats + Leaderboard)

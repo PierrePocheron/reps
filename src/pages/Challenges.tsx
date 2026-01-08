@@ -5,9 +5,10 @@ import { BackButton } from '@/components/BackButton';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import {
-    CHALLENGE_TEMPLATES,
     joinChallenge,
-    ChallengeDefinition
+    ChallengeDefinition,
+    getDayIndex,
+    CHALLENGE_TEMPLATES
 } from '@/firebase/challenges';
 import { useChallenges } from '@/hooks/useChallenges';
 import { Trophy, CheckCircle2, ChevronDown } from 'lucide-react';
@@ -20,7 +21,7 @@ function Challenges() {
   const { user } = useUserStore();
   const { activeChallenges, isLoading, refreshChallenges } = useChallenges();
   const dailyDoneCount = activeChallenges.filter(c =>
-    c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed)
+    c.history.length > getDayIndex(c.startDate, new Date())
   ).length;
   const [isJoining, setIsJoining] = useState<string | null>(null);
 
@@ -86,7 +87,7 @@ function Challenges() {
                      {/* Todo Challenges */}
                      <div className="grid grid-cols-2 gap-3">
                         {activeChallenges
-                            .filter(c => !c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed))
+                            .filter(c => c.history.length <= getDayIndex(c.startDate, new Date()))
                             .map(ac => (
                              <ChallengeCard
                                 key={ac.id}
@@ -98,7 +99,7 @@ function Challenges() {
                     </div>
 
                     {/* Collapsible Done Challenges */}
-                    {activeChallenges.some(c => c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed)) && (
+                    {activeChallenges.some(c => c.history.length > getDayIndex(c.startDate, new Date())) && (
                         <details className="group">
                             <summary className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors py-2 select-none">
                                 <CheckCircle2 className="w-4 h-4" />
@@ -107,7 +108,7 @@ function Challenges() {
                             </summary>
                             <div className="grid grid-cols-2 gap-3 mt-3 animate-in slide-in-from-top-2 fade-in duration-200">
                                 {activeChallenges
-                                    .filter(c => c.history.some(h => h.date === new Date().toISOString().split('T')[0] && h.completed))
+                                    .filter(c => c.history.length > getDayIndex(c.startDate, new Date()))
                                     .map(ac => (
                                     <ChallengeCard
                                         key={ac.id}
