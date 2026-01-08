@@ -12,7 +12,6 @@ import {
   Trophy,
   ChevronRight,
   CheckCircle2,
-  Clock,
   MoreVertical,
   Trash2
 } from 'lucide-react';
@@ -284,7 +283,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                     </div>
                 )}
                 {isActive && (
-                     <DropdownMenu>
+                     <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-2 text-muted-foreground hover:text-foreground">
                                 <MoreVertical className="w-4 h-4" />
