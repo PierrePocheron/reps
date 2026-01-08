@@ -21,7 +21,15 @@ function Home() {
   const { isAuthenticated, isLoading } = useAuth();
   const { user, stats } = useUserStore();
   const { isActive, duration } = useSession();
-  const { activeChallenges } = useChallenges();
+  const { activeChallenges, refreshChallenges } = useChallenges();
+  const [sessionRefreshTrigger, setSessionRefreshTrigger] = useState(0);
+
+  const handleChallengeUpdate = () => {
+      refreshChallenges();
+      // Small delay to ensure Firestore is consistent if needed, but usually immediate is fine locally.
+      // Firestore listeners update automatically for activeChallenges, but LastSession is a fetch.
+      setSessionRefreshTrigger(prev => prev + 1);
+  };
 
   // Count challenges that are "Up to date" (ahead or equal to calendar day)
   // Actually, if I am late, I am NOT up to date.
@@ -52,7 +60,8 @@ function Home() {
       }
     }
     fetchLastSession();
-  }, [user?.uid, stats?.totalSessions]); // Re-fetch if stats update (e.g. after a new session)
+    fetchLastSession();
+  }, [user?.uid, stats?.totalSessions, sessionRefreshTrigger]); // Re-fetch on signal
 
   if (isLoading) {
     return (
@@ -132,6 +141,7 @@ function Home() {
                                 key={challenge.id}
                                 userId={user?.uid || ''}
                                 activeChallenge={challenge}
+                                onUpdate={handleChallengeUpdate}
                             />
                         ))}
                     </div>
@@ -152,6 +162,7 @@ function Home() {
                                         key={challenge.id}
                                         userId={user?.uid || ''}
                                         activeChallenge={challenge}
+                                        onUpdate={handleChallengeUpdate}
                                     />
                                 ))}
                             </div>

@@ -94,6 +94,7 @@ function Challenges() {
                                 userId={user?.uid || ''}
                                 activeChallenge={ac}
                                 detailed={true}
+                                onUpdate={refreshChallenges}
                             />
                         ))}
                     </div>
@@ -115,6 +116,7 @@ function Challenges() {
                                         userId={user?.uid || ''}
                                         activeChallenge={ac}
                                         detailed={true}
+                                        onUpdate={refreshChallenges}
                                     />
                                 ))}
                             </div>

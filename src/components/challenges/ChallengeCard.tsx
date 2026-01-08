@@ -3,10 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Trophy,
   ChevronRight,
   CheckCircle2,
-  Clock
+  Clock,
+  MoreVertical,
+  Trash2
 } from 'lucide-react';
 import {
   UserChallenge,
@@ -16,11 +24,11 @@ import {
   getTargetForDay,
   calculateChallengeTotalReps,
   CHALLENGE_TEMPLATES,
-  ChallengeDefinition
+  ChallengeDefinition,
+  abandonChallenge
 } from '@/firebase/challenges';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { Timestamp } from 'firebase/firestore';
 
 interface ChallengeCardProps {
   activeChallenge?: UserChallenge;
@@ -29,9 +37,10 @@ interface ChallengeCardProps {
   detailed?: boolean;
   onJoin?: (id: string) => void;
   isJoining?: boolean;
+  onUpdate?: () => void;
 }
 
-export function ChallengeCard({ activeChallenge, template, userId, detailed, onJoin, isJoining }: ChallengeCardProps) {
+export function ChallengeCard({ activeChallenge, template, userId, detailed, onJoin, isJoining, onUpdate }: ChallengeCardProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isValidating, setIsValidating] = useState(false);
@@ -123,6 +132,26 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
       totalTargetRepetitions = calculateChallengeTotalReps(def);
   }
 
+  const handleAbandon = async () => {
+    if (!activeChallenge) return;
+    try {
+        if (!window.confirm("Es-tu sûr de vouloir abandonner ce défi ? (L'historique sera conservé)")) return;
+
+        await abandonChallenge(activeChallenge.id);
+        toast({
+            title: `Défi ${def.title} arrêté`,
+            description: "Le défi a été déplacé dans l'historique.",
+        });
+        onUpdate?.();
+    } catch (error) {
+        toast({
+            title: "Erreur",
+            description: "Impossible d'abandonner le défi.",
+            variant: "destructive"
+        });
+    }
+  };
+
   const handleValidate = async () => {
     if (!activeChallenge) return;
     setIsValidating(true);
@@ -133,6 +162,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
             title: isLate ? "Rattrapage réussi ! 💪" : "Bien joué ! 🔥",
             description: `Jour ${stepIndex + 1} validé !`,
         });
+        onUpdate?.();
     } catch (error) {
         console.error(error);
         toast({
@@ -248,11 +278,28 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                     </div>
                 </div>
             </div>
-            {isDoneToday && (
-                <div className="bg-green-500 text-white p-1 rounded-full">
-                    <CheckCircle2 className="w-5 h-5" />
-                </div>
-            )}
+            <div className="flex items-start gap-2">
+                {isDoneToday && (
+                    <div className="bg-green-500 text-white p-1 rounded-full">
+                        <CheckCircle2 className="w-5 h-5" />
+                    </div>
+                )}
+                {isActive && (
+                     <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-2 text-muted-foreground hover:text-foreground">
+                                <MoreVertical className="w-4 h-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={handleAbandon} className="text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/20">
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Abandonner le défi
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
+            </div>
         </div>
 
         {/* BODY CONTENT */}
