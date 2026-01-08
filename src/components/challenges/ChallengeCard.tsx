@@ -386,15 +386,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
             )}
         </div>
 
-        {/* Late Warning (Active Only) */}
-        {isActive && isLate && !isDoneToday && (
-            <div className="mt-3 flex items-center gap-2 text-xs text-orange-600 bg-orange-100 dark:bg-orange-500/10 p-2 rounded-md">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{lateDays} jour{lateDays > 1 ? 's' : ''} de retard !
-                    <button onClick={() => navigate('/challenges')} className="underline font-semibold ml-1">Rattraper</button>
-                </span>
-            </div>
-        )}
+
       </CardContent>
     </Card>
   );
