@@ -233,21 +233,36 @@ export const joinChallenge = async (userId: string, challengeId: string): Promis
 };
 
 // Helper to determine custom challenge params (Centralized for consistency)
-export const getCustomChallengeParams = (difficulty: 'easy' | 'medium' | 'hard' | 'extreme', exerciseId: string) => {
+export const getCustomChallengeParams = (
+    difficulty: 'easy' | 'medium' | 'hard' | 'extreme',
+    exerciseId: string,
+    logic: ChallengeLogic = 'progressive'
+) => {
     let base = 1;
     let inc = 1;
 
-    switch (difficulty) {
-        case 'easy': base = 5; inc = 1; break;
-        case 'medium': base = 10; inc = 2; break;
-        case 'hard': base = 20; inc = 3; break;
-        case 'extreme': base = 30; inc = 5; break;
-    }
+    if (logic === 'fixed') {
+        inc = 0;
+        switch (difficulty) {
+            case 'easy': base = 30; break;
+            case 'medium': base = 50; break;
+            case 'hard': base = 70; break;
+            case 'extreme': base = 100; break;
+        }
+    } else {
+        // Progressive
+        switch (difficulty) {
+            case 'easy': base = 5; inc = 1; break;
+            case 'medium': base = 10; inc = 2; break;
+            case 'hard': base = 20; inc = 3; break;
+            case 'extreme': base = 30; inc = 5; break;
+        }
 
-    // Adjust for specific exercises (e.g. Pullups/Dips are harder than Pushups/Squats)
-    if (exerciseId === 'pullups' || exerciseId === 'dips') {
-        base = Math.max(1, Math.round(base / 3));
-        inc = Math.max(1, Math.round(inc / 2));
+        // Adjust for specific exercises (e.g. Pullups/Dips are harder than Pushups/Squats)
+        if (exerciseId === 'pullups' || exerciseId === 'dips') {
+            base = Math.max(1, Math.round(base / 3));
+            inc = Math.max(1, Math.round(inc / 2));
+        }
     }
 
     return { base, inc };
@@ -258,10 +273,11 @@ export const createCustomChallenge = async (
     userId: string,
     exerciseId: string,
     duration: number,
-    difficulty: 'easy' | 'medium' | 'hard' | 'extreme'
+    difficulty: 'easy' | 'medium' | 'hard' | 'extreme',
+    logic: ChallengeLogic = 'progressive'
 ): Promise<string> => {
     // A. Determine Parameters
-    const { base, inc } = getCustomChallengeParams(difficulty, exerciseId);
+    const { base, inc } = getCustomChallengeParams(difficulty, exerciseId, logic);
 
     // Check Limit
     const activeQ = query(
@@ -282,9 +298,9 @@ export const createCustomChallenge = async (
         id: `custom_${Date.now()}`, // Unique ID for this custom instance
         exerciseId,
         title: `Défi ${exerciseName}`,
-        description: `Objectif personnalisé : ${difficulty.toUpperCase()}.`,
+        description: `Objectif personnalisé : ${difficulty.toUpperCase()} (${logic === 'fixed' ? 'Fixe' : 'Progressif'}).`,
         difficulty,
-        logic: 'progressive',
+        logic,
         durationDays: duration,
         baseAmount: base,
         increment: inc

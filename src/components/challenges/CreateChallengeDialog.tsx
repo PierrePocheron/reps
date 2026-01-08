@@ -10,7 +10,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { DEFAULT_EXERCISES } from '@/utils/constants';
-import { createCustomChallenge, ChallengeDifficulty, getCustomChallengeParams } from '@/firebase/challenges';
+import { createCustomChallenge, ChallengeDifficulty, getCustomChallengeParams, ChallengeLogic } from '@/firebase/challenges';
 import { useUserStore } from '@/store/userStore';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -31,19 +31,21 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
     const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
     const [duration, setDuration] = useState<number>(30);
     const [difficulty, setDifficulty] = useState<ChallengeDifficulty>('medium');
+    const [logic, setLogic] = useState<ChallengeLogic>('progressive');
 
     const reset = () => {
         setStep(1);
         setSelectedExercise(null);
         setDuration(30);
         setDifficulty('medium');
+        setLogic('progressive');
     };
 
     const handleCreate = async () => {
         if (!user || !selectedExercise) return;
         setIsSubmitting(true);
         try {
-            await createCustomChallenge(user.uid, selectedExercise, duration, difficulty);
+            await createCustomChallenge(user.uid, selectedExercise, duration, difficulty, logic);
             toast({
                 title: "Défi personnalisé créé ! 🔥",
                 description: "C'est parti, bon courage !",
@@ -63,17 +65,21 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
     };
 
     const getDifficultyParams = (diff: ChallengeDifficulty) => {
-        return getCustomChallengeParams(diff, selectedExercise || 'pushups');
+        return getCustomChallengeParams(diff, selectedExercise || 'pushups', logic);
     }
 
     const getEstimatedTotal = (diff: ChallengeDifficulty, days: number): number => {
         const { base, inc } = getDifficultyParams(diff);
+        if (logic === 'fixed') {
+            return base * days;
+        }
         // Arithmetic sum: n/2 * (2a + (n-1)d)
         return Math.round((days / 2) * (2 * base + (days - 1) * inc));
     };
 
     const getDifficultyText = (diff: ChallengeDifficulty) => {
         const { base, inc } = getDifficultyParams(diff);
+        if (logic === 'fixed') return `${base} répétitions / jour`;
         return `Commence à ${base} reps, +${inc} par jour`;
     };
 
@@ -182,6 +188,20 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                     {/* STEP 3: DIFFICULTY */}
                     {step === 3 && (
                         <div className="space-y-3">
+                            <div className="flex bg-muted rounded-lg p-1 mb-4">
+                                <button
+                                    onClick={() => setLogic('progressive')}
+                                    className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${logic === 'progressive' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                                >
+                                    Progressif 📈
+                                </button>
+                                <button
+                                    onClick={() => setLogic('fixed')}
+                                    className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${logic === 'fixed' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                                >
+                                    Montant Fixe 🎯
+                                </button>
+                            </div>
                             {(['easy', 'medium', 'hard', 'extreme'] as const).map(diff => {
                                 const total = getEstimatedTotal(diff, duration);
                                 const isSelected = difficulty === diff;
