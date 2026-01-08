@@ -248,8 +248,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
 
                             {/* Late Badge */}
                             {isActive && isLate && (
-                                <span className="bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-400 dark:border-orange-500/30 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
+                                <span className="bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-400 dark:border-orange-500/30 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border">
                                     Retard: {lateDays}j
                                 </span>
                             )}
