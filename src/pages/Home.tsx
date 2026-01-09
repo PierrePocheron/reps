@@ -9,7 +9,7 @@ import { useSession } from '@/hooks/useSession';
 import { Plus, Calendar, Activity, Flame, Trophy, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { UserAvatar } from '@/components/UserAvatar';
 import { getLastSession } from '@/firebase/firestore';
-import { getDayIndex, getChallengeDef } from '@/firebase/challenges';
+import { getDayIndex } from '@/firebase/challenges';
 import type { Session } from '@/firebase/types';
 import { useState, useEffect } from 'react';
 import { ChallengeCard } from '@/components/challenges/ChallengeCard';
