@@ -36,10 +36,11 @@ function Challenges() {
         });
         refreshChallenges();
         navigate('/'); // Redirect to home (requested requirement)
-    } catch (error: any) {
+    } catch (error) {
+        const err = error as Error;
         toast({
             title: "Erreur",
-            description: error.message || "Impossible de rejoindre le défi",
+            description: err.message || "Impossible de rejoindre le défi",
             variant: "destructive"
         });
     } finally {

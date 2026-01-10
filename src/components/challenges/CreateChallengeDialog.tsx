@@ -53,10 +53,11 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
             onChallengeCreated();
             setOpen(false);
             reset();
-        } catch (error: any) {
+        } catch (error) {
+            const err = error as Error;
             toast({
                 title: "Erreur",
-                description: error.message || "Impossible de créer le défi",
+                description: err.message || "Impossible de créer le défi",
                 variant: "destructive"
             });
         } finally {
@@ -255,12 +256,12 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
 
                 <DialogFooter className="flex gap-2 sm:justify-between">
                      {step > 1 && (
-                        <Button variant="outline" onClick={() => setStep(prev => (prev - 1) as any)}>
+                        <Button variant="outline" onClick={() => setStep(prev => (prev - 1) as 1 | 2 | 3)}>
                             Retour
                         </Button>
                     )}
                     {step < 3 ? (
-                         <Button onClick={() => setStep(prev => (prev + 1) as any)} disabled={!selectedExercise} className="w-full">
+                         <Button onClick={() => setStep(prev => (prev + 1) as 1 | 2 | 3)} disabled={!selectedExercise} className="w-full">
                             Suivant
                         </Button>
                     ) : (

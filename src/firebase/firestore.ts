@@ -50,9 +50,12 @@ export async function createUserDocument(
       totalSessions: 0,
       badges: ['poussin'],
       friends: [],
+      currentStreak: 0,
+      longestStreak: 0,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
-      ...userData // Écrase les valeurs par défaut si présentes dans userData
+      ...userData, // Écrase les valeurs par défaut si présentes dans userData
+      lastConnection: userData.lastConnection || null,
     };
 
     // Nettoyage des champs undefined
