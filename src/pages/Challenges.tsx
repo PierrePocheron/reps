@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
-import { BackButton } from '@/components/BackButton';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -66,14 +66,8 @@ function Challenges() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="max-w-2xl mx-auto p-4 pt-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <BackButton to="/" />
-          <h1 className="text-2xl font-bold">Défis</h1>
-          <div className="w-10" />
-        </div>
+    <PageLayout title="MES DÉFIS">
+      <div className="max-w-2xl mx-auto space-y-8">
 
         {/* Active Challenges List */}
         {activeChallenges.length > 0 && (
@@ -138,7 +132,7 @@ function Challenges() {
             <Section title="Pour les guerriers (Difficile)" challenges={hardChallenges} onJoin={handleJoin} isJoining={isJoining} />
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 }
 

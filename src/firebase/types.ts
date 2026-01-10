@@ -25,6 +25,11 @@ export interface User {
   friends: string[];
   repButtons?: number[]; // Custom rep buttons (e.g. [5, 10])
   lastUsernameChange?: Timestamp;
+  // Streak System
+  currentStreak: number;
+  longestStreak: number;
+  lastConnection: Timestamp | null;
+
   createdAt: Timestamp;
   updatedAt: Timestamp;
   morningSessions?: number;

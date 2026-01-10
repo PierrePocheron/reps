@@ -8,6 +8,13 @@ import type { User } from '@/firebase/types';
 import { Timestamp } from 'firebase/firestore';
 import { BADGES } from '@/utils/constants';
 
+const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
+const MONTHS = [
+  'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+];
+const YEARS = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
+
 interface ProfilEditFormProps {
   user: User;
   onSuccess?: () => void;
@@ -195,16 +202,57 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="birthDate">Date de naissance</Label>
-          <Input
-            id="birthDate"
-            type="date"
-            value={formData.birthDate}
-            onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
-          />
+          <Label>Date de naissance</Label>
+          <div className="grid grid-cols-3 gap-2">
+            <select
+              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={formData.birthDate ? parseInt(formData.birthDate.split('-')[2] || '0') || '' : ''}
+              onChange={(e) => {
+                const d = e.target.value.padStart(2, '0');
+                const parts = formData.birthDate?.split('-') || ['2000', '01', '01'];
+                const m = parts[1] || '01';
+                const y = parts[0] || '2000';
+                setFormData({ ...formData, birthDate: `${y}-${m}-${d}` });
+              }}
+            >
+              <option value="">Jour</option>
+              {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+
+            <select
+              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={formData.birthDate ? parseInt(formData.birthDate.split('-')[1] || '0') || '' : ''}
+              onChange={(e) => {
+                const m = e.target.value.padStart(2, '0');
+                const parts = formData.birthDate?.split('-') || ['2000', '01', '01'];
+                const d = parts[2] || '01';
+                const y = parts[0] || '2000';
+                setFormData({ ...formData, birthDate: `${y}-${m}-${d}` });
+              }}
+            >
+              <option value="">Mois</option>
+              {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+            </select>
+
+            <select
+              className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={formData.birthDate ? parseInt(formData.birthDate.split('-')[0] || '0') || '' : ''}
+              onChange={(e) => {
+                const y = e.target.value;
+                const parts = formData.birthDate?.split('-') || ['2000', '01', '01'];
+                const m = parts[1] || '01';
+                const d = parts[2] || '01';
+                setFormData({ ...formData, birthDate: `${y}-${m}-${d}` });
+              }}
+            >
+              <option value="">Année</option>
+              {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
         </div>
+
         <div className="space-y-2">
           <Label>Sexe</Label>
           <div className="flex gap-2">
@@ -328,9 +376,11 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
          )}
       </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? 'Enregistrement...' : 'Enregistrer'}
-      </Button>
+      <div className="sticky bottom-0 bg-background pt-4 pb-2 border-t mt-4 z-10 -mx-1 px-1">
+        <Button type="submit" className="w-full shadow-lg" disabled={isLoading}>
+            {isLoading ? 'Enregistrement...' : 'Enregistrer'}
+        </Button>
+      </div>
     </form>
   );
 }

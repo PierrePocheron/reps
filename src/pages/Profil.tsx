@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 
 
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { BackButton } from '@/components/BackButton';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { ProfilEditForm } from '@/components/ProfilEditForm';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
@@ -79,16 +79,16 @@ function Profil() {
   const nextBadge = stats ? getNextBadge(stats) : null;
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-24">
+    <PageLayout
+        title="MON PROFIL"
+        variant="secondary"
+        headerAction={
+            <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} className="-mr-2">
+                <Settings className="h-5 w-5" />
+            </Button>
+        }
+    >
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <BackButton to="/" />
-          <h1 className="text-2xl font-bold">Profil</h1>
-          <Button variant="ghost" size="icon" onClick={() => navigate('/settings')}>
-            <Settings className="h-5 w-5" />
-          </Button>
-        </div>
 
         {/* Profil utilisateur */}
         <Card>
@@ -228,7 +228,7 @@ function Profil() {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </PageLayout>
   );
 }
 

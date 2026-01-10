@@ -7,11 +7,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { useSession } from '@/hooks/useSession';
 import { Plus, Calendar, Activity, Flame, Trophy, ChevronDown, CheckCircle2 } from 'lucide-react';
-import { UserAvatar } from '@/components/UserAvatar';
+
 import { getLastSession } from '@/firebase/firestore';
 import { getDayIndex } from '@/firebase/challenges';
 import type { Session } from '@/firebase/types';
 import { useState, useEffect } from 'react';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { ChallengeCard } from '@/components/challenges/ChallengeCard';
 import { useChallenges } from '@/hooks/useChallenges';
 import { DEFAULT_MOTIVATIONAL_PHRASES } from '@/utils/constants';
@@ -90,20 +91,8 @@ function Home() {
   }
 
   return (
-    <div className="bg-background p-4 pb-24">
+    <PageLayout isHome>
       <div className="mx-auto max-w-2xl space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Reps</h1>
-          <button
-            onClick={() => navigate('/profil')}
-            className="relative flex h-9 w-9 items-center justify-center rounded-full overflow-hidden border-none p-0 outline-none ring-offset-background transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            {user && (
-              <UserAvatar user={user} size="sm" className="h-9 w-9 border-none" />
-            )}
-          </button>
-        </div>
 
         {/* Message de bienvenue */}
         <div className="mb-2">
@@ -294,7 +283,7 @@ function Home() {
           </div>
         )}
       </div>
-    </div>
+    </PageLayout>
   );
 }
 

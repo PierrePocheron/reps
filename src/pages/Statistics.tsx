@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BackButton } from '@/components/BackButton';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { useUserStore } from '@/store/userStore';
 import { Flame, Dumbbell, Calendar, Zap, AlertTriangle, Trophy, Sunrise, Sun, Moon } from 'lucide-react';
 import { AdSpace } from '@/components/AdSpace';
@@ -13,16 +13,8 @@ export default function Statistics() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="max-w-2xl mx-auto p-4 pb-0 pt-4">
-        <div className="flex items-center justify-between mb-2">
-          <BackButton to="/profil" />
-          <h1 className="text-2xl font-bold">Statistiques</h1>
-          <div className="w-10" />
-        </div>
-      </div>
-
-      <div className="max-w-2xl mx-auto p-4 space-y-6">
+    <PageLayout title="STATISTIQUES">
+      <div className="max-w-2xl mx-auto space-y-6">
         {/* Alerte Profil Incomplet */}
         {(!user.weight || !user.height || !user.gender) && (
           <motion.div
@@ -335,6 +327,7 @@ export default function Statistics() {
           </div>
         </div>
       </div>
-    </div>
+
+    </PageLayout>
   );
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BackButton } from '@/components/BackButton';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useUserStore } from '@/store/userStore';
 import { getLeaderboardStats, getFriendsDetails } from '@/firebase/firestore';
@@ -92,13 +92,8 @@ export default function Leaderboard() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-24">
+    <PageLayout title="CLASSEMENT">
       <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <BackButton to="/" />
-          <h1 className="text-2xl font-bold">Classement</h1>
-          <div className="w-10" />
-        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-6">
@@ -207,6 +202,6 @@ export default function Leaderboard() {
           </div>
         </Tabs>
       </div>
-    </div>
+    </PageLayout>
   );
 }

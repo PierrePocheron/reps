@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ColorPicker } from '@/components/ui/color-picker';
-import { BackButton } from '@/components/BackButton';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { useTheme } from '@/hooks/useTheme';
 import { useSettingsStore } from '@/store/settingsStore';
 import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2 } from 'lucide-react';
@@ -35,13 +35,8 @@ function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-20">
+    <PageLayout title="PARAMÈTRES" variant="secondary">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <BackButton to="/profil" />
-          <h1 className="text-2xl font-bold">Paramètres</h1>
-        </div>
 
         {/* Thème */}
         <Card>
@@ -227,7 +222,7 @@ function Settings() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageLayout>
   );
 }
 
