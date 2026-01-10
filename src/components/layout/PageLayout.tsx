@@ -53,6 +53,16 @@ export function PageLayout({ children, title, isHome, headerAction, backButton, 
 
                             {/* RIGHT: Streak + Profile */}
                             <div className="flex items-center gap-3">
+                                {/* Streak Badge */}
+                                {user && (
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20">
+                                        <Flame className={`w-4 h-4 ${user.currentStreak > 0 ? 'text-orange-500 fill-orange-500' : 'text-muted-foreground'}`} />
+                                        <span className={`text-sm font-bold ${user.currentStreak > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-muted-foreground'}`}>
+                                            {user.currentStreak || 0}
+                                        </span>
+                                    </div>
+                                )}
+
                                 {/* Profile Avatar */}
                                 <div onClick={() => navigate('/profil')} className="cursor-pointer">
                                     <UserAvatar size="sm" />
