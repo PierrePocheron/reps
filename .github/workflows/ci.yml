@@ -36,7 +36,7 @@ jobs:
       with:
         args: >
             -Dsonar.organization=pierrepocheron
-            -Dsonar.projectKey=reps
+            -Dsonar.projectKey=PierrePocheron_reps
             -Dsonar.sources=src
             -Dsonar.tests=src
             -Dsonar.test.inclusions=src/**/*.test.tsx,src/**/*.test.ts
