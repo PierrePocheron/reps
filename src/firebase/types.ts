@@ -42,6 +42,7 @@ export interface User {
     totalCalories: number;
     count: number;
   }[];
+  newBadgeIds?: string[];
 }
 
 // Type pour un exercice

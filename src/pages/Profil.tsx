@@ -152,6 +152,9 @@ function Profil() {
             <CardTitle className="flex items-center gap-2 text-lg font-bold">
               <Award className="h-5 w-5" />
               Badges
+              {user.newBadgeIds && user.newBadgeIds.length > 0 && (
+                 <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+              )}
             </CardTitle>
             <Button variant="ghost" size="sm" onClick={() => navigate('/achievements')}>
               Voir tout

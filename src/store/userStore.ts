@@ -7,6 +7,7 @@ import {
   updateUserDocument,
   calculateUserStats,
   subscribeToUser,
+  markBadgesAsSeen,
 } from '@/firebase';
 import { applyThemeColor, type ThemeColor } from '@/utils/theme-colors';
 
@@ -30,6 +31,7 @@ interface UserState {
   updateProfile: (updates: Partial<User>) => Promise<void>;
   updateThemeColor: (color: ThemeColor) => Promise<void>;
   refreshStats: () => Promise<void>;
+  markBadgesAsSeen: () => Promise<void>;
   reset: () => void;
 }
 
@@ -226,6 +228,22 @@ export const useUserStore = create<UserState>((set, get) => ({
     } catch (error) {
       console.error('Erreur lors du calcul des stats:', error);
       set({ stats: null });
+    }
+  },
+
+  /**
+   * Marque les badges comme vus
+   */
+  markBadgesAsSeen: async () => {
+    try {
+      const { user } = get();
+      if (user) {
+        await markBadgesAsSeen(user.uid);
+        // Optimistic update
+        set({ user: { ...user, newBadgeIds: [] } });
+      }
+    } catch (e) {
+      console.error(e);
     }
   },
 

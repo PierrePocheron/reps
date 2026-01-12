@@ -8,9 +8,42 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/utils/cn';
 import { Lock, Check, User } from 'lucide-react';
 
+import { useEffect, useRef } from 'react';
+
 export default function Achievements() {
-  const { user, stats, updateProfile } = useUserStore();
+  const { user, stats, updateProfile, markBadgesAsSeen } = useUserStore();
   const { toast } = useToast();
+
+  // Utiliser une ref pour suivre si on a des badges à marquer comme vus
+  const shouldMarkAsSeen = useRef(false);
+  // Protection contre le StrictMode (double invoke mount/unmount)
+  const canPerformCleanup = useRef(false);
+
+  useEffect(() => {
+    if (user?.newBadgeIds && user.newBadgeIds.length > 0) {
+      shouldMarkAsSeen.current = true;
+    }
+  }, [user?.newBadgeIds]);
+
+  // Timer de sécurité pour autoriser le nettoyage
+  useEffect(() => {
+    const timer = setTimeout(() => {
+        canPerformCleanup.current = true;
+    }, 1000); // On considère qu'après 1s, c'est une vraie visite et pas un flash/StrictMode
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Cet effet ne s'exécute qu'au montage et au démontage
+  useEffect(() => {
+    return () => {
+      // On ne marque comme vu que si :
+      // 1. Il y avait des nouveaux badges (shouldMarkAsSeen)
+      // 2. L'utilisateur est resté au moins 1s (canPerformCleanup)
+      if (shouldMarkAsSeen.current && canPerformCleanup.current) {
+         markBadgesAsSeen();
+      }
+    };
+  }, []);
 
   if (!user || !stats) return null;
 
@@ -75,7 +108,10 @@ export default function Achievements() {
             })
             .map((badge) => {
             const isUnlocked = unlockedBadgeIds.includes(badge.id);
+            const isNew = user.newBadgeIds?.includes(badge.id); // Check if badge is new
+
             const progress = !isUnlocked ? (() => {
+               // ... (existing progress logic)
                switch (badge.category) {
                 case 'total_reps': return (stats.totalReps / badge.threshold) * 100;
                 case 'streak': return (stats.currentStreak / badge.threshold) * 100;
@@ -91,12 +127,20 @@ export default function Achievements() {
             return (
               <Card key={badge.id} className={cn(
                 "transition-all duration-200",
-                !isUnlocked && "opacity-70 bg-muted/30"
+                !isUnlocked && "opacity-70 bg-muted/30",
+                isNew && "border-orange-500 bg-orange-500/5 shadow-[0_0_15px_-3px_rgba(249,115,22,0.3)]"
               )}>
-                <CardContent className="p-4 flex items-center gap-4">
+                <CardContent className="p-4 flex items-center gap-4 relative overflow-hidden">
+                  {isNew && (
+                    <div className="absolute top-0 right-0 bg-orange-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg animate-pulse">
+                      NOUVEAU
+                    </div>
+                  )}
+
                   <div className={cn(
                     "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-sm shrink-0",
-                    isUnlocked ? "bg-gradient-to-br from-background to-muted" : "bg-muted"
+                    isUnlocked ? "bg-gradient-to-br from-background to-muted" : "bg-muted",
+                     isNew && "ring-2 ring-orange-500 ring-offset-2 ring-offset-background"
                   )}>
                     {isUnlocked ? badge.emoji : <Lock className="h-6 w-6 text-muted-foreground" />}
                   </div>

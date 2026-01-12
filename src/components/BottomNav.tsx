@@ -7,7 +7,7 @@ import { useUserStore } from '@/store/userStore';
 export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { friendRequests } = useUserStore();
+  const { friendRequests, user } = useUserStore();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -17,11 +17,16 @@ export function BottomNav() {
         <button
           onClick={() => navigate('/')}
           className={cn(
-            'flex flex-col items-center justify-center gap-1 transition-colors',
+            'flex flex-col items-center justify-center gap-1 transition-colors relative',
             isActive('/') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
           )}
         >
-          <Home className="h-6 w-6" />
+          <div className="relative">
+            <Home className="h-6 w-6" />
+             {user?.newBadgeIds && user.newBadgeIds.length > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-background animate-pulse" />
+            )}
+          </div>
           <span className="text-[10px] font-medium">Accueil</span>
         </button>
 

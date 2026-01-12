@@ -5,6 +5,7 @@ import {
   getDocs,
   setDoc,
   updateDoc,
+  arrayUnion,
   deleteDoc,
   addDoc,
   query,
@@ -508,6 +509,7 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
         lunchSessions: stats.lunchSessions,
         nightSessions: stats.nightSessions,
         exercisesDistribution: stats.exercisesDistribution,
+        newBadgeIds: arrayUnion(...newBadges.map(b => b.id)),
       });
 
       // 2. Créer les événements de badge
@@ -1110,6 +1112,19 @@ export async function getLeaderboardStats(friendIds: string[], period: 'daily' |
 
   } catch (error) {
     console.error('Erreur lors de la récupération du classement:', error);
+    throw error;
+  }
+}
+
+/**
+ * Marquer les badges comme vus
+ */
+export async function markBadgesAsSeen(userId: string): Promise<void> {
+  try {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, { newBadgeIds: [] });
+  } catch (error) {
+    console.error('Erreur lors du marquage des badges comme vus:', error);
     throw error;
   }
 }

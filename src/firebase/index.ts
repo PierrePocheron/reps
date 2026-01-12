@@ -39,6 +39,7 @@ export {
   createNotification,
   getUserNotifications,
   markNotificationAsRead,
+  markBadgesAsSeen,
   // Motivational phrases
   getRandomMotivationalPhrase,
 } from './firestore';

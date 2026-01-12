@@ -43,17 +43,21 @@ export function useBadgeEvents() {
 
                     processedEvents.current.add(eventId);
 
-                    // 1. Jouer son et vibration
-                    play('success'); // Ou un son spécial 'achievement' si on en avait un
-                    haptics.notification();
+                    // Petit délai pour laisser le temps au toast de "Validation" de s'afficher (si applicable)
+                    // afin que celui du badge arrive "après" et soit bien visible
+                    setTimeout(() => {
+                        // 1. Jouer son et vibration
+                        play('success');
+                        haptics.notification();
 
-                    // 2. Afficher le Toast
-                    toast({
-                        title: "Succès débloqué ! 🏆",
-                        description: `${eventData.badgeEmoji} ${eventData.badgeName}`,
-                        className: "bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-orange-200",
-                        duration: 5000,
-                    });
+                        // 2. Afficher le Toast
+                        toast({
+                            title: "Succès débloqué ! 🏆",
+                            description: `${eventData.badgeEmoji} ${eventData.badgeName}`,
+                            className: "bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-orange-200",
+                            duration: 6000, // Un peu plus long pour être sûr d'être vu
+                        });
+                    }, 1000);
 
                     // 3. Supprimer l'événement pour ne pas le rejouer
                     // On le supprime de Firestore pour nettoyer
