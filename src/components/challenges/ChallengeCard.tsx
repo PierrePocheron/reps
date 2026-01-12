@@ -31,6 +31,8 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import confetti from 'canvas-confetti';
 import { NumberTicker } from '@/components/ui/NumberTicker';
 
+import { useSound } from '@/hooks/useSound';
+
 interface ChallengeCardProps {
   activeChallenge?: UserChallenge;
   template?: ChallengeDefinition;
@@ -45,6 +47,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isValidating, setIsValidating] = useState(false);
+  const { play } = useSound();
 
   // 1. STATE: Active Challenge or Preview
   const def = activeChallenge
@@ -161,9 +164,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
         const targetReps = getTargetForDay(def, stepIndex);
 
         // 1. Play Sound
-        const audio = new Audio('/sounds/success.mp3');
-        audio.volume = 0.5;
-        audio.play().catch(e => console.error("Audio play failed", e));
+        play('success');
 
         // 2. Trigger Confetti
         confetti({
