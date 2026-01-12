@@ -43,7 +43,7 @@ export default function Achievements() {
          markBadgesAsSeen();
       }
     };
-  }, []);
+  }, [markBadgesAsSeen]);
 
   if (!user || !stats) return null;
 
