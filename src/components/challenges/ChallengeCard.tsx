@@ -28,6 +28,7 @@ import {
 } from '@/firebase/challenges';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import confetti from 'canvas-confetti';
 
 interface ChallengeCardProps {
   activeChallenge?: UserChallenge;
@@ -157,6 +158,13 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
     try {
         const stepIndex = activeChallenge.history.length;
         await validateChallengeDay(activeChallenge.id, userId, getTargetForDay(def, stepIndex), new Date());
+        // 2. Trigger Confetti
+        confetti({
+            particleCount: Math.min(targetReps * 2, 200), // Scale with reps, cap at 200
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#22c55e', '#eab308', '#f97316'] // green, yellow, orange
+        });
         toast({
             title: isLate ? "Rattrapage réussi ! 💪" : "Bien joué ! 🔥",
             description: `Jour ${stepIndex + 1} validé !`,
