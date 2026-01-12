@@ -158,6 +158,13 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
     try {
         const stepIndex = activeChallenge.history.length;
         await validateChallengeDay(activeChallenge.id, userId, getTargetForDay(def, stepIndex), new Date());
+        const targetReps = getTargetForDay(def, stepIndex);
+
+        // 1. Play Sound
+        const audio = new Audio('/sounds/success.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(e => console.error("Audio play failed", e));
+
         // 2. Trigger Confetti
         confetti({
             particleCount: Math.min(targetReps * 2, 200), // Scale with reps, cap at 200
