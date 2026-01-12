@@ -29,6 +29,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import confetti from 'canvas-confetti';
+import { NumberTicker } from '@/components/ui/NumberTicker';
 
 interface ChallengeCardProps {
   activeChallenge?: UserChallenge;
@@ -157,7 +158,6 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
     setIsValidating(true);
     try {
         const stepIndex = activeChallenge.history.length;
-        await validateChallengeDay(activeChallenge.id, userId, getTargetForDay(def, stepIndex), new Date());
         const targetReps = getTargetForDay(def, stepIndex);
 
         // 1. Play Sound
@@ -172,6 +172,9 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
             origin: { y: 0.6 },
             colors: ['#22c55e', '#eab308', '#f97316'] // green, yellow, orange
         });
+
+        await validateChallengeDay(activeChallenge.id, userId, targetReps, new Date());
+
         toast({
             title: isLate ? "Rattrapage réussi ! 💪" : "Bien joué ! 🔥",
             description: `Jour ${stepIndex + 1} validé !`,
@@ -360,7 +363,9 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                             {isLate ? "Rattrapage" : "Aujourd'hui"}
                         </span>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-2xl font-bold">{target}</span>
+                            <span className="text-2xl font-bold">
+                                <NumberTicker value={target} />
+                            </span>
                             <span className="text-xs font-medium">Reps</span>
                         </div>
                     </div>
