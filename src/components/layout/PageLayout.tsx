@@ -65,7 +65,7 @@ export function PageLayout({ children, title, isHome, headerAction, backButton, 
 
                                 {/* Profile Avatar */}
                                 <div onClick={() => navigate('/profil')} className="cursor-pointer relative">
-                                    <UserAvatar size="sm" />
+                                    <UserAvatar user={user} size="sm" />
                                     {user.newBadgeIds && user.newBadgeIds.length > 0 && (
                                         <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-background animate-pulse" />
                                     )}
