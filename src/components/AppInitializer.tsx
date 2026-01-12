@@ -4,6 +4,7 @@ import { useSettingsStore } from '@/store/settingsStore';
 import { subscribeToFriendRequests } from '@/firebase/firestore';
 import { applyThemeColor } from '@/utils/theme-colors';
 import { initializeAdMob } from '@/utils/admob';
+import { useBadgeEvents } from '@/hooks/useBadgeEvents';
 
 /**
  * Composant d'initialisation de l'application
@@ -12,6 +13,9 @@ import { initializeAdMob } from '@/utils/admob';
 export function AppInitializer() {
   const { initializeAuth, user, setFriendRequests } = useUserStore();
   const { loadSettings, applyTheme } = useSettingsStore();
+
+  // Souscrire aux événements de badges (Gamification)
+  useBadgeEvents();
 
   useEffect(() => {
     // Initialiser l'authentification
