@@ -16,8 +16,13 @@ import { getDayIndex } from '@/firebase/challenges';
 export function useStreak() {
     const { user } = useUserStore();
 
+    const userId = user?.uid;
+    const lastConnection = user?.lastConnection;
+    const currentStreak = user?.currentStreak;
+    const longestStreak = user?.longestStreak;
+
     useEffect(() => {
-        if (!user) return;
+        if (!userId) return;
 
         const updateStreak = async (uid: string, newStreak: number, date: Date) => {
             const userRef = doc(db, 'users', uid);
@@ -27,7 +32,7 @@ export function useStreak() {
                 await updateDoc(userRef, {
                     currentStreak: newStreak,
                     lastConnection: timestamp,
-                    longestStreak: user.longestStreak ? Math.max(user.longestStreak, newStreak) : newStreak
+                    longestStreak: longestStreak ? Math.max(longestStreak, newStreak) : newStreak
                 });
                 console.log(`🔥 Streak updated: ${newStreak}`);
             } catch (err) {
@@ -37,28 +42,28 @@ export function useStreak() {
 
         const checkStreak = async () => {
             const today = new Date();
-            const lastConnection = user.lastConnection?.toDate();
+            const lastConnectionDate = lastConnection?.toDate();
 
             // If no last connection, it's day 1
-            if (!lastConnection) {
-                await updateStreak(user.uid, 1, today);
+            if (!lastConnectionDate) {
+                await updateStreak(userId, 1, today);
                 return;
             }
 
             const refDate = Timestamp.fromDate(new Date(2024, 0, 1));
             const todayIndex = getDayIndex(refDate, today);
-            const lastIndex = getDayIndex(refDate, lastConnection);
+            const lastIndex = getDayIndex(refDate, lastConnectionDate);
             const diff = todayIndex - lastIndex;
 
             if (diff === 0) {
                 return;
             } else if (diff === 1) {
-                await updateStreak(user.uid, (user.currentStreak || 0) + 1, today);
+                await updateStreak(userId, (currentStreak || 0) + 1, today);
             } else {
-                await updateStreak(user.uid, 1, today);
+                await updateStreak(userId, 1, today);
             }
         };
 
         checkStreak();
-    }, [user]);
+    }, [userId, lastConnection, currentStreak, longestStreak]);
 }

@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Timestamp } from 'firebase/firestore';
 import {
   searchUsers,
   sendFriendRequest,
@@ -200,8 +201,7 @@ export default function Friends() {
     return friends.find(f => f.uid === userId);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const formatDate = (timestamp: any) => {
+  const formatDate = (timestamp: Timestamp | null | undefined) => {
     if (!timestamp) return '';
     const date = timestamp.toDate();
     const now = new Date();
