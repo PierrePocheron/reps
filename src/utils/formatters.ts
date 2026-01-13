@@ -46,7 +46,7 @@ export function formatDurationLong(seconds: number): string {
   if (hours > 0) {
     return `${hours}h ${minutes}min`;
   } else if (minutes > 0) {
-    return `${minutes}min ${remainingSeconds}s`;
+    return `${minutes}min ${remainingSeconds.toString().padStart(2, '0')}s`;
   } else {
     return `${remainingSeconds}s`;
   }
