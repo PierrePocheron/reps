@@ -15,6 +15,7 @@ import Friends from './pages/Friends';
 import Leaderboard from './pages/Leaderboard';
 import Login from './pages/Login';
 import Challenges from './pages/Challenges';
+import SentryTest from './pages/SentryTest';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
 import { useEffect } from 'react';
@@ -36,6 +37,15 @@ function App() {
             <Login />
           </PageTransition>
         } />
+
+        {/* Sentry Test Page (DEV ONLY - à supprimer en prod) */}
+        {import.meta.env.MODE === 'development' && (
+          <Route path="/sentry-test" element={
+            <PageTransition>
+              <SentryTest />
+            </PageTransition>
+          } />
+        )}
 
         <Route
           path="/*"
