@@ -4,6 +4,7 @@ import { PageTransition } from '@/components/PageTransition';
 import { Toaster } from '@/components/ui/toaster';
 import { AppInitializer } from '@/components/AppInitializer';
 import { Layout } from '@/components/Layout';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import Home from './pages/Home';
 import Session from './pages/Session';
 import Profil from './pages/Profil';
@@ -27,7 +28,7 @@ function App() {
   }, []);
 
   return (
-    <>
+    <ErrorBoundary>
       <AppInitializer />
       <Routes>
         <Route path="/login" element={
@@ -128,7 +129,7 @@ function App() {
         />
       </Routes>
       <Toaster />
-    </>
+    </ErrorBoundary>
   );
 }
 
