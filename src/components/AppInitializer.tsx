@@ -4,6 +4,7 @@ import { useSettingsStore } from '@/store/settingsStore';
 import { subscribeToFriendRequests } from '@/firebase/firestore';
 import { applyThemeColor } from '@/utils/theme-colors';
 import { initializeAdMob } from '@/utils/admob';
+import { initializeSocialLogin } from '@/utils/social-login';
 import { useBadgeEvents } from '@/hooks/useBadgeEvents';
 
 /**
@@ -24,7 +25,8 @@ export function AppInitializer() {
     // Initialiser AdMob (Mobile)
     initializeAdMob();
 
-
+    // Initialiser SocialLogin (Mobile - Google Auth)
+    initializeSocialLogin();
 
     // Charger les paramètres depuis localStorage
     loadSettings();

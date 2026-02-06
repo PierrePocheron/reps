@@ -75,3 +75,29 @@ global.Audio = vi.fn().mockImplementation(() => ({
   volume: 1,
   src: '',
 }));
+
+// 4. Mock @capgo/capacitor-social-login
+vi.mock('@capgo/capacitor-social-login', () => ({
+  SocialLogin: {
+    initialize: vi.fn().mockResolvedValue(undefined),
+    login: vi.fn().mockResolvedValue({
+      provider: 'google',
+      result: {
+        responseType: 'online',
+        idToken: 'mock-id-token',
+        accessToken: {
+          token: 'mock-access-token',
+        },
+        profile: {
+          email: 'test@example.com',
+          familyName: 'Doe',
+          givenName: 'John',
+          id: 'mock-google-id',
+          name: 'John Doe',
+          imageUrl: 'https://example.com/avatar.jpg',
+        },
+      },
+    }),
+    logout: vi.fn().mockResolvedValue(undefined),
+  },
+}));

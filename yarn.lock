@@ -947,10 +947,10 @@
   resolved "https://registry.npmjs.org/@capacitor/status-bar/-/status-bar-5.0.8.tgz"
   integrity sha512-ES/4ik3/6SV6RVXVVoMm5i7zanwZ+CBtNX6glhBHDHS0nR2m3Dmdxuk/BaFEZWT5bDn4xzg0LlnMsS8mlbUf+A==
 
-"@codetrix-studio/capacitor-google-auth@^3.3.3":
-  version "3.3.3"
-  resolved "https://registry.npmjs.org/@codetrix-studio/capacitor-google-auth/-/capacitor-google-auth-3.3.3.tgz"
-  integrity sha512-ZcePU0iwqa6+I2dn0U8ex+PmS/IiZNNw9h1TR7ncIov8Ix4ycCkFZvrOGMJcdBk6S4wptdix3QtxgopaU9P3Lw==
+"@capgo/capacitor-social-login@^8.2.22":
+  version "8.2.22"
+  resolved "https://registry.yarnpkg.com/@capgo/capacitor-social-login/-/capacitor-social-login-8.2.22.tgz#9059aae1d74f791d91f6e785c2952111991faf84"
+  integrity sha512-QSPy9ZJJbnyD1i3TNYoaDQgxlVNO3duOvHO90fwQ4iRRrqan2sAtXQeflZSZF8WZ+c1T++OSZ5W7fz6ZyzXFAA==
 
 "@csstools/color-helpers@^5.1.0":
   version "5.1.0"

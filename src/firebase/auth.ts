@@ -14,7 +14,7 @@ import {
 import { auth } from './config';
 import { createUserDocument, getUserDocument } from './firestore';
 import type { User } from './types';
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+import { SocialLogin } from '@capgo/capacitor-social-login';
 import { Capacitor } from '@capacitor/core';
 
 /**
@@ -100,8 +100,23 @@ export async function signInWithGoogle(): Promise<FirebaseUser | undefined> {
   try {
     if (Capacitor.isNativePlatform()) {
       // Sur mobile, on utilise le plugin natif qui gère le flux Google Sign-In correctement
-      const googleUser = await GoogleAuth.signIn();
-      const idToken = googleUser.authentication.idToken;
+      const res = await SocialLogin.login({
+        provider: 'google',
+        options: {
+          scopes: ['email', 'profile'],
+        },
+      });
+
+      // Vérifier qu'on a une réponse en mode "online" avec idToken
+      if (res.result.responseType === 'offline') {
+        throw new Error('Google login configured in offline mode, but idToken is required');
+      }
+
+      const idToken = res.result.idToken;
+      if (!idToken) {
+        throw new Error('No idToken received from Google login');
+      }
+
       const credential = GoogleAuthProvider.credential(idToken);
 
       const result = await signInWithCredential(auth, credential);
@@ -191,10 +206,10 @@ export async function signOut(): Promise<void> {
   try {
     if (Capacitor.isNativePlatform()) {
       try {
-        await GoogleAuth.signOut();
+        await SocialLogin.logout({ provider: 'google' });
       } catch (e) {
         // Ignorer si pas connecté ou erreur plugin
-        console.warn('GoogleAuth signOut error', e);
+        console.warn('SocialLogin signOut error', e);
       }
     }
     await firebaseSignOut(auth);
