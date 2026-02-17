@@ -1,6 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { AdMob } from '@capacitor-community/admob';
 import { ADS_CONFIG } from '@/config/ads';
+import { logger } from '@/utils/logger';
 
 // Fonction utilitaire pour initialiser AdMob au lancement de l'app
 export async function initializeAdMob() {
@@ -19,7 +20,7 @@ export async function initializeAdMob() {
             // if (tracking.status === 'notDetermined') { ... }
 
         } catch (e) {
-            console.error('Failed to initialize AdMob', e);
+            logger.error('Failed to initialize AdMob', e);
         }
     }
 }

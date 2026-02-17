@@ -32,6 +32,7 @@ import confetti from 'canvas-confetti';
 import { NumberTicker } from '@/components/ui/NumberTicker';
 
 import { useSound } from '@/hooks/useSound';
+import { logger } from '@/utils/logger';
 
 interface ChallengeCardProps {
   activeChallenge?: UserChallenge;
@@ -182,7 +183,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
         });
         onUpdate?.();
     } catch (error) {
-        console.error(error);
+        logger.error('Challenge validation failed', error as Error);
         toast({
             title: "Erreur",
             description: "Impossible de valider le défi.",

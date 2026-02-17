@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { useEffect } from 'react';
 import { ADS_CONFIG } from '@/config/ads';
 import { useAdStore } from '@/store/adStore';
+import { logger } from '@/utils/logger';
 
 interface AdSpaceProps {
     className?: string;
@@ -29,7 +30,7 @@ export function AdSpace({ className = "", slotId, adId }: AdSpaceProps) {
             try {
                 (window.adsbygoogle = window.adsbygoogle || []).push({});
             } catch (e) {
-                console.error("AdSense error:", e);
+                logger.error("AdSense error:", e);
             }
         }
 

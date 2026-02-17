@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 /**
  * Utilitaires pour la gestion du stockage local
  */
@@ -10,7 +12,7 @@ export function setLocalStorage(key: string, value: unknown): boolean {
     localStorage.setItem(key, JSON.stringify(value));
     return true;
   } catch (error) {
-    console.error(`Erreur lors de la sauvegarde dans localStorage (${key}):`, error);
+    logger.error(`Erreur lors de la sauvegarde dans localStorage (${key}):`, error);
     return false;
   }
 }
@@ -26,7 +28,7 @@ export function getLocalStorage<T>(key: string, defaultValue: T): T {
     }
     return JSON.parse(item) as T;
   } catch (error) {
-    console.error(`Erreur lors de la récupération depuis localStorage (${key}):`, error);
+    logger.error(`Erreur lors de la récupération depuis localStorage (${key}):`, error);
     return defaultValue;
   }
 }
@@ -39,7 +41,7 @@ export function removeLocalStorage(key: string): boolean {
     localStorage.removeItem(key);
     return true;
   } catch (error) {
-    console.error(`Erreur lors de la suppression de localStorage (${key}):`, error);
+    logger.error(`Erreur lors de la suppression de localStorage (${key}):`, error);
     return false;
   }
 }
@@ -52,7 +54,7 @@ export function clearLocalStorage(): boolean {
     localStorage.clear();
     return true;
   } catch (error) {
-    console.error('Erreur lors du vidage de localStorage:', error);
+    logger.error('Erreur lors du vidage de localStorage:', error);
     return false;
   }
 }

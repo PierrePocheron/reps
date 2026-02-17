@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Mail, Lock, User, Loader2 } from 'lucide-react';
 import { sendPasswordResetEmail } from '@/firebase/auth';
 import { validatePassword, PASSWORD_MIN_LENGTH } from '@/utils/validation';
+import { logger } from '@/utils/logger';
 
 interface AuthFormProps {
   onSuccess?: () => void;
@@ -118,7 +119,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       setShowResetDialog(false);
       setResetEmail('');
     } catch (error: unknown) {
-      console.error(error);
+      logger.error('Password reset failed', error as Error);
       const firebaseError = error as { code?: string; message?: string };
       let errorMessage = "Impossible d'envoyer l'email";
 
@@ -149,7 +150,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       });
       onSuccess?.();
     } catch (error: unknown) {
-      console.error('Erreur connexion Google:', error);
+      logger.error('Erreur connexion Google:', error);
       const firebaseError = error as { code?: string; message?: string };
       toast({
         title: 'Erreur',

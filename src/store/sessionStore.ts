@@ -11,6 +11,7 @@ import {
   type LocalSession,
 } from '@/firebase';
 import { Timestamp } from 'firebase/firestore';
+import { logger } from '@/utils/logger';
 import { useUserStore } from './userStore';
 
 interface SessionState {
@@ -107,7 +108,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         // Rafraîchir les stats dans le store utilisateur
         await useUserStore.getState().refreshStats();
       } catch (statsError) {
-        console.error('Erreur lors de la mise à jour des stats:', statsError);
+        logger.error('Erreur lors de la mise à jour des stats:', statsError);
         // On continue pour nettoyer la session locale
       }
 
@@ -117,7 +118,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       // Supprimer la session locale
       clearCurrentSessionFromLocal();
     } catch (error) {
-      console.error('Erreur lors de la fin de la session:', error);
+      logger.error('Erreur lors de la fin de la session:', error);
       throw error;
     }
   },

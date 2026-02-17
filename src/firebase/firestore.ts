@@ -23,6 +23,7 @@ import {
 import { db } from './config';
 import type { User, Session, Exercise, Notification, MotivationalPhrase, UserStats } from './types';
 import { getUnlockedBadges, DEFAULT_EXERCISES } from '@/utils/constants';
+import { logger } from '@/utils/logger';
 
 /**
  * Helpers Firestore pour les opérations CRUD
@@ -66,7 +67,7 @@ export async function createUserDocument(
     // (Protection contre les race conditions entre auth.ts et userStore.ts)
     await setDoc(userRef, userDoc, { merge: true });
   } catch (error) {
-    console.error('Erreur lors de la création du document utilisateur:', error);
+    logger.error('Erreur lors de la création du document utilisateur:', error);
     throw error;
   }
 }
@@ -95,7 +96,7 @@ export async function checkUsernameAvailability(username: string, currentUserId?
 
     return false;
   } catch (error) {
-    console.error('Erreur lors de la vérification du pseudo:', error);
+    logger.error('Erreur lors de la vérification du pseudo:', error);
     return false;
   }
 }
@@ -113,7 +114,7 @@ export async function getUserDocument(uid: string): Promise<User | null> {
     }
     return null;
   } catch (error) {
-    console.error('Erreur lors de la récupération du document utilisateur:', error);
+    logger.error('Erreur lors de la récupération du document utilisateur:', error);
     throw error;
   }
 }
@@ -135,7 +136,7 @@ export async function updateUserDocument(uid: string, updates: Partial<User>): P
       updatedAt: serverTimestamp(),
     });
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du document utilisateur:', error);
+    logger.error('Erreur lors de la mise à jour du document utilisateur:', error);
     throw error;
   }
 }
@@ -158,7 +159,7 @@ export function subscribeToUser(
       }
     },
     (error) => {
-      console.error('Erreur lors de l\'écoute du document utilisateur:', error);
+      logger.error('Erreur lors de l\'écoute du document utilisateur:', error);
       callback(null);
     }
   );
@@ -181,7 +182,7 @@ export async function createSession(userId: string, sessionData: Omit<Session, '
     const docRef = await addDoc(sessionsRef, sessionDoc);
     return docRef.id;
   } catch (error) {
-    console.error('Erreur lors de la création de la session:', error);
+    logger.error('Erreur lors de la création de la session:', error);
     throw error;
   }
 }
@@ -204,7 +205,7 @@ export async function getLastSession(userId: string): Promise<Session | null> {
     }
     return null;
   } catch (error) {
-    console.error('Erreur lors de la récupération de la dernière session:', error);
+    logger.error('Erreur lors de la récupération de la dernière session:', error);
     throw error;
   }
 }
@@ -223,7 +224,7 @@ export async function getUserSessions(userId: string, limitCount = 50): Promise<
       ...sessionDoc.data(),
     })) as Session[];
   } catch (error) {
-    console.error('Erreur lors de la récupération des sessions:', error);
+    logger.error('Erreur lors de la récupération des sessions:', error);
     throw error;
   }
 }
@@ -241,7 +242,7 @@ export async function getSession(userId: string, sessionId: string): Promise<Ses
     }
     return null;
   } catch (error) {
-    console.error('Erreur lors de la récupération de la session:', error);
+    logger.error('Erreur lors de la récupération de la session:', error);
     throw error;
   }
 }
@@ -267,7 +268,7 @@ export function subscribeToUserSessions(
       callback(sessions);
     },
     (error) => {
-      console.error('Erreur lors de l\'écoute des sessions:', error);
+      logger.error('Erreur lors de l\'écoute des sessions:', error);
       callback([]);
     }
   );
@@ -287,7 +288,7 @@ export async function createExercise(exercise: Omit<Exercise, 'id'>): Promise<st
     });
     return docRef.id;
   } catch (error) {
-    console.error('Erreur lors de la création de l\'exercice:', error);
+    logger.error('Erreur lors de la création de l\'exercice:', error);
     throw error;
   }
 }
@@ -306,7 +307,7 @@ export async function getUserExercises(userId: string): Promise<Exercise[]> {
       ...doc.data(),
     })) as Exercise[];
   } catch (error) {
-    console.error('Erreur lors de la récupération des exercices:', error);
+    logger.error('Erreur lors de la récupération des exercices:', error);
     throw error;
   }
 }
@@ -319,7 +320,7 @@ export async function deleteExercise(exerciseId: string): Promise<void> {
     const exerciseRef = doc(db, 'exercises', exerciseId);
     await deleteDoc(exerciseRef);
   } catch (error) {
-    console.error('Erreur lors de la suppression de l\'exercice:', error);
+    logger.error('Erreur lors de la suppression de l\'exercice:', error);
     throw error;
   }
 }
@@ -469,7 +470,7 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
       exercisesDistribution,
     };
   } catch (error) {
-    console.error('Erreur lors du calcul des stats:', error);
+    logger.error('Erreur lors du calcul des stats:', error);
     throw error;
   }
 }
@@ -540,7 +541,7 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
       });
     }
   } catch (error) {
-    console.error('Erreur lors de la mise à jour des stats:', error);
+    logger.error('Erreur lors de la mise à jour des stats:', error);
     throw error;
   }
 }
@@ -559,7 +560,7 @@ export async function createNotification(notification: Omit<Notification, 'id' |
     });
     return docRef.id;
   } catch (error) {
-    console.error('Erreur lors de la création de la notification:', error);
+    logger.error('Erreur lors de la création de la notification:', error);
     throw error;
   }
 }
@@ -583,7 +584,7 @@ export async function getUserNotifications(userId: string, limitCount = 50): Pro
       ...doc.data(),
     })) as Notification[];
   } catch (error) {
-    console.error('Erreur lors de la récupération des notifications:', error);
+    logger.error('Erreur lors de la récupération des notifications:', error);
     throw error;
   }
 }
@@ -596,7 +597,7 @@ export async function markNotificationAsRead(notificationId: string): Promise<vo
     const notificationRef = doc(db, 'notifications', notificationId);
     await updateDoc(notificationRef, { read: true });
   } catch (error) {
-    console.error('Erreur lors de la mise à jour de la notification:', error);
+    logger.error('Erreur lors de la mise à jour de la notification:', error);
     throw error;
   }
 }
@@ -625,7 +626,7 @@ export async function getRandomMotivationalPhrase(): Promise<MotivationalPhrase 
     const selectedPhrase = phrases[randomIndex];
     return selectedPhrase || null;
   } catch (error) {
-    console.error('Erreur lors de la récupération de la phrase motivante:', error);
+    logger.error('Erreur lors de la récupération de la phrase motivante:', error);
     return null;
   }
 }
@@ -692,12 +693,12 @@ export async function searchUsers(searchTerm: string, limitCount = 10): Promise<
       searchNameSnap.forEach(doc => results.set(doc.id, { uid: doc.id, ...doc.data() } as User));
       displayNameSnap.forEach(doc => results.set(doc.id, { uid: doc.id, ...doc.data() } as User));
     } catch (e) {
-      console.warn("Erreur sur une des requêtes de recherche (probablement index manquant), on continue avec ce qu'on a", e);
+      logger.warn("Erreur sur une des requêtes de recherche (probablement index manquant), on continue avec ce qu'on a", { error: e });
     }
 
     return Array.from(results.values()).slice(0, limitCount);
   } catch (error) {
-    console.error('Erreur lors de la recherche d\'utilisateurs:', error);
+    logger.error('Erreur lors de la recherche d\'utilisateurs:', error);
     return [];
   }
 }
@@ -761,7 +762,7 @@ export async function sendFriendRequest(fromUser: User, toUserId: string): Promi
     });
 
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de la demande d\'ami:', error);
+    logger.error('Erreur lors de l\'envoi de la demande d\'ami:', error);
     throw error;
   }
 }
@@ -865,7 +866,7 @@ export async function acceptFriendRequest(requestId: string, fromUserId: string,
 
     await batch.commit();
   } catch (error) {
-    console.error('Erreur lors de l\'acceptation de la demande:', error);
+    logger.error('Erreur lors de l\'acceptation de la demande:', error);
     throw error;
   }
 }
@@ -901,7 +902,7 @@ export async function removeFriend(currentUserId: string, friendId: string): Pro
 
     await batch.commit();
   } catch (error) {
-    console.error('Erreur lors de la suppression de l\'ami:', error);
+    logger.error('Erreur lors de la suppression de l\'ami:', error);
     throw error;
   }
 }
@@ -914,7 +915,7 @@ export async function declineFriendRequest(requestId: string): Promise<void> {
     const requestRef = doc(db, 'friend_requests', requestId);
     await updateDoc(requestRef, { status: 'rejected' });
   } catch (error) {
-    console.error('Erreur lors du refus de la demande d\'ami:', error);
+    logger.error('Erreur lors du refus de la demande d\'ami:', error);
     throw error;
   }
 }
@@ -952,7 +953,7 @@ export function subscribeToFriendRequests(userId: string, callback: (requests: A
     });
     callback(requests);
   }, (error) => {
-    console.error("ERREUR CRITIQUE lors de l'écoute des demandes d'amis:", error);
+    logger.error("ERREUR CRITIQUE lors de l'écoute des demandes d'amis:", error);
   });
 }
 
@@ -983,7 +984,7 @@ export async function getFriendsDetails(friendIds: string[]): Promise<User[]> {
 
     return friends;
   } catch (error) {
-    console.error('Erreur lors de la récupération des amis:', error);
+    logger.error('Erreur lors de la récupération des amis:', error);
     return [];
   }
 }
@@ -1039,7 +1040,7 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
 
     return allActivity.slice(0, limitCount);
   } catch (error) {
-    console.error('Erreur lors de la récupération de l\'activité des amis:', error);
+    logger.error('Erreur lors de la récupération de l\'activité des amis:', error);
     return [];
   }
 }
@@ -1111,7 +1112,7 @@ export async function getLeaderboardStats(friendIds: string[], period: 'daily' |
     }));
 
   } catch (error) {
-    console.error('Erreur lors de la récupération du classement:', error);
+    logger.error('Erreur lors de la récupération du classement:', error);
     throw error;
   }
 }
@@ -1124,7 +1125,7 @@ export async function markBadgesAsSeen(userId: string): Promise<void> {
     const userRef = doc(db, 'users', userId);
     await updateDoc(userRef, { newBadgeIds: [] });
   } catch (error) {
-    console.error('Erreur lors du marquage des badges comme vus:', error);
+    logger.error('Erreur lors du marquage des badges comme vus:', error);
     throw error;
   }
 }

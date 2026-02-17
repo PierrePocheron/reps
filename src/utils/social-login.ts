@@ -1,5 +1,6 @@
 import { SocialLogin } from '@capgo/capacitor-social-login';
 import { Capacitor } from '@capacitor/core';
+import { logger } from '@/utils/logger';
 
 /**
  * Initialise le plugin SocialLogin avec la configuration Google
@@ -27,9 +28,9 @@ export async function initializeSocialLogin(): Promise<void> {
       },
     });
 
-    console.log('SocialLogin initialized successfully');
+    logger.info('SocialLogin initialized successfully');
   } catch (error) {
-    console.error('Error initializing SocialLogin:', error);
+    logger.error('Error initializing SocialLogin:', error);
     // Ne pas bloquer l'app si l'initialisation échoue
   }
 }

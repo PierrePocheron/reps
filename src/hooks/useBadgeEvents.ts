@@ -5,6 +5,7 @@ import { useUserStore } from '@/store/userStore';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/useSound';
 import { useHaptic } from '@/hooks/useHaptic';
+import { logger } from '@/utils/logger';
 
 export function useBadgeEvents() {
     const { user } = useUserStore();
@@ -63,7 +64,7 @@ export function useBadgeEvents() {
                     // On le supprime de Firestore pour nettoyer
                     const batch = writeBatch(db);
                     batch.delete(doc(db, 'users', user.uid, 'userEvents', eventId));
-                    batch.commit().catch(console.error);
+                    batch.commit().catch((e) => logger.error('Badge batch commit error', e));
                 }
             });
         });

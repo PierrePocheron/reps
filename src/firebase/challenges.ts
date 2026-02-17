@@ -14,6 +14,7 @@ import { calculateDynamicCalories } from '@/utils/calories';
 import { User, SessionExercise } from './types';
 import { DEFAULT_EXERCISES, MAX_ACTIVE_CHALLENGES } from '@/utils/constants';
 import { updateUserStatsAfterSession } from './firestore';
+import { logger } from '@/utils/logger';
 
 // --- Types ---
 
@@ -444,13 +445,13 @@ export const validateChallengeDay = async (
         // This ensures badges are unlocked and notifications are sent
         // We do this after the transaction so the session is definitely in the DB
         await updateUserStatsAfterSession(userId, reps).catch(err => {
-            console.error("Failed to update stats/badges after challenge:", err);
+            logger.error("Failed to update stats/badges after challenge:", err);
             // Non-blocking: the challenge is validated anyway
         });
 
         return { success: true };
     } catch (e) {
-        console.error("Validation error:", e);
+        logger.error("Validation error:", e);
         throw e;
     }
 };

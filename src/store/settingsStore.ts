@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { ThemeColor } from '@/utils/theme-colors';
+import { logger } from '@/utils/logger';
 
 interface SettingsState {
   // État
@@ -36,7 +37,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
         return JSON.parse(stored);
       }
     } catch (error) {
-      console.error('Erreur lors du chargement des paramètres:', error);
+      logger.error('Erreur lors du chargement des paramètres:', error);
     }
     return {};
   };
@@ -66,7 +67,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
       import('./userStore').then(({ useUserStore }) => {
         const { user, updateThemeColor } = useUserStore.getState();
         if (user && updateThemeColor) {
-          updateThemeColor(color).catch(console.error);
+          updateThemeColor(color).catch((e) => logger.error('Theme color update error', e));
         }
       });
     },
@@ -121,7 +122,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
           })
         );
       } catch (error) {
-        console.error('Erreur lors de la sauvegarde des paramètres:', error);
+        logger.error('Erreur lors de la sauvegarde des paramètres:', error);
       }
     },
 

@@ -3,6 +3,7 @@ import { useUserStore } from '@/store/userStore';
 import { doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { getDayIndex } from '@/firebase/challenges';
+import { logger } from '@/utils/logger';
 
 /**
  * useStreak Hook
@@ -34,9 +35,9 @@ export function useStreak() {
                     lastConnection: timestamp,
                     longestStreak: longestStreak ? Math.max(longestStreak, newStreak) : newStreak
                 });
-                console.log(`🔥 Streak updated: ${newStreak}`);
+                logger.info(`🔥 Streak updated: ${newStreak}`);
             } catch (err) {
-                console.error("Error updating streak:", err);
+                logger.error("Error updating streak:", err);
             }
         };
 

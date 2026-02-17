@@ -26,6 +26,7 @@ import {
 import { UserAvatar } from '@/components/UserAvatar';
 import type { User, FriendRequest, Session } from '@/firebase/types';
 import { UserPlus, Search, Check, X, Users, Activity, Calendar, Award, MoreVertical, UserMinus, Flame } from 'lucide-react';
+import { logger } from '@/utils/logger';
 
 export default function Friends() {
   const { user, friendRequests } = useUserStore();
@@ -69,7 +70,7 @@ export default function Friends() {
         const friendsList = await getFriendsDetails(user.friends);
         setFriends(friendsList);
       } catch (error) {
-        console.error('Error loading friends:', error);
+        logger.error('Error loading friends:', error);
       } finally {
         setIsLoadingFriends(false);
       }
@@ -87,7 +88,7 @@ export default function Friends() {
           const sessions = await getFriendsActivity(user.friends);
           setActivities(sessions);
         } catch (error) {
-          console.error('Error loading activity:', error);
+          logger.error('Error loading activity:', error);
         } finally {
           setIsLoadingActivity(false);
         }
@@ -114,7 +115,7 @@ export default function Friends() {
         );
         setSearchResults(filteredResults);
       } catch (error) {
-        console.error('Search error:', error);
+        logger.error('Search error:', error);
       } finally {
         setIsSearching(false);
       }

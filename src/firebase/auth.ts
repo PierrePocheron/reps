@@ -16,6 +16,7 @@ import { createUserDocument, getUserDocument } from './firestore';
 import type { User } from './types';
 import { SocialLogin } from '@capgo/capacitor-social-login';
 import { Capacitor } from '@capacitor/core';
+import { logger } from '@/utils/logger';
 
 /**
  * Helpers pour l'authentification Firebase
@@ -49,7 +50,7 @@ export async function signInWithEmail(email: string, password: string): Promise<
 
     return user;
   } catch (error) {
-    console.error('Erreur lors de la connexion:', error);
+    logger.error('Erreur lors de la connexion:', error);
     throw error;
   }
 }
@@ -88,7 +89,7 @@ export async function signUpWithEmail(
 
     return user;
   } catch (error) {
-    console.error('Erreur lors de l\'inscription:', error);
+    logger.error('Erreur lors de l\'inscription:', error);
     throw error;
   }
 }
@@ -127,7 +128,7 @@ export async function signInWithGoogle(): Promise<FirebaseUser | undefined> {
       return handleGoogleSignInResult(result.user, result);
     }
   } catch (error) {
-    console.error('Erreur lors de la connexion Google:', error);
+    logger.error('Erreur lors de la connexion Google:', error);
     throw error;
   }
 }
@@ -182,7 +183,7 @@ export async function handleGoogleSignInResult(user: FirebaseUser, result?: any)
 
         return user;
     } catch (error) {
-        console.error("Erreur lors du traitement du résultat Google:", error);
+        logger.error("Erreur lors du traitement du résultat Google:", error);
         throw error;
     }
 }
@@ -194,7 +195,7 @@ export async function sendPasswordResetEmail(email: string): Promise<void> {
   try {
     await firebaseSendPasswordResetEmail(auth, email);
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'email de réinitialisation:', error);
+    logger.error('Erreur lors de l\'envoi de l\'email de réinitialisation:', error);
     throw error;
   }
 }
@@ -209,12 +210,12 @@ export async function signOut(): Promise<void> {
         await SocialLogin.logout({ provider: 'google' });
       } catch (e) {
         // Ignorer si pas connecté ou erreur plugin
-        console.warn('SocialLogin signOut error', e);
+        logger.warn('SocialLogin signOut error', { error: e });
       }
     }
     await firebaseSignOut(auth);
   } catch (error) {
-    console.error('Erreur lors de la déconnexion:', error);
+    logger.error('Erreur lors de la déconnexion:', error);
     throw error;
   }
 }

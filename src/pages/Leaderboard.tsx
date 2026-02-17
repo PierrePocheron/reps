@@ -8,6 +8,7 @@ import { getLeaderboardStats, getFriendsDetails } from '@/firebase/firestore';
 import { Trophy, Medal, Calendar, TrendingUp } from 'lucide-react';
 import { User } from '@/firebase/types';
 import { UserAvatar } from '@/components/UserAvatar';
+import { logger } from '@/utils/logger';
 import { AdSpace } from '@/components/AdSpace';
 import { ADS_CONFIG } from '@/config/ads';
 
@@ -57,7 +58,7 @@ export default function Leaderboard() {
           setStats(periodStats.sort((a, b) => b.totalReps - a.totalReps));
         }
       } catch (error) {
-        console.error('Erreur chargement classement:', error);
+        logger.error('Erreur chargement classement:', error);
       } finally {
         setIsLoading(false);
       }

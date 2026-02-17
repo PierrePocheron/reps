@@ -2,6 +2,7 @@ import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { Auth } from 'firebase/auth';
 import { Firestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getMessaging, Messaging } from 'firebase/messaging';
+import { logger } from '@/utils/logger';
 
 /**
  * Configuration Firebase
@@ -31,7 +32,7 @@ const requiredEnvVars = [
 const missingVars = requiredEnvVars.filter((varName) => !import.meta.env[varName]);
 
 if (missingVars.length > 0) {
-  console.warn(
+  logger.warn(
     `⚠️ Variables d'environnement Firebase manquantes: ${missingVars.join(', ')}\n` +
       'Créez un fichier .env avec les valeurs Firebase. Voir ENV.md pour plus d\'informations.'
   );
@@ -91,7 +92,7 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator && !Capacitor.
   try {
     messaging = getMessaging(app);
   } catch (err) {
-    console.warn('Firebase Cloud Messaging non disponible:', err);
+    logger.warn('Firebase Cloud Messaging non disponible', { error: err });
   }
 }
 
@@ -109,7 +110,7 @@ if (typeof window !== 'undefined') {
       isTokenAutoRefreshEnabled: true,
     });
   } catch (err) {
-    console.warn('Erreur lors de l\'initialisation de App Check:', err);
+    logger.warn('Erreur lors de l\'initialisation de App Check', { error: err });
   }
 }
 

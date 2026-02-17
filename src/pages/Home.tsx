@@ -16,6 +16,7 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { ChallengeCard } from '@/components/challenges/ChallengeCard';
 import { useChallenges } from '@/hooks/useChallenges';
 import { DEFAULT_MOTIVATIONAL_PHRASES } from '@/utils/constants';
+import { logger } from '@/utils/logger';
 
 function Home() {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ function Home() {
           const session = await getLastSession(user.uid);
           setLastSessionDetail(session);
         } catch (err) {
-            console.error(err);
+            logger.error('Fetch last session failed', err as Error);
         }
       }
     }

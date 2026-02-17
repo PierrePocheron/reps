@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { isOffline, onNetworkChange, syncLocalDataWithFirestore } from '@/firebase';
 import { useUserStore } from '@/store/userStore';
+import { logger } from '@/utils/logger';
 
 /**
  * Hook personnalisé pour gérer le mode offline
@@ -17,7 +18,7 @@ export function useOffline() {
 
       // Si on revient en ligne et qu'un utilisateur est connecté, synchroniser
       if (isOnline && currentUser) {
-        syncLocalDataWithFirestore(currentUser.uid).catch(console.error);
+        syncLocalDataWithFirestore(currentUser.uid).catch((e) => logger.error('Sync error', e));
       }
     });
 

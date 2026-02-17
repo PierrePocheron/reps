@@ -17,6 +17,7 @@ import { useHaptic } from '@/hooks/useHaptic';
 import { calculateDynamicCalories } from '@/utils/calories';
 import { DEFAULT_EXERCISES } from '@/utils/constants';
 import type { Exercise } from '@/firebase/types';
+import { logger } from '@/utils/logger';
 
 function Session() {
   const navigate = useNavigate();
@@ -126,7 +127,7 @@ function Session() {
         });
       }
     } catch (error) {
-      console.error(error);
+      logger.error('Load last session failed', error as Error);
       toast({
         title: 'Erreur',
         description: "Impossible de charger la dernière séance",

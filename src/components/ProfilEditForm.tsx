@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/firebase/types';
 import { Timestamp } from 'firebase/firestore';
 import { BADGES } from '@/utils/constants';
+import { logger } from '@/utils/logger';
 
 const DAYS = Array.from({ length: 31 }, (_, i) => i + 1);
 const MONTHS = [
@@ -141,7 +142,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
         onSuccess();
       }
     } catch (error) {
-      console.error(error);
+      logger.error('Profile update failed', error as Error);
       const err = error as Error;
       toast({
         title: 'Erreur',

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useUserStore } from '@/store/userStore';
 import { UserChallenge, getUserActiveChallenges } from '@/firebase/challenges';
+import { logger } from '@/utils/logger';
 
 export function useChallenges() {
   const { user } = useUserStore();
@@ -18,7 +19,7 @@ export function useChallenges() {
       const challenges = await getUserActiveChallenges(user.uid);
       setActiveChallenges(challenges);
     } catch (error) {
-      console.error("Error fetching challenges:", error);
+      logger.error("Error fetching challenges:", error);
     } finally {
       if (isInitialLoad) setIsLoading(false);
     }

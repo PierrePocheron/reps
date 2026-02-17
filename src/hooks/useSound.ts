@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useSettingsStore } from '@/store/settingsStore';
+import { logger } from '@/utils/logger';
 
 type SoundType = 'tap' | 'success' | 'complete' | 'delete';
 
@@ -33,10 +34,10 @@ export function useSound() {
 
       audio.play().catch(e => {
         // En développement, il est normal d'avoir des erreurs si les fichiers n'existent pas encore
-        console.debug(`Sound file for ${type} not found or blocked`, e);
+        logger.debug(`Sound file for ${type} not found or blocked`, e);
       });
     } catch (error) {
-      console.error('Error playing sound', error);
+      logger.error('Error playing sound', error);
     }
   }, [soundEnabled]);
 

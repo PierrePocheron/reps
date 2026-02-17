@@ -6,6 +6,7 @@ import { useUserStore } from '@/store/userStore';
 import { BADGES, getUnlockedBadges } from '@/utils/constants';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/utils/cn';
+import { logger } from '@/utils/logger';
 import { Lock, Check, User } from 'lucide-react';
 
 import { useEffect, useRef } from 'react';
@@ -63,7 +64,7 @@ export default function Achievements() {
         description: `L'emoji ${emoji} est maintenant votre avatar !`,
       });
     } catch (error) {
-      console.error(error);
+      logger.error('Avatar update failed', error as Error);
       toast({
         title: 'Erreur',
         description: "Impossible de mettre à jour l'avatar",

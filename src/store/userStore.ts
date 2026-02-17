@@ -10,6 +10,7 @@ import {
   markBadgesAsSeen,
 } from '@/firebase';
 import { applyThemeColor, type ThemeColor } from '@/utils/theme-colors';
+import { logger } from '@/utils/logger';
 
 interface UserState {
   // État
@@ -89,7 +90,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         try {
           await loadUserProfile();
         } catch (error) {
-          console.error('[DEBUG_IOS] Erreur lors du chargement du profil:', error);
+          logger.error('[DEBUG_IOS] Erreur lors du chargement du profil:', error);
           set({ isLoading: false });
         }
       } else {
@@ -144,7 +145,7 @@ export const useUserStore = create<UserState>((set, get) => ({
            return;
         }
 
-        console.warn('[UserStore] Document utilisateur non trouvé après délai, création fallback...');
+        logger.warn('[UserStore] Document utilisateur non trouvé après délai, création fallback...');
         const { createUserDocument } = await import('@/firebase');
         try {
           await createUserDocument(currentUser.uid, {
@@ -152,7 +153,7 @@ export const useUserStore = create<UserState>((set, get) => ({
             email: currentUser.email || '',
           });
 
-          console.log('[UserStore] Fallback profile created, re-fetching...');
+          logger.info('[UserStore] Fallback profile created, re-fetching...');
           const newProfile = await getCurrentUserProfile();
           if (newProfile) {
             get().setUser(newProfile);
@@ -162,11 +163,11 @@ export const useUserStore = create<UserState>((set, get) => ({
             });
           }
         } catch (createError) {
-           console.error("[UserStore] Impossible de créer le profil fallback:", createError);
+           logger.error("[UserStore] Impossible de créer le profil fallback:", createError);
         }
       }
     } catch (error) {
-      console.error('[UserStore] Erreur lors du chargement du profil:', error);
+      logger.error('[UserStore] Erreur lors du chargement du profil:', error);
       set({ user: null, stats: null, isLoading: false });
     }
   },
@@ -186,7 +187,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       // Recharger le profil pour avoir les données à jour
       await get().loadUserProfile();
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du profil:', error);
+      logger.error('Erreur lors de la mise à jour du profil:', error);
       throw error;
     }
   },
@@ -207,7 +208,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       // Sauvegarder dans Firestore
       await updateProfile({ colorTheme: color });
     } catch (error) {
-      console.error('Erreur lors de la mise à jour de la couleur:', error);
+      logger.error('Erreur lors de la mise à jour de la couleur:', error);
       throw error;
     }
   },
@@ -226,7 +227,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       const stats = await calculateUserStats(currentUser.uid);
       set({ stats });
     } catch (error) {
-      console.error('Erreur lors du calcul des stats:', error);
+      logger.error('Erreur lors du calcul des stats:', error);
       set({ stats: null });
     }
   },
@@ -243,7 +244,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         set({ user: { ...user, newBadgeIds: [] } });
       }
     } catch (e) {
-      console.error(e);
+      logger.error('markBadgesAsSeen failed', e as Error);
     }
   },
 
@@ -263,7 +264,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         clearCurrentSessionFromLocal();
       });
     } catch (e) {
-      console.error("Erreur lors du nettoyage de la session:", e);
+      logger.error("Erreur lors du nettoyage de la session:", e);
     }
 
     set({

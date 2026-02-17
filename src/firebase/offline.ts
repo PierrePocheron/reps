@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 /**
  * Gestion du cache offline avec IndexedDB/localStorage
  * Firestore gère déjà la persistance avec enableIndexedDbPersistence,
@@ -26,7 +28,7 @@ export function saveCurrentSessionToLocal(session: Partial<LocalSession>): void 
   try {
     localStorage.setItem(STORAGE_KEYS.CURRENT_SESSION, JSON.stringify(session));
   } catch (error) {
-    console.error('Erreur lors de la sauvegarde de la session:', error);
+    logger.error('Erreur lors de la sauvegarde de la session:', error);
   }
 }
 
@@ -41,7 +43,7 @@ export function getCurrentSessionFromLocal(): Partial<LocalSession> | null {
     }
     return null;
   } catch (error) {
-    console.error('Erreur lors de la récupération de la session:', error);
+    logger.error('Erreur lors de la récupération de la session:', error);
     return null;
   }
 }
@@ -54,7 +56,7 @@ export function clearCurrentSessionFromLocal(): void {
     localStorage.setItem(STORAGE_KEYS.CURRENT_SESSION, '');
     localStorage.removeItem(STORAGE_KEYS.CURRENT_SESSION);
   } catch (error) {
-    console.error('Erreur lors de la suppression de la session:', error);
+    logger.error('Erreur lors de la suppression de la session:', error);
   }
 }
 
@@ -65,7 +67,7 @@ export function saveExercisesToLocal(exercises: Array<{ id: string; name: string
   try {
     localStorage.setItem(STORAGE_KEYS.EXERCISES, JSON.stringify(exercises));
   } catch (error) {
-    console.error('Erreur lors de la sauvegarde des exercices:', error);
+    logger.error('Erreur lors de la sauvegarde des exercices:', error);
   }
 }
 
@@ -80,7 +82,7 @@ export function getExercisesFromLocal(): Array<{ id: string; name: string; emoji
     }
     return [];
   } catch (error) {
-    console.error('Erreur lors de la récupération des exercices:', error);
+    logger.error('Erreur lors de la récupération des exercices:', error);
     return [];
   }
 }
@@ -115,7 +117,7 @@ export function onNetworkChange(callback: (isOnline: boolean) => void): () => vo
  */
 export async function syncLocalDataWithFirestore(userId: string): Promise<void> {
   if (isOffline()) {
-    // console.log('Mode offline, synchronisation reportée');
+    // logger.info('Mode offline, synchronisation reportée');
     return;
   }
 
@@ -147,8 +149,8 @@ export async function syncLocalDataWithFirestore(userId: string): Promise<void> 
       }
     }
 
-    console.log('Synchronisation terminée');
+    logger.info('Synchronisation terminée');
   } catch (error) {
-    console.error('Erreur lors de la synchronisation:', error);
+    logger.error('Erreur lors de la synchronisation:', error);
   }
 }

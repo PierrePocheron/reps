@@ -1,6 +1,7 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 
 export const useNotifications = () => {
   const { toast } = useToast();
@@ -18,7 +19,7 @@ export const useNotifications = () => {
       const status = await LocalNotifications.checkPermissions();
       setHasPermission(status.display === 'granted');
     } catch (error) {
-      console.error('Error checking notification permissions:', error);
+      logger.error('Error checking notification permissions:', error);
     }
   };
 
@@ -29,7 +30,7 @@ export const useNotifications = () => {
       const hasReminder = pending.notifications.some(n => n.id === 1);
       setIsScheduled(hasReminder);
     } catch (error) {
-      console.error('Error checking scheduled notifications:', error);
+      logger.error('Error checking scheduled notifications:', error);
     }
   };
 
@@ -40,7 +41,7 @@ export const useNotifications = () => {
       setHasPermission(granted);
       return granted;
     } catch (error) {
-      console.error('Error requesting notification permissions:', error);
+      logger.error('Error requesting notification permissions:', error);
       return false;
     }
   };
@@ -100,7 +101,7 @@ export const useNotifications = () => {
       });
 
     } catch (error) {
-      console.error('Error scheduling notification:', error);
+      logger.error('Error scheduling notification:', error);
       toast({
         title: "Erreur",
         description: "Impossible de programmer le rappel.",
@@ -118,7 +119,7 @@ export const useNotifications = () => {
         description: "Vous ne recevrez plus de rappel quotidien.",
       });
     } catch (error) {
-      console.error('Error canceling notification:', error);
+      logger.error('Error canceling notification:', error);
     }
   };
 

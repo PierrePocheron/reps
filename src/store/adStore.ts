@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Capacitor } from '@capacitor/core';
 import { AdMob, BannerAdPosition, BannerAdSize } from '@capacitor-community/admob';
 import { ADS_CONFIG } from '@/config/ads';
+import { logger } from '@/utils/logger';
 
 // Store pour gérer l'état de la bannière AdMob (Mobile uniquement)
 interface AdState {
@@ -56,7 +57,7 @@ export const useAdStore = create<AdState>((set, get) => ({
 
         set({ isBannerVisible: true, bannerHeight: 60 });
     } catch (error) {
-        console.error('Failed to show AdMob banner:', error);
+        logger.error('Failed to show AdMob banner:', error);
         set((state) => ({ ...state, isBannerVisible: false, bannerHeight: 0 }));
     }
   },
@@ -69,7 +70,7 @@ export const useAdStore = create<AdState>((set, get) => ({
 
         // Side effect: Hide banner if count reaches 0
         if (newCount === 0 && state.isBannerVisible) {
-            AdMob.hideBanner().catch(console.error);
+            AdMob.hideBanner().catch((e) => logger.error('AdMob banner hide error', e));
             return { activeRequests: 0, isBannerVisible: false, bannerHeight: 0 };
         }
 
