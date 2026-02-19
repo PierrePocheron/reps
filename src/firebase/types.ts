@@ -46,6 +46,7 @@ export interface User {
 }
 
 export type ExerciseCategory = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms' | 'core' | 'cardio';
+export type WorkoutType = 'renforcement' | 'musculation';
 
 // Type pour un exercice
 export interface Exercise {
@@ -53,12 +54,47 @@ export interface Exercise {
   name: string;
   emoji: string;
   category?: ExerciseCategory;
+  workoutType?: WorkoutType;
+  imageUrl?: string; // URL image depuis Wger/Firebase Storage
   userId?: string; // undefined pour les exercices par défaut
   createdAt?: Timestamp;
   // properties for dynamic calorie calculation
   met?: number; // Metabolic Equivalent of Task
   timePerRep?: number; // Time under tension per rep in seconds
   caloriesPerRep?: number; // Legacy or fixed value fallback
+}
+
+// ─── Types Musculation ─────────────────────────────────────────────────────
+
+// Un set planifié (poids + reps)
+export interface PlannedSet {
+  weight: number;         // kg
+  reps: number;           // reps cibles
+  actualReps?: number;    // reps réelles si différent
+  actualWeight?: number;  // poids réel si différent
+  completed: boolean;
+  restDuration?: number;  // durée de repos effectuée (secondes)
+}
+
+// Exercice dans une séance musculation
+export interface GymSessionExercise {
+  exerciseId: string;
+  name: string;
+  emoji: string;
+  imageUrl?: string;
+  sets: PlannedSet[];
+}
+
+// Séance musculation (collection séparée dans Firestore)
+export interface GymSession {
+  sessionId: string;
+  userId: string;
+  date: Timestamp;
+  duration: number;       // secondes
+  exercises: GymSessionExercise[];
+  totalVolume: number;    // Σ(weight × reps) pour tous les sets complétés
+  totalSets: number;
+  createdAt: Timestamp;
 }
 
 // Type pour un exercice dans une session

@@ -10,298 +10,109 @@ export const EXERCISE_CATEGORIES: { id: ExerciseCategory | 'all'; label: string;
   { id: 'chest', label: 'Poitrine', emoji: '💪' },
   { id: 'back', label: 'Dos', emoji: '🧗' },
   { id: 'legs', label: 'Jambes', emoji: '🦵' },
-  { id: 'shoulders', label: 'Épaules', emoji: '🏋️' },
+  { id: 'shoulders', label: 'Épaules', emoji: '🤸' },
   { id: 'arms', label: 'Bras', emoji: '💈' },
   { id: 'core', label: 'Abdos', emoji: '🍫' },
   { id: 'cardio', label: 'Cardio', emoji: '🔥' },
 ];
 
-export const DEFAULT_EXERCISES: Exercise[] = [
-  // ─── Poitrine (Chest) ───────────────────────────────────────────────────
-  {
-    id: 'pushups',
-    name: 'Pompes',
-    emoji: '💪',
-    category: 'chest',
-    met: 4.5,
-    timePerRep: 2.2,
-  },
-  {
-    id: 'diamond_pushups',
-    name: 'Pompes diamant',
-    emoji: '💎',
-    category: 'chest',
-    met: 4.8,
-    timePerRep: 2.2,
-  },
-  {
-    id: 'wide_pushups',
-    name: 'Pompes larges',
-    emoji: '🤲',
-    category: 'chest',
-    met: 4.3,
-    timePerRep: 2.2,
-  },
-  {
-    id: 'decline_pushups',
-    name: 'Pompes déclinées',
-    emoji: '📐',
-    category: 'chest',
-    met: 5.0,
-    timePerRep: 2.2,
-  },
-  {
-    id: 'dips',
-    name: 'Dips',
-    emoji: '♣️',
-    category: 'chest',
-    met: 7.0,
-    timePerRep: 2.5,
-  },
+/**
+ * Exercices de RENFORCEMENT (bodyweight / calisthenics)
+ * Objectif : max reps, pas de poids nécessaire
+ */
+export const RENFORCEMENT_EXERCISES: Exercise[] = [
+  // ─── Poitrine ───────────────────────────────────────────────────────────
+  { id: 'pushups',         name: 'Pompes',            emoji: '💪', category: 'chest',     workoutType: 'renforcement', met: 4.5, timePerRep: 2.2 },
+  { id: 'diamond_pushups', name: 'Pompes diamant',    emoji: '💎', category: 'chest',     workoutType: 'renforcement', met: 4.8, timePerRep: 2.2 },
+  { id: 'wide_pushups',    name: 'Pompes larges',     emoji: '🤲', category: 'chest',     workoutType: 'renforcement', met: 4.3, timePerRep: 2.2 },
+  { id: 'decline_pushups', name: 'Pompes déclinées',  emoji: '📐', category: 'chest',     workoutType: 'renforcement', met: 5.0, timePerRep: 2.2 },
+  { id: 'dips',            name: 'Dips',              emoji: '♣️', category: 'chest',     workoutType: 'renforcement', met: 7.0, timePerRep: 2.5 },
 
-  // ─── Dos (Back) ─────────────────────────────────────────────────────────
-  {
-    id: 'pullups',
-    name: 'Tractions',
-    emoji: '🧗',
-    category: 'back',
-    met: 8.0,
-    timePerRep: 3.0,
-  },
-  {
-    id: 'chin_ups',
-    name: 'Tractions serrées',
-    emoji: '🙌',
-    category: 'back',
-    met: 8.0,
-    timePerRep: 3.0,
-  },
-  {
-    id: 'inverted_rows',
-    name: 'Rows inversés',
-    emoji: '🔄',
-    category: 'back',
-    met: 5.0,
-    timePerRep: 2.5,
-  },
-  {
-    id: 'superman',
-    name: 'Superman',
-    emoji: '🦸',
-    category: 'back',
-    met: 3.0,
-    timePerRep: 3.0,
-  },
+  // ─── Dos ────────────────────────────────────────────────────────────────
+  { id: 'pullups',         name: 'Tractions',         emoji: '🧗', category: 'back',      workoutType: 'renforcement', met: 8.0, timePerRep: 3.0 },
+  { id: 'chin_ups',        name: 'Tractions serrées', emoji: '🙌', category: 'back',      workoutType: 'renforcement', met: 8.0, timePerRep: 3.0 },
+  { id: 'inverted_rows',   name: 'Rows inversés',     emoji: '🔄', category: 'back',      workoutType: 'renforcement', met: 5.0, timePerRep: 2.5 },
+  { id: 'superman',        name: 'Superman',          emoji: '🦸', category: 'back',      workoutType: 'renforcement', met: 3.0, timePerRep: 3.0 },
 
-  // ─── Jambes (Legs) ──────────────────────────────────────────────────────
-  {
-    id: 'squats',
-    name: 'Squats',
-    emoji: '🦵',
-    category: 'legs',
-    met: 5.0,
-    timePerRep: 2.5,
-  },
-  {
-    id: 'jump_squats',
-    name: 'Squats sautés',
-    emoji: '⬆️',
-    category: 'legs',
-    met: 7.0,
-    timePerRep: 2.0,
-  },
-  {
-    id: 'lunges',
-    name: 'Fentes avant',
-    emoji: '🚶',
-    category: 'legs',
-    met: 4.0,
-    timePerRep: 2.5,
-  },
-  {
-    id: 'side_lunges',
-    name: 'Fentes latérales',
-    emoji: '↔️',
-    category: 'legs',
-    met: 4.0,
-    timePerRep: 2.5,
-  },
-  {
-    id: 'bulgarian_squats',
-    name: 'Squats bulgares',
-    emoji: '💺',
-    category: 'legs',
-    met: 5.5,
-    timePerRep: 3.0,
-  },
-  {
-    id: 'glute_bridge',
-    name: 'Hip Thrust',
-    emoji: '🍑',
-    category: 'legs',
-    met: 3.5,
-    timePerRep: 2.5,
-  },
-  {
-    id: 'calf_raises',
-    name: 'Mollets',
-    emoji: '🦶',
-    category: 'legs',
-    met: 2.5,
-    timePerRep: 1.5,
-  },
+  // ─── Jambes ─────────────────────────────────────────────────────────────
+  { id: 'squats',          name: 'Squats',            emoji: '🦵', category: 'legs',      workoutType: 'renforcement', met: 5.0, timePerRep: 2.5 },
+  { id: 'jump_squats',     name: 'Squats sautés',     emoji: '⬆️', category: 'legs',      workoutType: 'renforcement', met: 7.0, timePerRep: 2.0 },
+  { id: 'lunges',          name: 'Fentes avant',      emoji: '🚶', category: 'legs',      workoutType: 'renforcement', met: 4.0, timePerRep: 2.5 },
+  { id: 'side_lunges',     name: 'Fentes latérales',  emoji: '↔️', category: 'legs',      workoutType: 'renforcement', met: 4.0, timePerRep: 2.5 },
+  { id: 'bulgarian_squats',name: 'Squats bulgares',   emoji: '💺', category: 'legs',      workoutType: 'renforcement', met: 5.5, timePerRep: 3.0 },
+  { id: 'glute_bridge',    name: 'Hip Thrust',        emoji: '🍑', category: 'legs',      workoutType: 'renforcement', met: 3.5, timePerRep: 2.5 },
+  { id: 'calf_raises',     name: 'Mollets',           emoji: '🦶', category: 'legs',      workoutType: 'renforcement', met: 2.5, timePerRep: 1.5 },
 
-  // ─── Épaules (Shoulders) ────────────────────────────────────────────────
-  {
-    id: 'lateral_raises',
-    name: 'Élévations lat.',
-    emoji: '🥥',
-    category: 'shoulders',
-    met: 3.5,
-    timePerRep: 2.5,
-  },
-  {
-    id: 'pike_pushups',
-    name: 'Pike Push-ups',
-    emoji: '🔻',
-    category: 'shoulders',
-    met: 4.5,
-    timePerRep: 2.5,
-  },
-  {
-    id: 'shoulder_press',
-    name: 'Développé épaules',
-    emoji: '🏋️',
-    category: 'shoulders',
-    met: 4.0,
-    timePerRep: 2.5,
-  },
-  {
-    id: 'shoulder_taps',
-    name: 'Shoulder Taps',
-    emoji: '👆',
-    category: 'shoulders',
-    met: 3.0,
-    timePerRep: 1.5,
-  },
-
-  // ─── Bras (Arms) ────────────────────────────────────────────────────────
-  {
-    id: 'tricep_dips',
-    name: 'Dips triceps',
-    emoji: '💈',
-    category: 'arms',
-    met: 5.5,
-    timePerRep: 2.5,
-  },
-  {
-    id: 'bicep_curls',
-    name: 'Curls biceps',
-    emoji: '🥊',
-    category: 'arms',
-    met: 3.0,
-    timePerRep: 2.0,
-  },
-  {
-    id: 'tricep_extensions',
-    name: 'Extensions triceps',
-    emoji: '🔧',
-    category: 'arms',
-    met: 3.5,
-    timePerRep: 2.0,
-  },
-  {
-    id: 'hammer_curls',
-    name: 'Curls marteau',
-    emoji: '🔨',
-    category: 'arms',
-    met: 3.0,
-    timePerRep: 2.0,
-  },
+  // ─── Épaules (bodyweight) ───────────────────────────────────────────────
+  { id: 'pike_pushups',    name: 'Pike Push-ups',     emoji: '🔻', category: 'shoulders', workoutType: 'renforcement', met: 4.5, timePerRep: 2.5 },
+  { id: 'shoulder_taps',   name: 'Shoulder Taps',     emoji: '👆', category: 'shoulders', workoutType: 'renforcement', met: 3.0, timePerRep: 1.5 },
 
   // ─── Abdos / Core ───────────────────────────────────────────────────────
-  {
-    id: 'abs',
-    name: 'Abdos',
-    emoji: '🍫',
-    category: 'core',
-    met: 3.0,
-    timePerRep: 2.0,
-  },
-  {
-    id: 'leg_raises',
-    name: 'Levées de jambes',
-    emoji: '🦿',
-    category: 'core',
-    met: 3.5,
-    timePerRep: 2.5,
-  },
-  {
-    id: 'russian_twists',
-    name: 'Russian Twists',
-    emoji: '🌀',
-    category: 'core',
-    met: 3.0,
-    timePerRep: 1.5,
-  },
-  {
-    id: 'mountain_climbers',
-    name: 'Mountain Climbers',
-    emoji: '🏔️',
-    category: 'core',
-    met: 5.0,
-    timePerRep: 1.0,
-  },
-  {
-    id: 'v_ups',
-    name: 'V-Ups',
-    emoji: '✌️',
-    category: 'core',
-    met: 4.0,
-    timePerRep: 2.5,
-  },
-  {
-    id: 'bicycle_crunches',
-    name: 'Crunches vélo',
-    emoji: '🚴',
-    category: 'core',
-    met: 3.5,
-    timePerRep: 1.5,
-  },
+  { id: 'abs',             name: 'Abdos',             emoji: '🍫', category: 'core',      workoutType: 'renforcement', met: 3.0, timePerRep: 2.0 },
+  { id: 'leg_raises',      name: 'Levées de jambes',  emoji: '🦿', category: 'core',      workoutType: 'renforcement', met: 3.5, timePerRep: 2.5 },
+  { id: 'russian_twists',  name: 'Russian Twists',    emoji: '🌀', category: 'core',      workoutType: 'renforcement', met: 3.0, timePerRep: 1.5 },
+  { id: 'mountain_climbers',name: 'Mountain Climbers',emoji: '🏔️', category: 'core',      workoutType: 'renforcement', met: 5.0, timePerRep: 1.0 },
+  { id: 'v_ups',           name: 'V-Ups',             emoji: '✌️', category: 'core',      workoutType: 'renforcement', met: 4.0, timePerRep: 2.5 },
+  { id: 'bicycle_crunches',name: 'Crunches vélo',     emoji: '🚴', category: 'core',      workoutType: 'renforcement', met: 3.5, timePerRep: 1.5 },
 
   // ─── Cardio ─────────────────────────────────────────────────────────────
-  {
-    id: 'burpees',
-    name: 'Burpees',
-    emoji: '💀',
-    category: 'cardio',
-    met: 8.0,
-    timePerRep: 4.0,
-  },
-  {
-    id: 'jumping_jacks',
-    name: 'Jumping Jacks',
-    emoji: '⭐',
-    category: 'cardio',
-    met: 7.0,
-    timePerRep: 1.5,
-  },
-  {
-    id: 'high_knees',
-    name: 'Montées de genoux',
-    emoji: '🏃',
-    category: 'cardio',
-    met: 7.0,
-    timePerRep: 1.0,
-  },
-  {
-    id: 'box_jumps',
-    name: 'Box Jumps',
-    emoji: '📦',
-    category: 'cardio',
-    met: 8.5,
-    timePerRep: 3.0,
-  },
+  { id: 'burpees',         name: 'Burpees',           emoji: '💀', category: 'cardio',    workoutType: 'renforcement', met: 8.0, timePerRep: 4.0 },
+  { id: 'jumping_jacks',   name: 'Jumping Jacks',     emoji: '⭐', category: 'cardio',    workoutType: 'renforcement', met: 7.0, timePerRep: 1.5 },
+  { id: 'high_knees',      name: 'Montées de genoux', emoji: '🏃', category: 'cardio',    workoutType: 'renforcement', met: 7.0, timePerRep: 1.0 },
+  { id: 'box_jumps',       name: 'Box Jumps',         emoji: '📦', category: 'cardio',    workoutType: 'renforcement', met: 8.5, timePerRep: 3.0 },
+];
+
+/** Alias pour la compatibilité avec le code existant */
+export const DEFAULT_EXERCISES = RENFORCEMENT_EXERCISES;
+
+/**
+ * Exercices de MUSCULATION (haltères / barre / machines)
+ * Objectif : volume (sets × reps × kg)
+ * Les imageUrl sont peuplées via le script scripts/populate-gym-exercises.mjs
+ */
+export const MUSCULATION_EXERCISES: Exercise[] = [
+  // ─── Poitrine ───────────────────────────────────────────────────────────
+  { id: 'bench_press',       name: 'Développé couché',     emoji: '🏋️', category: 'chest',     workoutType: 'musculation' },
+  { id: 'incline_bench',     name: 'Développé incliné',    emoji: '📈', category: 'chest',     workoutType: 'musculation' },
+  { id: 'dumbbell_fly',      name: 'Écarté haltères',      emoji: '🦅', category: 'chest',     workoutType: 'musculation' },
+  { id: 'cable_fly',         name: 'Écarté poulie',        emoji: '🔗', category: 'chest',     workoutType: 'musculation' },
+  { id: 'chest_dips',        name: 'Dips (poitrine)',      emoji: '♣️', category: 'chest',     workoutType: 'musculation' },
+
+  // ─── Dos ────────────────────────────────────────────────────────────────
+  { id: 'deadlift',          name: 'Soulevé de terre',     emoji: '⚓', category: 'back',      workoutType: 'musculation' },
+  { id: 'barbell_row',       name: 'Rowing barre',         emoji: '🚣', category: 'back',      workoutType: 'musculation' },
+  { id: 'dumbbell_row',      name: 'Rowing haltère',       emoji: '🏊', category: 'back',      workoutType: 'musculation' },
+  { id: 'lat_pulldown',      name: 'Tirage poulie haute',  emoji: '⬇️', category: 'back',      workoutType: 'musculation' },
+  { id: 'cable_row',         name: 'Rowing poulie',        emoji: '↩️', category: 'back',      workoutType: 'musculation' },
+  { id: 'weighted_pullups',  name: 'Tractions lestées',    emoji: '🧗', category: 'back',      workoutType: 'musculation' },
+
+  // ─── Jambes ─────────────────────────────────────────────────────────────
+  { id: 'barbell_squat',     name: 'Squat barre',          emoji: '🦵', category: 'legs',      workoutType: 'musculation' },
+  { id: 'leg_press',         name: 'Presse à cuisses',     emoji: '🦾', category: 'legs',      workoutType: 'musculation' },
+  { id: 'leg_curl',          name: 'Leg Curl',             emoji: '🦴', category: 'legs',      workoutType: 'musculation' },
+  { id: 'leg_extension',     name: 'Leg Extension',        emoji: '🦿', category: 'legs',      workoutType: 'musculation' },
+  { id: 'romanian_deadlift', name: 'SdT roumain',          emoji: '🇷🇴', category: 'legs',      workoutType: 'musculation' },
+  { id: 'weighted_hip_thrust',name: 'Hip Thrust lesté',   emoji: '🍑', category: 'legs',      workoutType: 'musculation' },
+  { id: 'machine_calf',      name: 'Mollets machine',      emoji: '🦶', category: 'legs',      workoutType: 'musculation' },
+
+  // ─── Épaules ────────────────────────────────────────────────────────────
+  { id: 'overhead_press',    name: 'Développé militaire',  emoji: '🏋️', category: 'shoulders', workoutType: 'musculation' },
+  { id: 'db_lateral_raise',  name: 'Élévation latérale',   emoji: '🥥', category: 'shoulders', workoutType: 'musculation' },
+  { id: 'front_raise',       name: 'Élévation frontale',   emoji: '⬆️', category: 'shoulders', workoutType: 'musculation' },
+  { id: 'face_pull',         name: 'Face Pull',            emoji: '😤', category: 'shoulders', workoutType: 'musculation' },
+
+  // ─── Bras ───────────────────────────────────────────────────────────────
+  { id: 'barbell_curl',      name: 'Curl barre',           emoji: '🥊', category: 'arms',      workoutType: 'musculation' },
+  { id: 'dumbbell_curl',     name: 'Curl haltère',         emoji: '💪', category: 'arms',      workoutType: 'musculation' },
+  { id: 'hammer_curl',       name: 'Curl marteau',         emoji: '🔨', category: 'arms',      workoutType: 'musculation' },
+  { id: 'skull_crusher',     name: 'Bras au front',        emoji: '💀', category: 'arms',      workoutType: 'musculation' },
+  { id: 'tricep_pushdown',   name: 'Tricep Pushdown',      emoji: '🔧', category: 'arms',      workoutType: 'musculation' },
+  { id: 'overhead_ext',      name: 'Extension overhead',   emoji: '☝️', category: 'arms',      workoutType: 'musculation' },
+
+  // ─── Abdos / Core ───────────────────────────────────────────────────────
+  { id: 'crunch_machine',    name: 'Crunch machine',       emoji: '🍫', category: 'core',      workoutType: 'musculation' },
+  { id: 'ab_wheel',          name: 'Ab Wheel',             emoji: '🎡', category: 'core',      workoutType: 'musculation' },
+  { id: 'weighted_plank',    name: 'Gainage lesté',        emoji: '🪨', category: 'core',      workoutType: 'musculation' },
 ];
 
 /**
