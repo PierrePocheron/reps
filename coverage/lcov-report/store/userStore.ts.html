@@ -341,7 +341,9 @@
 <a name='L276'></a><a href='#L276'>276</a>
 <a name='L277'></a><a href='#L277'>277</a>
 <a name='L278'></a><a href='#L278'>278</a>
-<a name='L279'></a><a href='#L279'>279</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L279'></a><a href='#L279'>279</a>
+<a name='L280'></a><a href='#L280'>280</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -631,6 +633,7 @@ import {
   markBadgesAsSeen,
 } from '@/firebase';
 import { applyThemeColor, type ThemeColor } from '@/utils/theme-colors';
+import { logger } from '@/utils/logger';
 &nbsp;
 interface UserState {
   // État
@@ -710,7 +713,7 @@ export const useUserStore = create&lt;UserState&gt;((set, get) =&gt; ({
         try {
           await loadUserProfile();
         } catch (error) {
-<span class="cstat-no" title="statement not covered" >          console.error('[DEBUG_IOS] Erreur lors du chargement du profil:', error);</span>
+<span class="cstat-no" title="statement not covered" >          logger.error('[DEBUG_IOS] Erreur lors du chargement du profil:', error);</span>
 <span class="cstat-no" title="statement not covered" >          set({ isLoading: false });</span>
         }
       } else {
@@ -765,7 +768,7 @@ export const useUserStore = create&lt;UserState&gt;((set, get) =&gt; ({
            return;
         }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >        console.warn('[UserStore] Document utilisateur non trouvé après délai, création fallback...');</span>
+<span class="cstat-no" title="statement not covered" >        logger.warn('[UserStore] Document utilisateur non trouvé après délai, création fallback...');</span>
         const { createUserDocument } = <span class="cstat-no" title="statement not covered" >await import('@/firebase');</span>
 <span class="cstat-no" title="statement not covered" >        try {</span>
 <span class="cstat-no" title="statement not covered" >          await createUserDocument(currentUser.uid, {</span>
@@ -773,7 +776,7 @@ export const useUserStore = create&lt;UserState&gt;((set, get) =&gt; ({
             email: currentUser.email || <span class="branch-1 cbranch-no" title="branch not covered" >'',</span>
           });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >          console.log('[UserStore] Fallback profile created, re-fetching...');</span>
+<span class="cstat-no" title="statement not covered" >          logger.info('[UserStore] Fallback profile created, re-fetching...');</span>
           const newProfile = <span class="cstat-no" title="statement not covered" >await getCurrentUserProfile();</span>
 <span class="cstat-no" title="statement not covered" >          if (newProfile) {</span>
 <span class="cstat-no" title="statement not covered" >            get().setUser(newProfile);</span>
@@ -783,11 +786,11 @@ export const useUserStore = create&lt;UserState&gt;((set, get) =&gt; ({
             });
           }
         } catch (createError) {
-<span class="cstat-no" title="statement not covered" >           console.error("[UserStore] Impossible de créer le profil fallback:", createError);</span>
+<span class="cstat-no" title="statement not covered" >           logger.error("[UserStore] Impossible de créer le profil fallback:", createError);</span>
         }
       }
     } catch (error) {
-      console.error('[UserStore] Erreur lors du chargement du profil:', error);
+      logger.error('[UserStore] Erreur lors du chargement du profil:', error);
       set({ user: null, stats: null, isLoading: false });
     }
   },
@@ -807,7 +810,7 @@ export const useUserStore = create&lt;UserState&gt;((set, get) =&gt; ({
       // Recharger le profil pour avoir les données à jour
       await get().loadUserProfile();
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du profil:', error);
+      logger.error('Erreur lors de la mise à jour du profil:', error);
       throw error;
     }
   },
@@ -828,7 +831,7 @@ export const useUserStore = create&lt;UserState&gt;((set, get) =&gt; ({
       // Sauvegarder dans Firestore
       await updateProfile({ colorTheme: color });
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.error('Erreur lors de la mise à jour de la couleur:', error);</span>
+<span class="cstat-no" title="statement not covered" >      logger.error('Erreur lors de la mise à jour de la couleur:', error);</span>
 <span class="cstat-no" title="statement not covered" >      throw error;</span>
     }
   },
@@ -847,7 +850,7 @@ export const useUserStore = create&lt;UserState&gt;((set, get) =&gt; ({
       const stats = await calculateUserStats(currentUser.uid);
       set({ stats });
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.error('Erreur lors du calcul des stats:', error);</span>
+<span class="cstat-no" title="statement not covered" >      logger.error('Erreur lors du calcul des stats:', error);</span>
 <span class="cstat-no" title="statement not covered" >      set({ stats: null });</span>
     }
   },
@@ -864,7 +867,7 @@ export const useUserStore = create&lt;UserState&gt;((set, get) =&gt; ({
         set({ user: { ...user, newBadgeIds: [] } });
       }
     } catch (e) {
-<span class="cstat-no" title="statement not covered" >      console.error(e);</span>
+<span class="cstat-no" title="statement not covered" >      logger.error('markBadgesAsSeen failed', e as Error);</span>
     }
   },
 &nbsp;
@@ -884,7 +887,7 @@ export const useUserStore = create&lt;UserState&gt;((set, get) =&gt; ({
         clearCurrentSessionFromLocal();
       });
     } catch (e) {
-<span class="cstat-no" title="statement not covered" >      console.error("Erreur lors du nettoyage de la session:", e);</span>
+<span class="cstat-no" title="statement not covered" >      logger.error("Erreur lors du nettoyage de la session:", e);</span>
     }
 &nbsp;
     set({
@@ -904,7 +907,7 @@ export const useUserStore = create&lt;UserState&gt;((set, get) =&gt; ({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-01-13T14:21:09.478Z
+                at 2026-02-17T17:46:06.389Z
             </div>
         <script src="../prettify.js"></script>
         <script>
