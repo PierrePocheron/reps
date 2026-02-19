@@ -5,6 +5,8 @@
 
 [![Status](https://img.shields.io/badge/Status-Active-success)]() [![License](https://img.shields.io/badge/license-MIT-blue)]() [![CI/CD](https://github.com/PierrePocheron/reps/actions/workflows/ci.yml/badge.svg)](https://github.com/PierrePocheron/reps/actions/workflows/ci.yml) [![Vercel](https://vercel.com/button)](https://vercel.com/pierre-pocheron/reps)
 
+📖 **Documentation** : [Tests](docs/TESTS.md) · [Outils](docs/TOOLS.md)
+
 <div align="center">
   <a href="https://reps-app.vercel.app">
     <img src="https://img.shields.io/badge/iOS_PWA-Add_to_Home_Screen-black?style=for-the-badge&logo=apple" alt="iOS PWA" height="40" />
