@@ -45,11 +45,14 @@ export interface User {
   newBadgeIds?: string[];
 }
 
+export type ExerciseCategory = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms' | 'core' | 'cardio';
+
 // Type pour un exercice
 export interface Exercise {
   id: string;
   name: string;
   emoji: string;
+  category?: ExerciseCategory;
   userId?: string; // undefined pour les exercices par défaut
   createdAt?: Timestamp;
   // properties for dynamic calorie calculation

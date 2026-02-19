@@ -20,6 +20,11 @@
 - Types partagés dans `src/firebase/types.ts` (User, Session, FriendRequest, Badge, etc.)
 - Logger centralisé : `import { logger } from '@/utils/logger'` — ne jamais utiliser `console.*`
 
+## CI/CD
+
+- Node.js **22.x** requis en CI (`@capacitor-community/admob@8` exige Node >=22)
+- `VITE_SENTRY_DSN` défini dans `vite.config.ts` → `test.env` pour que les tests logger passent en CI (`.env.local` n'existe pas en CI)
+
 ## Points clés tests
 
 - Couverture actuelle : ~71% statements (251 tests, 21 fichiers)
