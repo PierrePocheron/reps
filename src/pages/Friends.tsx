@@ -21,7 +21,8 @@ import {
   declineFriendRequest,
   getFriendsDetails,
   getFriendsActivity,
-  removeFriend
+  removeFriend,
+  type ActivityItem
 } from '@/firebase/firestore';
 import { UserAvatar } from '@/components/UserAvatar';
 import type { User, FriendRequest, Session } from '@/firebase/types';
@@ -41,7 +42,7 @@ export default function Friends() {
   const [friends, setFriends] = useState<User[]>([]);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
 
-  const [activities, setActivities] = useState<Session[]>([]);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isLoadingActivity, setIsLoadingActivity] = useState(false);
 
   // Subscribe to friend requests -> DÉPLACÉ DANS AppInitializer via userStore

@@ -21,7 +21,7 @@ import {
   collectionGroup,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { User, Session, Exercise, Notification, MotivationalPhrase, UserStats } from './types';
+import type { User, Session, Exercise, Notification, MotivationalPhrase, UserStats, FriendRequest } from './types';
 import { getUnlockedBadges, DEFAULT_EXERCISES } from '@/utils/constants';
 import { logger } from '@/utils/logger';
 
@@ -925,15 +925,23 @@ export async function declineFriendRequest(requestId: string): Promise<void> {
  */
 
 // ==================== SOCIAL TYPES ====================
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyDoc = any;
+export interface ActivityItem {
+  createdAt?: { toDate: () => Date };
+  [key: string]: unknown;
+}
+
+interface LeaderboardSession {
+  userId: string;
+  totalReps?: number;
+  totalCalories?: number;
+}
 
 
 
 /**
  * Obtenir les demandes d'amis reçues (en attente)
  */
-export function subscribeToFriendRequests(userId: string, callback: (requests: AnyDoc[]) => void): Unsubscribe {
+export function subscribeToFriendRequests(userId: string, callback: (requests: FriendRequest[]) => void): Unsubscribe {
   const requestsRef = collection(db, 'friend_requests');
   // Simplification de la requête pour éviter les problèmes d'index complexes
   // On triera côté client
@@ -944,11 +952,11 @@ export function subscribeToFriendRequests(userId: string, callback: (requests: A
   );
 
   return onSnapshot(q, (snapshot) => {
-    const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const requests: FriendRequest[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as FriendRequest));
     // Tri côté client (plus robuste si l'index n'est pas encore prêt)
-    requests.sort((a: AnyDoc, b: AnyDoc) => {
-      const timeA = a.createdAt?.seconds || 0;
-      const timeB = b.createdAt?.seconds || 0;
+    requests.sort((a: FriendRequest, b: FriendRequest) => {
+      const timeA = a.createdAt.seconds;
+      const timeB = b.createdAt.seconds;
       return timeB - timeA;
     });
     callback(requests);
@@ -992,7 +1000,7 @@ export async function getFriendsDetails(friendIds: string[]): Promise<User[]> {
 /**
  * Obtenir l'activité récente des amis (Séances + Badges)
  */
-export async function getFriendsActivity(friendIds: string[], limitCount = 20): Promise<(Session | AnyDoc)[]> {
+export async function getFriendsActivity(friendIds: string[], limitCount = 20): Promise<ActivityItem[]> {
   try {
     if (!friendIds || friendIds.length === 0) return [];
 
@@ -1032,7 +1040,7 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
     }));
 
     // Fusionner et trier
-    const allActivity = [...sessions, ...events].sort((a: AnyDoc, b: AnyDoc) => {
+    const allActivity = [...sessions, ...events].sort((a: ActivityItem, b: ActivityItem) => {
       const dateA = a.createdAt?.toDate() || new Date(0);
       const dateB = b.createdAt?.toDate() || new Date(0);
       return dateB.getTime() - dateA.getTime();
@@ -1076,7 +1084,7 @@ export async function getLeaderboardStats(friendIds: string[], period: 'daily' |
       chunks.push(friendIds.slice(i, i + 10));
     }
 
-    const allSessions: AnyDoc[] = [];
+    const allSessions: LeaderboardSession[] = [];
 
     for (const chunk of chunks) {
       const q = query(

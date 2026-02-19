@@ -40,9 +40,9 @@ export default function SentryTest() {
   };
 
   const testUndefined = () => {
-    // @ts-ignore - Force undefined error
-    const obj: any = null;
-    console.log(obj.property.nested); // Will crash
+    // Force a null reference error to test Error Boundary
+    const obj = null as unknown as { property: { nested: unknown } };
+    logger.debug(String(obj.property.nested)); // Will crash at runtime (null.property)
   };
 
   const clearResults = () => {

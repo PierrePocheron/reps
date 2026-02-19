@@ -80,8 +80,8 @@ describe('sessionStore', () => {
     it('should add an exercise to the session', () => {
       useSessionStore.getState().addExercise({ id: 'pushups', name: 'Pompes', emoji: '🔥' } as any);
       expect(useSessionStore.getState().exercises).toHaveLength(1);
-      expect(useSessionStore.getState().exercises[0].name).toBe('Pompes');
-      expect(useSessionStore.getState().exercises[0].reps).toBe(0);
+      expect(useSessionStore.getState().exercises[0]!.name).toBe('Pompes');
+      expect(useSessionStore.getState().exercises[0]!.reps).toBe(0);
     });
 
     it('should not add the same exercise twice', () => {
@@ -111,7 +111,7 @@ describe('sessionStore', () => {
       });
       useSessionStore.getState().removeExercise('Pompes');
       expect(useSessionStore.getState().exercises).toHaveLength(1);
-      expect(useSessionStore.getState().exercises[0].name).toBe('Squats');
+      expect(useSessionStore.getState().exercises[0]!.name).toBe('Squats');
     });
 
     it('should recalculate totalReps after removal', () => {
@@ -138,7 +138,7 @@ describe('sessionStore', () => {
         totalReps: 5,
       });
       useSessionStore.getState().addReps('Pompes', 10);
-      expect(useSessionStore.getState().exercises[0].reps).toBe(15);
+      expect(useSessionStore.getState().exercises[0]!.reps).toBe(15);
       expect(useSessionStore.getState().totalReps).toBe(15);
     });
 
@@ -153,7 +153,7 @@ describe('sessionStore', () => {
         totalReps: 8,
       });
       useSessionStore.getState().addReps('Pompes', 5);
-      expect(useSessionStore.getState().exercises[1].reps).toBe(3);
+      expect(useSessionStore.getState().exercises[1]!.reps).toBe(3);
       expect(useSessionStore.getState().totalReps).toBe(13);
     });
   });

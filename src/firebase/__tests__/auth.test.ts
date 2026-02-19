@@ -130,7 +130,7 @@ describe('firebase/auth', () => {
 
       await signUpWithEmail('test@test.com', 'password123', 'A', 'B');
       // displayName should be fallback starting with "user"
-      const call = vi.mocked(firebaseAuth.updateProfile).mock.calls[0];
+      const call = vi.mocked(firebaseAuth.updateProfile).mock.calls[0]!;
       expect((call[1] as any).displayName).toMatch(/^user\d+$/);
     });
 
@@ -227,9 +227,9 @@ describe('firebase/auth', () => {
       vi.mocked(firestoreModule.getUserDocument).mockResolvedValueOnce(null);
       vi.mocked(firebaseAuth.getAdditionalUserInfo).mockReturnValueOnce(null);
 
-      await handleGoogleSignInResult(mockUser as any, { some: 'result' });
+      await handleGoogleSignInResult(mockUser as any, { some: 'result' } as unknown as import('firebase/auth').UserCredential);
       expect(firestoreModule.createUserDocument).toHaveBeenCalledTimes(1);
-      expect(vi.mocked(firestoreModule.createUserDocument).mock.calls[0][0]).toBe('user123');
+      expect(vi.mocked(firestoreModule.createUserDocument).mock.calls[0]![0]).toBe('user123');
     });
 
     it('should fallback to displayName when no profile info', async () => {
@@ -238,7 +238,7 @@ describe('firebase/auth', () => {
       vi.mocked(firebaseAuth.getAdditionalUserInfo).mockReturnValueOnce(null);
 
       await handleGoogleSignInResult(userWithName as any);
-      const call = vi.mocked(firestoreModule.createUserDocument).mock.calls[0];
+      const call = vi.mocked(firestoreModule.createUserDocument).mock.calls[0]!;
       expect((call[1] as any).firstName).toBe('Jane');
     });
   });

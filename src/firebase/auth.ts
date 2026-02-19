@@ -8,6 +8,7 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   User as FirebaseUser,
+  UserCredential,
   updateProfile,
   getAdditionalUserInfo,
 } from 'firebase/auth';
@@ -137,8 +138,7 @@ export async function signInWithGoogle(): Promise<FirebaseUser | undefined> {
  * Traite le résultat d'une connexion Google (création profil, etc.)
  * Utilisé par signInWithPopup et par getRedirectResult
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function handleGoogleSignInResult(user: FirebaseUser, result?: any): Promise<FirebaseUser> {
+export async function handleGoogleSignInResult(user: FirebaseUser, result?: UserCredential): Promise<FirebaseUser> {
     try {
         let firstName = '';
         let lastName = '';
@@ -146,12 +146,11 @@ export async function handleGoogleSignInResult(user: FirebaseUser, result?: any)
         // Si on a le résultat complet (Popup ou Redirect), on essaie d'extraire les infos
         if (result) {
             const additionalInfo = getAdditionalUserInfo(result);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const profile = additionalInfo?.profile as any;
+            const profile = additionalInfo?.profile as Record<string, unknown> | null;
 
             if (profile) {
-              firstName = profile.given_name || '';
-              lastName = profile.family_name || '';
+              firstName = typeof profile.given_name === 'string' ? profile.given_name : '';
+              lastName = typeof profile.family_name === 'string' ? profile.family_name : '';
             }
         }
 

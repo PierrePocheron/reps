@@ -147,7 +147,7 @@ describe('updateUserDocument', () => {
 
   it('should add searchName when displayName is updated', async () => {
     await updateUserDocument('uid123', { displayName: 'NewName' });
-    const updateCall = vi.mocked(updateDoc).mock.calls[0];
+    const updateCall = vi.mocked(updateDoc).mock.calls[0]!;
     expect(updateCall[1]).toMatchObject({ searchName: 'newname' });
   });
 
@@ -273,7 +273,7 @@ describe('markBadgesAsSeen', () => {
   it('should call updateDoc to clear newBadgeIds', async () => {
     await markBadgesAsSeen('uid123');
     expect(updateDoc).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(updateDoc).mock.calls[0][1]).toMatchObject({ newBadgeIds: [] });
+    expect(vi.mocked(updateDoc).mock.calls[0]![1]).toMatchObject({ newBadgeIds: [] });
   });
 
   it('should throw on error', async () => {
@@ -286,7 +286,7 @@ describe('markNotificationAsRead', () => {
   it('should call updateDoc with read: true', async () => {
     await markNotificationAsRead('notif-id');
     expect(updateDoc).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(updateDoc).mock.calls[0][1]).toMatchObject({ read: true });
+    expect(vi.mocked(updateDoc).mock.calls[0]![1]).toMatchObject({ read: true });
   });
 });
 
@@ -296,7 +296,7 @@ describe('declineFriendRequest', () => {
   it('should call updateDoc with rejected status', async () => {
     await declineFriendRequest('request-id');
     expect(updateDoc).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(updateDoc).mock.calls[0][1]).toMatchObject({ status: 'rejected' });
+    expect(vi.mocked(updateDoc).mock.calls[0]![1]).toMatchObject({ status: 'rejected' });
   });
 
   it('should throw on error', async () => {
@@ -372,7 +372,7 @@ describe('getUserExercises', () => {
     vi.mocked(getDocs).mockResolvedValueOnce(makeSnapshot(mockExercises) as any);
     const exercises = await getUserExercises('uid123');
     expect(exercises).toHaveLength(1);
-    expect(exercises[0].name).toBe('Pompes');
+    expect(exercises[0]!.name).toBe('Pompes');
   });
 
   it('should throw on error', async () => {
@@ -445,7 +445,7 @@ describe('calculateUserStats', () => {
     vi.mocked(getDocs).mockResolvedValueOnce(makeSnapshot([sessionWithExercises]) as any);
     const stats = await calculateUserStats('uid123');
     expect(stats.exercisesDistribution).toHaveLength(1);
-    expect(stats.exercisesDistribution[0].name).toBe('Pompes');
+    expect(stats.exercisesDistribution[0]!.name).toBe('Pompes');
   });
 
   it('should throw on Firestore error', async () => {
