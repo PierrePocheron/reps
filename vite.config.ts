@@ -138,6 +138,9 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
+    env: {
+      VITE_SENTRY_DSN: 'https://test@sentry.io/0', // Ensure Sentry is enabled in CI tests
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
