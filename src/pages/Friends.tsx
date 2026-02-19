@@ -495,7 +495,7 @@ export default function Friends() {
                           </div>
                         </div>
 
-                        <DropdownMenu>
+                        <DropdownMenu modal={false}>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
                               <MoreVertical className="h-4 w-4" />
@@ -503,7 +503,7 @@ export default function Friends() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              className="text-red-600 focus:text-red-600 focus:bg-red-100/10"
+                              className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-100/10"
                               onClick={() => handleRemoveFriend(friend.uid)}
                             >
                               <UserMinus className="mr-2 h-4 w-4" />
