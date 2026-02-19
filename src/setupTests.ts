@@ -57,6 +57,10 @@ vi.mock('firebase/firestore', () => ({
   },
   arrayUnion: vi.fn((...args) => args),
   arrayRemove: vi.fn((...args) => args),
+  increment: vi.fn((n) => n),
+  documentId: vi.fn(() => '__name__'),
+  collectionGroup: vi.fn(() => ({})),
+  runTransaction: vi.fn(async (_db, fn) => fn({ get: vi.fn(), set: vi.fn(), update: vi.fn() })),
   writeBatch: vi.fn(() => ({
     set: vi.fn(),
     update: vi.fn(),
@@ -64,6 +68,9 @@ vi.mock('firebase/firestore', () => ({
     commit: vi.fn(() => Promise.resolve()),
   })),
   serverTimestamp: vi.fn(),
+  initializeFirestore: vi.fn(() => ({})),
+  persistentLocalCache: vi.fn(() => ({})),
+  persistentMultipleTabManager: vi.fn(() => ({})),
 }));
 
 // 3. Mock Sound (useSound hook is a wrapper, but we might want to mock the native Audio if used directly)
