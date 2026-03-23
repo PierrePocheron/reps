@@ -2,13 +2,176 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useUserStore } from '@/store/userStore';
-import { Flame, Dumbbell, Calendar, Zap, AlertTriangle, Trophy, Sunrise, Sun, Moon } from 'lucide-react';
+import { Flame, Dumbbell, Calendar, Zap, AlertTriangle, Trophy, Sunrise, Sun, Moon, TrendingUp } from 'lucide-react';
 import { AdSpace } from '@/components/AdSpace';
 import { ADS_CONFIG } from '@/config/ads';
+import { useSessionHistory } from '@/hooks/useSessionHistory';
+import type { Session, GymSession } from '@/firebase/types';
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function toDateKey(date: Date): string {
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+// ─── Activity Heatmap ─────────────────────────────────────────────────────────
+
+function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymSessions: GymSession[] }) {
+  const activityMap = new Map<string, number>();
+
+  for (const s of sessions) {
+    const key = toDateKey(s.date.toDate());
+    activityMap.set(key, (activityMap.get(key) ?? 0) + 1);
+  }
+  for (const s of gymSessions) {
+    const key = toDateKey(s.date.toDate());
+    activityMap.set(key, (activityMap.get(key) ?? 0) + 1);
+  }
+
+  // Build cells: last 91 days aligned to Monday
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() - 90);
+  const dow = startDate.getDay();
+  startDate.setDate(startDate.getDate() - (dow === 0 ? 6 : dow - 1));
+
+  const cells: { date: Date; count: number }[] = [];
+  const cur = new Date(startDate);
+  while (cur <= today) {
+    cells.push({ date: new Date(cur), count: activityMap.get(toDateKey(cur)) ?? 0 });
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  const weeks: { date: Date; count: number }[][] = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+
+  const activeDays = cells.filter((c) => c.count > 0).length;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-card border rounded-xl p-5"
+    >
+      <h3 className="text-sm font-semibold mb-0.5 flex items-center gap-2">
+        <Calendar className="w-4 h-4 text-primary" />
+        Activité (90 jours)
+      </h3>
+      <p className="text-xs text-muted-foreground mb-4">
+        {activeDays} jour{activeDays !== 1 ? 's' : ''} d'entraînement
+      </p>
+
+      <div className="overflow-x-auto pb-1">
+        <div className="flex gap-[3px]">
+          {weeks.map((week, wi) => (
+            <div key={wi} className="flex flex-col gap-[3px]">
+              {week.map((cell, di) => (
+                <div
+                  key={di}
+                  title={`${cell.date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}: ${cell.count > 0 ? `${cell.count} séance(s)` : 'repos'}`}
+                  className={`w-3 h-3 rounded-sm transition-colors ${
+                    cell.count === 0
+                      ? 'bg-muted'
+                      : cell.count === 1
+                        ? 'bg-primary/50'
+                        : 'bg-primary'
+                  }`}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1.5 mt-3 text-[11px] text-muted-foreground">
+        <span>Moins</span>
+        <div className="w-3 h-3 rounded-sm bg-muted" />
+        <div className="w-3 h-3 rounded-sm bg-primary/50" />
+        <div className="w-3 h-3 rounded-sm bg-primary" />
+        <span>Plus</span>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Weekly Reps Chart ────────────────────────────────────────────────────────
+
+function WeeklyChart({ sessions }: { sessions: Session[] }) {
+  const today = new Date();
+
+  const buckets = Array.from({ length: 8 }, (_, i) => {
+    const end = new Date(today);
+    end.setDate(today.getDate() - (7 - i) * 7);
+    end.setHours(23, 59, 59, 999);
+    const start = new Date(end);
+    start.setDate(end.getDate() - 6);
+    start.setHours(0, 0, 0, 0);
+    const label =
+      i === 7
+        ? 'Cette sem.'
+        : start.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    return { start, end, label, reps: 0 };
+  });
+
+  for (const s of sessions) {
+    const d = s.date.toDate();
+    const bucket = buckets.find((b) => d >= b.start && d <= b.end);
+    if (bucket) bucket.reps += s.totalReps;
+  }
+
+  const hasData = buckets.some((b) => b.reps > 0);
+  if (!hasData) return null;
+
+  const maxReps = Math.max(...buckets.map((b) => b.reps), 1);
+  const BAR_HEIGHT = 72;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-card border rounded-xl p-5"
+    >
+      <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+        <TrendingUp className="w-4 h-4 text-primary" />
+        Répétitions par semaine
+      </h3>
+
+      <div className="flex items-end gap-1.5" style={{ height: `${BAR_HEIGHT + 4}px` }}>
+        {buckets.map((b, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center justify-end">
+            {b.reps > 0 ? (
+              <div
+                className={`w-full rounded-t-sm transition-all ${
+                  i === buckets.length - 1 ? 'bg-primary' : 'bg-primary/60'
+                }`}
+                style={{ height: `${Math.max(4, (b.reps / maxReps) * BAR_HEIGHT)}px` }}
+                title={`${b.reps} reps`}
+              />
+            ) : (
+              <div className="w-full rounded-t-sm bg-muted" style={{ height: '4px' }} />
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-1.5 mt-1.5">
+        {buckets.map((b, i) => (
+          <div key={i} className="flex-1 text-center">
+            <span className="text-[9px] text-muted-foreground leading-none">
+              {i === buckets.length - 1 ? 'Cette\nsem.' : b.start.getDate()}
+            </span>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
 
 export default function Statistics() {
   const { user, stats } = useUserStore();
   const navigate = useNavigate();
+  const { sessions, gymSessions, loading: historyLoading } = useSessionHistory();
 
   if (!user) return null;
 
@@ -216,6 +379,14 @@ export default function Statistics() {
 
         {/* Habitudes (Distribution) */}
         {/* Habitudes (Distribution) */}
+
+        {/* Graphiques historiques */}
+        {!historyLoading && (
+          <>
+            <ActivityCalendar sessions={sessions} gymSessions={gymSessions} />
+            <WeeklyChart sessions={sessions} />
+          </>
+        )}
 
         {/* Pub avant Habitudes (Carte séparée) */}
         <AdSpace
