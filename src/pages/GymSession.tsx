@@ -6,10 +6,12 @@ import { RestTimerModal } from '@/components/gym/RestTimerModal';
 import { AddGymExerciseDialog } from '@/components/AddGymExerciseDialog';
 import { Timer } from '@/components/Timer';
 import { useGymSessionStore } from '@/store/gymSessionStore';
+import { useUserStore } from '@/store/userStore';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useSound } from '@/hooks/useSound';
+import { getUserGymSessions } from '@/firebase/gymSessions';
 import {
   Plus, Play, Square, Dumbbell, CheckCircle2, ChevronDown, ChevronUp,
   Clock, Weight, ArrowLeft
@@ -37,7 +39,6 @@ function GymSession() {
     addSet,
     updateSet,
     removeSet,
-    duplicateLastSet,
     startExecution,
     completeSet,
     dismissRestTimer,
@@ -50,14 +51,42 @@ function GymSession() {
     getCompletedSets,
   } = useGymSessionStore();
 
+  const { user } = useUserStore();
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   const [currentWeight, setCurrentWeight] = useState('');
   const [currentReps, setCurrentReps] = useState('');
+  // Defaults from history: exerciseId → { reps, weight }
+  const [historyDefaults, setHistoryDefaults] = useState<Record<string, { reps: number; weight: number }>>({});
 
   // Rediriger si non auth ou si pas de session en cours
   useEffect(() => {
     if (!isAuthenticated) navigate('/');
   }, [isAuthenticated, navigate]);
+
+  // Charger les defaults depuis la dernière séance muscu de l'utilisateur
+  useEffect(() => {
+    if (!user || phase !== 'plan') return;
+    getUserGymSessions(user.uid, 5).then((sessions) => {
+      const defaults: Record<string, { reps: number; weight: number }> = {};
+      // Parcourir les sessions du plus récent au plus ancien
+      for (const session of sessions) {
+        for (const ex of session.exercises) {
+          if (!defaults[ex.exerciseId]) {
+            const lastCompletedSet = [...ex.sets].reverse().find((s) => s.completed);
+            const fallback = ex.sets[ex.sets.length - 1];
+            const ref = lastCompletedSet ?? fallback;
+            if (ref) {
+              defaults[ex.exerciseId] = {
+                reps: ref.actualReps ?? ref.reps,
+                weight: ref.actualWeight ?? ref.weight,
+              };
+            }
+          }
+        }
+      }
+      setHistoryDefaults(defaults);
+    });
+  }, [user?.uid, phase]);
 
   // Sync inputs avec le set courant en mode exécution
   useEffect(() => {
@@ -172,10 +201,10 @@ function GymSession() {
             <GymExerciseCard
               key={exercise.exerciseId}
               exercise={exercise}
+              defaultSet={historyDefaults[exercise.exerciseId]}
               onAddSet={(s) => addSet(exercise.exerciseId, s)}
               onUpdateSet={(i, p) => updateSet(exercise.exerciseId, i, p)}
               onRemoveSet={(i) => removeSet(exercise.exerciseId, i)}
-              onDuplicateLastSet={() => duplicateLastSet(exercise.exerciseId)}
               onRemoveExercise={() => removeExercise(exercise.exerciseId)}
             />
           ))}

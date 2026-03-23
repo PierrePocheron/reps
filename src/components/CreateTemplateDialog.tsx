@@ -315,9 +315,9 @@ export function CreateTemplateDialog({ open, onClose, onSave }: Props) {
                       ))}
                       <button
                         onClick={() => addSet(m.exerciseId)}
-                        className="flex items-center gap-1 text-xs text-primary hover:underline mt-1"
+                        className="w-full flex items-center justify-center gap-1 py-1.5 rounded-lg border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all text-xs font-medium mt-1"
                       >
-                        <Plus className="w-3 h-3" /> Ajouter une série
+                        <Plus className="w-3 h-3" /> Série {m.sets.length + 1}
                       </button>
                     </div>
                   )}
