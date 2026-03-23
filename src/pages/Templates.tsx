@@ -9,18 +9,29 @@ import {
 } from '@/utils/constants';
 import { useSessionStore } from '@/store/sessionStore';
 import { useGymSessionStore } from '@/store/gymSessionStore';
+import { useUserTemplates } from '@/hooks/useUserTemplates';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useToast } from '@/hooks/use-toast';
-import { Zap, Dumbbell, ChevronRight, ArrowRight } from 'lucide-react';
+import { CreateTemplateDialog } from '@/components/CreateTemplateDialog';
+import { Zap, Dumbbell, ChevronRight, ArrowRight, Plus, Trash2 } from 'lucide-react';
 import type { WorkoutTemplate } from '@/firebase/types';
 import type { GymSessionExercise } from '@/firebase/types';
 
 type Tab = 'renforcement' | 'musculation';
 
-function TemplateCard({ template, onStart }: { template: WorkoutTemplate; onStart: () => void }) {
+// ─── TemplateCard ─────────────────────────────────────────────────────────────
+
+function TemplateCard({
+  template,
+  onStart,
+  onDelete,
+}: {
+  template: WorkoutTemplate;
+  onStart: () => void;
+  onDelete?: () => void;
+}) {
   const exerciseCount = template.exerciseIds?.length ?? template.muscuExercises?.length ?? 0;
 
-  // Get exercise emojis for preview
   const previewEmojis =
     template.workoutType === 'renforcement'
       ? (template.exerciseIds ?? [])
@@ -31,79 +42,78 @@ function TemplateCard({ template, onStart }: { template: WorkoutTemplate; onStar
           .map((me) => MUSCULATION_EXERCISES.find((ex) => ex.id === me.exerciseId)?.emoji ?? '🏋️');
 
   return (
-    <button
-      onClick={onStart}
-      className="w-full flex items-center gap-4 p-4 rounded-2xl bg-card border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all text-left"
-    >
-      {/* Emoji */}
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted flex-shrink-0 text-2xl">
-        {template.emoji}
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm">{template.name}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{template.description}</p>
-        <div className="flex items-center gap-1 mt-1.5">
-          {previewEmojis.map((emoji, i) => (
-            <span key={i} className="text-sm">{emoji}</span>
-          ))}
-          {exerciseCount > 4 && (
-            <span className="text-xs text-muted-foreground ml-1">+{exerciseCount - 4}</span>
-          )}
+    <div className="flex items-stretch gap-2">
+      <button
+        onClick={onStart}
+        className="flex-1 flex items-center gap-4 p-4 rounded-2xl bg-card border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all text-left"
+      >
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted flex-shrink-0 text-2xl">
+          {template.emoji}
         </div>
-      </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm">{template.name}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{template.description}</p>
+          <div className="flex items-center gap-1 mt-1.5">
+            {previewEmojis.map((emoji, i) => (
+              <span key={i} className="text-sm">{emoji}</span>
+            ))}
+            {exerciseCount > 4 && (
+              <span className="text-xs text-muted-foreground ml-1">+{exerciseCount - 4}</span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-1 flex-shrink-0 text-muted-foreground">
+          <span className="text-xs">{exerciseCount} exo</span>
+          <ChevronRight className="h-4 w-4" />
+        </div>
+      </button>
 
-      {/* Arrow */}
-      <div className="flex items-center gap-1 flex-shrink-0 text-muted-foreground">
-        <span className="text-xs">{exerciseCount} exo</span>
-        <ChevronRight className="h-4 w-4" />
-      </div>
-    </button>
+      {onDelete && (
+        <button
+          onClick={onDelete}
+          className="flex items-center justify-center w-10 rounded-2xl border border-border bg-card hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive text-muted-foreground transition-colors"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      )}
+    </div>
   );
 }
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 function Templates() {
   const navigate = useNavigate();
   const haptics = useHaptic();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<Tab>('renforcement');
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const { isActive, loadExercisesFromTemplate } = useSessionStore();
   const { phase: gymPhase, loadGymTemplate } = useGymSessionStore();
+  const { templates: userTemplates, loading: templatesLoading, create, remove } = useUserTemplates();
 
   const hasActiveSession = isActive || gymPhase !== 'idle';
 
+  const guardSession = () => {
+    if (!hasActiveSession) return false;
+    toast({
+      title: 'Séance en cours',
+      description: "Termine ta séance en cours avant d'en démarrer une nouvelle.",
+      variant: 'destructive',
+    });
+    return true;
+  };
+
   const handleRenforcementTemplate = (template: WorkoutTemplate) => {
-    if (!template.exerciseIds) return;
-
-    if (hasActiveSession) {
-      toast({
-        title: 'Séance en cours',
-        description: 'Termine ta séance en cours avant d\'en démarrer une nouvelle.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+    if (!template.exerciseIds || guardSession()) return;
     haptics.impact();
     loadExercisesFromTemplate(template.exerciseIds);
     navigate('/session');
   };
 
   const handleMuscuTemplate = (template: WorkoutTemplate) => {
-    if (!template.muscuExercises) return;
-
-    if (hasActiveSession) {
-      toast({
-        title: 'Séance en cours',
-        description: 'Termine ta séance en cours avant d\'en démarrer une nouvelle.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+    if (!template.muscuExercises || guardSession()) return;
     haptics.impact();
-
     const gymExercises: GymSessionExercise[] = template.muscuExercises.map((me) => {
       const exercise = MUSCULATION_EXERCISES.find((ex) => ex.id === me.exerciseId);
       return {
@@ -114,18 +124,47 @@ function Templates() {
         sets: me.sets.map((s) => ({ ...s, completed: false })),
       };
     });
-
     loadGymTemplate(gymExercises);
     navigate('/gym');
   };
+
+  const handleStartTemplate = (template: WorkoutTemplate) => {
+    if (template.workoutType === 'renforcement') {
+      handleRenforcementTemplate(template);
+    } else {
+      handleMuscuTemplate(template);
+    }
+  };
+
+  const handleDeleteUserTemplate = async (templateId: string) => {
+    try {
+      await remove(templateId);
+      toast({ title: 'Template supprimé' });
+    } catch {
+      toast({ title: 'Erreur', description: 'Impossible de supprimer le template.', variant: 'destructive' });
+    }
+  };
+
+  const userTemplatesForTab = userTemplates.filter((t) => t.workoutType === activeTab);
+  const defaultTemplates =
+    activeTab === 'renforcement' ? DEFAULT_RENFORCEMENT_TEMPLATES : DEFAULT_MUSCULATION_TEMPLATES;
 
   return (
     <PageLayout>
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold">Templates</h1>
-          <p className="text-sm text-muted-foreground mt-1">Démarre une séance depuis un programme préétabli.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Templates</h1>
+            <p className="text-sm text-muted-foreground mt-1">Démarre une séance depuis un programme préétabli.</p>
+          </div>
+          <button
+            onClick={() => setShowCreateDialog(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 active:scale-95 transition-all"
+          >
+            <Plus className="h-4 w-4" />
+            Créer
+          </button>
         </div>
 
         {/* Tabs */}
@@ -154,48 +193,43 @@ function Templates() {
           </button>
         </div>
 
-        {/* Template List */}
-        {activeTab === 'renforcement' ? (
+        {/* Mes templates */}
+        {!templatesLoading && userTemplatesForTab.length > 0 && (
           <div className="space-y-3">
             <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium px-1">
-              Programmes par défaut
+              Mes programmes
             </p>
-            {DEFAULT_RENFORCEMENT_TEMPLATES.map((template) => (
+            {userTemplatesForTab.map((template) => (
               <TemplateCard
                 key={template.id}
                 template={template}
-                onStart={() => handleRenforcementTemplate(template)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium px-1">
-              Programmes par défaut
-            </p>
-            {DEFAULT_MUSCULATION_TEMPLATES.map((template) => (
-              <TemplateCard
-                key={template.id}
-                template={template}
-                onStart={() => handleMuscuTemplate(template)}
+                onStart={() => handleStartTemplate(template)}
+                onDelete={() => handleDeleteUserTemplate(template.id)}
               />
             ))}
           </div>
         )}
+
+        {/* Templates par défaut */}
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium px-1">
+            Programmes par défaut
+          </p>
+          {defaultTemplates.map((template) => (
+            <TemplateCard
+              key={template.id}
+              template={template}
+              onStart={() => handleStartTemplate(template)}
+            />
+          ))}
+        </div>
 
         {/* CTA — séance libre */}
         <div className="pt-2">
           <p className="text-xs text-muted-foreground text-center mb-3">ou commence une séance sans template</p>
           <button
             onClick={() => {
-              if (hasActiveSession) {
-                toast({
-                  title: 'Séance en cours',
-                  description: 'Termine ta séance en cours avant d\'en démarrer une nouvelle.',
-                  variant: 'destructive',
-                });
-                return;
-              }
+              if (guardSession()) return;
               navigate(activeTab === 'renforcement' ? '/session' : '/gym');
             }}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-border hover:border-primary/40 hover:bg-muted transition-all text-sm text-muted-foreground hover:text-foreground"
@@ -205,6 +239,15 @@ function Templates() {
           </button>
         </div>
       </div>
+
+      <CreateTemplateDialog
+        open={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        onSave={async (data) => {
+          await create(data);
+          toast({ title: 'Template créé !', description: data.name });
+        }}
+      />
     </PageLayout>
   );
 }

@@ -182,6 +182,9 @@ export interface WorkoutTemplate {
     exerciseId: string;
     sets: { reps: number; weight: number }[];
   }[];
+  // Champs présents uniquement sur les templates utilisateur (Firestore)
+  userId?: string;
+  createdAt?: Timestamp;
 }
 
 // Type pour un badge
