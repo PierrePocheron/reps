@@ -16,14 +16,11 @@ service cloud.firestore {
 
     // --- Collection Rules ---
 
-    // Users: Lecture publique (pour la recherche), modification par le propriétaire uniquement
+    // Users: Lecture publique (authentifiée), modification propriétaire uniquement
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated(); // Authentifié requis pour créer son profil
-      allow update: if isOwner(userId) ||
-        // Cas spécial : permettre l'ajout d'amis (l'utilisateur B ajoute l'ID de A dans sa liste) -> Logic handled by client but here strictly owner is better.
-        // The previous rule allowed affectedKeys check. Let's keep it safer:
-        (isAuthenticated() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends', 'updatedAt']));
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
     }
 
     // User Events (Badges, etc.)
@@ -68,6 +65,22 @@ service cloud.firestore {
       allow read: if isAuthenticated();
     }
 
+    // Exercices par défaut — images depuis Wger (lecture seule pour tous les users connectés)
+    match /default_exercises/{exerciseId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // Gym Sessions (Musculation)
+    match /gym_sessions/{userId}/userGymSessions/{sessionId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // User Templates
+    match /userTemplates/{userId}/templates/{templateId} {
+      allow read, write: if isOwner(userId);
+    }
+
     // Exercises (Personnalisés)
     match /exercises/{exerciseId} {
       allow read: if isAuthenticated();
@@ -77,11 +90,11 @@ service cloud.firestore {
 
     // Notifications
     match /notifications/{notificationId} {
-      // Seul le destinataire peut lire
       allow read: if isOwner(resource.data.userId);
-      // N'importe qui peut créer (ex: déclencheur cloud function ou client direct pour demande d'ami)
-      allow create: if isAuthenticated();
-      // Seul le destinataire peut mettre à jour (ex: marquer comme lu)
+      // Création limitée à l'envoyeur ou au destinataire (pas de spam tiers)
+      allow create: if isAuthenticated() &&
+        (request.auth.uid == request.resource.data.userId ||
+         request.auth.uid == request.resource.data.fromUserId);
       allow update: if isOwner(resource.data.userId);
     }
 

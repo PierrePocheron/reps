@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { GymExerciseCard } from '@/components/gym/GymExerciseCard';
 import { AddGymExerciseDialog } from '@/components/AddGymExerciseDialog';
+import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
 import { Timer } from '@/components/Timer';
 import { useGymSessionStore } from '@/store/gymSessionStore';
 import { useUserStore } from '@/store/userStore';
@@ -13,9 +14,11 @@ import { useHaptic } from '@/hooks/useHaptic';
 import { useSound } from '@/hooks/useSound';
 import { getUserGymSessions } from '@/firebase/gymSessions';
 import type { GymSessionExercise, PlannedSet } from '@/firebase/types';
+import { useExerciseImages } from '@/hooks/useExerciseImages';
+import { MUSCULATION_EXERCISES } from '@/utils/constants';
 import {
   Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
-  Clock, Weight, ArrowLeft, X,
+  Clock, Weight, ArrowLeft, X, Trash2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { cn } from '@/utils/cn';
@@ -48,10 +51,16 @@ function GymSession() {
     cancelSession,
     getTotalSets,
     getCompletedSets,
+    completeSetAt,
+    startRestTimer,
   } = useGymSessionStore();
 
   const { user } = useUserStore();
+  const { imageMap, infoMap } = useExerciseImages();
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const cancellingRef = useRef(false);
+  const [detailExerciseId, setDetailExerciseId] = useState<string | null>(null);
   // Defaults from history: exerciseId → { reps, weight }
   const [historyDefaults, setHistoryDefaults] = useState<Record<string, { reps: number; weight: number }>>({});
 
@@ -62,7 +71,7 @@ function GymSession() {
 
   // Charger les defaults depuis la dernière séance muscu de l'utilisateur
   useEffect(() => {
-    if (!user || phase !== 'plan') return;
+    if (!user || phase === 'idle') return;
     getUserGymSessions(user.uid, 5).then((sessions) => {
       const defaults: Record<string, { reps: number; weight: number }> = {};
       // Parcourir les sessions du plus récent au plus ancien
@@ -95,8 +104,7 @@ function GymSession() {
     return () => clearInterval(interval);
   }, [phase, startTime]);
 
-  if (phase === 'idle') {
-    // Redirect back si on arrive ici sans session
+  if (phase === 'idle' && !cancellingRef.current) {
     navigate('/');
     return null;
   }
@@ -104,6 +112,12 @@ function GymSession() {
   const totalSets = getTotalSets();
   const completedSets = getCompletedSets();
   const allSetsCompleted = phase === 'execute' && completedSets >= totalSets && totalSets > 0;
+
+  // Enrichir les exercices avec les images Firestore
+  const enrichedExercises = exercises.map((ex) => ({
+    ...ex,
+    imageUrl: ex.imageUrl ?? imageMap[ex.exerciseId],
+  }));
 
   // ─── Handlers Planning ─────────────────────────────────────────────────
 
@@ -131,8 +145,14 @@ function GymSession() {
   };
 
   const handleCancel = () => {
+    cancellingRef.current = true;
     cancelSession();
     navigate('/');
+  };
+
+  const handleCancelConfirm = () => {
+    setShowCancelConfirm(false);
+    handleCancel();
   };
 
 
@@ -160,7 +180,7 @@ function GymSession() {
 
         <div className="p-4 max-w-2xl mx-auto space-y-4">
           {/* Exercices planifiés */}
-          {exercises.map((exercise) => (
+          {enrichedExercises.map((exercise) => (
             <GymExerciseCard
               key={exercise.exerciseId}
               exercise={exercise}
@@ -222,6 +242,7 @@ function GymSession() {
           onOpenChange={setShowExerciseDialog}
           onAdd={addExercise}
           hasExercise={(id) => exercises.some((ex) => ex.exerciseId === id)}
+          enrichedExercises={MUSCULATION_EXERCISES.map((ex) => ({ ...ex, imageUrl: imageMap[ex.id] }))}
         />
       </div>
     );
@@ -229,18 +250,16 @@ function GymSession() {
 
   // ─── PHASE EXÉCUTION ──────────────────────────────────────────────────
 
-  const { completeSetAt, startRestTimer } = useGymSessionStore();
-
   return (
     <div className="bg-background min-h-screen">
       {/* Header */}
       <div className="sticky top-[env(safe-area-inset-top)] z-10 bg-background/80 backdrop-blur-md border-b">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
-            onClick={handleCancel}
+            onClick={() => navigate('/')}
             className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
           >
-            <Square className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex flex-col items-center">
             <h1 className="font-bold text-lg leading-none">En séance</h1>
@@ -263,11 +282,36 @@ function GymSession() {
 
       {/* Liste complète des exercices */}
       <div className="p-4 max-w-2xl mx-auto space-y-4 pb-48">
-        {exercises.map((exercise) => (
+        {exercises.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 space-y-4 text-center">
+            <div className="bg-blue-500/10 p-4 rounded-full">
+              <Dumbbell className="h-8 w-8 text-blue-500" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg">Séance vide</h3>
+              <p className="text-muted-foreground text-sm mt-1 max-w-[220px] mx-auto">Ajoute ton premier exercice ci-dessous pour commencer</p>
+            </div>
+          </div>
+        )}
+
+        {enrichedExercises.map((exercise) => (
           <ExecuteExerciseCard
             key={exercise.exerciseId}
             exercise={exercise}
             onCompleteSet={completeSetAt}
+            onUpdateSet={(exerciseId, setIndex, reps, weight) =>
+              updateSet(exerciseId, setIndex, { actualReps: reps, actualWeight: weight })
+            }
+            onShowDetail={(id) => setDetailExerciseId(id)}
+            onAddSet={(exerciseId) => {
+              const ex = exercises.find((e) => e.exerciseId === exerciseId);
+              const last = ex?.sets[ex.sets.length - 1];
+              const def = historyDefaults[exerciseId] ?? { reps: 10, weight: 0 };
+              addSet(exerciseId, {
+                reps: last ? (last.actualReps ?? last.reps) : def.reps,
+                weight: last ? (last.actualWeight ?? last.weight) : def.weight,
+              });
+            }}
           />
         ))}
 
@@ -279,6 +323,15 @@ function GymSession() {
             <p className="font-semibold text-center">Toutes les séries complétées !</p>
           </div>
         )}
+
+        {/* Bouton ajout exercice — après la liste */}
+        <button
+          onClick={() => setShowExerciseDialog(true)}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-sm text-muted-foreground hover:text-primary font-medium"
+        >
+          <Plus className="h-4 w-4" />
+          Ajouter un exercice
+        </button>
       </div>
 
       {/* Barre flottante du bas */}
@@ -299,14 +352,14 @@ function GymSession() {
             <button
               onClick={() => showRestTimer ? dismissRestTimer() : startRestTimer()}
               className={cn(
-                'flex items-center gap-1.5 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors',
+                'flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors',
                 showRestTimer
                   ? 'bg-primary/10 border-primary/30 text-primary'
                   : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/30'
               )}
             >
               <TimerIcon className="h-4 w-4" />
-              {showRestTimer ? 'Arrêter' : `${restDuration}s`}
+              {showRestTimer ? 'Stop' : `${restDuration}s`}
             </button>
 
             <Button
@@ -315,11 +368,71 @@ function GymSession() {
               onClick={handleEndSession}
             >
               <Square className="mr-2 h-4 w-4 fill-current" />
-              {allSetsCompleted ? 'Terminer la séance' : 'Terminer'}
+              {allSetsCompleted ? 'Terminer !' : 'Terminer'}
             </Button>
+
+            <button
+              onClick={() => setShowCancelConfirm(true)}
+              className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Modale confirmation annulation */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCancelConfirm(false)} />
+          <div className="relative z-10 w-full sm:max-w-sm bg-background rounded-t-3xl sm:rounded-2xl shadow-xl p-6 space-y-4">
+            <div className="text-center space-y-2">
+              <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="h-6 w-6 text-destructive" />
+              </div>
+              <h3 className="font-bold text-lg">Annuler la séance ?</h3>
+              <p className="text-sm text-muted-foreground">La séance en cours sera définitivement supprimée, sans sauvegarde.</p>
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => setShowCancelConfirm(false)}>
+                Continuer
+              </Button>
+              <Button variant="destructive" className="flex-1" onClick={handleCancelConfirm}>
+                Annuler la séance
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <AddGymExerciseDialog
+        open={showExerciseDialog}
+        onOpenChange={setShowExerciseDialog}
+        onAdd={(exercise) => {
+          addExercise(exercise);
+          // Ajoute une première série depuis l'historique (ou default)
+          const def = historyDefaults[exercise.id] ?? { reps: 10, weight: 0 };
+          addSet(exercise.id, { reps: def.reps, weight: def.weight });
+        }}
+        hasExercise={(id) => exercises.some((ex) => ex.exerciseId === id)}
+        enrichedExercises={MUSCULATION_EXERCISES.map((ex) => ({ ...ex, imageUrl: imageMap[ex.id] }))}
+      />
+
+      {/* Fiche détail exercice */}
+      {detailExerciseId && (() => {
+        const ex = enrichedExercises.find((e) => e.exerciseId === detailExerciseId);
+        if (!ex) return null;
+        return (
+          <ExerciseDetailSheet
+            exerciseId={ex.exerciseId}
+            name={ex.name}
+            emoji={ex.emoji}
+            imageUrl={ex.imageUrl ?? null}
+            description={infoMap[ex.exerciseId]?.description ?? null}
+            onClose={() => setDetailExerciseId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }
@@ -331,14 +444,17 @@ function SetExecuteRow({
   setIndex,
   exerciseId,
   onComplete,
+  onUpdate,
 }: {
   set: PlannedSet;
   setIndex: number;
   exerciseId: string;
   onComplete: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
+  onUpdate: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
 }) {
   const [reps, setReps] = useState(String(set.actualReps ?? set.reps));
   const [weight, setWeight] = useState(String(set.actualWeight ?? set.weight));
+  const { play } = useSound();
 
   return (
     <div className={cn(
@@ -353,7 +469,7 @@ function SetExecuteRow({
         <Input
           type="number"
           value={reps}
-          onChange={(e) => setReps(e.target.value)}
+          onChange={(e) => { setReps(e.target.value); onUpdate(exerciseId, setIndex, Number(e.target.value) || 0, Number(weight) || 0); }}
           onFocus={onFocusSel}
           className={`h-8 w-14 text-sm p-1 ${NUM_CLS}`}
           min={0}
@@ -365,7 +481,7 @@ function SetExecuteRow({
         <Input
           type="number"
           value={weight}
-          onChange={(e) => setWeight(e.target.value)}
+          onChange={(e) => { setWeight(e.target.value); onUpdate(exerciseId, setIndex, Number(reps) || 0, Number(e.target.value) || 0); }}
           onFocus={onFocusSel}
           className={`h-8 w-16 text-sm p-1 ${NUM_CLS}`}
           min={0}
@@ -374,7 +490,10 @@ function SetExecuteRow({
       </div>
 
       <button
-        onClick={() => onComplete(exerciseId, setIndex, Number(reps) || 0, Number(weight) || 0)}
+        onClick={() => {
+          play('success');
+          onComplete(exerciseId, setIndex, Number(reps) || 0, Number(weight) || 0);
+        }}
         className={cn(
           'p-1.5 rounded-lg transition-colors flex-shrink-0',
           set.completed
@@ -391,9 +510,15 @@ function SetExecuteRow({
 function ExecuteExerciseCard({
   exercise,
   onCompleteSet,
+  onUpdateSet,
+  onAddSet,
+  onShowDetail,
 }: {
   exercise: GymSessionExercise;
   onCompleteSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
+  onUpdateSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
+  onAddSet: (exerciseId: string) => void;
+  onShowDetail: (exerciseId: string) => void;
 }) {
   const completedCount = exercise.sets.filter((s) => s.completed).length;
 
@@ -407,12 +532,15 @@ function ExecuteExerciseCard({
             <span className="text-2xl">{exercise.emoji}</span>
           )}
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-base truncate">{exercise.name}</h3>
+        <button
+          className="flex-1 min-w-0 text-left"
+          onClick={() => onShowDetail(exercise.exerciseId)}
+        >
+          <h3 className="font-bold text-base truncate hover:text-primary transition-colors">{exercise.name}</h3>
           <p className="text-xs text-muted-foreground">
             {completedCount}/{exercise.sets.length} série{exercise.sets.length !== 1 ? 's' : ''} complétée{completedCount !== 1 ? 's' : ''}
           </p>
-        </div>
+        </button>
         {completedCount === exercise.sets.length && exercise.sets.length > 0 && (
           <CheckCircle2 className="h-5 w-5 text-green-500 fill-green-500/20 flex-shrink-0" />
         )}
@@ -426,8 +554,17 @@ function ExecuteExerciseCard({
             setIndex={i}
             exerciseId={exercise.exerciseId}
             onComplete={onCompleteSet}
+            onUpdate={onUpdateSet}
           />
         ))}
+
+        <button
+          onClick={() => onAddSet(exercise.exerciseId)}
+          className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all text-xs font-medium"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Série {exercise.sets.length + 1}
+        </button>
       </div>
     </div>
   );

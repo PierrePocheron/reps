@@ -76,7 +76,6 @@ function Home() {
       }
     }
     fetchLastSession();
-    fetchLastSession();
   }, [user?.uid, stats?.totalSessions, sessionRefreshTrigger]); // Re-fetch on signal
 
   if (isLoading) {
@@ -105,9 +104,46 @@ function Home() {
     );
   }
 
+  const hasActiveSession = isActive || gymPhase !== 'idle';
+
+  const sessionLabel = gymPhase === 'plan'
+    ? `Planification · ${gymExercises.length} exo`
+    : gymPhase === 'execute'
+    ? `${getCompletedSets()}/${getTotalSets()} séries`
+    : isActive
+    ? `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`
+    : '';
+
+  const sessionTimer = gymPhase === 'execute'
+    ? `${Math.floor(gymDuration / 60)}:${(gymDuration % 60).toString().padStart(2, '0')}`
+    : isActive
+    ? `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`
+    : '';
+
   return (
     <PageLayout isHome>
       <div className="mx-auto max-w-2xl space-y-8">
+
+        {/* Bandeau séance en cours — tout en haut */}
+        {hasActiveSession && (
+          <button
+            onClick={() => navigate(gymPhase !== 'idle' ? '/gym' : '/session')}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-primary/10 border border-primary/30 hover:bg-primary/15 active:scale-[0.98] transition-all"
+          >
+            <span className="relative flex h-3 w-3 flex-shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
+            </span>
+            <div className="flex-1 text-left min-w-0">
+              <p className="text-sm font-semibold text-foreground">Séance en cours</p>
+              <p className="text-xs text-muted-foreground truncate">{sessionLabel}</p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-lg font-bold font-heading text-primary tabular-nums">{sessionTimer}</span>
+              <ChevronDown className="h-4 w-4 text-muted-foreground -rotate-90" />
+            </div>
+          </button>
+        )}
 
         {/* Message de bienvenue */}
         <div className="mb-2">
@@ -178,80 +214,27 @@ function Home() {
             )}
         </div>
 
-        {/* Hero Section - Start/Resume Session */}
-        <div className="relative overflow-hidden rounded-2xl p-6 border border-primary/20 bg-primary/5 shadow-sm">
-          {/* Decorative background elements */}
-          <div className="absolute top-0 right-0 -mt-20 -mr-20 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
-          <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
-
-          <div className="relative z-10">
-            {(isActive || gymPhase !== 'idle') ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <span className="relative flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-                  </span>
-                  <h2 className="text-lg font-medium text-foreground">Séance en cours</h2>
-                </div>
-
-                {/* Renforcement — timer */}
-                {isActive && (
-                  <div className="flex items-end gap-2 text-foreground">
-                    <span className="text-4xl font-bold tracking-tight font-heading">
-                      {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
-                    </span>
-                    <span className="mb-1 text-sm text-muted-foreground">durée</span>
-                  </div>
-                )}
-
-                {/* Gym — infos selon la phase */}
-                {gymPhase === 'plan' && gymExercises.length > 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    Planification · {gymExercises.length} exercice{gymExercises.length > 1 ? 's' : ''} · {gymExercises.reduce((s, ex) => s + ex.sets.length, 0)} séries
-                  </p>
-                )}
-                {gymPhase === 'execute' && (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-end gap-2 text-foreground">
-                      <span className="text-4xl font-bold tracking-tight font-heading">
-                        {Math.floor(gymDuration / 60)}:{(gymDuration % 60).toString().padStart(2, '0')}
-                      </span>
-                      <span className="mb-1 text-sm text-muted-foreground">durée</span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      {getCompletedSets()}/{getTotalSets()} séries
-                    </span>
-                  </div>
-                )}
-
-                <Button
-                  onClick={() => navigate(gymPhase !== 'idle' ? '/gym' : '/session')}
-                  size="lg"
-                  className="w-full font-semibold shadow-sm"
-                >
-                  Reprendre la séance
-                </Button>
+        {/* CTA nouvelle séance */}
+        {!hasActiveSession && (
+          <div className="relative overflow-hidden rounded-2xl p-6 border border-primary/20 bg-primary/5 shadow-sm">
+            <div className="absolute top-0 right-0 -mt-20 -mr-20 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
+            <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
+            <div className="relative z-10 space-y-4">
+              <div>
+                <h2 className="text-2xl font-bold text-foreground font-heading">Prêt à t'entraîner ?</h2>
+                <p className="text-muted-foreground">Chaque rep compte.</p>
               </div>
-            ) : (
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground font-heading">Prêt à t'entraîner ?</h2>
-                  <p className="text-muted-foreground">Chaque rep compte.</p>
-                </div>
-
-                <Button
-                  onClick={() => setShowPicker(true)}
-                  size="lg"
-                  className="w-full font-semibold shadow-sm h-12 text-lg"
-                >
-                  <Plus className="mr-2 h-5 w-5" />
-                  Nouvelle séance
-                </Button>
-              </div>
-            )}
+              <Button
+                onClick={() => setShowPicker(true)}
+                size="lg"
+                className="w-full font-semibold shadow-sm h-12 text-lg"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Nouvelle séance
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
 
 
 

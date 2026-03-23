@@ -14,8 +14,8 @@ import { useHaptic } from '@/hooks/useHaptic';
 import { useToast } from '@/hooks/use-toast';
 import { CreateTemplateDialog } from '@/components/CreateTemplateDialog';
 import { Zap, Dumbbell, ChevronRight, ArrowRight, Plus, Trash2 } from 'lucide-react';
-import type { WorkoutTemplate } from '@/firebase/types';
-import type { GymSessionExercise } from '@/firebase/types';
+import type { WorkoutTemplate, GymSessionExercise } from '@/firebase/types';
+import { GymTemplatePreviewSheet } from '@/components/GymTemplatePreviewSheet';
 
 type Tab = 'renforcement' | 'musculation';
 
@@ -88,8 +88,9 @@ function Templates() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<Tab>('renforcement');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [previewTemplate, setPreviewTemplate] = useState<WorkoutTemplate | null>(null);
   const { isActive, loadExercisesFromTemplate } = useSessionStore();
-  const { phase: gymPhase, loadGymTemplate } = useGymSessionStore();
+  const { phase: gymPhase, loadGymTemplate, startExecution } = useGymSessionStore();
   const { templates: userTemplates, loading: templatesLoading, create, remove } = useUserTemplates();
 
   const hasActiveSession = isActive || gymPhase !== 'idle';
@@ -125,6 +126,7 @@ function Templates() {
       };
     });
     loadGymTemplate(gymExercises);
+    startExecution();
     navigate('/gym');
   };
 
@@ -132,7 +134,8 @@ function Templates() {
     if (template.workoutType === 'renforcement') {
       handleRenforcementTemplate(template);
     } else {
-      handleMuscuTemplate(template);
+      if (guardSession()) return;
+      setPreviewTemplate(template);
     }
   };
 
@@ -239,6 +242,12 @@ function Templates() {
           </button>
         </div>
       </div>
+
+      <GymTemplatePreviewSheet
+        template={previewTemplate}
+        onClose={() => setPreviewTemplate(null)}
+        onStart={(t) => { setPreviewTemplate(null); handleMuscuTemplate(t); }}
+      />
 
       <CreateTemplateDialog
         open={showCreateDialog}

@@ -29,24 +29,23 @@ interface GymSessionState {
 
   // Actions — Exécution
   startExecution: () => void;
-  completeSet: (actualReps?: number, actualWeight?: number) => void;
   completeSetAt: (exerciseId: string, setIndex: number, actualReps: number, actualWeight: number) => void;
   startRestTimer: () => void;
   dismissRestTimer: () => void;
-  goToNextSet: () => void;
   setRestDuration: (seconds: number) => void;
   endSession: () => Promise<void>;
   cancelSession: () => void;
 
   // Utilitaires
-  getCurrentExercise: () => GymSessionExercise | undefined;
-  getCurrentSet: () => PlannedSet | undefined;
   getTotalSets: () => number;
   getCompletedSets: () => number;
   hasExercise: (exerciseId: string) => boolean;
 
   // Templates
   loadGymTemplate: (exercises: GymSessionExercise[]) => void;
+
+  // Séance libre — démarre directement en execute sans exercices
+  startFreeSession: () => void;
 }
 
 export const useGymSessionStore = create<GymSessionState>((set, get) => ({
@@ -150,27 +149,6 @@ export const useGymSessionStore = create<GymSessionState>((set, get) => ({
     });
   },
 
-  completeSet: (actualReps?: number, actualWeight?: number) => {
-    const { exercises, currentExerciseIndex, currentSetIndex } = get();
-    const exercise = exercises[currentExerciseIndex];
-    if (!exercise) return;
-
-    const updatedExercises = exercises.map((ex, ei) =>
-      ei === currentExerciseIndex
-        ? {
-            ...ex,
-            sets: ex.sets.map((s, si) =>
-              si === currentSetIndex
-                ? { ...s, completed: true, actualReps: actualReps ?? s.reps, actualWeight: actualWeight ?? s.weight }
-                : s
-            ),
-          }
-        : ex
-    );
-    // Ne déclenche plus le chrono automatiquement
-    set({ exercises: updatedExercises });
-  },
-
   completeSetAt: (exerciseId: string, setIndex: number, actualReps: number, actualWeight: number) => {
     set((state) => ({
       exercises: state.exercises.map((ex) =>
@@ -194,30 +172,6 @@ export const useGymSessionStore = create<GymSessionState>((set, get) => ({
     set({ showRestTimer: false });
   },
 
-  goToNextSet: () => {
-    const { exercises, currentExerciseIndex, currentSetIndex } = get();
-    const exercise = exercises[currentExerciseIndex];
-    if (!exercise) return;
-
-    const isLastSetOfExercise = currentSetIndex >= exercise.sets.length - 1;
-    const isLastExercise = currentExerciseIndex >= exercises.length - 1;
-
-    if (!isLastSetOfExercise) {
-      // Prochain set du même exercice
-      set({ currentSetIndex: currentSetIndex + 1, showRestTimer: false });
-    } else if (!isLastExercise) {
-      // Prochain exercice
-      set({
-        currentExerciseIndex: currentExerciseIndex + 1,
-        currentSetIndex: 0,
-        showRestTimer: false,
-      });
-    } else {
-      // Séance terminée
-      set({ showRestTimer: false });
-    }
-  },
-
   setRestDuration: (seconds: number) => {
     set({ restDuration: seconds });
   },
@@ -232,11 +186,26 @@ export const useGymSessionStore = create<GymSessionState>((set, get) => ({
       const totalVolume = calculateTotalVolume(exercises);
       const totalSets = exercises.reduce((sum, ex) => sum + ex.sets.filter((s) => s.completed).length, 0);
 
+      // Firestore rejette les valeurs `undefined` — on les retire
+      const sanitizedExercises = exercises.map((ex) => ({
+        exerciseId: ex.exerciseId,
+        name: ex.name,
+        emoji: ex.emoji,
+        ...(ex.imageUrl ? { imageUrl: ex.imageUrl } : {}),
+        sets: ex.sets.map((s) => ({
+          reps: s.reps,
+          weight: s.weight,
+          completed: s.completed,
+          ...(s.actualReps !== undefined ? { actualReps: s.actualReps } : {}),
+          ...(s.actualWeight !== undefined ? { actualWeight: s.actualWeight } : {}),
+        })),
+      }));
+
       await createGymSession(currentUser.uid, {
         userId: currentUser.uid,
         date: Timestamp.now(),
         duration,
-        exercises,
+        exercises: sanitizedExercises,
         totalVolume: Math.round(totalVolume),
         totalSets,
       });
@@ -262,16 +231,6 @@ export const useGymSessionStore = create<GymSessionState>((set, get) => ({
 
   // ─── Utilitaires ──────────────────────────────────────────────────────
 
-  getCurrentExercise: () => {
-    const { exercises, currentExerciseIndex } = get();
-    return exercises[currentExerciseIndex];
-  },
-
-  getCurrentSet: () => {
-    const { exercises, currentExerciseIndex, currentSetIndex } = get();
-    return exercises[currentExerciseIndex]?.sets[currentSetIndex];
-  },
-
   getTotalSets: () => {
     return get().exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
   },
@@ -285,6 +244,18 @@ export const useGymSessionStore = create<GymSessionState>((set, get) => ({
 
   hasExercise: (exerciseId: string) => {
     return get().exercises.some((ex) => ex.exerciseId === exerciseId);
+  },
+
+  startFreeSession: () => {
+    set({
+      phase: 'execute',
+      exercises: [],
+      currentExerciseIndex: 0,
+      currentSetIndex: 0,
+      startTime: Date.now(),
+      duration: 0,
+      showRestTimer: false,
+    });
   },
 
   loadGymTemplate: (exercises: GymSessionExercise[]) => {

@@ -11,7 +11,7 @@ interface SessionTypePickerProps {
 export function SessionTypePicker({ open, onClose }: SessionTypePickerProps) {
   const navigate = useNavigate();
   const haptics = useHaptic();
-  const { startPlanning } = useGymSessionStore();
+  const { startFreeSession } = useGymSessionStore();
 
   if (!open) return null;
 
@@ -23,7 +23,7 @@ export function SessionTypePicker({ open, onClose }: SessionTypePickerProps) {
 
   const handleMusculation = () => {
     haptics.impact();
-    startPlanning();
+    startFreeSession();
     onClose();
     navigate('/gym');
   };

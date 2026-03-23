@@ -1,15 +1,20 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, Trophy, Dumbbell, BarChart2 } from 'lucide-react';
+import { Home, Users, Trophy, Dumbbell, BarChart2, Medal } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { SessionTypePicker } from '@/components/SessionTypePicker';
 
 import { useUserStore } from '@/store/userStore';
+import { useSession } from '@/hooks/useSession';
+import { useGymSessionStore } from '@/store/gymSessionStore';
 
 export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { friendRequests, user } = useUserStore();
+  const { isActive: sessionIsActive } = useSession();
+  const { phase: gymPhase } = useGymSessionStore();
+  const hasActiveSession = sessionIsActive || gymPhase !== 'idle';
   const [showPicker, setShowPicker] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
@@ -45,15 +50,15 @@ export function BottomNav() {
             <span className="text-[10px] font-medium">Stats</span>
           </button>
 
-          {/* Bouton central — ouvre le picker */}
+          {/* Bouton central — session active → reprendre, sinon ouvre le picker */}
           <button
-            onClick={() => setShowPicker(true)}
-            className={cn(
-              'flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95 -mt-4 border-4 border-background',
-              (isActive('/session') || isActive('/gym')) && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
-            )}
+            onClick={() => hasActiveSession ? navigate(gymPhase !== 'idle' ? '/gym' : '/session') : setShowPicker(true)}
+            className="relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform active:scale-95 -mt-4 border-4 border-background"
           >
-            <Dumbbell className="h-7 w-7" />
+            {hasActiveSession && (
+              <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-40" />
+            )}
+            <Dumbbell className="h-7 w-7 relative z-10" />
           </button>
 
           <button
@@ -92,7 +97,7 @@ export function BottomNav() {
               isActive('/leaderboard') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            <BarChart2 className="h-6 w-6" />
+            <Medal className="h-6 w-6" />
             <span className="text-[10px] font-medium">Top</span>
           </button>
         </div>
