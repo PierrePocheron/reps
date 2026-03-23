@@ -2,6 +2,9 @@ import { Plus, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import type { GymSessionExercise, PlannedSet } from '@/firebase/types';
 
+const NUM_INPUT = 'text-center text-sm p-1 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
+const onFocusSelect = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
+
 interface GymExerciseCardProps {
   exercise: GymSessionExercise;
   defaultSet?: { reps: number; weight: number }; // valeurs de l'historique si pas de set
@@ -64,7 +67,8 @@ export function GymExerciseCard({
                 type="number"
                 value={set.reps}
                 onChange={(e) => onUpdateSet(i, { reps: parseInt(e.target.value, 10) || 0 })}
-                className="h-8 w-14 text-center text-sm p-1"
+                onFocus={onFocusSelect}
+                className={`h-8 w-14 ${NUM_INPUT}`}
                 min={1}
               />
               <span className="text-xs text-muted-foreground">reps</span>
@@ -75,9 +79,9 @@ export function GymExerciseCard({
                 type="number"
                 value={set.weight}
                 onChange={(e) => onUpdateSet(i, { weight: parseFloat(e.target.value) || 0 })}
-                className="h-8 w-16 text-center text-sm p-1"
+                onFocus={onFocusSelect}
+                className={`h-8 w-16 ${NUM_INPUT}`}
                 min={0}
-                step={2.5}
               />
               <span className="text-xs text-muted-foreground">kg</span>
             </div>

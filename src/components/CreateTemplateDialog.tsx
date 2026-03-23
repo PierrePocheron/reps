@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+
+const NUM_INPUT = 'text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
+const onFocusSelect = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
 import { RENFORCEMENT_EXERCISES, MUSCULATION_EXERCISES } from '@/utils/constants';
 import { Zap, Dumbbell, Plus, Trash2, X, ChevronDown, ChevronUp } from 'lucide-react';
 import type { WorkoutTemplate } from '@/firebase/types';
@@ -293,16 +296,17 @@ export function CreateTemplateDialog({ open, onClose, onSave }: Props) {
                               value={s.reps}
                               min={1}
                               onChange={(e) => updateSet(m.exerciseId, i, 'reps', Number(e.target.value))}
-                              className="h-8 text-center text-sm w-16"
+                              onFocus={onFocusSelect}
+                              className={`h-8 text-sm w-16 ${NUM_INPUT}`}
                             />
                             <span className="text-xs text-muted-foreground">reps</span>
                             <Input
                               type="number"
                               value={s.weight}
                               min={0}
-                              step={2.5}
                               onChange={(e) => updateSet(m.exerciseId, i, 'weight', Number(e.target.value))}
-                              className="h-8 text-center text-sm w-20"
+                              onFocus={onFocusSelect}
+                              className={`h-8 text-sm w-20 ${NUM_INPUT}`}
                             />
                             <span className="text-xs text-muted-foreground">kg</span>
                           </div>
