@@ -30,6 +30,8 @@ interface GymSessionState {
   // Actions — Exécution
   startExecution: () => void;
   completeSet: (actualReps?: number, actualWeight?: number) => void;
+  completeSetAt: (exerciseId: string, setIndex: number, actualReps: number, actualWeight: number) => void;
+  startRestTimer: () => void;
   dismissRestTimer: () => void;
   goToNextSet: () => void;
   setRestDuration: (seconds: number) => void;
@@ -153,31 +155,43 @@ export const useGymSessionStore = create<GymSessionState>((set, get) => ({
     const exercise = exercises[currentExerciseIndex];
     if (!exercise) return;
 
-    // Marquer le set comme complété avec les valeurs réelles
     const updatedExercises = exercises.map((ex, ei) =>
       ei === currentExerciseIndex
         ? {
             ...ex,
             sets: ex.sets.map((s, si) =>
               si === currentSetIndex
-                ? {
-                    ...s,
-                    completed: true,
-                    actualReps: actualReps ?? s.reps,
-                    actualWeight: actualWeight ?? s.weight,
-                  }
+                ? { ...s, completed: true, actualReps: actualReps ?? s.reps, actualWeight: actualWeight ?? s.weight }
                 : s
             ),
           }
         : ex
     );
+    // Ne déclenche plus le chrono automatiquement
+    set({ exercises: updatedExercises });
+  },
 
-    set({ exercises: updatedExercises, showRestTimer: true });
+  completeSetAt: (exerciseId: string, setIndex: number, actualReps: number, actualWeight: number) => {
+    set((state) => ({
+      exercises: state.exercises.map((ex) =>
+        ex.exerciseId === exerciseId
+          ? {
+              ...ex,
+              sets: ex.sets.map((s, i) =>
+                i === setIndex ? { ...s, completed: true, actualReps, actualWeight } : s
+              ),
+            }
+          : ex
+      ),
+    }));
+  },
+
+  startRestTimer: () => {
+    set({ showRestTimer: true });
   },
 
   dismissRestTimer: () => {
     set({ showRestTimer: false });
-    get().goToNextSet();
   },
 
   goToNextSet: () => {

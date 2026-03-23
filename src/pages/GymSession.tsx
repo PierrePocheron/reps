@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { GymExerciseCard } from '@/components/gym/GymExerciseCard';
-import { RestTimerModal } from '@/components/gym/RestTimerModal';
 import { AddGymExerciseDialog } from '@/components/AddGymExerciseDialog';
 import { Timer } from '@/components/Timer';
 import { useGymSessionStore } from '@/store/gymSessionStore';
@@ -12,12 +12,16 @@ import { useToast } from '@/hooks/use-toast';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useSound } from '@/hooks/useSound';
 import { getUserGymSessions } from '@/firebase/gymSessions';
+import type { GymSessionExercise, PlannedSet } from '@/firebase/types';
 import {
-  Plus, Play, Square, Dumbbell, CheckCircle2, ChevronDown, ChevronUp,
-  Clock, Weight, ArrowLeft
+  Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
+  Clock, Weight, ArrowLeft, X,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { cn } from '@/utils/cn';
+
+const NUM_CLS = 'text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
+const onFocusSel = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
 
 function GymSession() {
   const navigate = useNavigate();
@@ -29,8 +33,6 @@ function GymSession() {
   const {
     phase,
     exercises,
-    currentExerciseIndex,
-    currentSetIndex,
     startTime,
     restDuration,
     showRestTimer,
@@ -40,21 +42,16 @@ function GymSession() {
     updateSet,
     removeSet,
     startExecution,
-    completeSet,
     dismissRestTimer,
     setRestDuration,
     endSession,
     cancelSession,
-    getCurrentExercise,
-    getCurrentSet,
     getTotalSets,
     getCompletedSets,
   } = useGymSessionStore();
 
   const { user } = useUserStore();
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
-  const [currentWeight, setCurrentWeight] = useState('');
-  const [currentReps, setCurrentReps] = useState('');
   // Defaults from history: exerciseId → { reps, weight }
   const [historyDefaults, setHistoryDefaults] = useState<Record<string, { reps: number; weight: number }>>({});
 
@@ -88,16 +85,6 @@ function GymSession() {
     });
   }, [user?.uid, phase]);
 
-  // Sync inputs avec le set courant en mode exécution
-  useEffect(() => {
-    if (phase === 'execute') {
-      const currentSet = getCurrentSet();
-      if (currentSet) {
-        setCurrentWeight(String(currentSet.weight));
-        setCurrentReps(String(currentSet.reps));
-      }
-    }
-  }, [phase, currentExerciseIndex, currentSetIndex, getCurrentSet]);
 
   // Mise à jour du timer
   useEffect(() => {
@@ -114,8 +101,6 @@ function GymSession() {
     return null;
   }
 
-  const currentExercise = getCurrentExercise();
-  const currentSet = getCurrentSet();
   const totalSets = getTotalSets();
   const completedSets = getCompletedSets();
   const allSetsCompleted = phase === 'execute' && completedSets >= totalSets && totalSets > 0;
@@ -126,16 +111,6 @@ function GymSession() {
 
   // ─── Handlers Exécution ────────────────────────────────────────────────
 
-  const handleCompleteSet = () => {
-    const reps = parseInt(currentReps, 10);
-    const weight = parseFloat(currentWeight);
-    haptics.impact();
-    play('success');
-    completeSet(
-      !isNaN(reps) ? reps : undefined,
-      !isNaN(weight) ? weight : undefined
-    );
-  };
 
   const handleEndSession = async () => {
     try {
@@ -160,18 +135,6 @@ function GymSession() {
     navigate('/');
   };
 
-  // Prochain set label pour le timer de repos
-  const getNextSetLabel = (): string => {
-    const nextSetIndex = currentSetIndex + 1;
-    if (currentExercise && nextSetIndex < currentExercise.sets.length) {
-      const nextSet = currentExercise.sets[nextSetIndex];
-      if (nextSet) return `${nextSet.reps} × ${nextSet.weight} kg`;
-    }
-    // Prochain exercice
-    const nextExercise = exercises[currentExerciseIndex + 1];
-    if (nextExercise) return nextExercise.name;
-    return 'Fin de séance';
-  };
 
   // ─── PHASE PLANIFICATION ───────────────────────────────────────────────
 
@@ -266,6 +229,8 @@ function GymSession() {
 
   // ─── PHASE EXÉCUTION ──────────────────────────────────────────────────
 
+  const { completeSetAt, startRestTimer } = useGymSessionStore();
+
   return (
     <div className="bg-background min-h-screen">
       {/* Header */}
@@ -277,7 +242,6 @@ function GymSession() {
           >
             <Square className="h-5 w-5" />
           </button>
-
           <div className="flex flex-col items-center">
             <h1 className="font-bold text-lg leading-none">En séance</h1>
             <div className="flex items-center gap-1 text-xs text-primary font-medium">
@@ -285,7 +249,6 @@ function GymSession() {
               <span>{completedSets}/{totalSets} séries</span>
             </div>
           </div>
-
           <Timer startTime={startTime} isActive={phase === 'execute'} />
         </div>
       </div>
@@ -298,266 +261,243 @@ function GymSession() {
         />
       </div>
 
-      <div className="p-4 max-w-2xl mx-auto space-y-6 pb-32">
+      {/* Liste complète des exercices */}
+      <div className="p-4 max-w-2xl mx-auto space-y-4 pb-48">
+        {exercises.map((exercise) => (
+          <ExecuteExerciseCard
+            key={exercise.exerciseId}
+            exercise={exercise}
+            onCompleteSet={completeSetAt}
+          />
+        ))}
 
-        {/* ─── Exercice courant ─── */}
-        {currentExercise && !allSetsCompleted && (
-          <div className="space-y-4">
-            {/* Info exercice */}
-            <div className="flex items-center gap-4 bg-card rounded-2xl border p-4">
-              <div className="h-16 w-16 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
-                {currentExercise.imageUrl ? (
-                  <img
-                    src={currentExercise.imageUrl}
-                    alt={currentExercise.name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <span className="text-3xl">{currentExercise.emoji}</span>
-                )}
-              </div>
-              <div>
-                <h2 className="font-bold text-xl">{currentExercise.name}</h2>
-                <p className="text-sm text-muted-foreground">
-                  Série {currentSetIndex + 1} / {currentExercise.sets.length}
-                </p>
-              </div>
-            </div>
-
-            {/* Set courant */}
-            {currentSet && (
-              <div className="bg-card rounded-2xl border-2 border-primary/30 p-5 space-y-5">
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-1">Objectif</p>
-                  <p className="text-2xl font-black">
-                    {currentSet.reps} reps × {currentSet.weight} kg
-                  </p>
-                </div>
-
-                {/* Ajustement reps */}
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Reps réalisées</label>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setCurrentReps(String(Math.max(0, parseInt(currentReps || '0') - 1)))}
-                      className="h-11 w-11 rounded-xl bg-muted hover:bg-muted/80 font-bold text-lg transition-colors flex items-center justify-center"
-                    >
-                      −
-                    </button>
-                    <input
-                      type="number"
-                      value={currentReps}
-                      onChange={(e) => setCurrentReps(e.target.value)}
-                      className="flex-1 h-11 rounded-xl border bg-background text-center text-xl font-bold focus:outline-none focus:ring-2 focus:ring-primary"
-                      min={0}
-                    />
-                    <button
-                      onClick={() => setCurrentReps(String(parseInt(currentReps || '0') + 1))}
-                      className="h-11 w-11 rounded-xl bg-muted hover:bg-muted/80 font-bold text-lg transition-colors flex items-center justify-center"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                {/* Ajustement poids */}
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-muted-foreground">Poids (kg)</label>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setCurrentWeight(String(Math.max(0, parseFloat(currentWeight || '0') - 2.5)))}
-                      className="h-11 w-11 rounded-xl bg-muted hover:bg-muted/80 font-bold text-lg transition-colors flex items-center justify-center"
-                    >
-                      −
-                    </button>
-                    <input
-                      type="number"
-                      value={currentWeight}
-                      onChange={(e) => setCurrentWeight(e.target.value)}
-                      className="flex-1 h-11 rounded-xl border bg-background text-center text-xl font-bold focus:outline-none focus:ring-2 focus:ring-primary"
-                      min={0}
-                      step={2.5}
-                    />
-                    <button
-                      onClick={() => setCurrentWeight(String(parseFloat(currentWeight || '0') + 2.5))}
-                      className="h-11 w-11 rounded-xl bg-muted hover:bg-muted/80 font-bold text-lg transition-colors flex items-center justify-center"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-
-                {/* Bouton "Série terminée" */}
-                <Button
-                  size="lg"
-                  className="w-full font-bold"
-                  onClick={handleCompleteSet}
-                >
-                  <CheckCircle2 className="mr-2 h-5 w-5" />
-                  Série terminée
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ─── Toutes les séries complétées ─── */}
         {allSetsCompleted && (
-          <div className="flex flex-col items-center justify-center py-12 space-y-4">
-            <div className="bg-green-500/10 p-5 rounded-full">
-              <CheckCircle2 className="h-10 w-10 text-green-500" />
+          <div className="flex flex-col items-center justify-center py-8 space-y-2">
+            <div className="bg-green-500/10 p-4 rounded-full">
+              <CheckCircle2 className="h-8 w-8 text-green-500" />
             </div>
-            <div className="text-center">
-              <h3 className="font-bold text-xl">Toutes les séries terminées !</h3>
-              <p className="text-muted-foreground text-sm mt-1">
-                {completedSets} séries complétées
-              </p>
-            </div>
+            <p className="font-semibold text-center">Toutes les séries complétées !</p>
           </div>
         )}
-
-        {/* ─── Plan de la séance (recap collapsable) ─── */}
-        <ExercisePlanSummary
-          exercises={exercises}
-          currentExerciseIndex={currentExerciseIndex}
-          currentSetIndex={currentSetIndex}
-        />
       </div>
 
-      {/* Bouton Terminer */}
+      {/* Barre flottante du bas */}
       <div
-        className="fixed left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-4"
+        className="fixed left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 pt-3 pb-4"
         style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
       >
-        <div className="max-w-2xl mx-auto">
-          {allSetsCompleted ? (
-            <Button size="lg" className="w-full font-bold" onClick={handleEndSession}>
-              <Square className="mr-2 h-4 w-4 fill-current" />
-              Terminer la séance
-            </Button>
-          ) : (
-            <Button size="lg" variant="outline" className="w-full" onClick={handleEndSession}>
-              <Square className="mr-2 h-4 w-4" />
-              Terminer maintenant
-            </Button>
+        <div className="max-w-2xl mx-auto space-y-3">
+          {showRestTimer && (
+            <InlineRestTimer
+              durationSeconds={restDuration}
+              onDismiss={dismissRestTimer}
+              onChangeDuration={setRestDuration}
+            />
           )}
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => showRestTimer ? dismissRestTimer() : startRestTimer()}
+              className={cn(
+                'flex items-center gap-1.5 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors',
+                showRestTimer
+                  ? 'bg-primary/10 border-primary/30 text-primary'
+                  : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/30'
+              )}
+            >
+              <TimerIcon className="h-4 w-4" />
+              {showRestTimer ? 'Arrêter' : `${restDuration}s`}
+            </button>
+
+            <Button
+              size="default"
+              className={cn('flex-1 font-semibold', allSetsCompleted && 'bg-green-600 hover:bg-green-700')}
+              onClick={handleEndSession}
+            >
+              <Square className="mr-2 h-4 w-4 fill-current" />
+              {allSetsCompleted ? 'Terminer la séance' : 'Terminer'}
+            </Button>
+          </div>
         </div>
       </div>
-
-      {/* Timer de repos */}
-      <RestTimerModal
-        open={showRestTimer}
-        durationSeconds={restDuration}
-        onDismiss={dismissRestTimer}
-        nextSetLabel={getNextSetLabel()}
-      />
-
-      {/* Config durée repos */}
-      <RestDurationPicker value={restDuration} onChange={setRestDuration} />
     </div>
   );
 }
 
-// ─── Sous-composants ──────────────────────────────────────────────────────────
+// ─── Sous-composants execute ──────────────────────────────────────────────────
 
-function ExercisePlanSummary({
-  exercises,
-  currentExerciseIndex,
-  currentSetIndex,
+function SetExecuteRow({
+  set,
+  setIndex,
+  exerciseId,
+  onComplete,
 }: {
-  exercises: ReturnType<typeof useGymSessionStore.getState>['exercises'];
-  currentExerciseIndex: number;
-  currentSetIndex: number;
+  set: PlannedSet;
+  setIndex: number;
+  exerciseId: string;
+  onComplete: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [reps, setReps] = useState(String(set.actualReps ?? set.reps));
+  const [weight, setWeight] = useState(String(set.actualWeight ?? set.weight));
 
   return (
-    <div className="rounded-2xl border bg-card">
-      <button
-        onClick={() => setExpanded((e) => !e)}
-        className="w-full flex items-center justify-between p-4 text-left"
-      >
-        <span className="font-semibold text-sm">Programme de la séance</span>
-        {expanded ? (
-          <ChevronUp className="h-4 w-4 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        )}
-      </button>
+    <div className={cn(
+      'flex items-center gap-2 px-3 py-2 rounded-xl transition-colors',
+      set.completed ? 'bg-green-500/10' : 'bg-muted/30'
+    )}>
+      <span className={cn('text-xs font-bold w-6 flex-shrink-0', set.completed ? 'text-green-500' : 'text-muted-foreground')}>
+        S{setIndex + 1}
+      </span>
 
-      {expanded && (
-        <div className="px-4 pb-4 space-y-3 border-t pt-3">
-          {exercises.map((ex, exI) => (
-            <div key={ex.exerciseId} className="space-y-1">
-              <p
-                className={cn(
-                  'text-sm font-semibold',
-                  exI === currentExerciseIndex ? 'text-primary' : 'text-foreground'
-                )}
-              >
-                {ex.emoji} {ex.name}
-              </p>
-              <div className="space-y-0.5 pl-5">
-                {ex.sets.map((s, sI) => {
-                  const isCurrent = exI === currentExerciseIndex && sI === currentSetIndex;
-                  return (
-                    <p
-                      key={sI}
-                      className={cn(
-                        'text-xs',
-                        s.completed
-                          ? 'text-green-500 line-through'
-                          : isCurrent
-                          ? 'text-primary font-bold'
-                          : 'text-muted-foreground'
-                      )}
-                    >
-                      S{sI + 1}: {s.actualReps ?? s.reps} × {s.actualWeight ?? s.weight} kg
-                      {s.completed ? ' ✓' : ''}
-                    </p>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="flex items-center gap-1 flex-1">
+        <Input
+          type="number"
+          value={reps}
+          onChange={(e) => setReps(e.target.value)}
+          onFocus={onFocusSel}
+          className={`h-8 w-14 text-sm p-1 ${NUM_CLS}`}
+          min={0}
+        />
+        <span className="text-xs text-muted-foreground">reps</span>
+      </div>
+
+      <div className="flex items-center gap-1 flex-1">
+        <Input
+          type="number"
+          value={weight}
+          onChange={(e) => setWeight(e.target.value)}
+          onFocus={onFocusSel}
+          className={`h-8 w-16 text-sm p-1 ${NUM_CLS}`}
+          min={0}
+        />
+        <span className="text-xs text-muted-foreground">kg</span>
+      </div>
+
+      <button
+        onClick={() => onComplete(exerciseId, setIndex, Number(reps) || 0, Number(weight) || 0)}
+        className={cn(
+          'p-1.5 rounded-lg transition-colors flex-shrink-0',
+          set.completed
+            ? 'text-green-500 hover:bg-green-500/10'
+            : 'text-muted-foreground hover:text-green-500 hover:bg-green-500/10'
+        )}
+      >
+        <CheckCircle2 className={cn('h-5 w-5', set.completed && 'fill-green-500/20')} />
+      </button>
     </div>
   );
 }
 
-const REST_DURATIONS = [
-  { label: '45s', value: 45 },
+function ExecuteExerciseCard({
+  exercise,
+  onCompleteSet,
+}: {
+  exercise: GymSessionExercise;
+  onCompleteSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
+}) {
+  const completedCount = exercise.sets.filter((s) => s.completed).length;
+
+  return (
+    <div className="rounded-2xl border-2 border-border bg-card overflow-hidden">
+      <div className="flex items-center gap-3 p-4 border-b border-border/50">
+        <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
+          {exercise.imageUrl ? (
+            <img src={exercise.imageUrl} alt={exercise.name} className="h-full w-full object-cover" />
+          ) : (
+            <span className="text-2xl">{exercise.emoji}</span>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-base truncate">{exercise.name}</h3>
+          <p className="text-xs text-muted-foreground">
+            {completedCount}/{exercise.sets.length} série{exercise.sets.length !== 1 ? 's' : ''} complétée{completedCount !== 1 ? 's' : ''}
+          </p>
+        </div>
+        {completedCount === exercise.sets.length && exercise.sets.length > 0 && (
+          <CheckCircle2 className="h-5 w-5 text-green-500 fill-green-500/20 flex-shrink-0" />
+        )}
+      </div>
+
+      <div className="p-3 space-y-2">
+        {exercise.sets.map((set, i) => (
+          <SetExecuteRow
+            key={i}
+            set={set}
+            setIndex={i}
+            exerciseId={exercise.exerciseId}
+            onComplete={onCompleteSet}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const REST_PRESETS = [
+  { label: '30s', value: 30 },
   { label: '1 min', value: 60 },
   { label: '1:30', value: 90 },
   { label: '2 min', value: 120 },
   { label: '3 min', value: 180 },
 ];
 
-function RestDurationPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+function InlineRestTimer({
+  durationSeconds,
+  onDismiss,
+  onChangeDuration,
+}: {
+  durationSeconds: number;
+  onDismiss: () => void;
+  onChangeDuration: (v: number) => void;
+}) {
+  const [remaining, setRemaining] = useState(durationSeconds);
+
+  useEffect(() => { setRemaining(durationSeconds); }, [durationSeconds]);
+
+  useEffect(() => {
+    if (remaining <= 0) { onDismiss(); return; }
+    const id = setTimeout(() => setRemaining((r) => r - 1), 1000);
+    return () => clearTimeout(id);
+  }, [remaining, onDismiss]);
+
+  const pct = durationSeconds > 0 ? (remaining / durationSeconds) * 100 : 0;
+
   return (
-    <div className="fixed top-20 right-4 z-10">
-      <div className="bg-background/90 backdrop-blur-sm border rounded-xl p-2 shadow-lg">
-        <div className="flex items-center gap-1 mb-1">
-          <Clock className="h-3 w-3 text-muted-foreground" />
-          <span className="text-[10px] text-muted-foreground font-medium">Repos</span>
+    <div className="bg-card border rounded-xl p-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-primary" />
+          <span className="text-2xl font-bold tabular-nums">
+            {Math.floor(remaining / 60)}:{(remaining % 60).toString().padStart(2, '0')}
+          </span>
         </div>
-        <div className="flex flex-col gap-1">
-          {REST_DURATIONS.map((d) => (
-            <button
-              key={d.value}
-              onClick={() => onChange(d.value)}
-              className={cn(
-                'text-[10px] px-2 py-1 rounded-lg transition-colors font-medium',
-                value === d.value
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted text-muted-foreground'
-              )}
-            >
-              {d.label}
-            </button>
-          ))}
-        </div>
+        <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground p-1">
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+        <div
+          className="h-full bg-primary rounded-full transition-all duration-1000"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+
+      <div className="flex gap-1">
+        {REST_PRESETS.map((p) => (
+          <button
+            key={p.value}
+            onClick={() => onChangeDuration(p.value)}
+            className={cn(
+              'flex-1 py-1 rounded-lg text-xs font-medium transition-colors',
+              durationSeconds === p.value
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            )}
+          >
+            {p.label}
+          </button>
+        ))}
       </div>
     </div>
   );

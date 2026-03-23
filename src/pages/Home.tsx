@@ -25,10 +25,20 @@ function Home() {
   const { isAuthenticated, isLoading } = useAuth();
   const { user, stats } = useUserStore();
   const { isActive, duration } = useSession();
-  const { phase: gymPhase } = useGymSessionStore();
+  const { phase: gymPhase, startTime: gymStartTime, exercises: gymExercises, getTotalSets, getCompletedSets } = useGymSessionStore();
   const { activeChallenges, refreshChallenges } = useChallenges();
   const [sessionRefreshTrigger, setSessionRefreshTrigger] = useState(0);
   const [showPicker, setShowPicker] = useState(false);
+  const [gymDuration, setGymDuration] = useState(0);
+
+  // Timer gym — calculé depuis startTime (indépendant du montage de GymSession)
+  useEffect(() => {
+    if (gymPhase !== 'execute' || !gymStartTime) { setGymDuration(0); return; }
+    const tick = () => setGymDuration(Math.floor((Date.now() - gymStartTime) / 1000));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [gymPhase, gymStartTime]);
 
   const handleChallengeUpdate = () => {
       refreshChallenges();
@@ -185,12 +195,33 @@ function Home() {
                   <h2 className="text-lg font-medium text-foreground">Séance en cours</h2>
                 </div>
 
+                {/* Renforcement — timer */}
                 {isActive && (
                   <div className="flex items-end gap-2 text-foreground">
                     <span className="text-4xl font-bold tracking-tight font-heading">
                       {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
                     </span>
                     <span className="mb-1 text-sm text-muted-foreground">durée</span>
+                  </div>
+                )}
+
+                {/* Gym — infos selon la phase */}
+                {gymPhase === 'plan' && gymExercises.length > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Planification · {gymExercises.length} exercice{gymExercises.length > 1 ? 's' : ''} · {gymExercises.reduce((s, ex) => s + ex.sets.length, 0)} séries
+                  </p>
+                )}
+                {gymPhase === 'execute' && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-end gap-2 text-foreground">
+                      <span className="text-4xl font-bold tracking-tight font-heading">
+                        {Math.floor(gymDuration / 60)}:{(gymDuration % 60).toString().padStart(2, '0')}
+                      </span>
+                      <span className="mb-1 text-sm text-muted-foreground">durée</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {getCompletedSets()}/{getTotalSets()} séries
+                    </span>
                   </div>
                 )}
 
