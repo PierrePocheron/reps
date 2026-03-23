@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -95,9 +96,10 @@ function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymS
   );
 }
 
-// ─── Weekly Reps Chart ────────────────────────────────────────────────────────
+// ─── Weekly Chart (Reps + Volume toggle) ─────────────────────────────────────
 
-function WeeklyChart({ sessions }: { sessions: Session[] }) {
+function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessions: GymSession[] }) {
+  const [mode, setMode] = useState<'reps' | 'volume'>('reps');
   const today = new Date();
 
   const buckets = Array.from({ length: 8 }, (_, i) => {
@@ -107,23 +109,29 @@ function WeeklyChart({ sessions }: { sessions: Session[] }) {
     const start = new Date(end);
     start.setDate(end.getDate() - 6);
     start.setHours(0, 0, 0, 0);
-    const label =
-      i === 7
-        ? 'Cette sem.'
-        : start.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-    return { start, end, label, reps: 0 };
+    return { start, end, reps: 0, volume: 0 };
   });
 
   for (const s of sessions) {
     const d = s.date.toDate();
-    const bucket = buckets.find((b) => d >= b.start && d <= b.end);
-    if (bucket) bucket.reps += s.totalReps;
+    const b = buckets.find((b) => d >= b.start && d <= b.end);
+    if (b) b.reps += s.totalReps;
+  }
+  for (const s of gymSessions) {
+    const d = s.date.toDate();
+    const b = buckets.find((b) => d >= b.start && d <= b.end);
+    if (b) b.volume += s.totalVolume;
   }
 
-  const hasData = buckets.some((b) => b.reps > 0);
-  if (!hasData) return null;
+  const hasReps = buckets.some((b) => b.reps > 0);
+  const hasVolume = buckets.some((b) => b.volume > 0);
 
-  const maxReps = Math.max(...buckets.map((b) => b.reps), 1);
+  if (!hasReps && !hasVolume) return null;
+
+  // Auto-switch to volume if no reps data
+  const activeMode = mode === 'reps' && !hasReps ? 'volume' : mode === 'volume' && !hasVolume ? 'reps' : mode;
+  const values = buckets.map((b) => (activeMode === 'reps' ? b.reps : b.volume));
+  const maxVal = Math.max(...values, 1);
   const BAR_HEIGHT = 72;
 
   return (
@@ -132,21 +140,47 @@ function WeeklyChart({ sessions }: { sessions: Session[] }) {
       animate={{ opacity: 1, y: 0 }}
       className="bg-card border rounded-xl p-5"
     >
-      <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-        <TrendingUp className="w-4 h-4 text-primary" />
-        Répétitions par semaine
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-primary" />
+          Progression hebdomadaire
+        </h3>
+
+        {/* Toggle reps / volume */}
+        {hasReps && hasVolume && (
+          <div className="flex gap-1 p-0.5 bg-muted rounded-lg">
+            <button
+              onClick={() => setMode('reps')}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all ${
+                activeMode === 'reps' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'
+              }`}
+            >
+              <Zap className="w-3 h-3 text-orange-500" />
+              Reps
+            </button>
+            <button
+              onClick={() => setMode('volume')}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all ${
+                activeMode === 'volume' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'
+              }`}
+            >
+              <Dumbbell className="w-3 h-3 text-blue-500" />
+              Volume
+            </button>
+          </div>
+        )}
+      </div>
 
       <div className="flex items-end gap-1.5" style={{ height: `${BAR_HEIGHT + 4}px` }}>
-        {buckets.map((b, i) => (
+        {values.map((val, i) => (
           <div key={i} className="flex-1 flex flex-col items-center justify-end">
-            {b.reps > 0 ? (
+            {val > 0 ? (
               <div
                 className={`w-full rounded-t-sm transition-all ${
                   i === buckets.length - 1 ? 'bg-primary' : 'bg-primary/60'
                 }`}
-                style={{ height: `${Math.max(4, (b.reps / maxReps) * BAR_HEIGHT)}px` }}
-                title={`${b.reps} reps`}
+                style={{ height: `${Math.max(4, (val / maxVal) * BAR_HEIGHT)}px` }}
+                title={activeMode === 'reps' ? `${val} reps` : `${val} kg`}
               />
             ) : (
               <div className="w-full rounded-t-sm bg-muted" style={{ height: '4px' }} />
@@ -159,11 +193,23 @@ function WeeklyChart({ sessions }: { sessions: Session[] }) {
         {buckets.map((b, i) => (
           <div key={i} className="flex-1 text-center">
             <span className="text-[9px] text-muted-foreground leading-none">
-              {i === buckets.length - 1 ? 'Cette\nsem.' : b.start.getDate()}
+              {i === buckets.length - 1 ? 'Auj.' : b.start.getDate()}
             </span>
           </div>
         ))}
       </div>
+
+      {/* Valeur totale de la semaine en cours */}
+      {values[values.length - 1]! > 0 && (
+        <p className="text-xs text-muted-foreground mt-3 text-center">
+          Cette semaine :{' '}
+          <span className="font-semibold text-foreground">
+            {activeMode === 'reps'
+              ? `${values[values.length - 1]} reps`
+              : `${values[values.length - 1]} kg soulevés`}
+          </span>
+        </p>
+      )}
     </motion.div>
   );
 }
@@ -384,7 +430,7 @@ export default function Statistics() {
         {!historyLoading && (
           <>
             <ActivityCalendar sessions={sessions} gymSessions={gymSessions} />
-            <WeeklyChart sessions={sessions} />
+            <WeeklyChart sessions={sessions} gymSessions={gymSessions} />
           </>
         )}
 
