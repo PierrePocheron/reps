@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { EXERCISE_CATEGORIES, MUSCULATION_EXERCISES } from '@/utils/constants';
-import { Search, Check } from 'lucide-react';
+import { Search, Check, ChevronRight } from 'lucide-react';
 import type { ExerciseCategory, Exercise } from '@/firebase/types';
 import { useHaptic } from '@/hooks/useHaptic';
 
@@ -11,7 +11,6 @@ interface AddGymExerciseDialogProps {
   onOpenChange: (open: boolean) => void;
   onAdd: (exercise: Exercise) => void;
   hasExercise: (exerciseId: string) => boolean;
-  // Exercices enrichis depuis Firestore (avec imageUrl)
   enrichedExercises?: Exercise[];
 }
 
@@ -26,7 +25,7 @@ export function AddGymExerciseDialog({
   const [search, setSearch] = useState('');
   const haptics = useHaptic();
 
-  // Fusionner les exercices statiques avec les données enrichies (imageUrl depuis Firestore)
+  // Merge static exercises with enriched data (imageUrl from Firestore)
   const exercises = MUSCULATION_EXERCISES.map((ex) => {
     const enriched = enrichedExercises?.find((e) => e.id === ex.id);
     return enriched ? { ...ex, imageUrl: enriched.imageUrl } : ex;
@@ -38,7 +37,6 @@ export function AddGymExerciseDialog({
     return matchesCategory && matchesSearch;
   });
 
-  // Filtrer les catégories pour n'afficher que celles qui ont des exercices de musculation
   const muscuCategories = EXERCISE_CATEGORIES.filter(
     (cat) =>
       cat.id === 'all' ||
@@ -55,60 +53,59 @@ export function AddGymExerciseDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] flex flex-col p-0 gap-0">
-        <div className="px-6 pt-6 pb-4">
+      {/* h-[90vh] instead of max-h so height stays fixed when filter changes */}
+      <DialogContent className="h-[90vh] flex flex-col p-0 gap-0 rounded-t-2xl sm:rounded-2xl">
+        <div className="px-5 pt-5 pb-3 flex-shrink-0">
           <DialogHeader>
-            <DialogTitle>Ajouter un exercice</DialogTitle>
-            <DialogDescription>
-              Choisissez un exercice de musculation.
-            </DialogDescription>
+            <DialogTitle className="text-lg">Choisir un exercice</DialogTitle>
           </DialogHeader>
         </div>
 
-        {/* Barre de recherche */}
-        <div className="px-6 pb-3">
+        {/* Recherche */}
+        <div className="px-5 pb-3 flex-shrink-0">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Rechercher..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
+              className="pl-9 h-10 bg-muted border-0 focus-visible:ring-1"
             />
           </div>
         </div>
 
-        {/* Onglets catégories */}
-        <div className="px-6 pb-3 overflow-x-auto scrollbar-none">
-          <div className="flex gap-2 min-w-max">
-            {muscuCategories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  haptics.selection();
-                  setSelectedCategory(cat.id);
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border ${
-                  selectedCategory === cat.id
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-muted text-muted-foreground border-transparent hover:border-border'
-                }`}
-              >
-                <span>{cat.emoji}</span>
-                <span>{cat.label}</span>
-              </button>
-            ))}
+        {/* Catégories — scrollable horizontal avec fade droite */}
+        <div className="relative flex-shrink-0 pb-2">
+          <div className="overflow-x-auto scrollbar-none pl-5 pr-5">
+            <div className="flex gap-2 min-w-max">
+              {muscuCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => { haptics.selection(); setSelectedCategory(cat.id); }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                    selectedCategory === cat.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                >
+                  <span>{cat.emoji}</span>
+                  <span>{cat.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
+          {/* Fade droite pour indiquer le scroll */}
+          <div className="pointer-events-none absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-background to-transparent" />
         </div>
 
-        {/* Liste des exercices */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6 min-h-0">
+        {/* Liste */}
+        <div className="flex-1 overflow-y-auto min-h-0 px-5 pb-5">
           {filtered.length === 0 ? (
-            <p className="text-center text-muted-foreground text-sm py-8">
+            <p className="text-center text-muted-foreground text-sm py-10">
               Aucun exercice trouvé
             </p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1">
               {filtered.map((exercise) => {
                 const added = hasExercise(exercise.id);
                 return (
@@ -116,14 +113,14 @@ export function AddGymExerciseDialog({
                     key={exercise.id}
                     disabled={added}
                     onClick={() => handleAdd(exercise)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left ${
                       added
-                        ? 'border-primary/30 bg-primary/5 opacity-60 cursor-not-allowed'
-                        : 'border-border hover:border-primary/50 hover:bg-muted/50 active:scale-[0.98]'
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'hover:bg-muted active:bg-muted/80 active:scale-[0.99]'
                     }`}
                   >
                     {/* Image ou emoji */}
-                    <div className="h-12 w-12 rounded-lg overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
+                    <div className="h-10 w-10 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
                       {exercise.imageUrl ? (
                         <img
                           src={exercise.imageUrl}
@@ -136,18 +133,20 @@ export function AddGymExerciseDialog({
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">{exercise.name}</p>
+                      <p className="font-medium text-sm">{exercise.name}</p>
                       {exercise.category && (
-                        <p className="text-xs text-muted-foreground capitalize">
+                        <p className="text-xs text-muted-foreground">
                           {EXERCISE_CATEGORIES.find((c) => c.id === exercise.category)?.label}
                         </p>
                       )}
                     </div>
 
-                    {added && (
+                    {added ? (
                       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground flex-shrink-0">
-                        <Check className="h-3 w-3" />
+                        <Check className="h-3.5 w-3.5" />
                       </span>
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     )}
                   </button>
                 );

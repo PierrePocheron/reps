@@ -170,6 +170,20 @@ export interface UserStats {
   }[];
 }
 
+// Template d'entraînement
+export interface WorkoutTemplate {
+  id: string;
+  name: string;
+  description: string;
+  emoji: string;
+  workoutType: WorkoutType;
+  exerciseIds?: string[]; // pour renforcement
+  muscuExercises?: {       // pour musculation
+    exerciseId: string;
+    sets: { reps: number; weight: number }[];
+  }[];
+}
+
 // Type pour un badge
 export interface Badge {
   id: string;

@@ -1,4 +1,4 @@
-import type { Exercise, Badge, ExerciseCategory } from '@/firebase/types';
+import type { Exercise, Badge, ExerciseCategory, WorkoutTemplate } from '@/firebase/types';
 
 /**
  * Exercices par défaut disponibles dans l'application
@@ -113,6 +113,99 @@ export const MUSCULATION_EXERCISES: Exercise[] = [
   { id: 'crunch_machine',    name: 'Crunch machine',       emoji: '🍫', category: 'core',      workoutType: 'musculation' },
   { id: 'ab_wheel',          name: 'Ab Wheel',             emoji: '🎡', category: 'core',      workoutType: 'musculation' },
   { id: 'weighted_plank',    name: 'Gainage lesté',        emoji: '🪨', category: 'core',      workoutType: 'musculation' },
+];
+
+// ─── Templates d'entraînement ────────────────────────────────────────────────
+
+export const DEFAULT_RENFORCEMENT_TEMPLATES: WorkoutTemplate[] = [
+  {
+    id: 'renfo_full_body',
+    name: 'Full Body',
+    description: 'Pompes · Squats · Tractions · Burpees',
+    emoji: '⚡',
+    workoutType: 'renforcement',
+    exerciseIds: ['pushups', 'squats', 'pullups', 'burpees', 'abs'],
+  },
+  {
+    id: 'renfo_push',
+    name: 'Push Day',
+    description: 'Poitrine · Épaules · Triceps',
+    emoji: '💪',
+    workoutType: 'renforcement',
+    exerciseIds: ['pushups', 'diamond_pushups', 'dips', 'pike_pushups', 'wide_pushups'],
+  },
+  {
+    id: 'renfo_pull_legs',
+    name: 'Pull & Jambes',
+    description: 'Dos · Jambes',
+    emoji: '🧗',
+    workoutType: 'renforcement',
+    exerciseIds: ['pullups', 'chin_ups', 'inverted_rows', 'squats', 'lunges', 'glute_bridge'],
+  },
+  {
+    id: 'renfo_cardio_core',
+    name: 'Cardio & Core',
+    description: 'Brûle-graisses · Abdos',
+    emoji: '🔥',
+    workoutType: 'renforcement',
+    exerciseIds: ['burpees', 'mountain_climbers', 'jumping_jacks', 'high_knees', 'abs', 'leg_raises'],
+  },
+];
+
+export const DEFAULT_MUSCULATION_TEMPLATES: WorkoutTemplate[] = [
+  {
+    id: 'muscu_push',
+    name: 'Push Day',
+    description: 'Poitrine · Épaules · Triceps',
+    emoji: '🏋️',
+    workoutType: 'musculation',
+    muscuExercises: [
+      { exerciseId: 'bench_press',     sets: [{ reps: 10, weight: 80 }, { reps: 10, weight: 80 }, { reps: 8, weight: 85 }] },
+      { exerciseId: 'incline_bench',   sets: [{ reps: 10, weight: 60 }, { reps: 10, weight: 60 }, { reps: 10, weight: 60 }] },
+      { exerciseId: 'overhead_press',  sets: [{ reps: 10, weight: 50 }, { reps: 10, weight: 50 }, { reps: 8, weight: 55 }] },
+      { exerciseId: 'db_lateral_raise',sets: [{ reps: 12, weight: 12 }, { reps: 12, weight: 12 }, { reps: 12, weight: 12 }] },
+    ],
+  },
+  {
+    id: 'muscu_pull',
+    name: 'Pull Day',
+    description: 'Dos · Biceps',
+    emoji: '⚓',
+    workoutType: 'musculation',
+    muscuExercises: [
+      { exerciseId: 'deadlift',       sets: [{ reps: 6, weight: 100 }, { reps: 6, weight: 100 }, { reps: 5, weight: 110 }] },
+      { exerciseId: 'barbell_row',    sets: [{ reps: 10, weight: 60 }, { reps: 10, weight: 60 }, { reps: 10, weight: 60 }] },
+      { exerciseId: 'lat_pulldown',   sets: [{ reps: 12, weight: 60 }, { reps: 12, weight: 60 }, { reps: 10, weight: 65 }] },
+      { exerciseId: 'barbell_curl',   sets: [{ reps: 12, weight: 30 }, { reps: 12, weight: 30 }, { reps: 10, weight: 32 }] },
+    ],
+  },
+  {
+    id: 'muscu_legs',
+    name: 'Legs Day',
+    description: 'Quadriceps · Ischios · Mollets',
+    emoji: '🦵',
+    workoutType: 'musculation',
+    muscuExercises: [
+      { exerciseId: 'barbell_squat',   sets: [{ reps: 8, weight: 80 }, { reps: 8, weight: 80 }, { reps: 6, weight: 90 }, { reps: 6, weight: 90 }] },
+      { exerciseId: 'leg_press',       sets: [{ reps: 12, weight: 120 }, { reps: 12, weight: 120 }, { reps: 10, weight: 130 }] },
+      { exerciseId: 'leg_curl',        sets: [{ reps: 12, weight: 40 }, { reps: 12, weight: 40 }, { reps: 12, weight: 40 }] },
+      { exerciseId: 'leg_extension',   sets: [{ reps: 12, weight: 40 }, { reps: 12, weight: 40 }, { reps: 12, weight: 40 }] },
+      { exerciseId: 'machine_calf',    sets: [{ reps: 15, weight: 50 }, { reps: 15, weight: 50 }, { reps: 15, weight: 50 }] },
+    ],
+  },
+  {
+    id: 'muscu_arms',
+    name: 'Bras',
+    description: 'Biceps · Triceps',
+    emoji: '💪',
+    workoutType: 'musculation',
+    muscuExercises: [
+      { exerciseId: 'barbell_curl',    sets: [{ reps: 12, weight: 30 }, { reps: 12, weight: 30 }, { reps: 10, weight: 32 }] },
+      { exerciseId: 'hammer_curl',     sets: [{ reps: 12, weight: 16 }, { reps: 12, weight: 16 }, { reps: 12, weight: 16 }] },
+      { exerciseId: 'skull_crusher',   sets: [{ reps: 12, weight: 30 }, { reps: 12, weight: 30 }, { reps: 12, weight: 30 }] },
+      { exerciseId: 'tricep_pushdown', sets: [{ reps: 15, weight: 30 }, { reps: 15, weight: 30 }, { reps: 12, weight: 35 }] },
+    ],
+  },
 ];
 
 /**

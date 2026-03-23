@@ -42,6 +42,9 @@ interface GymSessionState {
   getTotalSets: () => number;
   getCompletedSets: () => number;
   hasExercise: (exerciseId: string) => boolean;
+
+  // Templates
+  loadGymTemplate: (exercises: GymSessionExercise[]) => void;
 }
 
 export const useGymSessionStore = create<GymSessionState>((set, get) => ({
@@ -268,5 +271,17 @@ export const useGymSessionStore = create<GymSessionState>((set, get) => ({
 
   hasExercise: (exerciseId: string) => {
     return get().exercises.some((ex) => ex.exerciseId === exerciseId);
+  },
+
+  loadGymTemplate: (exercises: GymSessionExercise[]) => {
+    set({
+      phase: 'plan',
+      exercises,
+      currentExerciseIndex: 0,
+      currentSetIndex: 0,
+      startTime: null,
+      duration: 0,
+      showRestTimer: false,
+    });
   },
 }));

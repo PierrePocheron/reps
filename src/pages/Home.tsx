@@ -6,6 +6,8 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { useSession } from '@/hooks/useSession';
+import { useGymSessionStore } from '@/store/gymSessionStore';
+import { SessionTypePicker } from '@/components/SessionTypePicker';
 import { Plus, Calendar, Activity, Flame, Trophy, ChevronDown, CheckCircle2 } from 'lucide-react';
 
 import { getLastSession } from '@/firebase/firestore';
@@ -23,8 +25,10 @@ function Home() {
   const { isAuthenticated, isLoading } = useAuth();
   const { user, stats } = useUserStore();
   const { isActive, duration } = useSession();
+  const { phase: gymPhase } = useGymSessionStore();
   const { activeChallenges, refreshChallenges } = useChallenges();
   const [sessionRefreshTrigger, setSessionRefreshTrigger] = useState(0);
+  const [showPicker, setShowPicker] = useState(false);
 
   const handleChallengeUpdate = () => {
       refreshChallenges();
@@ -171,7 +175,7 @@ function Home() {
           <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
 
           <div className="relative z-10">
-            {isActive ? (
+            {(isActive || gymPhase !== 'idle') ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="relative flex h-3 w-3">
@@ -181,15 +185,17 @@ function Home() {
                   <h2 className="text-lg font-medium text-foreground">Séance en cours</h2>
                 </div>
 
-                <div className="flex items-end gap-2 text-foreground">
-                  <span className="text-4xl font-bold tracking-tight font-heading">
-                    {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
-                  </span>
-                  <span className="mb-1 text-sm text-muted-foreground">durée</span>
-                </div>
+                {isActive && (
+                  <div className="flex items-end gap-2 text-foreground">
+                    <span className="text-4xl font-bold tracking-tight font-heading">
+                      {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
+                    </span>
+                    <span className="mb-1 text-sm text-muted-foreground">durée</span>
+                  </div>
+                )}
 
                 <Button
-                  onClick={() => navigate('/session')}
+                  onClick={() => navigate(gymPhase !== 'idle' ? '/gym' : '/session')}
                   size="lg"
                   className="w-full font-semibold shadow-sm"
                 >
@@ -204,7 +210,7 @@ function Home() {
                 </div>
 
                 <Button
-                  onClick={() => navigate('/session')}
+                  onClick={() => setShowPicker(true)}
                   size="lg"
                   className="w-full font-semibold shadow-sm h-12 text-lg"
                 >
@@ -284,6 +290,7 @@ function Home() {
           </div>
         )}
       </div>
+      <SessionTypePicker open={showPicker} onClose={() => setShowPicker(false)} />
     </PageLayout>
   );
 }

@@ -8,6 +8,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import Home from './pages/Home';
 import Session from './pages/Session';
 import GymSession from './pages/GymSession';
+import Templates from './pages/Templates';
 import Profil from './pages/Profil';
 import Settings from './pages/Settings';
 import Achievements from './pages/Achievements';
@@ -76,6 +77,14 @@ function App() {
                       element={
                         <PageTransition>
                           <GymSession />
+                        </PageTransition>
+                      }
+                    />
+                    <Route
+                      path="/templates"
+                      element={
+                        <PageTransition>
+                          <Templates />
                         </PageTransition>
                       }
                     />

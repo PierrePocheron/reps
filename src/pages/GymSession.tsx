@@ -148,7 +148,7 @@ function GymSession() {
 
   if (phase === 'plan') {
     return (
-      <div className="bg-background pb-28 min-h-screen">
+      <div className="bg-background pb-40 min-h-screen">
         {/* Header */}
         <div className="sticky top-[env(safe-area-inset-top)] z-10 bg-background/80 backdrop-blur-md border-b">
           <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -208,7 +208,10 @@ function GymSession() {
 
         {/* Bouton Start fixe en bas */}
         {canStart && (
-          <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-4 pb-safe">
+          <div
+            className="fixed left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-4"
+            style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
+          >
             <div className="max-w-2xl mx-auto">
               <Button
                 size="lg"
@@ -393,7 +396,10 @@ function GymSession() {
       </div>
 
       {/* Bouton Terminer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-4 pb-safe">
+      <div
+        className="fixed left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-4"
+        style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
+      >
         <div className="max-w-2xl mx-auto">
           {allSetsCompleted ? (
             <Button size="lg" className="w-full font-bold" onClick={handleEndSession}>

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, Zap, X } from 'lucide-react';
+import { Dumbbell, Zap, X, LayoutTemplate } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useGymSessionStore } from '@/store/gymSessionStore';
 
@@ -86,6 +86,20 @@ export function SessionTypePicker({ open, onClose }: SessionTypePickerProps) {
                 <p className="text-sm text-muted-foreground">
                   Haltères · Barre · Séries × Reps × Poids
                 </p>
+              </div>
+            </button>
+
+            {/* Templates */}
+            <button
+              onClick={() => { haptics.selection(); onClose(); navigate('/templates'); }}
+              className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl text-left text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-[0.98]"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted flex-shrink-0">
+                <LayoutTemplate className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium text-sm">Utiliser un template</p>
+                <p className="text-xs">Programmes préétablis</p>
               </div>
             </button>
           </div>

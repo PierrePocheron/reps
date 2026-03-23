@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { DEFAULT_EXERCISES, EXERCISE_CATEGORIES } from '@/utils/constants';
-import { Check, Plus, Search } from 'lucide-react';
+import { Check, Search, Plus, ChevronRight } from 'lucide-react';
 import type { ExerciseCategory } from '@/firebase/types';
-
 import { useHaptic } from '@/hooks/useHaptic';
 
 interface AddExerciseDialogProps {
@@ -57,66 +56,71 @@ export function AddExerciseDialog({
     return matchesCategory && matchesSearch;
   });
 
+  // Only show categories that have exercises
+  const visibleCategories = EXERCISE_CATEGORIES.filter(
+    (cat) => cat.id === 'all' || DEFAULT_EXERCISES.some((ex) => ex.category === cat.id)
+  );
+
   const commonEmojis = ['💪', '🏋️', '🦵', '🤸', '🔥', '⚡', '💥', '🚀', '🏃', '🧘'];
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] flex flex-col p-0 gap-0">
-        <div className="px-6 pt-6 pb-4">
-          <DialogHeader>
-            <DialogTitle>Ajouter un exercice</DialogTitle>
-            <DialogDescription>
-              Choisissez un exercice ou créez-en un nouveau.
-            </DialogDescription>
-          </DialogHeader>
-        </div>
+    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setShowCustomForm(false); }}>
+      <DialogContent className="h-[90vh] flex flex-col p-0 gap-0 rounded-t-2xl sm:rounded-2xl">
 
         {!showCustomForm ? (
           <>
-            {/* Barre de recherche */}
-            <div className="px-6 pb-3">
+            <div className="px-5 pt-5 pb-3 flex-shrink-0">
+              <DialogHeader>
+                <DialogTitle className="text-lg">Choisir un exercice</DialogTitle>
+              </DialogHeader>
+            </div>
+
+            {/* Recherche */}
+            <div className="px-5 pb-3 flex-shrink-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Rechercher..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 h-10 bg-muted border-0 focus-visible:ring-1"
+                  autoFocus={false}
                 />
               </div>
             </div>
 
-            {/* Onglets catégories (scrollable horizontal) */}
-            <div className="px-6 pb-3 overflow-x-auto scrollbar-none">
-              <div className="flex gap-2 min-w-max">
-                {EXERCISE_CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => {
-                      haptics.selection();
-                      setSelectedCategory(cat.id);
-                    }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border ${
-                      selectedCategory === cat.id
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-muted text-muted-foreground border-transparent hover:border-border'
-                    }`}
-                  >
-                    <span>{cat.emoji}</span>
-                    <span>{cat.label}</span>
-                  </button>
-                ))}
+            {/* Catégories — scrollable horizontal avec fade droite */}
+            <div className="relative flex-shrink-0 pb-2">
+              <div className="overflow-x-auto scrollbar-none pl-5 pr-5">
+                <div className="flex gap-2 min-w-max">
+                  {visibleCategories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => { haptics.selection(); setSelectedCategory(cat.id); }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                        selectedCategory === cat.id
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      }`}
+                    >
+                      <span>{cat.emoji}</span>
+                      <span>{cat.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
+              {/* Fade droite pour indiquer le scroll */}
+              <div className="pointer-events-none absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-background to-transparent" />
             </div>
 
-            {/* Liste des exercices */}
-            <div className="flex-1 overflow-y-auto px-6 pb-4 min-h-0">
+            {/* Liste */}
+            <div className="flex-1 overflow-y-auto min-h-0 px-5 pb-2">
               {filteredExercises.length === 0 ? (
-                <p className="text-center text-muted-foreground text-sm py-8">
+                <p className="text-center text-muted-foreground text-sm py-10">
                   Aucun exercice trouvé
                 </p>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
                   {filteredExercises.map((exercise) => {
                     const isAdded = hasExercise(exercise.name);
                     return (
@@ -124,18 +128,20 @@ export function AddExerciseDialog({
                         key={exercise.id}
                         disabled={isAdded}
                         onClick={() => handleAddDefault(exercise.id)}
-                        className={`relative flex flex-col items-center gap-1.5 py-4 px-2 rounded-xl border-2 transition-all text-sm font-medium ${
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left ${
                           isAdded
-                            ? 'border-primary/30 bg-primary/5 text-muted-foreground cursor-not-allowed'
-                            : 'border-border hover:border-primary/50 hover:bg-muted/50 active:scale-95'
+                            ? 'opacity-50 cursor-not-allowed'
+                            : 'hover:bg-muted active:bg-muted/80 active:scale-[0.99]'
                         }`}
                       >
-                        <span className="text-2xl">{exercise.emoji}</span>
-                        <span className="text-center leading-tight">{exercise.name}</span>
-                        {isAdded && (
-                          <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                            <Check className="h-3 w-3" />
+                        <span className="text-2xl w-9 text-center flex-shrink-0">{exercise.emoji}</span>
+                        <span className="flex-1 font-medium text-sm">{exercise.name}</span>
+                        {isAdded ? (
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground flex-shrink-0">
+                            <Check className="h-3.5 w-3.5" />
                           </span>
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         )}
                       </button>
                     );
@@ -144,81 +150,79 @@ export function AddExerciseDialog({
               )}
             </div>
 
-            {/* Bouton exercice personnalisé */}
-            <div className="px-6 py-4 border-t">
-              <Button
-                variant="outline"
+            {/* Footer — exercice personnalisé */}
+            <div className="px-5 py-3 border-t">
+              <button
                 onClick={() => setShowCustomForm(true)}
-                className="w-full"
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-muted transition-colors text-left"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Créer un exercice personnalisé
-              </Button>
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted flex-shrink-0">
+                  <Plus className="h-5 w-5 text-muted-foreground" />
+                </span>
+                <span className="font-medium text-sm">Créer un exercice personnalisé</span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground ml-auto flex-shrink-0" />
+              </button>
             </div>
           </>
         ) : (
-          <div className="px-6 pb-6 space-y-4 flex-1 overflow-y-auto">
-            <div className="space-y-2">
-              <Label htmlFor="customName">Nom de l'exercice</Label>
-              <Input
-                id="customName"
-                placeholder="Ex: Planche"
-                value={customName}
-                onChange={(e) => setCustomName(e.target.value)}
-                autoFocus
-              />
+          <>
+            <div className="px-5 pt-5 pb-3">
+              <DialogHeader>
+                <DialogTitle className="text-lg">Nouvel exercice</DialogTitle>
+              </DialogHeader>
             </div>
 
-            <div className="space-y-2">
-              <Label>Emoji</Label>
-              <div className="flex flex-wrap gap-2">
-                {commonEmojis.map((emoji) => (
-                  <button
-                    key={emoji}
-                    type="button"
-                    onClick={() => {
-                      haptics.selection();
-                      setCustomEmoji(emoji);
-                    }}
-                    className={`text-2xl p-2 rounded-md border-2 transition-all ${
-                      customEmoji === emoji
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    {emoji}
-                  </button>
-                ))}
+            <div className="px-5 pb-6 space-y-5 flex-1 overflow-y-auto">
+              <div className="space-y-2">
+                <Label htmlFor="customName" className="text-sm font-medium">Nom</Label>
+                <Input
+                  id="customName"
+                  placeholder="Ex: Planche"
+                  value={customName}
+                  onChange={(e) => setCustomName(e.target.value)}
+                  className="h-11"
+                  autoFocus
+                />
               </div>
-              <Input
-                placeholder="Ou tapez un emoji"
-                value={customEmoji}
-                onChange={(e) => setCustomEmoji(e.target.value)}
-                maxLength={2}
-              />
-            </div>
 
-            <div className="flex gap-2 pt-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowCustomForm(false);
-                  setCustomName('');
-                  setCustomEmoji('💪');
-                }}
-                className="flex-1"
-              >
-                Annuler
-              </Button>
-              <Button
-                onClick={handleAddCustom}
-                disabled={!customName.trim()}
-                className="flex-1"
-              >
-                Ajouter
-              </Button>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Emoji</Label>
+                <div className="flex flex-wrap gap-2">
+                  {commonEmojis.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => { haptics.selection(); setCustomEmoji(emoji); }}
+                      className={`text-xl p-2.5 rounded-xl border-2 transition-all ${
+                        customEmoji === emoji
+                          ? 'border-primary bg-primary/10'
+                          : 'border-transparent bg-muted hover:border-border'
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => { setShowCustomForm(false); setCustomName(''); setCustomEmoji('💪'); }}
+                  className="flex-1 h-11"
+                >
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleAddCustom}
+                  disabled={!customName.trim()}
+                  className="flex-1 h-11"
+                >
+                  Ajouter
+                </Button>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </DialogContent>
     </Dialog>
