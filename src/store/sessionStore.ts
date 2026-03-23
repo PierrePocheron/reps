@@ -52,13 +52,14 @@ export const useSessionStore = create<SessionState>((set, get) => ({
    */
   startSession: () => {
     const startTime = Date.now();
-    set({
+    set((state) => ({
       isActive: true,
       startTime,
-      exercises: [],
+      // Preserve pre-loaded exercises (e.g. from a template), otherwise start empty
+      exercises: state.exercises,
       duration: 0,
       totalReps: 0,
-    });
+    }));
 
     // Sauvegarder dans localStorage
     get().saveSessionToLocal();

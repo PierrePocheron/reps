@@ -10,6 +10,7 @@ import {
 import { useSessionStore } from '@/store/sessionStore';
 import { useGymSessionStore } from '@/store/gymSessionStore';
 import { useHaptic } from '@/hooks/useHaptic';
+import { useToast } from '@/hooks/use-toast';
 import { Zap, Dumbbell, ChevronRight, ArrowRight } from 'lucide-react';
 import type { WorkoutTemplate } from '@/firebase/types';
 import type { GymSessionExercise } from '@/firebase/types';
@@ -65,12 +66,25 @@ function TemplateCard({ template, onStart }: { template: WorkoutTemplate; onStar
 function Templates() {
   const navigate = useNavigate();
   const haptics = useHaptic();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<Tab>('renforcement');
-  const { loadExercisesFromTemplate } = useSessionStore();
-  const { loadGymTemplate } = useGymSessionStore();
+  const { isActive, loadExercisesFromTemplate } = useSessionStore();
+  const { phase: gymPhase, loadGymTemplate } = useGymSessionStore();
+
+  const hasActiveSession = isActive || gymPhase !== 'idle';
 
   const handleRenforcementTemplate = (template: WorkoutTemplate) => {
     if (!template.exerciseIds) return;
+
+    if (hasActiveSession) {
+      toast({
+        title: 'Séance en cours',
+        description: 'Termine ta séance en cours avant d\'en démarrer une nouvelle.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     haptics.impact();
     loadExercisesFromTemplate(template.exerciseIds);
     navigate('/session');
@@ -78,6 +92,16 @@ function Templates() {
 
   const handleMuscuTemplate = (template: WorkoutTemplate) => {
     if (!template.muscuExercises) return;
+
+    if (hasActiveSession) {
+      toast({
+        title: 'Séance en cours',
+        description: 'Termine ta séance en cours avant d\'en démarrer une nouvelle.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     haptics.impact();
 
     const gymExercises: GymSessionExercise[] = template.muscuExercises.map((me) => {
@@ -163,7 +187,17 @@ function Templates() {
         <div className="pt-2">
           <p className="text-xs text-muted-foreground text-center mb-3">ou commence une séance sans template</p>
           <button
-            onClick={() => navigate(activeTab === 'renforcement' ? '/session' : '/gym')}
+            onClick={() => {
+              if (hasActiveSession) {
+                toast({
+                  title: 'Séance en cours',
+                  description: 'Termine ta séance en cours avant d\'en démarrer une nouvelle.',
+                  variant: 'destructive',
+                });
+                return;
+              }
+              navigate(activeTab === 'renforcement' ? '/session' : '/gym');
+            }}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-border hover:border-primary/40 hover:bg-muted transition-all text-sm text-muted-foreground hover:text-foreground"
           >
             Séance libre
