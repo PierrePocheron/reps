@@ -4,13 +4,15 @@ import { ColorPicker } from '@/components/ui/color-picker';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useTheme } from '@/hooks/useTheme';
 import { useSettingsStore } from '@/store/settingsStore';
-import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2 } from 'lucide-react';
+import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2, Shield, ChevronRight } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import { cn } from '@/utils/cn';
+import { useNavigate } from 'react-router-dom';
 
 import { useNotifications } from '@/hooks/useNotifications';
 
 function Settings() {
+  const navigate = useNavigate();
   const { theme, colorTheme, setTheme, setColorTheme } = useTheme();
   const { user, updateProfile } = useUserStore();
   const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled } = useSettingsStore();
@@ -221,6 +223,28 @@ function Settings() {
             </div>
           </CardContent>
         </Card>
+        {/* À propos */}
+        <Card>
+          <CardHeader>
+            <CardTitle>À propos</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <button
+              onClick={() => navigate('/privacy-policy')}
+              className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 transition-colors rounded-b-lg"
+            >
+              <div className="flex items-center gap-3">
+                <Shield className="h-5 w-5 text-muted-foreground" />
+                <div className="text-left">
+                  <p className="font-medium text-sm">Politique de confidentialité</p>
+                  <p className="text-xs text-muted-foreground">Vos données et vos droits</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </button>
+          </CardContent>
+        </Card>
+
       </div>
     </PageLayout>
   );

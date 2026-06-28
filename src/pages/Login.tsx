@@ -1,5 +1,5 @@
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthForm } from '@/components/AuthForm';
 import { useAuth } from '@/hooks/useAuth';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
@@ -38,7 +38,10 @@ export default function Login() {
           }}
         />
         <p className="text-center text-xs text-muted-foreground">
-          En vous connectant, vous acceptez nos conditions d'utilisation
+          En vous connectant, vous acceptez notre{' '}
+          <Link to="/privacy-policy" className="underline underline-offset-2 hover:text-foreground transition-colors">
+            politique de confidentialité
+          </Link>
         </p>
       </div>
     </div>

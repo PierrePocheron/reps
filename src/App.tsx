@@ -18,6 +18,7 @@ import Leaderboard from './pages/Leaderboard';
 import Login from './pages/Login';
 import Challenges from './pages/Challenges';
 import History from './pages/History';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import SentryTest from './pages/SentryTest';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
@@ -40,6 +41,7 @@ function App() {
             <Login />
           </PageTransition>
         } />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
         {/* Sentry Test Page (DEV ONLY - à supprimer en prod) */}
         {import.meta.env.MODE === 'development' && (
