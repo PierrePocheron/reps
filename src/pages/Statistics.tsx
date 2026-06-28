@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useUserStore } from '@/store/userStore';
-import { Flame, Dumbbell, Calendar, Zap, AlertTriangle, Trophy, Sunrise, Sun, Moon, TrendingUp } from 'lucide-react';
+import { Flame, Dumbbell, Calendar, Zap, AlertTriangle, Trophy, Sunrise, Sun, Moon, TrendingUp, ChevronRight } from 'lucide-react';
 import { AdSpace } from '@/components/AdSpace';
 import { ADS_CONFIG } from '@/config/ads';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
@@ -224,6 +224,22 @@ export default function Statistics() {
   return (
     <PageLayout title="STATISTIQUES">
       <div className="max-w-2xl mx-auto space-y-6">
+        {/* Lien historique */}
+        <button
+          onClick={() => navigate('/history')}
+          className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border bg-card hover:bg-muted transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Calendar className="h-5 w-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-semibold">Historique des séances</p>
+              <p className="text-xs text-muted-foreground">Renforcement &amp; Musculation</p>
+            </div>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </button>
         {/* Alerte Profil Incomplet */}
         {(!user.weight || !user.height || !user.gender) && (
           <motion.div

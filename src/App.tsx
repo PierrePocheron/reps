@@ -17,6 +17,7 @@ import Friends from './pages/Friends';
 import Leaderboard from './pages/Leaderboard';
 import Login from './pages/Login';
 import Challenges from './pages/Challenges';
+import History from './pages/History';
 import SentryTest from './pages/SentryTest';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 
@@ -128,6 +129,14 @@ function App() {
                       element={
                         <PageTransition>
                           <Statistics />
+                        </PageTransition>
+                      }
+                    />
+                    <Route
+                      path="/history"
+                      element={
+                        <PageTransition>
+                          <History />
                         </PageTransition>
                       }
                     />
