@@ -1,22 +1,85 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ColorPicker } from '@/components/ui/color-picker';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useTheme } from '@/hooks/useTheme';
 import { useSettingsStore } from '@/store/settingsStore';
-import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2, Shield, ChevronRight } from 'lucide-react';
+import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2, Shield, ChevronRight, Target, Download } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import { cn } from '@/utils/cn';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+import { useSessionHistory } from '@/hooks/useSessionHistory';
 
 import { useNotifications } from '@/hooks/useNotifications';
 
+const WEEKLY_GOAL_OPTIONS = [0, 2, 3, 4, 5] as const;
+
 function Settings() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { theme, colorTheme, setTheme, setColorTheme } = useTheme();
   const { user, updateProfile } = useUserStore();
-  const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled } = useSettingsStore();
+  const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, weeklyGoal, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled, setWeeklyGoal } = useSettingsStore();
   const { scheduleDailyReminder, cancelReminder } = useNotifications();
+  const { sessions, gymSessions } = useSessionHistory(500);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      const exportData = {
+        exportedAt: new Date().toISOString(),
+        user: {
+          displayName: user?.displayName,
+          email: user?.email,
+          weight: user?.weight,
+          height: user?.height,
+          gender: user?.gender,
+          totalReps: user?.totalReps,
+          totalSessions: user?.totalSessions,
+          currentStreak: user?.currentStreak,
+          longestStreak: user?.longestStreak,
+          badges: user?.badges,
+          createdAt: user?.createdAt,
+        },
+        sessions: sessions.map((s) => ({
+          date: s.date.toDate().toISOString(),
+          duration: s.duration,
+          totalReps: s.totalReps,
+          totalCalories: s.totalCalories,
+          exercises: s.exercises,
+        })),
+        gymSessions: gymSessions.map((s) => ({
+          date: s.date.toDate().toISOString(),
+          duration: s.duration,
+          totalVolume: s.totalVolume,
+          totalSets: s.totalSets,
+          exercises: s.exercises.map((ex) => ({
+            name: ex.name,
+            sets: ex.sets.filter((set) => set.completed).map((set) => ({
+              weight: set.actualWeight ?? set.weight,
+              reps: set.actualReps ?? set.reps,
+            })),
+          })),
+        })),
+      };
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `reps-export-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast({ title: 'Export réussi', description: 'Vos données ont été téléchargées.' });
+    } catch {
+      toast({ title: 'Erreur', description: "Impossible d'exporter les données.", variant: 'destructive' });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const handleNotificationToggle = async () => {
     const newState = !notificationsEnabled;
@@ -139,6 +202,33 @@ function Settings() {
           </CardContent>
         </Card>
 
+        {/* Objectif hebdomadaire */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5" />
+              Objectif hebdomadaire
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Nombre de séances visées par semaine (affiché dans les statistiques).
+            </p>
+            <div className="flex gap-2">
+              {WEEKLY_GOAL_OPTIONS.map((g) => (
+                <Button
+                  key={g}
+                  variant={weeklyGoal === g ? 'default' : 'outline'}
+                  className={cn('flex-1 h-10', weeklyGoal === g && 'ring-2 ring-offset-2 ring-primary')}
+                  onClick={() => setWeeklyGoal(g)}
+                >
+                  {g === 0 ? 'Off' : `${g}×`}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Notifications */}
         <Card>
           <CardHeader>
@@ -228,7 +318,21 @@ function Settings() {
           <CardHeader>
             <CardTitle>À propos</CardTitle>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent className="p-0 divide-y">
+            <button
+              onClick={handleExportData}
+              disabled={exporting}
+              className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 transition-colors disabled:opacity-50"
+            >
+              <div className="flex items-center gap-3">
+                <Download className="h-5 w-5 text-muted-foreground" />
+                <div className="text-left">
+                  <p className="font-medium text-sm">Exporter mes données</p>
+                  <p className="text-xs text-muted-foreground">Télécharger toutes vos séances en JSON</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </button>
             <button
               onClick={() => navigate('/privacy-policy')}
               className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 transition-colors rounded-b-lg"

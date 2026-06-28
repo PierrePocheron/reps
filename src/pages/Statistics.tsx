@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useUserStore } from '@/store/userStore';
-import { Flame, Dumbbell, Calendar, Zap, AlertTriangle, Trophy, Sunrise, Sun, Moon, TrendingUp, ChevronRight } from 'lucide-react';
+import { useSettingsStore } from '@/store/settingsStore';
+import { Flame, Dumbbell, Calendar, Zap, AlertTriangle, Trophy, Sunrise, Sun, Moon, TrendingUp, ChevronRight, Target } from 'lucide-react';
 import { AdSpace } from '@/components/AdSpace';
 import { ADS_CONFIG } from '@/config/ads';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
@@ -217,7 +218,21 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
 export default function Statistics() {
   const { user, stats } = useUserStore();
   const navigate = useNavigate();
+  const { weeklyGoal } = useSettingsStore();
   const { sessions, gymSessions, loading: historyLoading } = useSessionHistory();
+
+  // Séances de la semaine en cours (lundi → dimanche)
+  const thisWeekCount = useMemo(() => {
+    const now = new Date();
+    const day = now.getDay();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+    monday.setHours(0, 0, 0, 0);
+
+    const renfo = sessions.filter((s) => s.date.toDate() >= monday).length;
+    const gym = gymSessions.filter((s) => s.date.toDate() >= monday).length;
+    return renfo + gym;
+  }, [sessions, gymSessions]);
 
   if (!user) return null;
 
@@ -240,6 +255,43 @@ export default function Statistics() {
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </button>
+        {/* Objectif hebdomadaire */}
+        {weeklyGoal > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-card border rounded-2xl p-4 space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Target className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold">Objectif cette semaine</span>
+              </div>
+              <span className="text-sm font-bold">
+                {Math.min(thisWeekCount, weeklyGoal)}/{weeklyGoal} séances
+              </span>
+            </div>
+            {/* Barre de progression */}
+            <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+              <motion.div
+                className={`h-full rounded-full ${thisWeekCount >= weeklyGoal ? 'bg-green-500' : 'bg-primary'}`}
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min((thisWeekCount / weeklyGoal) * 100, 100)}%` }}
+                transition={{ duration: 0.6, ease: 'easeOut' }}
+              />
+            </div>
+            {thisWeekCount >= weeklyGoal ? (
+              <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+                🎉 Objectif atteint ! Bravo !
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Encore {weeklyGoal - thisWeekCount} séance{weeklyGoal - thisWeekCount > 1 ? 's' : ''} pour atteindre ton objectif
+              </p>
+            )}
+          </motion.div>
+        )}
+
         {/* Alerte Profil Incomplet */}
         {(!user.weight || !user.height || !user.gender) && (
           <motion.div

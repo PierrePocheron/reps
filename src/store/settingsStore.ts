@@ -10,6 +10,7 @@ interface SettingsState {
   notificationTime: string; // Format HH:MM
   hapticFeedback: boolean;
   soundEnabled: boolean;
+  weeklyGoal: number; // nombre de séances visées par semaine (0 = désactivé)
 
   // Actions
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
@@ -18,6 +19,7 @@ interface SettingsState {
   setNotificationTime: (time: string) => void;
   setHapticFeedback: (enabled: boolean) => void;
   setSoundEnabled: (enabled: boolean) => void;
+  setWeeklyGoal: (goal: number) => void;
   loadSettings: () => void;
   saveSettings: () => void;
   applyTheme: () => void;
@@ -52,6 +54,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     notificationTime: storedSettings.notificationTime || '18:00',
     hapticFeedback: storedSettings.hapticFeedback ?? true,
     soundEnabled: storedSettings.soundEnabled ?? true,
+    weeklyGoal: storedSettings.weeklyGoal ?? 3,
 
     // Actions
     setTheme: (theme) => {
@@ -92,6 +95,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
       get().saveSettings();
     },
 
+    setWeeklyGoal: (goal) => {
+      set({ weeklyGoal: goal });
+      get().saveSettings();
+    },
+
     /**
      * Charge les paramètres depuis localStorage
      */
@@ -108,7 +116,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
      */
     saveSettings: () => {
       try {
-        const { theme, colorTheme, notificationsEnabled, notificationTime, hapticFeedback } =
+        const { theme, colorTheme, notificationsEnabled, notificationTime, hapticFeedback, weeklyGoal } =
           get();
         localStorage.setItem(
           STORAGE_KEY,
@@ -119,6 +127,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
             notificationTime,
             hapticFeedback,
             soundEnabled: get().soundEnabled,
+            weeklyGoal,
           })
         );
       } catch (error) {
