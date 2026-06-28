@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { useOffline } from '@/hooks/useOffline';
 import { BottomNav } from '@/components/BottomNav';
+import { Onboarding } from '@/components/Onboarding';
 import { AlertCircle } from 'lucide-react';
 import { useAdStore } from '@/store/adStore';
 
@@ -31,6 +32,8 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <>
+      <Onboarding />
+
       {/* Bannière offline */}
       {isOffline && (
         <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-2 fixed top-0 left-0 right-0 z-50">
