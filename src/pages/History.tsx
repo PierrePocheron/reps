@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
 import { useExerciseImages } from '@/hooks/useExerciseImages';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { Activity, Flame, Zap, Dumbbell, Weight, Clock } from 'lucide-react';
+import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy } from 'lucide-react';
 import type { Session, GymSession } from '@/firebase/types';
 
-type Tab = 'renforcement' | 'musculation';
+type Tab = 'musculation' | 'renforcement' | 'records';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -26,6 +26,20 @@ function formatDuration(seconds: number): string {
   if (m === 0) return `${s}s`;
   if (s === 0) return `${m}min`;
   return `${m}min ${s}s`;
+}
+
+// ─── Types Records ─────────────────────────────────────────────────────────────
+
+interface PersonalRecord {
+  exerciseId: string;
+  name: string;
+  emoji: string;
+  imageUrl?: string;
+  bestWeight: number;
+  bestReps: number;
+  totalSetsCompleted: number;
+  bestVolume: number; // poids × reps sur une seule série
+  lastPerformed: Date;
 }
 
 // ─── Renforcement Card ────────────────────────────────────────────────────────
@@ -132,7 +146,6 @@ function MuscuCard({ session, imageMap }: { session: GymSession; imageMap: Recor
             {(expanded ? session.exercises : session.exercises.slice(0, 3)).map((ex, i) => {
               const completedSetsList = ex.sets.filter((s) => s.completed);
               const imgUrl = imageMap[ex.exerciseId];
-              // Résumé : "4 × 80 kg" ou "4 × bw"
               const firstSet = completedSetsList[0];
               const w = firstSet ? (firstSet.actualWeight ?? firstSet.weight) : 0;
               const setsSummary = completedSetsList.length > 0
@@ -171,12 +184,115 @@ function MuscuCard({ session, imageMap }: { session: GymSession; imageMap: Recor
   );
 }
 
+// ─── PR Card ──────────────────────────────────────────────────────────────────
+
+function PRCard({ pr }: { pr: PersonalRecord }) {
+  const oneRepMax = pr.bestWeight > 0
+    ? Math.round(pr.bestWeight * (1 + pr.bestReps / 30))
+    : null;
+
+  return (
+    <div className="rounded-2xl border bg-card overflow-hidden shadow-sm">
+      <div className="flex items-stretch">
+        <div className="w-1.5 bg-yellow-500/70" />
+        <div className="flex-1 p-4">
+          <div className="flex items-center gap-3">
+            {/* Image ou emoji */}
+            <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
+              {pr.imageUrl ? (
+                <img src={pr.imageUrl} alt={pr.name} className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-2xl">{pr.emoji}</span>
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold truncate">{pr.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {pr.totalSetsCompleted} série{pr.totalSetsCompleted > 1 ? 's' : ''} au total
+              </p>
+            </div>
+
+            {/* Badge PR */}
+            {pr.bestWeight > 0 && (
+              <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+                <div className="flex items-center gap-1 bg-yellow-500/10 px-2.5 py-1 rounded-lg">
+                  <Trophy className="h-3.5 w-3.5 text-yellow-500" />
+                  <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400">
+                    {pr.bestWeight} kg
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">× {pr.bestReps} reps</p>
+              </div>
+            )}
+          </div>
+
+          {/* 1RM estimé */}
+          {oneRepMax !== null && oneRepMax > pr.bestWeight && (
+            <div className="mt-3 pt-3 border-t flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">1RM estimé (formule Epley)</p>
+              <p className="text-xs font-semibold">~{oneRepMax} kg</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function History() {
   const [activeTab, setActiveTab] = useState<Tab>('musculation');
   const { sessions, gymSessions, loading } = useSessionHistory(100);
   const { imageMap } = useExerciseImages();
+
+  // Calcul des records personnels depuis l'historique muscu
+  const personalRecords = useMemo<PersonalRecord[]>(() => {
+    if (gymSessions.length === 0) return [];
+
+    const map = new Map<string, PersonalRecord>();
+
+    for (const session of gymSessions) {
+      const sessionDate = session.date.toDate();
+      for (const ex of session.exercises) {
+        const existing = map.get(ex.exerciseId);
+        let pr: PersonalRecord = existing ?? {
+          exerciseId: ex.exerciseId,
+          name: ex.name,
+          emoji: ex.emoji,
+          imageUrl: imageMap[ex.exerciseId],
+          bestWeight: 0,
+          bestReps: 0,
+          totalSetsCompleted: 0,
+          bestVolume: 0,
+          lastPerformed: sessionDate,
+        };
+
+        for (const set of ex.sets) {
+          if (!set.completed) continue;
+          const w = set.actualWeight ?? set.weight;
+          const r = set.actualReps ?? set.reps;
+          const vol = w * r;
+
+          pr.totalSetsCompleted++;
+          if (vol > pr.bestVolume) {
+            pr.bestVolume = vol;
+            pr.bestWeight = w;
+            pr.bestReps = r;
+          }
+          if (sessionDate > pr.lastPerformed) {
+            pr.lastPerformed = sessionDate;
+          }
+        }
+
+        map.set(ex.exerciseId, pr);
+      }
+    }
+
+    // Trier par meilleur volume décroissant
+    return Array.from(map.values()).sort((a, b) => b.bestVolume - a.bestVolume);
+  }, [gymSessions, imageMap]);
 
   return (
     <PageLayout>
@@ -188,17 +304,17 @@ function History() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 p-1 bg-muted rounded-xl">
+        <div className="flex gap-1 p-1 bg-muted rounded-xl">
           <button
             onClick={() => setActiveTab('musculation')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
               activeTab === 'musculation'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Dumbbell className="h-4 w-4 text-blue-500" />
-            Musculation
+            Muscu
             {gymSessions.length > 0 && (
               <span className="text-xs bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded-full font-semibold">
                 {gymSessions.length}
@@ -207,17 +323,33 @@ function History() {
           </button>
           <button
             onClick={() => setActiveTab('renforcement')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
               activeTab === 'renforcement'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Zap className="h-4 w-4 text-orange-500" />
-            Renforcement
+            Renfo
             {sessions.length > 0 && (
               <span className="text-xs bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded-full font-semibold">
                 {sessions.length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('records')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              activeTab === 'records'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Trophy className="h-4 w-4 text-yellow-500" />
+            Records
+            {personalRecords.length > 0 && (
+              <span className="text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 px-1.5 py-0.5 rounded-full font-semibold">
+                {personalRecords.length}
               </span>
             )}
           </button>
@@ -244,7 +376,7 @@ function History() {
               ))}
             </div>
           )
-        ) : (
+        ) : activeTab === 'renforcement' ? (
           sessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
               <div className="bg-orange-500/10 p-4 rounded-full">
@@ -257,6 +389,27 @@ function History() {
             <div className="space-y-3">
               {sessions.map((s) => (
                 <RenforcementCard key={s.sessionId} session={s} />
+              ))}
+            </div>
+          )
+        ) : (
+          personalRecords.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
+              <div className="bg-yellow-500/10 p-4 rounded-full">
+                <Trophy className="h-8 w-8 text-yellow-500" />
+              </div>
+              <p className="font-semibold">Aucun record encore</p>
+              <p className="text-sm text-muted-foreground">
+                Tes records personnels muscu apparaîtront ici après ta première séance.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground px-1">
+                Meilleure série (poids × reps) par exercice sur l'ensemble de tes séances.
+              </p>
+              {personalRecords.map((pr) => (
+                <PRCard key={pr.exerciseId} pr={pr} />
               ))}
             </div>
           )
