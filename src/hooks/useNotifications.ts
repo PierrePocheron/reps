@@ -1,133 +1,187 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
-import { useState, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
+import { requestFCMToken, saveFCMToken, disableFCMNotifications, onForegroundMessage } from '@/firebase/fcm';
+import { useUserStore } from '@/store/userStore';
+
+const isNative = Capacitor.isNativePlatform();
 
 export const useNotifications = () => {
   const { toast } = useToast();
+  const { user } = useUserStore();
   const [hasPermission, setHasPermission] = useState(false);
   const [isScheduled, setIsScheduled] = useState(false);
+  const [fcmToken, setFcmToken] = useState<string | null>(null);
 
-  // Check permission status on mount
   useEffect(() => {
-    checkPermission();
-    checkScheduled();
+    if (isNative) {
+      checkNativePermission();
+      checkNativeScheduled();
+    } else {
+      setHasPermission(Notification.permission === 'granted');
+    }
   }, []);
 
-  const checkPermission = async () => {
+  // Écoute les messages FCM en foreground (web uniquement)
+  useEffect(() => {
+    if (isNative) return;
+    const unsub = onForegroundMessage(({ title, body }) => {
+      toast({ title: title || '💪 Reps', description: body });
+    });
+    return unsub;
+  }, [toast]);
+
+  // ─── Native (Capacitor) helpers ───────────────────────────────────────
+
+  const checkNativePermission = async () => {
     try {
       const status = await LocalNotifications.checkPermissions();
       setHasPermission(status.display === 'granted');
-    } catch (error) {
-      logger.error('Error checking notification permissions:', error);
+    } catch (err) {
+      logger.error('Erreur vérification permissions notif:', err);
     }
   };
 
-  const checkScheduled = async () => {
+  const checkNativeScheduled = async () => {
     try {
       const pending = await LocalNotifications.getPending();
-      // On vérifie si on a déjà une notif avec l'ID 1 (notre rappel quotidien)
-      const hasReminder = pending.notifications.some(n => n.id === 1);
-      setIsScheduled(hasReminder);
-    } catch (error) {
-      logger.error('Error checking scheduled notifications:', error);
+      setIsScheduled(pending.notifications.some((n) => n.id === 1));
+    } catch (err) {
+      logger.error('Erreur vérification notifs planifiées:', err);
     }
   };
 
-  const requestPermission = async () => {
+  const requestNativePermission = async (): Promise<boolean> => {
     try {
       const status = await LocalNotifications.requestPermissions();
       const granted = status.display === 'granted';
       setHasPermission(granted);
       return granted;
-    } catch (error) {
-      logger.error('Error requesting notification permissions:', error);
+    } catch (err) {
+      logger.error('Erreur demande permission notif:', err);
       return false;
     }
   };
 
-  const scheduleDailyReminder = async (timeStr: string = "20:00") => {
-    if (!hasPermission) {
-      const granted = await requestPermission();
+  // ─── scheduleDailyReminder ────────────────────────────────────────────
+
+  const scheduleDailyReminder = useCallback(async (timeStr: string = '20:00') => {
+    if (isNative) {
+      // Capacitor — notification locale planifiée
+      let granted = hasPermission;
       if (!granted) {
-        toast({
-          title: "Notifications désactivées",
-          description: "Activez les notifications pour recevoir le rappel.",
-          variant: "destructive"
-        });
-        return;
-      }
-    }
-
-    try {
-      const [hours = 20, minutes = 0] = timeStr.split(':').map(Number);
-
-      // Annuler l'existant pour éviter les doublons
-      await LocalNotifications.cancel({ notifications: [{ id: 1 }] });
-
-      // Programmer
-      const now = new Date();
-      const scheduleTime = new Date();
-      scheduleTime.setHours(hours, minutes, 0, 0);
-
-      // Si l'heure est déjà passée aujourd'hui, on programme pour demain
-      if (now > scheduleTime) {
-        scheduleTime.setDate(scheduleTime.getDate() + 1);
+        granted = await requestNativePermission();
+        if (!granted) {
+          toast({
+            title: 'Notifications désactivées',
+            description: 'Activez les notifications dans les réglages de votre appareil.',
+            variant: 'destructive',
+          });
+          return false;
+        }
       }
 
-      await LocalNotifications.schedule({
-        notifications: [
-          {
-            title: "💪 C'est l'heure des Reps !",
-            body: "Avez-vous pensé à faire quelques reps aujourd'hui ? Chaque rep compte !",
-            id: 1, // ID fixe
-            schedule: {
-              at: scheduleTime,
-              every: 'day',
-              allowWhileIdle: true
+      try {
+        const [hours = 20, minutes = 0] = timeStr.split(':').map(Number);
+        await LocalNotifications.cancel({ notifications: [{ id: 1 }] });
+
+        const scheduleTime = new Date();
+        scheduleTime.setHours(hours, minutes, 0, 0);
+        if (Date.now() > scheduleTime.getTime()) {
+          scheduleTime.setDate(scheduleTime.getDate() + 1);
+        }
+
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              title: "💪 C'est l'heure des Reps !",
+              body: 'Chaque rep compte. Lance ta séance maintenant !',
+              id: 1,
+              schedule: { at: scheduleTime, every: 'day', allowWhileIdle: true },
+              sound: undefined,
+              attachments: undefined,
+              actionTypeId: '',
+              extra: null,
             },
-            sound: undefined,
-            attachments: undefined,
-            actionTypeId: "",
-            extra: null
-          }
-        ]
-      });
+          ],
+        });
 
+        setIsScheduled(true);
+        toast({ title: 'Rappel activé !', description: `Notification chaque jour à ${timeStr}.` });
+        return true;
+      } catch (err) {
+        logger.error('Erreur planification notif:', err);
+        toast({ title: 'Erreur', description: 'Impossible de programmer le rappel.', variant: 'destructive' });
+        return false;
+      }
+    } else {
+      // Web — FCM push
+      if (!('Notification' in window)) {
+        toast({ title: 'Non supporté', description: 'Votre navigateur ne supporte pas les notifications.', variant: 'destructive' });
+        return false;
+      }
+
+      const token = await requestFCMToken();
+      if (!token) {
+        toast({
+          title: 'Notifications refusées',
+          description: 'Autorisez les notifications dans votre navigateur.',
+          variant: 'destructive',
+        });
+        return false;
+      }
+
+      setFcmToken(token);
+      setHasPermission(true);
       setIsScheduled(true);
-      toast({
-        title: "Rappel activé !",
-        description: `Vous recevrez une notification chaque jour à ${timeStr}.`,
-      });
 
-    } catch (error) {
-      logger.error('Error scheduling notification:', error);
+      if (user?.uid) {
+        await saveFCMToken(user.uid, token, timeStr);
+      }
+
       toast({
-        title: "Erreur",
-        description: "Impossible de programmer le rappel.",
-        variant: "destructive"
+        title: 'Notifications activées !',
+        description: `Rappel quotidien configuré à ${timeStr}.`,
       });
+      return true;
     }
-  };
+  }, [hasPermission, toast, user?.uid]);
 
-  const cancelReminder = async () => {
-    try {
-      await LocalNotifications.cancel({ notifications: [{ id: 1 }] });
+  // ─── cancelReminder ───────────────────────────────────────────────────
+
+  const cancelReminder = useCallback(async () => {
+    if (isNative) {
+      try {
+        await LocalNotifications.cancel({ notifications: [{ id: 1 }] });
+        setIsScheduled(false);
+        toast({ title: 'Rappel désactivé', description: 'Vous ne recevrez plus de rappel quotidien.' });
+      } catch (err) {
+        logger.error('Erreur annulation notif:', err);
+      }
+    } else {
       setIsScheduled(false);
-      toast({
-        title: "Rappel désactivé",
-        description: "Vous ne recevrez plus de rappel quotidien.",
-      });
-    } catch (error) {
-      logger.error('Error canceling notification:', error);
+      setFcmToken(null);
+      if (user?.uid) {
+        await disableFCMNotifications(user.uid);
+      }
+      toast({ title: 'Notifications désactivées', description: 'Vous ne recevrez plus de rappel.' });
     }
-  };
+  }, [toast, user?.uid]);
 
   return {
     hasPermission,
     isScheduled,
-    requestPermission,
+    fcmToken,
+    isNative,
+    requestPermission: isNative ? requestNativePermission : async () => {
+      const token = await requestFCMToken();
+      const granted = !!token;
+      setHasPermission(granted);
+      return granted;
+    },
     scheduleDailyReminder,
-    cancelReminder
+    cancelReminder,
   };
 };
