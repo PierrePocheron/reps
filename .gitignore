@@ -36,7 +36,22 @@ dist-ssr
 # Capacitor
 .capacitor/
 ios/
-android/
+
+# Android — on ignore les artefacts de build, pas les sources de config
+android/.gradle/
+android/app/build/
+android/build/
+android/captures/
+android/.idea/
+android/local.properties
+# Artefacts de release
+android/app/release/
+# La keystore et ses credentials ne doivent JAMAIS être commités
+android/keystore.properties
+android/*.keystore
+android/*.jks
+android/app/*.keystore
+android/app/*.jks
 
 # Build
 build/
