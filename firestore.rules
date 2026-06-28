@@ -21,6 +21,7 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isOwner(userId);
       allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     // User Events (Badges, etc.)

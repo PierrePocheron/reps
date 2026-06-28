@@ -9,6 +9,7 @@ import {
   subscribeToUser,
   markBadgesAsSeen,
 } from '@/firebase';
+import { deleteUserAccount } from '@/firebase/deleteAccount';
 import { applyThemeColor, type ThemeColor } from '@/utils/theme-colors';
 import { logger } from '@/utils/logger';
 
@@ -33,6 +34,7 @@ interface UserState {
   updateThemeColor: (color: ThemeColor) => Promise<void>;
   refreshStats: () => Promise<void>;
   markBadgesAsSeen: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   reset: () => void;
 }
 
@@ -246,6 +248,16 @@ export const useUserStore = create<UserState>((set, get) => ({
     } catch (e) {
       logger.error('markBadgesAsSeen failed', e as Error);
     }
+  },
+
+  /**
+   * Supprime définitivement le compte et toutes les données
+   */
+  deleteAccount: async () => {
+    const { user } = get();
+    if (!user) throw new Error('Aucun utilisateur connecté');
+    await deleteUserAccount(user.uid);
+    get().reset();
   },
 
   /**

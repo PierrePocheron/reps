@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-
+import { Input } from '@/components/ui/input';
 
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { getUnlockedBadges, getNextBadge } from '@/utils/constants';
 import { formatNumber } from '@/utils/formatters';
-import { Settings, LogOut, Award, Target, Users } from 'lucide-react';
+import { Settings, LogOut, Award, Target, Users, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/UserAvatar';
 import type { User } from '@/firebase/types';
@@ -42,8 +42,28 @@ function Profil() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { toast } = useToast();
-  const { user, stats, isLoading } = useUserStore();
+  const { user, stats, isLoading, deleteAccount } = useUserStore();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'SUPPRIMER') return;
+    setIsDeleting(true);
+    try {
+      await deleteAccount();
+      navigate('/login');
+    } catch {
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de supprimer le compte. Reconnectez-vous et réessayez.',
+        variant: 'destructive',
+      });
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -227,6 +247,59 @@ function Profil() {
               <Button onClick={handleSignOut} variant="default" className="flex-1">
                 Déconnexion
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Suppression du compte */}
+        <Dialog open={showDeleteDialog} onOpenChange={(open) => {
+          setShowDeleteDialog(open);
+          if (!open) setDeleteConfirmText('');
+        }}>
+          <DialogTrigger asChild>
+            <Button variant="ghost" className="w-full text-destructive hover:text-destructive hover:bg-destructive/10" size="sm">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Supprimer mon compte
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-destructive">Supprimer le compte</DialogTitle>
+              <DialogDescription className="space-y-2 pt-1">
+                <span className="block">
+                  Cette action est <strong>irréversible</strong>. Toutes vos données seront effacées :
+                  séances, statistiques, badges, amis, templates.
+                </span>
+                <span className="block">
+                  Tapez <strong>SUPPRIMER</strong> pour confirmer.
+                </span>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 mt-2">
+              <Input
+                placeholder="SUPPRIMER"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                className="border-destructive/40 focus-visible:ring-destructive"
+              />
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteDialog(false)}
+                  className="flex-1"
+                  disabled={isDeleting}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  disabled={deleteConfirmText !== 'SUPPRIMER' || isDeleting}
+                  onClick={handleDeleteAccount}
+                >
+                  {isDeleting ? <LoadingSpinner size="sm" /> : 'Supprimer définitivement'}
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
