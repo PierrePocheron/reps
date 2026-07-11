@@ -5,13 +5,15 @@ import { logger } from '@/utils/logger';
 
 // Fonction utilitaire pour initialiser AdMob au lancement de l'app
 export async function initializeAdMob() {
-    if (!ADS_CONFIG.ENABLED) return;
+    // ENABLED_MOBILE doit aussi être vrai : sinon le SDK Mobile Ads ne doit
+    // jamais s'initialiser sur mobile (conformité Play Store / Data Safety)
+    if (!ADS_CONFIG.ENABLED || !ADS_CONFIG.ENABLED_MOBILE) return;
 
     if (Capacitor.isNativePlatform()) {
         try {
             await AdMob.initialize({
                 testingDevices: [ADS_CONFIG.ADMOB.TEST_DEVICE_ID],
-                initializeForTesting: true,
+                initializeForTesting: import.meta.env.DEV,
             });
             // AdMob initialized
 

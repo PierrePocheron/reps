@@ -163,6 +163,28 @@ export default function PrivacyPolicy() {
           </p>
         </section>
 
+        <section className="space-y-3" id="suppression-compte">
+          <h2 className="text-base font-semibold">5 bis. Suppression de votre compte et de vos données</h2>
+          <p>Vous pouvez supprimer définitivement votre compte et l'ensemble des données associées :</p>
+          <ul className="list-disc list-inside space-y-1 text-muted-foreground pl-2">
+            <li>
+              <strong className="text-foreground">Depuis l'application</strong> — ouvrez{' '}
+              <strong className="text-foreground">Profil → Supprimer mon compte</strong>, puis confirmez.
+              La suppression est immédiate et irréversible.
+            </li>
+            <li>
+              <strong className="text-foreground">Par e-mail</strong> — envoyez une demande à{' '}
+              <strong className="text-foreground">contact@example.com</strong> depuis l'adresse
+              associée à votre compte. Traitement sous 30 jours.
+            </li>
+          </ul>
+          <p className="text-muted-foreground">
+            Données supprimées : profil, séances, records, défis, relations d'amitié, badges et
+            jetons de notification. Aucune donnée n'est conservée après suppression, à l'exception
+            des journaux techniques anonymisés (Sentry) purgés automatiquement sous 90 jours.
+          </p>
+        </section>
+
         <section className="space-y-3">
           <h2 className="text-base font-semibold">6. Vos droits (RGPD)</h2>
           <p>Si vous résidez dans l'Espace Économique Européen, vous disposez des droits suivants :</p>
