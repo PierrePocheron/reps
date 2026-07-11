@@ -38,25 +38,11 @@ export default function Friends() {
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]); // Utilisation du store maintenant
   const [friends, setFriends] = useState<User[]>([]);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
 
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isLoadingActivity, setIsLoadingActivity] = useState(false);
-
-  // Subscribe to friend requests -> DÉPLACÉ DANS AppInitializer via userStore
-  /*
-  useEffect(() => {
-    if (!user) return;
-    const unsubscribe = subscribeToFriendRequests(user.uid, (newRequests) => {
-      // Filtrer les demandes provenant de personnes déjà amies
-      const filteredRequests = newRequests.filter(req => !user.friends?.includes(req.fromUserId));
-      setFriendRequests(filteredRequests);
-    });
-    return () => unsubscribe();
-  }, [user]);
-  */
 
   // Load friends
   useEffect(() => {

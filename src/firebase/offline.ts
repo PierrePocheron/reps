@@ -117,14 +117,13 @@ export function onNetworkChange(callback: (isOnline: boolean) => void): () => vo
  */
 export async function syncLocalDataWithFirestore(userId: string): Promise<void> {
   if (isOffline()) {
-    // logger.info('Mode offline, synchronisation reportée');
     return;
   }
 
   try {
     // Récupérer la session en cours depuis localStorage
     const localSession = getCurrentSessionFromLocal();
-    if (localSession && localSession.startTime !== undefined) {
+    if (localSession?.startTime !== undefined) {
       // Vérifier si la session existe déjà dans Firestore
       const { getSession } = await import('./firestore');
       const sessionId = localSession.sessionId;

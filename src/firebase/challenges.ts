@@ -254,7 +254,7 @@ export const getCustomChallengeParams = (
     } else {
         // Progressive
         switch (difficulty) {
-            case 'easy': base = 5; inc = 1; break;
+            case 'easy': base = 5; break;
             case 'medium': base = 10; inc = 2; break;
             case 'hard': base = 20; inc = 3; break;
             case 'extreme': base = 30; inc = 5; break;

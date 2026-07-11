@@ -104,7 +104,7 @@ function Session() {
       const { getLastSession } = await import('@/firebase/firestore');
       const lastSession = await getLastSession(user.uid);
 
-      if (lastSession && lastSession.exercises) {
+      if (lastSession?.exercises) {
         // Ajouter les exercices de la dernière session
         lastSession.exercises.forEach(ex => {
           if (!hasExercise(ex.name)) {

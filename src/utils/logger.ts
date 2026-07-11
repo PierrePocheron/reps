@@ -10,8 +10,8 @@ interface LogContext {
 }
 
 class Logger {
-  private isDevelopment = import.meta.env.MODE === 'development';
-  private isSentryEnabled = !!import.meta.env.VITE_SENTRY_DSN;
+  private readonly isDevelopment = import.meta.env.MODE === 'development';
+  private readonly isSentryEnabled = !!import.meta.env.VITE_SENTRY_DSN;
 
   /**
    * Log de debug (uniquement en développement)

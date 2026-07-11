@@ -195,7 +195,7 @@ describe('firebase/offline', () => {
       localStorageMock.getItem.mockReturnValueOnce(null);
 
       await syncLocalDataWithFirestore('user123');
-      // Just checking it runs without error
+      expect(localStorageMock.getItem).toHaveBeenCalledTimes(1);
     });
 
     it('should return early if local session has no startTime', async () => {
@@ -203,7 +203,7 @@ describe('firebase/offline', () => {
       localStorageMock.getItem.mockReturnValueOnce(JSON.stringify({ exercises: [] }));
 
       await syncLocalDataWithFirestore('user123');
-      // Should not import firestore or create session
+      expect(localStorageMock.getItem).toHaveBeenCalledTimes(1);
     });
 
     it('should return early if local session has no sessionId', async () => {
@@ -212,7 +212,7 @@ describe('firebase/offline', () => {
       localStorageMock.getItem.mockReturnValueOnce(JSON.stringify(session));
 
       await syncLocalDataWithFirestore('user123');
-      // No sessionId → should not try to check Firestore
+      expect(localStorageMock.getItem).toHaveBeenCalledTimes(1);
     });
   });
 });

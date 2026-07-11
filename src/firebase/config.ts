@@ -87,14 +87,16 @@ try {
 export const db = dbInstance;
 
 // Initialisation de Firebase Cloud Messaging (uniquement côté client)
-export let messaging: Messaging | null = null;
-if (typeof window !== 'undefined' && 'serviceWorker' in navigator && !Capacitor.isNativePlatform()) {
-  try {
-    messaging = getMessaging(app);
-  } catch (err) {
-    logger.warn('Firebase Cloud Messaging non disponible', { error: err });
+export const messaging: Messaging | null = (() => {
+  if (typeof window !== 'undefined' && 'serviceWorker' in navigator && !Capacitor.isNativePlatform()) {
+    try {
+      return getMessaging(app);
+    } catch (err) {
+      logger.warn('Firebase Cloud Messaging non disponible', { error: err });
+    }
   }
-}
+  return null;
+})();
 
 // Initialisation de App Check
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';

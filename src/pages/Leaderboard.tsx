@@ -45,7 +45,8 @@ export default function Leaderboard() {
             totalCalories: u.totalCalories || 0
           }));
 
-          setStats(leaderboardData.sort((a, b) => b.totalReps - a.totalReps));
+          leaderboardData.sort((a, b) => b.totalReps - a.totalReps);
+          setStats(leaderboardData);
         } else {
           // Pour les autres périodes, on calcule via les sessions
           // On a quand même besoin des détails pour l'affichage (nom, photo)
@@ -55,7 +56,8 @@ export default function Leaderboard() {
           }
 
           const periodStats = await getLeaderboardStats(allIds, activeTab as 'daily' | 'weekly' | 'monthly');
-          setStats(periodStats.sort((a, b) => b.totalReps - a.totalReps));
+          periodStats.sort((a, b) => b.totalReps - a.totalReps);
+          setStats(periodStats);
         }
       } catch (error) {
         logger.error('Erreur chargement classement:', error);
@@ -68,7 +70,7 @@ export default function Leaderboard() {
   }, [user, activeTab, friendsDetails.length]);
 
   const getUserDetails = (userId: string) => {
-    if (user && userId === user.uid) return user;
+    if (user?.uid === userId) return user;
     return friendsDetails.find(f => f.uid === userId);
   };
 

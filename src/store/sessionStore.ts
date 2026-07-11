@@ -225,7 +225,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
    */
   loadSessionFromLocal: () => {
     const localSession = getCurrentSessionFromLocal();
-    if (localSession && localSession.startTime !== undefined) {
+    if (localSession?.startTime !== undefined) {
       // Vérifier si la session n'est pas trop ancienne (max 24h)
       const sessionAge = Date.now() - localSession.startTime;
       const maxAge = 24 * 60 * 60 * 1000; // 24 heures
