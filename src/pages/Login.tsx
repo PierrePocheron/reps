@@ -29,7 +29,7 @@ export default function Login() {
         <div className="text-center">
           <h1 className="mb-2 text-3xl font-bold">🏋️ Reps</h1>
           <p className="text-muted-foreground">
-            Suivez vos entraînements de musculation au poids du corps
+            Suis tes séances de renforcement et de musculation
           </p>
         </div>
         <AuthForm
@@ -38,7 +38,7 @@ export default function Login() {
           }}
         />
         <p className="text-center text-xs text-muted-foreground">
-          En vous connectant, vous acceptez notre{' '}
+          En te connectant, tu acceptes notre{' '}
           <Link to="/privacy-policy" className="underline underline-offset-2 hover:text-foreground transition-colors">
             politique de confidentialité
           </Link>

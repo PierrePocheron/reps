@@ -7,6 +7,7 @@ import { DEFAULT_EXERCISES, EXERCISE_CATEGORIES } from '@/utils/constants';
 import { Check, Search, Plus, ChevronRight } from 'lucide-react';
 import type { ExerciseCategory } from '@/firebase/types';
 import { useHaptic } from '@/hooks/useHaptic';
+import { useExerciseImages } from '@/hooks/useExerciseImages';
 
 interface AddExerciseDialogProps {
   open: boolean;
@@ -29,6 +30,7 @@ export function AddExerciseDialog({
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | 'all'>('all');
   const [search, setSearch] = useState('');
   const haptics = useHaptic();
+  const { imageMap } = useExerciseImages();
 
   const handleAddDefault = (exerciseId: string) => {
     const exercise = DEFAULT_EXERCISES.find((ex) => ex.id === exerciseId);
@@ -134,7 +136,17 @@ export function AddExerciseDialog({
                             : 'hover:bg-muted active:bg-muted/80 active:scale-[0.99]'
                         }`}
                       >
-                        <span className="text-2xl w-9 text-center flex-shrink-0">{exercise.emoji}</span>
+                        <div className="h-10 w-10 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
+                          {imageMap[exercise.id] ? (
+                            <img
+                              src={imageMap[exercise.id]}
+                              alt={exercise.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-xl">{exercise.emoji}</span>
+                          )}
+                        </div>
                         <span className="flex-1 font-medium text-sm">{exercise.name}</span>
                         {isAdded ? (
                           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground flex-shrink-0">

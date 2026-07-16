@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
 
 import { useNotifications } from '@/hooks/useNotifications';
+import { version as APP_VERSION } from '../../package.json';
 
 const WEEKLY_GOAL_OPTIONS = [0, 2, 3, 4, 5] as const;
 
@@ -348,6 +349,10 @@ function Settings() {
             </button>
           </CardContent>
         </Card>
+
+        <p className="text-center text-xs text-muted-foreground pb-4">
+          🏋️ Reps v{APP_VERSION}
+        </p>
 
       </div>
     </PageLayout>

@@ -82,7 +82,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       } else if (firebaseError.code === 'auth/wrong-password') {
         errorMessage = 'Mot de passe incorrect';
       } else if (firebaseError.code === 'auth/email-already-in-use') {
-        errorMessage = 'Cet email est déjà utilisé (avez-vous un compte Google ?)';
+        errorMessage = 'Cet email est déjà utilisé (as-tu un compte Google ?)';
       } else if (firebaseError.code === 'auth/weak-password') {
         errorMessage = `Le mot de passe est trop faible (minimum ${PASSWORD_MIN_LENGTH} caractères)`;
       } else if (firebaseError.code === 'auth/invalid-email') {
@@ -114,7 +114,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       await sendPasswordResetEmail(resetEmail);
       toast({
         title: 'Email envoyé',
-        description: 'Vérifiez votre boîte de réception pour réinitialiser votre mot de passe.',
+        description: 'Vérifie ta boîte de réception pour réinitialiser ton mot de passe.',
       });
       setShowResetDialog(false);
       setResetEmail('');
@@ -173,8 +173,8 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
           <CardTitle>{isSignUp ? 'Créer un compte' : 'Se connecter'}</CardTitle>
           <CardDescription>
             {isSignUp
-              ? 'Rejoignez Reps pour suivre vos entraînements'
-              : 'Connectez-vous pour accéder à votre profil'}
+              ? 'Rejoins Reps pour suivre tes entraînements'
+              : 'Connecte-toi pour accéder à ton profil'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -259,7 +259,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                 <input
                   id="email"
                   type="email"
-                  placeholder="votre@email.com"
+                  placeholder="ton@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -338,7 +338,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
           <DialogHeader>
             <DialogTitle>Réinitialiser le mot de passe</DialogTitle>
             <DialogDescription>
-              Entrez votre adresse email pour recevoir un lien de réinitialisation.
+              Entre ton adresse email pour recevoir un lien de réinitialisation.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handlePasswordReset} className="space-y-4">
@@ -351,7 +351,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                 <input
                   id="reset-email"
                   type="email"
-                  placeholder="votre@email.com"
+                  placeholder="ton@email.com"
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
                   className="w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

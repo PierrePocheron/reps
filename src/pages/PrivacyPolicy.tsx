@@ -20,7 +20,7 @@ export default function PrivacyPolicy() {
 
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-8 text-sm leading-relaxed">
         <div>
-          <p className="text-muted-foreground">Dernière mise à jour : 28 juin 2026</p>
+          <p className="text-muted-foreground">Dernière mise à jour : 16 juillet 2026</p>
         </div>
 
         <section className="space-y-3">
