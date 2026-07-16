@@ -427,8 +427,11 @@ function GymSession() {
             exerciseId={ex.exerciseId}
             name={ex.name}
             emoji={ex.emoji}
-            imageUrl={ex.imageUrl ?? null}
+            imageUrl={infoMap[ex.exerciseId]?.gifUrl ?? ex.imageUrl ?? null}
             description={infoMap[ex.exerciseId]?.description ?? null}
+            steps={infoMap[ex.exerciseId]?.steps}
+            target={infoMap[ex.exerciseId]?.target}
+            secondaryMuscles={infoMap[ex.exerciseId]?.secondaryMuscles}
             onClose={() => setDetailExerciseId(null)}
           />
         );

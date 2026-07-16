@@ -1,4 +1,34 @@
 import { X } from 'lucide-react';
+import { MEDIA_ATTRIBUTION } from '@/hooks/useExerciseImages';
+
+/** Traductions FR des groupes musculaires du dataset */
+const TARGET_FR: Record<string, string> = {
+  abs: 'Abdominaux',
+  biceps: 'Biceps',
+  calves: 'Mollets',
+  'cardiovascular system': 'Cardio',
+  delts: 'Épaules',
+  forearms: 'Avant-bras',
+  glutes: 'Fessiers',
+  hamstrings: 'Ischio-jambiers',
+  lats: 'Grand dorsal',
+  pectorals: 'Pectoraux',
+  quads: 'Quadriceps',
+  spine: 'Lombaires',
+  traps: 'Trapèzes',
+  triceps: 'Triceps',
+  'upper back': 'Haut du dos',
+  'lower back': 'Bas du dos',
+  'hip flexors': 'Fléchisseurs de hanche',
+  shoulders: 'Épaules',
+  'inner thighs': 'Adducteurs',
+  obliques: 'Obliques',
+  'rotator cuff': 'Coiffe des rotateurs',
+};
+
+function targetLabel(target: string): string {
+  return TARGET_FR[target] ?? target;
+}
 
 interface Props {
   exerciseId: string;
@@ -6,10 +36,24 @@ interface Props {
   emoji: string;
   imageUrl: string | null;
   description: string | null;
+  steps?: string[];
+  target?: string | null;
+  secondaryMuscles?: string[];
   onClose: () => void;
 }
 
-export function ExerciseDetailSheet({ name, emoji, imageUrl, description, onClose }: Props) {
+export function ExerciseDetailSheet({
+  name,
+  emoji,
+  imageUrl,
+  description,
+  steps,
+  target,
+  secondaryMuscles,
+  onClose,
+}: Props) {
+  const hasSteps = steps && steps.length > 0;
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
@@ -36,7 +80,7 @@ export function ExerciseDetailSheet({ name, emoji, imageUrl, description, onClos
         <div className="overflow-y-auto flex-1 px-5 pb-8 space-y-4">
           {/* Image / GIF */}
           {imageUrl ? (
-            <div className="w-full rounded-2xl overflow-hidden bg-muted flex items-center justify-center">
+            <div className="w-full rounded-2xl overflow-hidden bg-white flex items-center justify-center">
               <img
                 src={imageUrl}
                 alt={name}
@@ -49,8 +93,39 @@ export function ExerciseDetailSheet({ name, emoji, imageUrl, description, onClos
             </div>
           )}
 
-          {/* Description */}
-          {description ? (
+          {/* Muscles ciblés */}
+          {target && (
+            <div className="flex flex-wrap gap-1.5">
+              <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                {targetLabel(target)}
+              </span>
+              {secondaryMuscles?.filter((m) => m !== target).map((m) => (
+                <span
+                  key={m}
+                  className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium"
+                >
+                  {targetLabel(m)}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Instructions */}
+          {hasSteps ? (
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">Comment faire</h3>
+              <ol className="space-y-2">
+                {steps.map((step, i) => (
+                  <li key={step} className="flex gap-3 text-sm text-muted-foreground leading-relaxed">
+                    <span className="shrink-0 h-5 w-5 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center mt-0.5">
+                      {i + 1}
+                    </span>
+                    {step}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ) : description ? (
             <div className="space-y-1.5">
               <h3 className="text-sm font-semibold text-foreground">Comment faire</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
@@ -58,6 +133,13 @@ export function ExerciseDetailSheet({ name, emoji, imageUrl, description, onClos
           ) : (
             <p className="text-sm text-muted-foreground text-center py-4">
               Pas de description disponible.
+            </p>
+          )}
+
+          {/* Attribution obligatoire des médias Gym visual */}
+          {imageUrl && (
+            <p className="text-[10px] text-muted-foreground/60 text-center">
+              Illustration {MEDIA_ATTRIBUTION}
             </p>
           )}
         </div>

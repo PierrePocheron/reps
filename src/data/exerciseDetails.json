@@ -1,0 +1,1139 @@
+{
+  "pushups": {
+    "datasetId": "0662",
+    "datasetName": "push-up",
+    "target": "pectorals",
+    "secondaryMuscles": [
+      "triceps",
+      "deltoids",
+      "core"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Commence en position de planche haute, les mains un peu plus écartées que la largeur des épaules et les pieds joints.",
+      "Gaine ta sangle abdominale et abaisse ton corps vers le sol en pliant tes coudes, en gardant ton corps en ligne droite.",
+      "Marque une pause lorsque ta poitrine est juste au-dessus du sol, puis repousse-toi vers le haut pour revenir à la position de départ en tendant tes bras.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/pushups.jpg",
+    "gif": "/exercises/pushups.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "diamond_pushups": {
+    "datasetId": "0283",
+    "datasetName": "diamond push-up",
+    "target": "triceps",
+    "secondaryMuscles": [
+      "chest",
+      "shoulders"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Commence en position de planche haute, les mains rapprochées, formant un losange avec tes pouces et tes index.",
+      "Garde ton corps bien aligné de la tête aux pieds, en gainant ta sangle abdominale et tes fessiers.",
+      "Abaisse ta poitrine vers le losange formé par tes mains, en gardant les coudes près de ton corps.",
+      "Marque une pause en bas, puis pousse-toi vers le haut jusqu'à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/diamond_pushups.jpg",
+    "gif": "/exercises/diamond_pushups.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "wide_pushups": {
+    "datasetId": "1311",
+    "datasetName": "wide hand push up",
+    "target": "pectorals",
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Commence en position de planche haute, les mains plus écartées que la largeur des épaules.",
+      "Garde ton corps bien aligné de la tête aux pieds.",
+      "Abaisse ta poitrine vers le sol en fléchissant les coudes, en les gardant près de tes flancs.",
+      "Pousse à travers tes paumes pour étendre tes bras et revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/wide_pushups.jpg",
+    "gif": "/exercises/wide_pushups.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "decline_pushups": {
+    "datasetId": "0279",
+    "datasetName": "decline push-up",
+    "target": "pectorals",
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Place tes mains au sol légèrement plus écartées que la largeur des épaules, avec tes pieds surélevés sur une surface stable.",
+      "Garde ton corps bien aligné de la tête aux pieds, en gainant ta sangle abdominale.",
+      "Abaisse ta poitrine vers le sol en fléchissant les coudes, en les gardant près de ton corps.",
+      "Pousse à travers tes paumes pour étendre tes bras et revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/decline_pushups.jpg",
+    "gif": "/exercises/decline_pushups.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "dips": {
+    "datasetId": "0251",
+    "datasetName": "chest dip",
+    "target": "pectorals",
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Positionne-toi sur des barres parallèles, les bras complètement tendus et le corps droit.",
+      "Abaisse ton corps en fléchissant tes coudes jusqu'à ce que tes épaules soient sous tes coudes.",
+      "Repousse-toi vers le haut jusqu'à la position de départ en tendant tes bras.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/dips.jpg",
+    "gif": "/exercises/dips.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "pullups": {
+    "datasetId": "0652",
+    "datasetName": "pull-up",
+    "target": "lats",
+    "secondaryMuscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Suspends-toi à une barre de traction, les paumes tournées vers l'extérieur et les bras complètement étendus.",
+      "Gaine ta sangle abdominale et resserre tes omoplates.",
+      "Tire ton corps vers le haut en direction de la barre en fléchissant tes coudes et en amenant ta poitrine vers la barre.",
+      "Marque une pause en haut du mouvement, puis abaisse lentement ton corps jusqu'à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/pullups.jpg",
+    "gif": "/exercises/pullups.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "chin_ups": {
+    "datasetId": "1326",
+    "datasetName": "chin-up",
+    "target": "lats",
+    "secondaryMuscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Suspends-toi à une barre de traction, les paumes tournées vers toi et les mains écartées à la largeur des épaules.",
+      "Gaine ta sangle abdominale et tire ton corps vers la barre, en menant avec ta poitrine.",
+      "Continue à tirer jusqu'à ce que ton menton soit au-dessus de la barre.",
+      "Marque une pause en haut, puis abaisse lentement ton corps pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/chin_ups.jpg",
+    "gif": "/exercises/chin_ups.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "inverted_rows": {
+    "datasetId": "0499",
+    "datasetName": "inverted row",
+    "target": "upper back",
+    "secondaryMuscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Installe une barre à hauteur de taille ou utilise un entraîneur en suspension.",
+      "Tiens-toi face à la barre ou au sangle de suspension, les pieds écartés à la largeur des épaules.",
+      "Saisis la barre ou les poignées avec une prise en pronation, un peu plus large que la largeur des épaules.",
+      "Penche-toi en arrière, en gardant le corps droit et les talons au sol.",
+      "Tire ta poitrine vers la barre ou les poignées en contractant tes omoplates l'une vers l'autre.",
+      "Marque une pause en haut, puis abaisse-toi lentement pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/inverted_rows.jpg",
+    "gif": "/exercises/inverted_rows.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "squats": {
+    "datasetId": "1685",
+    "datasetName": "squat to overhead reach",
+    "target": "quads",
+    "secondaryMuscles": [
+      "glutes",
+      "hamstrings",
+      "core"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Tiens-toi debout, les pieds écartés à la largeur des épaules et les orteils légèrement tournés vers l'extérieur.",
+      "Abaisse ton corps en position de squat en fléchissant tes genoux et en poussant tes hanches vers l'arrière.",
+      "En remontant du squat, étends tes bras au-dessus de la tête en tendant vers le plafond.",
+      "Reviens à la position de départ en abaissant tes bras et en fléchissant tes genoux pour t'accroupir de nouveau.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/squats.jpg",
+    "gif": "/exercises/squats.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "jump_squats": {
+    "datasetId": "0514",
+    "datasetName": "jump squat",
+    "target": "glutes",
+    "secondaryMuscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Tiens-toi debout, les pieds écartés à la largeur des épaules.",
+      "Abaisse ton corps en position de squat en fléchissant tes genoux et en poussant tes hanches vers l'arrière.",
+      "Saute du sol de manière explosive, en étendant tes hanches, tes genoux et tes chevilles.",
+      "En plein saut, ramène rapidement tes bras vers l'avant pour l'équilibre.",
+      "Atterris en douceur sur la pointe des pieds et enchaîne immédiatement avec la répétition suivante.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/jump_squats.jpg",
+    "gif": "/exercises/jump_squats.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "lunges": {
+    "datasetId": "3470",
+    "datasetName": "forward lunge (male)",
+    "target": "glutes",
+    "secondaryMuscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Tiens-toi les pieds écartés à la largeur des hanches et les mains sur les hanches.",
+      "Fais un grand pas en avant avec le pied droit, en abaissant ton corps en position de fente.",
+      "Fléchis ton genou droit à environ 90 degrés en gardant ton genou aligné avec ta cheville.",
+      "Pousse sur ton pied droit et reviens à la position de départ.",
+      "Répète avec ta jambe gauche, en alternant les côtés pour le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/lunges.jpg",
+    "gif": "/exercises/lunges.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "bulgarian_squats": {
+    "datasetId": "0410",
+    "datasetName": "dumbbell single leg split squat",
+    "target": "quads",
+    "secondaryMuscles": [
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "dumbbell",
+    "steps": [
+      "Tiens-toi debout, les pieds écartés à la largeur des épaules, en tenant un haltère dans chaque main.",
+      "Fais un pas en avant avec un pied et positionne tes pieds de sorte que le pied avant soit à plat sur le sol et le pied arrière surélevé sur un banc ou une marche.",
+      "Abaisse ton corps en fléchissant ton genou et ta hanche avant, en gardant ton genou arrière légèrement fléchi et ton talon arrière décollé du sol.",
+      "Continue à descendre jusqu'à ce que ta cuisse avant soit parallèle au sol, puis pousse sur ton talon avant pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité, puis change de jambe et recommence."
+    ],
+    "image": "/exercises/bulgarian_squats.jpg",
+    "gif": "/exercises/bulgarian_squats.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "glute_bridge": {
+    "datasetId": "3523",
+    "datasetName": "glute bridge two legs on bench (male)",
+    "target": "glutes",
+    "secondaryMuscles": [
+      "hamstrings",
+      "core"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Assieds-toi au bord d'un banc, le dos contre celui-ci et les pieds à plat sur le sol.",
+      "Place tes mains sur le banc à côté de tes hanches pour le soutien.",
+      "Contracte tes fessiers et tes ischio-jambiers, puis soulève tes hanches du banc jusqu'à ce que ton corps forme une ligne droite de tes genoux à tes épaules.",
+      "Marque une pause en haut, puis abaisse lentement tes hanches pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/glute_bridge.jpg",
+    "gif": "/exercises/glute_bridge.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "calf_raises": {
+    "datasetId": "1373",
+    "datasetName": "bodyweight standing calf raise",
+    "target": "calves",
+    "secondaryMuscles": [
+      "ankles",
+      "feet"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Tiens-toi debout, les pieds écartés à la largeur des épaules, les orteils pointés vers l'avant.",
+      "Place tes mains sur un mur ou une surface stable pour l'équilibre.",
+      "Lève lentement les talons du sol, en reportant le poids de ton corps sur la pointe des pieds.",
+      "Marque une pause en haut, puis abaisse lentement tes talons pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/calf_raises.jpg",
+    "gif": "/exercises/calf_raises.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "shoulder_taps": {
+    "datasetId": "3699",
+    "datasetName": "shoulder tap",
+    "target": "abs",
+    "secondaryMuscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Commence en position de planche haute, les mains directement sous les épaules et le corps bien aligné.",
+      "Gaine ta sangle abdominale et lève ta main droite du sol, en la tendant à travers pour toucher ton épaule gauche.",
+      "Repose ta main droite sur le sol et répète en tapant ton épaule droite avec ta main gauche.",
+      "Continue à alterner les touchés d'épaule tout en gardant tes hanches et ton torse stables.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/shoulder_taps.jpg",
+    "gif": "/exercises/shoulder_taps.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "abs": {
+    "datasetId": "0274",
+    "datasetName": "crunch floor",
+    "target": "abs",
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Allonge-toi sur le dos, les genoux fléchis et les pieds à plat au sol.",
+      "Place tes mains derrière ta tête avec tes coudes pointés vers l'extérieur.",
+      "Gaine tes abdominaux et décolle tes épaules du sol, en t'enroulant vers l'avant en direction de tes genoux.",
+      "Marque une pause en haut, puis abaisse lentement tes épaules pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/abs.jpg",
+    "gif": "/exercises/abs.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "leg_raises": {
+    "datasetId": "0620",
+    "datasetName": "lying leg raise flat bench",
+    "target": "abs",
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Allonge-toi à plat sur un banc plat, le dos plaqué contre lui.",
+      "Place tes mains sous tes fessiers pour te soutenir.",
+      "Garde les jambes tendues et serrées, et lève-les vers le plafond.",
+      "Marque une pause en haut, puis abaisse lentement tes jambes pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/leg_raises.jpg",
+    "gif": "/exercises/leg_raises.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "russian_twists": {
+    "datasetId": "0687",
+    "datasetName": "russian twist",
+    "target": "abs",
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Assieds-toi au sol, les genoux fléchis et les pieds à plat sur le sol.",
+      "Penche-toi légèrement en arrière en gardant le dos droit et la sangle abdominale gainée.",
+      "Joins tes mains devant ta poitrine ou tiens un poids si tu le souhaites.",
+      "Décolle tes pieds du sol, en équilibre sur tes ischions.",
+      "Fais pivoter ton torse vers la droite, en amenant tes mains ou le poids vers le côté droit de ton corps.",
+      "Marque une pause, puis fais pivoter ton torse vers la gauche, en amenant tes mains ou le poids vers le côté gauche de ton corps.",
+      "Continue à alterner les côtés pour le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/russian_twists.jpg",
+    "gif": "/exercises/russian_twists.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "mountain_climbers": {
+    "datasetId": "0630",
+    "datasetName": "mountain climber",
+    "target": "cardiovascular system",
+    "secondaryMuscles": [
+      "core",
+      "shoulders",
+      "triceps"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Commence en position de planche haute, les mains directement sous les épaules et le corps bien aligné.",
+      "Gaine ta sangle abdominale et amène ton genou droit vers ta poitrine, puis change rapidement et amène ton genou gauche vers ta poitrine.",
+      "Continue à alterner les jambes dans un mouvement de course en gardant tes hanches basses et ta sangle abdominale gainée.",
+      "Maintiens un rythme régulier et respire de façon régulière pendant tout l'exercice.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/mountain_climbers.jpg",
+    "gif": "/exercises/mountain_climbers.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "v_ups": {
+    "datasetId": "0507",
+    "datasetName": "jackknife sit-up",
+    "target": "abs",
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Allonge-toi sur le dos, les jambes tendues et les bras au-dessus de la tête.",
+      "Gaine ta sangle abdominale et lève tes jambes et ton haut du corps simultanément, en tendant tes mains vers tes orteils.",
+      "Marque une pause en haut, puis abaisse lentement tes jambes et le haut de ton corps pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/v_ups.jpg",
+    "gif": "/exercises/v_ups.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "bicycle_crunches": {
+    "datasetId": "0003",
+    "datasetName": "air bike",
+    "target": "abs",
+    "secondaryMuscles": [
+      "hip flexors"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Allonge-toi sur le dos, les mains placées derrière la tête.",
+      "Décolle tes jambes du sol et fléchis tes genoux à un angle de 90 degrés.",
+      "Amène ton coude droit vers ton genou gauche tout en tendant simultanément ta jambe droite.",
+      "Reviens à la position de départ et répète le mouvement du côté opposé, en amenant ton coude gauche vers ton genou droit tout en tendant ta jambe gauche.",
+      "Continue à alterner les côtés dans un mouvement de pédalage pour le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/bicycle_crunches.jpg",
+    "gif": "/exercises/bicycle_crunches.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "burpees": {
+    "datasetId": "1160",
+    "datasetName": "burpee",
+    "target": "cardiovascular system",
+    "secondaryMuscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "shoulders",
+      "chest"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Commence en position debout, les pieds écartés à la largeur des épaules.",
+      "Abaisse ton corps en position de squat en fléchissant tes genoux et en plaçant tes mains sur le sol devant toi.",
+      "Renvoie tes pieds vers l'arrière en position de pompe.",
+      "Effectue une pompe, en gardant ton corps aligné.",
+      "Ramène tes pieds en sautant en position de squat.",
+      "Saute vers le haut de manière explosive, en tendant les bras au-dessus de ta tête.",
+      "Atterris en douceur et redescends immédiatement en position de squat pour commencer la répétition suivante."
+    ],
+    "image": "/exercises/burpees.jpg",
+    "gif": "/exercises/burpees.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "jumping_jacks": {
+    "datasetId": "3224",
+    "datasetName": "jack jump (male)",
+    "target": "cardiovascular system",
+    "secondaryMuscles": [
+      "quadriceps",
+      "calves"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Tiens-toi debout, les pieds joints et les bras le long du corps.",
+      "Saute en écartant les pieds et en levant les bras au-dessus de ta tête.",
+      "À l'atterrissage, saute rapidement pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/jumping_jacks.jpg",
+    "gif": "/exercises/jumping_jacks.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "high_knees": {
+    "datasetId": "3636",
+    "datasetName": "high knee against wall",
+    "target": "cardiovascular system",
+    "secondaryMuscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes",
+      "calves"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Tiens-toi face à un mur, les pieds écartés à la largeur des hanches.",
+      "Place tes mains sur le mur pour te soutenir.",
+      "Gaine ta sangle abdominale et lève ton genou droit vers ta poitrine, tout en gardant ton pied gauche au sol.",
+      "Change rapidement de jambe, en amenant ton genou gauche vers le haut en direction de ta poitrine et en abaissant ton pied droit.",
+      "Continue à alterner les jambes dans un mouvement de course en montant les genoux aussi haut que possible.",
+      "Maintiens un rythme rapide et garde le haut du corps stable pendant tout l'exercice.",
+      "Répète pendant la durée souhaitée ou le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/high_knees.jpg",
+    "gif": "/exercises/high_knees.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "box_jumps": {
+    "datasetId": "1374",
+    "datasetName": "box jump down with one leg stabilization",
+    "target": "calves",
+    "secondaryMuscles": [
+      "quadriceps",
+      "hamstrings",
+      "glutes"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Tiens-toi devant une boîte ou une plateforme, les pieds écartés à la largeur des épaules.",
+      "Fléchis les genoux et saute sur la box, en atterrissant en douceur avec un pied sur la box et l'autre pied dans le vide au bord.",
+      "Stabilise-toi sur la boîte avec le pied posé dessus, tout en gardant l'autre pied décollé du sol.",
+      "Maintiens cette position pendant quelques secondes, en engageant tes mollets pour garder l'équilibre.",
+      "Descends lentement avec le pied posé sur la boîte, en revenant à la position de départ.",
+      "Répète l'exercice avec l'autre jambe."
+    ],
+    "image": "/exercises/box_jumps.jpg",
+    "gif": "/exercises/box_jumps.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "bench_press": {
+    "datasetId": "0025",
+    "datasetName": "barbell bench press",
+    "target": "pectorals",
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "equipment": "barbell",
+    "steps": [
+      "Allonge-toi à plat sur un banc, les pieds à plat au sol et le dos plaqué contre le banc.",
+      "Saisis la barre avec une prise en pronation un peu plus large que la largeur des épaules.",
+      "Soulève la barre du rack et maintiens-la directement au-dessus de ta poitrine, les bras complètement tendus.",
+      "Abaisse lentement la barre vers ta poitrine, en gardant tes coudes serrés.",
+      "Marque une pause lorsque la barre touche ta poitrine.",
+      "Repousse la barre vers le haut jusqu'à la position de départ en étendant tes bras.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/bench_press.jpg",
+    "gif": "/exercises/bench_press.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "incline_bench": {
+    "datasetId": "0047",
+    "datasetName": "barbell incline bench press",
+    "target": "pectorals",
+    "secondaryMuscles": [
+      "shoulders",
+      "triceps"
+    ],
+    "equipment": "barbell",
+    "steps": [
+      "Installe un banc incliné à un angle de 45 degrés.",
+      "Allonge-toi sur le banc, les pieds à plat au sol.",
+      "Saisis la barre avec une prise en pronation, un peu plus large que la largeur des épaules.",
+      "Sors la barre du support et abaisse-la lentement vers ta poitrine, en gardant les coudes à un angle de 45 degrés.",
+      "Marque une pause en bas, puis pousse la barre vers le haut jusqu'à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/incline_bench.jpg",
+    "gif": "/exercises/incline_bench.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "dumbbell_fly": {
+    "datasetId": "0308",
+    "datasetName": "dumbbell fly",
+    "target": "pectorals",
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "equipment": "dumbbell",
+    "steps": [
+      "Allonge-toi à plat sur un banc avec un haltère dans chaque main, les paumes se faisant face.",
+      "Étends les bras droit au-dessus de la poitrine, avec une légère flexion dans les coudes.",
+      "En gardant une légère flexion des coudes, abaisse les bras sur les côtés en un large arc jusqu'à ressentir un étirement dans la poitrine.",
+      "Marque une pause, puis inverse le mouvement et ramène les haltères vers le haut jusqu'à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/dumbbell_fly.jpg",
+    "gif": "/exercises/dumbbell_fly.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "cable_fly": {
+    "datasetId": "0188",
+    "datasetName": "cable middle fly",
+    "target": "pectorals",
+    "secondaryMuscles": [
+      "deltoids",
+      "triceps"
+    ],
+    "equipment": "cable",
+    "steps": [
+      "Fixe des câbles des deux côtés d'une machine à câble à hauteur de la poitrine.",
+      "Tiens-toi au centre de la machine, un pied légèrement devant l'autre.",
+      "Saisis les poignées avec une prise en pronation et étends les bras sur les côtés.",
+      "Garde une légère flexion dans tes coudes et maintiens une légère inclinaison vers l'avant.",
+      "Sollicite les muscles de ta poitrine et ramène tes bras vers l'avant dans un mouvement de balayage.",
+      "Marque une pause au centre, puis ramène lentement tes bras à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/cable_fly.jpg",
+    "gif": "/exercises/cable_fly.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "chest_dips": {
+    "datasetId": "0251",
+    "datasetName": "chest dip",
+    "target": "pectorals",
+    "secondaryMuscles": [
+      "triceps",
+      "shoulders"
+    ],
+    "equipment": "body weight",
+    "steps": [
+      "Positionne-toi sur des barres parallèles, les bras complètement tendus et le corps droit.",
+      "Abaisse ton corps en fléchissant tes coudes jusqu'à ce que tes épaules soient sous tes coudes.",
+      "Repousse-toi vers le haut jusqu'à la position de départ en tendant tes bras.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/chest_dips.jpg",
+    "gif": "/exercises/chest_dips.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "deadlift": {
+    "datasetId": "0032",
+    "datasetName": "barbell deadlift",
+    "target": "glutes",
+    "secondaryMuscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell",
+    "steps": [
+      "Tiens-toi debout, les pieds écartés à la largeur des épaules et la barre au sol devant toi.",
+      "Fléchis les genoux et bascule au niveau des hanches pour abaisser ton torse et saisir la barre en prise pronation, les mains légèrement plus écartées que la largeur des épaules.",
+      "Garde le dos droit et la poitrine relevée pendant que tu pousses sur tes talons pour soulever la barre du sol, en étendant tes hanches et tes genoux.",
+      "En te redressant, contracte tes fessiers et garde ta sangle abdominale gainée.",
+      "Abaisse la barre jusqu'au sol en fléchissant les hanches et les genoux, en gardant ton dos droit.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/deadlift.jpg",
+    "gif": "/exercises/deadlift.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "barbell_row": {
+    "datasetId": "0027",
+    "datasetName": "barbell bent over row",
+    "target": "upper back",
+    "secondaryMuscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "barbell",
+    "steps": [
+      "Tiens-toi debout, les pieds écartés à la largeur des épaules et les genoux légèrement fléchis.",
+      "Penche-toi vers l'avant au niveau des hanches en gardant ton dos droit et ta poitrine haute.",
+      "Saisis la barre avec une prise en pronation, les mains un peu plus larges que la largeur des épaules.",
+      "Tire la barre vers le bas de ta poitrine en rétractant tes omoplates et en contractant les muscles de ton dos.",
+      "Marque une pause en haut, puis abaisse lentement la barre pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/barbell_row.jpg",
+    "gif": "/exercises/barbell_row.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "dumbbell_row": {
+    "datasetId": "0293",
+    "datasetName": "dumbbell bent over row",
+    "target": "upper back",
+    "secondaryMuscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "dumbbell",
+    "steps": [
+      "Tiens-toi debout, les pieds écartés à la largeur des épaules, les genoux légèrement fléchis, et tiens un haltère dans chaque main, paumes tournées vers ton corps.",
+      "Penche-toi vers l'avant au niveau des hanches en gardant ton dos droit et ta sangle abdominale gainée.",
+      "Laisse tes bras pendre droit vers le bas en direction du sol, les coudes légèrement fléchis.",
+      "Tire les haltères vers ta poitrine en contractant tes omoplates l'une vers l'autre.",
+      "Marque une pause en haut, puis abaisse lentement les haltères pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/dumbbell_row.jpg",
+    "gif": "/exercises/dumbbell_row.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "lat_pulldown": {
+    "datasetId": "0198",
+    "datasetName": "cable pulldown",
+    "target": "lats",
+    "secondaryMuscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable",
+    "steps": [
+      "Règle la machine de tirage à câble de sorte que le siège soit à une hauteur confortable et que la cale-genoux soit bien fixée.",
+      "Assieds-toi sur le siège, le dos droit et les pieds à plat sur le sol.",
+      "Saisis la barre du câble avec une prise en pronation, un peu plus large que la largeur des épaules.",
+      "Penche-toi légèrement en arrière et gaine ta sangle abdominale.",
+      "Tire la barre du câble vers ta poitrine, en contractant tes omoplates.",
+      "Marque une pause en bas du mouvement, puis relâche lentement la barre jusqu'à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/lat_pulldown.jpg",
+    "gif": "/exercises/lat_pulldown.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "cable_row": {
+    "datasetId": "0861",
+    "datasetName": "cable seated row",
+    "target": "upper back",
+    "secondaryMuscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "cable",
+    "steps": [
+      "Assieds-toi sur la machine de tirage horizontal, les pieds à plat sur les repose-pieds et les genoux légèrement fléchis.",
+      "Saisis les poignées avec une prise en pronation, en gardant le dos droit et les épaules relâchées.",
+      "Tire les poignées vers ton corps en contractant tes omoplates l'une vers l'autre.",
+      "Marque une pause au sommet du mouvement, puis relâche lentement les poignées pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/cable_row.jpg",
+    "gif": "/exercises/cable_row.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "weighted_pullups": {
+    "datasetId": "0841",
+    "datasetName": "weighted pull-up",
+    "target": "lats",
+    "secondaryMuscles": [
+      "biceps",
+      "forearms"
+    ],
+    "equipment": "weighted",
+    "steps": [
+      "Saisis la barre de traction avec une prise en pronation, un peu plus large que la largeur des épaules.",
+      "Suspends-toi à la barre, les bras complètement étendus et le corps droit.",
+      "Sollicite les muscles de ton dos et tire ton corps vers la barre, en gardant tes coudes près de ton corps.",
+      "Continue à tirer jusqu'à ce que ton menton soit au-dessus de la barre.",
+      "Marque une pause en haut, puis abaisse lentement ton corps pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/weighted_pullups.jpg",
+    "gif": "/exercises/weighted_pullups.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "barbell_squat": {
+    "datasetId": "0043",
+    "datasetName": "barbell full squat",
+    "target": "glutes",
+    "secondaryMuscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "equipment": "barbell",
+    "steps": [
+      "Tiens-toi debout, les pieds écartés à la largeur des épaules, les orteils légèrement tournés vers l'extérieur.",
+      "Tiens la barre en travers du haut de ton dos, en la faisant reposer sur tes trapèzes ou tes deltoïdes postérieurs.",
+      "Gaine ta sangle abdominale et garde ta poitrine relevée pendant que tu commences à abaisser ton corps.",
+      "Fléchis les genoux et les hanches en poussant tes hanches vers l'arrière et vers le bas comme si tu t'asseyais sur une chaise.",
+      "Descends jusqu'à ce que tes cuisses soient parallèles au sol ou légèrement en dessous.",
+      "Garde les genoux alignés avec les orteils et le poids dans les talons.",
+      "Pousse sur tes talons pour te relever, en étendant tes hanches et tes genoux.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/barbell_squat.jpg",
+    "gif": "/exercises/barbell_squat.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "leg_press": {
+    "datasetId": "0739",
+    "datasetName": "sled 45в° leg press",
+    "target": "glutes",
+    "secondaryMuscles": [
+      "quadriceps",
+      "hamstrings",
+      "calves"
+    ],
+    "equipment": "sled machine",
+    "steps": [
+      "Règle le siège et le repose-pieds de la machine à traîneau dans une position confortable.",
+      "Assieds-toi sur la machine à traîneau, le dos contre le dossier et les pieds écartés à la largeur des épaules sur la plaque de pied.",
+      "Saisis les poignées sur les côtés du siège pour te stabiliser.",
+      "Pousse le repose-pieds loin de ton corps en étendant tes jambes, en gardant tes talons sur le repose-pieds.",
+      "Continue à pousser jusqu'à ce que tes jambes soient presque complètement tendues, mais sans verrouiller tes genoux.",
+      "Marque une pause en haut du mouvement, puis abaisse lentement la plateforme vers ton corps en fléchissant tes genoux.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/leg_press.jpg",
+    "gif": "/exercises/leg_press.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "leg_curl": {
+    "datasetId": "0586",
+    "datasetName": "lever lying leg curl",
+    "target": "hamstrings",
+    "secondaryMuscles": [
+      "calves"
+    ],
+    "equipment": "leverage machine",
+    "steps": [
+      "Règle la machine pour l'adapter à ton corps et sélectionne le poids souhaité.",
+      "Allonge-toi face vers le bas sur la machine, les jambes droites et les talons contre le levier rembourré.",
+      "Saisis les poignées ou les côtés de la machine pour te stabiliser.",
+      "En gardant le haut de ton corps immobile, expire et fléchis tes jambes le plus loin possible sans soulever tes hanches du coussin.",
+      "Maintiens la position contractée pendant une brève pause en contractant tes ischio-jambiers.",
+      "Inspire et abaisse lentement le levier jusqu'à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/leg_curl.jpg",
+    "gif": "/exercises/leg_curl.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "leg_extension": {
+    "datasetId": "0585",
+    "datasetName": "lever leg extension",
+    "target": "quads",
+    "secondaryMuscles": [
+      "hamstrings"
+    ],
+    "equipment": "leverage machine",
+    "steps": [
+      "Règle la hauteur du siège et le dossier de la machine pour les adapter à ton corps.",
+      "Assieds-toi sur la machine, le dos contre le dossier et les pieds sur le coussinet de pied.",
+      "Saisis les poignées ou les barres latérales pour te stabiliser.",
+      "Étends tes jambes vers l'avant en tendant les genoux, en soulevant le poids.",
+      "Marque une pause en haut, puis abaisse lentement le poids pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/leg_extension.jpg",
+    "gif": "/exercises/leg_extension.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "romanian_deadlift": {
+    "datasetId": "0085",
+    "datasetName": "barbell romanian deadlift",
+    "target": "glutes",
+    "secondaryMuscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell",
+    "steps": [
+      "Tiens-toi debout, les pieds écartés à la largeur des épaules et les orteils pointés vers l'avant.",
+      "Tiens la barre en prise pronation, les mains un peu plus écartées que la largeur des épaules.",
+      "Fléchis les hanches en gardant ton dos droit et tes genoux légèrement fléchis.",
+      "Abaisse la barre vers le sol, en la gardant près de ton corps.",
+      "Sens l'étirement dans tes ischio-jambiers en abaissant la barre.",
+      "Une fois que tu ressens un étirement dans tes ischio-jambiers, pousse tes hanches vers l'avant et redresse-toi.",
+      "Contracte tes fessiers en haut du mouvement.",
+      "Abaisse la barre jusqu'à la position de départ et répète pour le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/romanian_deadlift.jpg",
+    "gif": "/exercises/romanian_deadlift.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "weighted_hip_thrust": {
+    "datasetId": "1409",
+    "datasetName": "barbell glute bridge",
+    "target": "glutes",
+    "secondaryMuscles": [
+      "hamstrings",
+      "lower back"
+    ],
+    "equipment": "barbell",
+    "steps": [
+      "Commence allongé sur le dos sur le sol, les genoux fléchis et les pieds à plat sur le sol.",
+      "Place une barre sur tes hanches, en la tenant fermement des deux mains.",
+      "Contracte tes fessiers et tes muscles abdominaux, puis soulève tes hanches du sol jusqu'à ce que ton corps forme une ligne droite de tes genoux à tes épaules.",
+      "Marque une pause en haut, en contractant tes fessiers.",
+      "Abaisse lentement tes hanches vers la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/weighted_hip_thrust.jpg",
+    "gif": "/exercises/weighted_hip_thrust.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "machine_calf": {
+    "datasetId": "0605",
+    "datasetName": "lever standing calf raise",
+    "target": "calves",
+    "secondaryMuscles": [
+      "soleus",
+      "ankle stabilizers"
+    ],
+    "equipment": "leverage machine",
+    "steps": [
+      "Règle la machine à ta hauteur et tiens-toi debout, les pieds écartés à la largeur des épaules.",
+      "Place tes épaules sous les coussins et tiens les poignées pour plus de stabilité.",
+      "Lève tes talons aussi haut que possible en étendant tes chevilles.",
+      "Marque une pause en haut, puis abaisse lentement tes talons pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/machine_calf.jpg",
+    "gif": "/exercises/machine_calf.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "overhead_press": {
+    "datasetId": "1457",
+    "datasetName": "barbell standing wide military press",
+    "target": "delts",
+    "secondaryMuscles": [
+      "triceps",
+      "upper back"
+    ],
+    "equipment": "barbell",
+    "steps": [
+      "Tiens-toi debout, les pieds écartés à la largeur des épaules et tiens la barre en prise pronation, légèrement plus large que la largeur des épaules.",
+      "Soulève la barre à hauteur des épaules, en gardant tes coudes légèrement devant la barre.",
+      "Développe la barre au-dessus de ta tête, en tendant complètement tes bras.",
+      "Abaisse la barre à hauteur des épaules et répète pour le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/overhead_press.jpg",
+    "gif": "/exercises/overhead_press.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "db_lateral_raise": {
+    "datasetId": "0334",
+    "datasetName": "dumbbell lateral raise",
+    "target": "delts",
+    "secondaryMuscles": [
+      "traps"
+    ],
+    "equipment": "dumbbell",
+    "steps": [
+      "Tiens-toi debout, les pieds écartés à la largeur des épaules et tiens un haltère dans chaque main, paumes tournées vers ton corps.",
+      "Garde le dos droit et gaine ta sangle abdominale.",
+      "Lève tes bras sur les côtés jusqu'à ce qu'ils soient parallèles au sol, en gardant une légère flexion dans tes coudes.",
+      "Marque une pause en haut, puis abaisse lentement tes bras pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/db_lateral_raise.jpg",
+    "gif": "/exercises/db_lateral_raise.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "front_raise": {
+    "datasetId": "0310",
+    "datasetName": "dumbbell front raise",
+    "target": "delts",
+    "secondaryMuscles": [
+      "biceps",
+      "trapezius"
+    ],
+    "equipment": "dumbbell",
+    "steps": [
+      "Tiens-toi debout, les pieds écartés à la largeur des épaules, en tenant un haltère dans chaque main, paumes tournées vers tes cuisses.",
+      "En gardant les bras tendus, expire et lève les haltères devant toi jusqu'à ce qu'ils soient à hauteur d'épaule.",
+      "Marque une pause en haut, puis inspire et abaisse lentement les haltères pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/front_raise.jpg",
+    "gif": "/exercises/front_raise.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "barbell_curl": {
+    "datasetId": "0031",
+    "datasetName": "barbell curl",
+    "target": "biceps",
+    "secondaryMuscles": [
+      "forearms"
+    ],
+    "equipment": "barbell",
+    "steps": [
+      "Tiens-toi bien droit, les pieds écartés à la largeur des épaules, et tiens une barre en prise supination, les paumes tournées vers l'avant.",
+      "Garde tes coudes près de ton torse et expire pendant que tu enroules les poids en contractant tes biceps.",
+      "Continue à lever la barre jusqu'à ce que tes biceps soient complètement contractés et que la barre soit à hauteur d'épaule.",
+      "Maintiens la position contractée pendant une brève pause en contractant tes biceps.",
+      "Inspire pendant que tu commences lentement à abaisser la barre jusqu'à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/barbell_curl.jpg",
+    "gif": "/exercises/barbell_curl.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "dumbbell_curl": {
+    "datasetId": "0294",
+    "datasetName": "dumbbell biceps curl",
+    "target": "biceps",
+    "secondaryMuscles": [
+      "forearms"
+    ],
+    "equipment": "dumbbell",
+    "steps": [
+      "Tiens-toi bien droit avec un haltère dans chaque main, les paumes tournées vers l'avant et les bras complètement tendus.",
+      "En gardant le haut des bras immobile, expire et fléchis les poids en contractant tes biceps.",
+      "Continue à lever les poids jusqu'à ce que tes biceps soient complètement contractés et que les haltères soient à hauteur d'épaule.",
+      "Maintiens la position contractée pendant une brève pause en contractant tes biceps.",
+      "Inspire et commence lentement à abaisser les haltères jusqu'à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/dumbbell_curl.jpg",
+    "gif": "/exercises/dumbbell_curl.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "hammer_curl": {
+    "datasetId": "0313",
+    "datasetName": "dumbbell hammer curl",
+    "target": "biceps",
+    "secondaryMuscles": [
+      "forearms"
+    ],
+    "equipment": "dumbbell",
+    "steps": [
+      "Tiens-toi bien droit avec un haltère dans chaque main, les paumes tournées vers ton torse.",
+      "Garde tes coudes près de ton torse et tourne les paumes de tes mains jusqu'à ce qu'elles soient tournées vers l'avant.",
+      "Ce sera ta position de départ.",
+      "Maintenant, en gardant le haut des bras immobile, expire et enroule les poids en contractant tes biceps.",
+      "Continue à lever les poids jusqu'à ce que tes biceps soient complètement contractés et que les haltères soient à hauteur d'épaule.",
+      "Maintiens la position contractée pendant une brève pause en contractant tes biceps.",
+      "Ensuite, inspire et commence lentement à abaisser les haltères vers la position de départ.",
+      "Répète le nombre de répétitions recommandé."
+    ],
+    "image": "/exercises/hammer_curl.jpg",
+    "gif": "/exercises/hammer_curl.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "skull_crusher": {
+    "datasetId": "0060",
+    "datasetName": "barbell lying triceps extension skull crusher",
+    "target": "triceps",
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "equipment": "barbell",
+    "steps": [
+      "Allonge-toi à plat sur un banc, les pieds à plat au sol et la tête au bout du banc.",
+      "Tiens la barre en prise pronation, les mains écartées à la largeur des épaules, et étends tes bras droit au-dessus de ta poitrine.",
+      "En gardant le haut des bras immobile, abaisse lentement la barre vers ton front en fléchissant tes coudes.",
+      "Marque une pause lorsque la barre est juste au-dessus de ton front, puis étends tes bras pour revenir à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/skull_crusher.jpg",
+    "gif": "/exercises/skull_crusher.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "tricep_pushdown": {
+    "datasetId": "0200",
+    "datasetName": "cable pushdown (with rope attachment)",
+    "target": "triceps",
+    "secondaryMuscles": [
+      "forearms"
+    ],
+    "equipment": "cable",
+    "steps": [
+      "Fixe une corde à une poulie haute sur une machine à câble.",
+      "Tiens-toi face à la machine, les pieds écartés à la largeur des épaules et les genoux légèrement fléchis.",
+      "Saisis la corde avec une prise en pronation, les paumes tournées l'une vers l'autre.",
+      "Garde tes coudes près de tes flancs et le haut de tes bras immobile tout au long de l'exercice.",
+      "Expire et pousse la corde vers le bas en étendant tes coudes jusqu'à ce que tes bras soient complètement tendus.",
+      "Marque une pause, puis inspire et reviens lentement à la position de départ en laissant tes coudes fléchir.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/tricep_pushdown.jpg",
+    "gif": "/exercises/tricep_pushdown.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "overhead_ext": {
+    "datasetId": "0430",
+    "datasetName": "dumbbell standing triceps extension",
+    "target": "triceps",
+    "secondaryMuscles": [
+      "shoulders"
+    ],
+    "equipment": "dumbbell",
+    "steps": [
+      "Tiens-toi debout, les pieds écartés à la largeur des épaules et tiens un haltère d'une main.",
+      "Lève l'haltère au-dessus de ta tête en gardant ton bras tendu.",
+      "Plie ton coude et abaisse l'haltère derrière ta tête en gardant le haut de ton bras immobile.",
+      "Étends ton bras pour revenir vers le haut en position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/overhead_ext.jpg",
+    "gif": "/exercises/overhead_ext.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "crunch_machine": {
+    "datasetId": "0595",
+    "datasetName": "lever seated crunch (chest pad)",
+    "target": "abs",
+    "secondaryMuscles": [
+      "obliques"
+    ],
+    "equipment": "leverage machine",
+    "steps": [
+      "Règle la hauteur du siège et la position du coussin de poitrine selon ton confort.",
+      "Assieds-toi sur la machine, le dos contre le coussinet de poitrine et les pieds à plat sur le sol.",
+      "Saisis les poignées ou les barres latérales pour te stabiliser.",
+      "Gaine tes abdominaux et penche-toi lentement en arrière, en laissant le coussin de poitrine bouger avec toi.",
+      "Marque une pause à la contraction maximale, en sentant la tension dans tes abdominaux.",
+      "Reviens lentement à la position de départ en contractant les abdominaux et en te tirant vers le haut.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/crunch_machine.jpg",
+    "gif": "/exercises/crunch_machine.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "ab_wheel": {
+    "datasetId": "0857",
+    "datasetName": "wheel rollerout",
+    "target": "abs",
+    "secondaryMuscles": [
+      "lower back"
+    ],
+    "equipment": "wheel roller",
+    "steps": [
+      "Mets-toi à genoux au sol et place la roue abdominale devant toi.",
+      "Place tes mains sur les poignées de la roue abdominale et étends tes bras droit devant toi.",
+      "Gaine tes muscles abdominaux et fais rouler lentement la roue vers l'avant, en gardant le dos droit et les abdominaux contractés.",
+      "Continue à rouler vers l'avant jusqu'à ce que ton corps soit complètement étendu et que tes bras soient au-dessus de ta tête.",
+      "Marque une pause, puis fais rouler lentement la roue vers tes genoux, en gardant le contrôle et en gainant tes abdominaux.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/ab_wheel.jpg",
+    "gif": "/exercises/ab_wheel.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  },
+  "weighted_plank": {
+    "datasetId": "2135",
+    "datasetName": "weighted front plank",
+    "target": "abs",
+    "secondaryMuscles": [
+      "shoulders",
+      "lower back"
+    ],
+    "equipment": "weighted",
+    "steps": [
+      "Commence allongé face contre terre sur le sol.",
+      "Place tes avant-bras au sol, avec tes coudes directement sous tes épaules.",
+      "Étends tes jambes droit derrière toi, les orteils au sol.",
+      "Gaine ta sangle abdominale et lève ton corps du sol, en équilibre sur tes avant-bras et tes orteils.",
+      "Garde ton corps bien aligné de la tête aux talons.",
+      "Maintiens cette position pendant la durée souhaitée.",
+      "Abaisse ton corps jusqu'à la position de départ.",
+      "Répète le nombre de répétitions souhaité."
+    ],
+    "image": "/exercises/weighted_plank.jpg",
+    "gif": "/exercises/weighted_plank.gif",
+    "attribution": "© Gym visual — https://gymvisual.com/"
+  }
+}
