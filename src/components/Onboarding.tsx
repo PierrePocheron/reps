@@ -1,70 +1,192 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Check, Flame, Trophy, Dumbbell, Users } from 'lucide-react';
 
-const STORAGE_KEY = 'reps_onboarding_v1';
+const STORAGE_KEY = 'reps_onboarding_v2';
+
+/* ─── Mini-visuels illustrant l'app (mockups Tailwind, données factices) ─── */
+
+function VisualWelcome() {
+  return (
+    <div className="h-40 w-40 rounded-[2rem] bg-primary/10 flex items-center justify-center">
+      <span className="text-7xl" role="img" aria-label="Reps">🏋️</span>
+    </div>
+  );
+}
+
+function VisualModes() {
+  return (
+    <div className="w-full space-y-3">
+      <div className="rounded-2xl border bg-card p-4 flex items-center gap-3 text-left shadow-sm">
+        <div className="h-11 w-11 rounded-xl bg-orange-500/10 flex items-center justify-center text-2xl">💪</div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm">Renforcement</p>
+          <p className="text-xs text-muted-foreground">Au poids du corps, compte tes répétitions</p>
+        </div>
+      </div>
+      <div className="rounded-2xl border bg-card p-4 flex items-center gap-3 text-left shadow-sm">
+        <div className="h-11 w-11 rounded-xl bg-blue-500/10 flex items-center justify-center">
+          <Dumbbell className="h-6 w-6 text-blue-500" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm">Musculation</p>
+          <p className="text-xs text-muted-foreground">Séries × poids, à la salle</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VisualExercises() {
+  return (
+    <div className="w-full rounded-2xl border bg-card p-4 space-y-3 shadow-sm text-left">
+      <div className="flex items-center gap-3">
+        <div className="h-12 w-12 rounded-xl overflow-hidden bg-white flex-shrink-0">
+          <img src="/exercises/bench_press.jpg" alt="Développé couché" className="h-full w-full object-cover" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm">Développé couché</p>
+          <p className="text-xs text-muted-foreground">Pectoraux · Barre</p>
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        {[
+          { reps: 10, weight: 80, done: true },
+          { reps: 10, weight: 80, done: true },
+          { reps: 8, weight: 85, done: false },
+        ].map((set, i) => (
+          <div key={i} className="flex items-center gap-2 rounded-lg bg-muted/50 px-3 py-1.5 text-xs">
+            <span className={`flex h-4 w-4 items-center justify-center rounded-full ${set.done ? 'bg-primary text-primary-foreground' : 'border border-muted-foreground/30'}`}>
+              {set.done && <Check className="h-2.5 w-2.5" />}
+            </span>
+            <span className="font-medium">{set.reps} reps</span>
+            <span className="text-muted-foreground">× {set.weight} kg</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function VisualProgress() {
+  return (
+    <div className="w-full space-y-3">
+      <div className="rounded-2xl border bg-card p-4 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-2">
+          <Flame className="h-5 w-5 text-orange-500" />
+          <span className="text-sm font-semibold">Streak</span>
+        </div>
+        <span className="text-lg font-bold">5 jours</span>
+      </div>
+      <div className="rounded-2xl border bg-card p-4 space-y-2 shadow-sm text-left">
+        <div className="flex items-center justify-between text-sm">
+          <span className="font-semibold">Objectif de la semaine</span>
+          <span className="text-muted-foreground text-xs">2 / 3 séances</span>
+        </div>
+        <div className="h-2 rounded-full bg-muted overflow-hidden">
+          <div className="h-full w-2/3 rounded-full bg-primary" />
+        </div>
+      </div>
+      <div className="rounded-2xl border bg-card p-4 flex items-center gap-3 shadow-sm text-left">
+        <Trophy className="h-5 w-5 text-yellow-500 flex-shrink-0" />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold">Nouveau record !</p>
+          <p className="text-xs text-muted-foreground">Développé couché — 85 kg × 8</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VisualSocial() {
+  const rows = [
+    { rank: 1, name: 'Toi', reps: 342, me: true },
+    { rank: 2, name: 'Alex', reps: 310, me: false },
+    { rank: 3, name: 'Sam', reps: 268, me: false },
+  ];
+  return (
+    <div className="w-full space-y-3">
+      <div className="rounded-2xl border bg-card p-3 space-y-1.5 shadow-sm">
+        {rows.map((r) => (
+          <div
+            key={r.rank}
+            className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm ${r.me ? 'bg-primary/10 font-semibold' : ''}`}
+          >
+            <span className={`text-xs font-bold ${r.rank === 1 ? 'text-yellow-500' : 'text-muted-foreground'}`}>#{r.rank}</span>
+            <span className="flex-1 text-left">{r.name}</span>
+            <span className="text-xs text-muted-foreground">{r.reps} reps</span>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-2xl border bg-card p-4 flex items-center gap-3 shadow-sm text-left">
+        <Users className="h-5 w-5 text-primary flex-shrink-0" />
+        <p className="text-xs text-muted-foreground">
+          Ajoute tes amis, lance des défis et débloquez des badges ensemble
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Slides ──────────────────────────────────────────────────────────────── */
 
 const SLIDES = [
   {
-    emoji: '🏋️',
     title: 'Bienvenue sur Reps',
-    description: 'Ton compagnon d\'entraînement quotidien. Suis tes séances, progresse et dépasse-toi.',
-    accent: 'bg-primary/10',
+    description: 'Ton compagnon d\'entraînement. Un tour rapide de l\'app avant de commencer ?',
+    visual: VisualWelcome,
   },
   {
-    emoji: '💪',
     title: 'Deux modes d\'entraînement',
-    description: 'Lance une séance de renforcement musculaire au poids du corps, ou une séance de musculation avec poids et haltères.',
-    accent: 'bg-blue-500/10',
+    description: 'Depuis l\'accueil, lance une séance de renforcement ou de musculation — chacune a son suivi adapté.',
+    visual: VisualModes,
   },
   {
-    emoji: '📊',
+    title: '1324 exercices illustrés',
+    description: 'Chaque exercice a son animation, ses muscles ciblés et ses instructions en français. Coche tes séries au fil de la séance.',
+    visual: VisualExercises,
+  },
+  {
     title: 'Suis ta progression',
-    description: 'Graphiques hebdomadaires, heatmap d\'activité, records personnels, streak de régularité — tout est là.',
-    accent: 'bg-orange-500/10',
+    description: 'Streak, objectif hebdomadaire, records personnels, graphiques et heatmap — tout est dans Statistiques et Historique.',
+    visual: VisualProgress,
   },
   {
-    emoji: '🏆',
-    title: 'Défie tes amis',
-    description: 'Ajoute tes amis, grimpe dans le classement et débloquez des badges ensemble. La motivation est collective.',
-    accent: 'bg-yellow-500/10',
+    title: 'Plus fort à plusieurs',
+    description: 'Retrouve tes amis dans le classement et défie-les. La motivation est collective !',
+    visual: VisualSocial,
   },
 ] as const;
 
-export function Onboarding() {
-  const [visible, setVisible] = useState(false);
+/* ─── Composants ──────────────────────────────────────────────────────────── */
+
+interface OnboardingSlidesProps {
+  onFinish: () => void;
+}
+
+/** Slides du tutoriel (exporté séparément pour la prévisualisation en dev) */
+export function OnboardingSlides({ onFinish }: OnboardingSlidesProps) {
   const [step, setStep] = useState(0);
-
-  useEffect(() => {
-    const done = localStorage.getItem(STORAGE_KEY);
-    if (!done) setVisible(true);
-  }, []);
-
-  const finish = () => {
-    localStorage.setItem(STORAGE_KEY, '1');
-    setVisible(false);
-  };
-
-  const next = () => {
-    if (step < SLIDES.length - 1) {
-      setStep((s) => s + 1);
-    } else {
-      finish();
-    }
-  };
-
-  if (!visible) return null;
 
   const slide = SLIDES[step]!;
   const isLast = step === SLIDES.length - 1;
+  const Visual = slide.visual;
+
+  const next = () => {
+    if (isLast) {
+      onFinish();
+    } else {
+      setStep((s) => s + 1);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-between p-6 pb-safe">
       {/* Skip */}
       <div className="w-full flex justify-end">
         <button
-          onClick={finish}
+          onClick={onFinish}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2 px-3"
         >
           Passer
@@ -79,28 +201,25 @@ export function Onboarding() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -40 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="flex-1 flex flex-col items-center justify-center text-center gap-6 max-w-sm"
+          className="flex-1 w-full flex flex-col items-center justify-center text-center gap-6 max-w-sm mx-auto"
         >
-          <div className={`h-24 w-24 rounded-3xl ${slide.accent} flex items-center justify-center`}>
-            <span className="text-5xl" role="img" aria-label={slide.title}>
-              {slide.emoji}
-            </span>
-          </div>
+          <Visual />
           <div className="space-y-3">
             <h1 className="text-2xl font-bold">{slide.title}</h1>
-            <p className="text-muted-foreground leading-relaxed">{slide.description}</p>
+            <p className="text-muted-foreground leading-relaxed text-sm">{slide.description}</p>
           </div>
         </motion.div>
       </AnimatePresence>
 
       {/* Dots + Button */}
-      <div className="w-full space-y-6">
+      <div className="w-full max-w-sm space-y-6">
         {/* Progress dots */}
         <div className="flex items-center justify-center gap-2">
-          {SLIDES.map((_, i) => (
+          {SLIDES.map((s, i) => (
             <button
-              key={i}
+              key={s.title}
               onClick={() => setStep(i)}
+              aria-label={`Aller à l'étape ${i + 1}`}
               className={`h-2 rounded-full transition-all duration-300 ${
                 i === step ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/30'
               }`}
@@ -108,12 +227,8 @@ export function Onboarding() {
           ))}
         </div>
 
-        <Button
-          size="lg"
-          className="w-full"
-          onClick={next}
-        >
-          {isLast ? 'Commencer !' : (
+        <Button size="lg" className="w-full" onClick={next}>
+          {isLast ? 'C\'est parti !' : (
             <>
               Suivant
               <ChevronRight className="h-4 w-4 ml-1" />
@@ -123,4 +238,23 @@ export function Onboarding() {
       </div>
     </div>
   );
+}
+
+/** Tutoriel affiché une seule fois, à la première connexion */
+export function Onboarding() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const done = localStorage.getItem(STORAGE_KEY);
+    if (!done) setVisible(true);
+  }, []);
+
+  const finish = () => {
+    localStorage.setItem(STORAGE_KEY, '1');
+    setVisible(false);
+  };
+
+  if (!visible) return null;
+
+  return <OnboardingSlides onFinish={finish} />;
 }

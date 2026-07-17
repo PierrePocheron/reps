@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AppInitializer } from '@/components/AppInitializer';
 import { Layout } from '@/components/Layout';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { OnboardingSlides } from '@/components/Onboarding';
 import Home from './pages/Home';
 import Session from './pages/Session';
 import GymSession from './pages/GymSession';
@@ -49,6 +50,13 @@ function App() {
             <PageTransition>
               <SentryTest />
             </PageTransition>
+          } />
+        )}
+
+        {/* Prévisualisation du tutoriel (DEV ONLY) */}
+        {import.meta.env.MODE === 'development' && (
+          <Route path="/onboarding-preview" element={
+            <OnboardingSlides onFinish={() => window.history.back()} />
           } />
         )}
 
