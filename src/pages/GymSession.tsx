@@ -15,6 +15,12 @@ import { useSound } from '@/hooks/useSound';
 import { getUserGymSessions } from '@/firebase/gymSessions';
 import type { GymSessionExercise, PlannedSet } from '@/firebase/types';
 import { useExerciseImages } from '@/hooks/useExerciseImages';
+import {
+  getLibraryExercise,
+  libraryGifUrl,
+  LIBRARY_ID_PREFIX,
+  type LibraryExercise,
+} from '@/utils/exerciseLibrary';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
 import {
   Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
@@ -61,6 +67,16 @@ function GymSession() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const cancellingRef = useRef(false);
   const [detailExerciseId, setDetailExerciseId] = useState<string | null>(null);
+  const [libDetail, setLibDetail] = useState<LibraryExercise | null>(null);
+
+  // Détails (étapes, muscles) des exercices issus de la bibliothèque complète
+  useEffect(() => {
+    if (detailExerciseId?.startsWith(LIBRARY_ID_PREFIX)) {
+      getLibraryExercise(detailExerciseId).then(setLibDetail);
+    } else {
+      setLibDetail(null);
+    }
+  }, [detailExerciseId]);
   // Defaults from history: exerciseId → { reps, weight }
   const [historyDefaults, setHistoryDefaults] = useState<Record<string, { reps: number; weight: number }>>({});
 
@@ -427,11 +443,16 @@ function GymSession() {
             exerciseId={ex.exerciseId}
             name={ex.name}
             emoji={ex.emoji}
-            imageUrl={infoMap[ex.exerciseId]?.gifUrl ?? ex.imageUrl ?? null}
+            imageUrl={
+              infoMap[ex.exerciseId]?.gifUrl
+              ?? (libDetail ? libraryGifUrl(libDetail) : null)
+              ?? ex.imageUrl
+              ?? null
+            }
             description={infoMap[ex.exerciseId]?.description ?? null}
-            steps={infoMap[ex.exerciseId]?.steps}
-            target={infoMap[ex.exerciseId]?.target}
-            secondaryMuscles={infoMap[ex.exerciseId]?.secondaryMuscles}
+            steps={infoMap[ex.exerciseId]?.steps ?? libDetail?.steps}
+            target={infoMap[ex.exerciseId]?.target ?? libDetail?.target}
+            secondaryMuscles={infoMap[ex.exerciseId]?.secondaryMuscles ?? libDetail?.secondaryMuscles}
             onClose={() => setDetailExerciseId(null)}
           />
         );

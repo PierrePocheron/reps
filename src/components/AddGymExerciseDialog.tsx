@@ -1,10 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { EXERCISE_CATEGORIES, MUSCULATION_EXERCISES } from '@/utils/constants';
-import { Search, Check, ChevronRight } from 'lucide-react';
+import { Search, Check, ChevronRight, Loader2 } from 'lucide-react';
 import type { ExerciseCategory, Exercise } from '@/firebase/types';
 import { useHaptic } from '@/hooks/useHaptic';
+import {
+  loadExerciseLibrary,
+  searchLibrary,
+  toExercise,
+  equipmentLabel,
+  libraryImageUrl,
+  LIBRARY_ID_PREFIX,
+  type LibraryExercise,
+} from '@/utils/exerciseLibrary';
+
+/** Nombre max de lignes rendues en mode bibliothèque (performances) */
+const LIBRARY_RENDER_LIMIT = 80;
 
 interface AddGymExerciseDialogProps {
   open: boolean;
@@ -14,6 +26,26 @@ interface AddGymExerciseDialogProps {
   enrichedExercises?: Exercise[];
 }
 
+/** Vignette avec fallback emoji si le CDN est injoignable (offline) */
+function ExerciseThumb({ src, alt, emoji }: { src: string | null; alt: string; emoji: string }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="h-10 w-10 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
+      {src && !failed ? (
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          onError={() => setFailed(true)}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <span className="text-xl">{emoji}</span>
+      )}
+    </div>
+  );
+}
+
 export function AddGymExerciseDialog({
   open,
   onOpenChange,
@@ -21,11 +53,20 @@ export function AddGymExerciseDialog({
   hasExercise,
   enrichedExercises,
 }: AddGymExerciseDialogProps) {
+  const [source, setSource] = useState<'essentials' | 'library'>('essentials');
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | 'all'>('all');
   const [search, setSearch] = useState('');
+  const [library, setLibrary] = useState<LibraryExercise[] | null>(null);
   const haptics = useHaptic();
 
-  // Merge static exercises with enriched data (imageUrl from Firestore)
+  // Charger la bibliothèque au premier passage sur l'onglet
+  useEffect(() => {
+    if (source === 'library' && !library) {
+      loadExerciseLibrary().then(setLibrary);
+    }
+  }, [source, library]);
+
+  // Merge static exercises with enriched data (imageUrl locale)
   const exercises = MUSCULATION_EXERCISES.map((ex) => {
     const enriched = enrichedExercises?.find((e) => e.id === ex.id);
     return enriched ? { ...ex, imageUrl: enriched.imageUrl } : ex;
@@ -37,9 +78,14 @@ export function AddGymExerciseDialog({
     return matchesCategory && matchesSearch;
   });
 
+  const libraryResults = source === 'library' && library
+    ? searchLibrary(library, search, selectedCategory)
+    : [];
+
   const muscuCategories = EXERCISE_CATEGORIES.filter(
     (cat) =>
       cat.id === 'all' ||
+      source === 'library' ||
       MUSCULATION_EXERCISES.some((ex) => ex.category === cat.id)
   );
 
@@ -61,12 +107,34 @@ export function AddGymExerciseDialog({
           </DialogHeader>
         </div>
 
+        {/* Source : essentiels / bibliothèque complète */}
+        <div className="px-5 pb-3 flex-shrink-0">
+          <div className="flex rounded-xl bg-muted p-1">
+            {([
+              ['essentials', 'Essentiels'],
+              ['library', 'Bibliothèque'],
+            ] as const).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => { haptics.selection(); setSource(key); }}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  source === key
+                    ? 'bg-background shadow-sm text-foreground'
+                    : 'text-muted-foreground'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Recherche */}
         <div className="px-5 pb-3 flex-shrink-0">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Rechercher..."
+              placeholder={source === 'library' ? 'Rechercher parmi 1324 exercices…' : 'Rechercher...'}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 h-10 bg-muted border-0 focus-visible:ring-1"
@@ -100,45 +168,82 @@ export function AddGymExerciseDialog({
 
         {/* Liste */}
         <div className="flex-1 overflow-y-auto min-h-0 px-5 pb-5">
-          {filtered.length === 0 ? (
+          {source === 'essentials' ? (
+            filtered.length === 0 ? (
+              <p className="text-center text-muted-foreground text-sm py-10">
+                Aucun exercice trouvé
+              </p>
+            ) : (
+              <div className="space-y-1">
+                {filtered.map((exercise) => {
+                  const added = hasExercise(exercise.id);
+                  return (
+                    <button
+                      key={exercise.id}
+                      disabled={added}
+                      onClick={() => handleAdd(exercise)}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left ${
+                        added
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'hover:bg-muted active:bg-muted/80 active:scale-[0.99]'
+                      }`}
+                    >
+                      <ExerciseThumb src={exercise.imageUrl ?? null} alt={exercise.name} emoji={exercise.emoji} />
+
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm">{exercise.name}</p>
+                        {exercise.category && (
+                          <p className="text-xs text-muted-foreground">
+                            {EXERCISE_CATEGORIES.find((c) => c.id === exercise.category)?.label}
+                          </p>
+                        )}
+                      </div>
+
+                      {added ? (
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground flex-shrink-0">
+                          <Check className="h-3.5 w-3.5" />
+                        </span>
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )
+          ) : !library ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : libraryResults.length === 0 ? (
             <p className="text-center text-muted-foreground text-sm py-10">
               Aucun exercice trouvé
             </p>
           ) : (
             <div className="space-y-1">
-              {filtered.map((exercise) => {
-                const added = hasExercise(exercise.id);
+              {libraryResults.slice(0, LIBRARY_RENDER_LIMIT).map((libEx) => {
+                const id = `${LIBRARY_ID_PREFIX}${libEx.id}`;
+                const added = hasExercise(id);
                 return (
                   <button
-                    key={exercise.id}
+                    key={id}
                     disabled={added}
-                    onClick={() => handleAdd(exercise)}
+                    onClick={() => handleAdd(toExercise(libEx))}
                     className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left ${
                       added
                         ? 'opacity-50 cursor-not-allowed'
                         : 'hover:bg-muted active:bg-muted/80 active:scale-[0.99]'
                     }`}
                   >
-                    {/* Image ou emoji */}
-                    <div className="h-10 w-10 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
-                      {exercise.imageUrl ? (
-                        <img
-                          src={exercise.imageUrl}
-                          alt={exercise.name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-xl">{exercise.emoji}</span>
-                      )}
-                    </div>
+                    <ExerciseThumb src={libraryImageUrl(libEx)} alt={libEx.name} emoji="💪" />
 
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{exercise.name}</p>
-                      {exercise.category && (
-                        <p className="text-xs text-muted-foreground">
-                          {EXERCISE_CATEGORIES.find((c) => c.id === exercise.category)?.label}
-                        </p>
-                      )}
+                      <p className="font-medium text-sm truncate">{libEx.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {equipmentLabel(libEx.equipment)}
+                        {' · '}
+                        {EXERCISE_CATEGORIES.find((c) => c.id === libEx.category)?.label}
+                      </p>
                     </div>
 
                     {added ? (
@@ -151,6 +256,11 @@ export function AddGymExerciseDialog({
                   </button>
                 );
               })}
+              {libraryResults.length > LIBRARY_RENDER_LIMIT && (
+                <p className="text-center text-xs text-muted-foreground py-3">
+                  {libraryResults.length} résultats — affine ta recherche pour voir les autres
+                </p>
+              )}
             </div>
           )}
         </div>

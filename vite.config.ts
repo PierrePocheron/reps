@@ -84,6 +84,22 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
+            // Médias de la bibliothèque d'exercices (CDN jsDelivr) :
+            // cache-first pour être disponibles hors ligne après consultation
+            urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/gh\/hasaneyldrm\/exercises-dataset@.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'exercise-media-cache',
+              expiration: {
+                maxEntries: 300,
+                maxAgeSeconds: 60 * 60 * 24 * 180 // 6 mois
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
             options: {

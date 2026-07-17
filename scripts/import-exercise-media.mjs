@@ -11,6 +11,8 @@
  *   public/exercises/<repsId>.jpg   — vignette 180×180
  *   public/exercises/<repsId>.gif   — animation
  *   src/data/exerciseDetails.json   — instructions FR + muscles + chemins locaux
+ *   src/data/exerciseLibrary.json   — bibliothèque complète (1324 exercices,
+ *                                     médias servis via CDN jsDelivr à la demande)
  *
  * Usage :  node scripts/import-exercise-media.mjs [--data-only]
  */
@@ -24,7 +26,22 @@ const RAW_BASE = 'https://raw.githubusercontent.com/hasaneyldrm/exercises-datase
 const CACHE = path.join(ROOT, 'scripts', '.cache', 'exercises-dataset.json');
 const MEDIA_DIR = path.join(ROOT, 'public', 'exercises');
 const OUT_JSON = path.join(ROOT, 'src', 'data', 'exerciseDetails.json');
+const OUT_LIBRARY = path.join(ROOT, 'src', 'data', 'exerciseLibrary.json');
 const ATTRIBUTION = '© Gym visual — https://gymvisual.com/';
+
+/** body_part du dataset → catégorie REPS */
+const BODY_PART_TO_CATEGORY = {
+  back: 'back',
+  cardio: 'cardio',
+  chest: 'chest',
+  'lower arms': 'arms',
+  'upper arms': 'arms',
+  'lower legs': 'legs',
+  'upper legs': 'legs',
+  neck: 'shoulders',
+  shoulders: 'shoulders',
+  waist: 'core',
+};
 
 /**
  * Mapping curaté : id d'exercice REPS → id du dataset.
@@ -160,6 +177,22 @@ async function main() {
   await writeFile(OUT_JSON, JSON.stringify(out, null, 2) + '\n');
   console.log(`\n${Object.keys(out).length} exercices → ${path.relative(ROOT, OUT_JSON)}`);
   if (!dataOnly) console.log(`${downloaded} fichiers médias → ${path.relative(ROOT, MEDIA_DIR)}`);
+
+  // ─── Bibliothèque complète (données embarquées, médias via CDN) ─────────
+  const library = dataset.map((ex) => ({
+    id: ex.id,
+    name: ex.name,
+    category: BODY_PART_TO_CATEGORY[ex.body_part] ?? 'core',
+    bodyPart: ex.body_part,
+    target: ex.target,
+    secondaryMuscles: ex.secondary_muscles ?? [],
+    equipment: ex.equipment,
+    steps: ex.instruction_steps?.fr ?? [],
+    // "0001-2gPfomN" → images/<media>.jpg et videos/<media>.gif sur le CDN
+    media: ex.image.split('/').pop().replace(/\.jpg$/, ''),
+  }));
+  await writeFile(OUT_LIBRARY, JSON.stringify(library));
+  console.log(`${library.length} exercices → ${path.relative(ROOT, OUT_LIBRARY)} (bibliothèque complète)`);
 }
 
 main().catch((err) => {
