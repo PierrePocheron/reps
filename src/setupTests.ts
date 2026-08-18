@@ -6,6 +6,23 @@ import { vi } from 'vitest';
 // 1. Mock Canvas (for confetti)
 HTMLCanvasElement.prototype.getContext = vi.fn();
 
+// 1b. Mock matchMedia (absent de jsdom, utilisé par settingsStore.applyTheme)
+if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
+}
+
 // 2. Mock Firebase
 vi.mock('firebase/app', () => ({
   initializeApp: vi.fn(() => ({ name: '[DEFAULT]' })),

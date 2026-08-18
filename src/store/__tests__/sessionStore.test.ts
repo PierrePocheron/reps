@@ -66,11 +66,13 @@ describe('sessionStore', () => {
       expect(startTime).toBeGreaterThanOrEqual(before);
     });
 
-    it('should reset exercises and reps', () => {
-      useSessionStore.setState({ exercises: [{ name: 'Pompes', emoji: '🔥', reps: 10 }], totalReps: 10 });
+    it('should keep pre-loaded exercises (template) but reset reps and duration', () => {
+      useSessionStore.setState({ exercises: [{ name: 'Pompes', emoji: '🔥', reps: 10 }], totalReps: 10, duration: 42 });
       useSessionStore.getState().startSession();
-      expect(useSessionStore.getState().exercises).toEqual([]);
+      expect(useSessionStore.getState().exercises).toHaveLength(1);
+      expect(useSessionStore.getState().exercises[0]?.name).toBe('Pompes');
       expect(useSessionStore.getState().totalReps).toBe(0);
+      expect(useSessionStore.getState().duration).toBe(0);
     });
   });
 
