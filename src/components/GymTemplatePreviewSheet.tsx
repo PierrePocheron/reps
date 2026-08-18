@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
@@ -12,6 +13,15 @@ interface Props {
 
 export function GymTemplatePreviewSheet({ template, onClose, onStart }: Props) {
   const { imageMap } = useExerciseImages();
+
+  useEffect(() => {
+    if (!template) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [template, onClose]);
 
   if (!template) return null;
 
@@ -32,15 +42,20 @@ export function GymTemplatePreviewSheet({ template, onClose, onStart }: Props) {
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="relative z-10 w-full sm:max-w-md bg-background rounded-t-3xl sm:rounded-2xl shadow-xl flex flex-col max-h-[88dvh]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="gym-template-preview-title"
+        className="relative z-10 w-full sm:max-w-md bg-background rounded-t-3xl sm:rounded-2xl shadow-xl flex flex-col max-h-[88dvh]"
+      >
         {/* Header */}
         <div className="flex items-center gap-3 px-5 pt-5 pb-3 shrink-0">
-          <button onClick={onClose} className="p-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={onClose} aria-label="Fermer" className="p-3 -ml-2 rounded-full hover:bg-muted active:bg-muted text-muted-foreground hover:text-foreground transition-colors">
             <X className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2 flex-1">
             <span className="text-xl">{template.emoji}</span>
-            <h2 className="font-bold text-base">{template.name}</h2>
+            <h2 id="gym-template-preview-title" className="font-bold text-base">{template.name}</h2>
           </div>
         </div>
 
@@ -51,7 +66,7 @@ export function GymTemplatePreviewSheet({ template, onClose, onStart }: Props) {
               {/* Image or emoji */}
               <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
                 {ex.imageUrl ? (
-                  <img src={ex.imageUrl} alt={ex.name} className="h-full w-full object-cover" />
+                  <img src={ex.imageUrl} alt={ex.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                 ) : (
                   <span className="text-2xl">{ex.emoji}</span>
                 )}
@@ -68,14 +83,14 @@ export function GymTemplatePreviewSheet({ template, onClose, onStart }: Props) {
               </div>
 
               {/* Sets summary pills */}
-              <div className="flex flex-wrap gap-1 justify-end max-w-[80px]">
+              <div className="flex flex-wrap gap-1 justify-end max-w-[96px]">
                 {ex.sets.slice(0, 4).map((s, i) => (
-                  <span key={i} className="text-[10px] bg-muted px-1.5 py-0.5 rounded-md font-mono text-muted-foreground">
-                    {s.reps}×{s.weight > 0 ? `${s.weight}` : 'bw'}
+                  <span key={i} className="text-xs bg-muted px-1.5 py-0.5 rounded-md font-mono text-muted-foreground">
+                    {s.reps}×{s.weight > 0 ? `${s.weight}` : 'PDC'}
                   </span>
                 ))}
                 {ex.sets.length > 4 && (
-                  <span className="text-[10px] text-muted-foreground">+{ex.sets.length - 4}</span>
+                  <span className="text-xs text-muted-foreground">+{ex.sets.length - 4}</span>
                 )}
               </div>
             </div>

@@ -13,6 +13,14 @@ import { useUserTemplates } from '@/hooks/useUserTemplates';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useToast } from '@/hooks/use-toast';
 import { CreateTemplateDialog } from '@/components/CreateTemplateDialog';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Zap, Dumbbell, ChevronRight, ArrowRight, Plus, Trash2 } from 'lucide-react';
 import type { WorkoutTemplate, GymSessionExercise } from '@/firebase/types';
 import { GymTemplatePreviewSheet } from '@/components/GymTemplatePreviewSheet';
@@ -51,8 +59,8 @@ function TemplateCard({
           {template.emoji}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm">{template.name}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{template.description}</p>
+          <p className="font-semibold text-sm truncate">{template.name}</p>
+          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{template.description}</p>
           <div className="flex items-center gap-1 mt-1.5">
             {previewEmojis.map((emoji, i) => (
               <span key={i} className="text-sm">{emoji}</span>
@@ -71,7 +79,8 @@ function TemplateCard({
       {onDelete && (
         <button
           onClick={onDelete}
-          className="flex items-center justify-center w-10 rounded-2xl border border-border bg-card hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive text-muted-foreground transition-colors"
+          aria-label={`Supprimer ${template.name}`}
+          className="flex items-center justify-center w-11 min-h-[44px] rounded-2xl border border-border bg-card hover:bg-destructive/10 hover:border-destructive/30 hover:text-destructive text-muted-foreground active:scale-95 transition-all"
         >
           <Trash2 className="w-4 h-4" />
         </button>
@@ -89,6 +98,7 @@ function Templates() {
   const [activeTab, setActiveTab] = useState<Tab>('renforcement');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<WorkoutTemplate | null>(null);
+  const [templateToDelete, setTemplateToDelete] = useState<WorkoutTemplate | null>(null);
   const { isActive, loadExercisesFromTemplate } = useSessionStore();
   const { phase: gymPhase, loadGymTemplate, startExecution } = useGymSessionStore();
   const { templates: userTemplates, loading: templatesLoading, create, remove } = useUserTemplates();
@@ -140,6 +150,7 @@ function Templates() {
   };
 
   const handleDeleteUserTemplate = async (templateId: string) => {
+    setTemplateToDelete(null);
     try {
       await remove(templateId);
       toast({ title: 'Template supprimé' });
@@ -159,11 +170,11 @@ function Templates() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Templates</h1>
-            <p className="text-sm text-muted-foreground mt-1">Démarre une séance depuis un programme préétabli.</p>
+            <p className="text-sm text-muted-foreground mt-1">Démarre une séance depuis un template préétabli.</p>
           </div>
           <button
             onClick={() => setShowCreateDialog(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 active:scale-95 transition-all"
+            className="flex items-center gap-1.5 px-4 min-h-[44px] rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 active:scale-95 transition-all"
           >
             <Plus className="h-4 w-4" />
             Créer
@@ -171,10 +182,12 @@ function Templates() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 p-1 bg-muted rounded-xl">
+        <div role="tablist" className="flex gap-2 p-1 bg-muted rounded-xl">
           <button
+            role="tab"
+            aria-selected={activeTab === 'renforcement'}
             onClick={() => setActiveTab('renforcement')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 min-h-[44px] rounded-lg text-sm font-medium transition-all ${
               activeTab === 'renforcement'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -184,8 +197,10 @@ function Templates() {
             Renforcement
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'musculation'}
             onClick={() => setActiveTab('musculation')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 min-h-[44px] rounded-lg text-sm font-medium transition-all ${
               activeTab === 'musculation'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -197,27 +212,35 @@ function Templates() {
         </div>
 
         {/* Mes templates */}
-        {!templatesLoading && userTemplatesForTab.length > 0 && (
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium px-1">
-              Mes programmes
-            </p>
-            {userTemplatesForTab.map((template) => (
-              <TemplateCard
-                key={template.id}
-                template={template}
-                onStart={() => handleStartTemplate(template)}
-                onDelete={() => handleDeleteUserTemplate(template.id)}
-              />
-            ))}
-          </div>
-        )}
+        <div className="space-y-3">
+          <h2 className="text-xs text-muted-foreground uppercase tracking-wider font-medium px-1">
+            Mes templates
+          </h2>
+          {templatesLoading && <div className="h-20 rounded-2xl bg-muted animate-pulse" />}
+          {!templatesLoading && userTemplatesForTab.length === 0 && (
+            <button
+              onClick={() => setShowCreateDialog(true)}
+              className="w-full flex items-center justify-center gap-2 min-h-[44px] py-3 rounded-2xl border-2 border-dashed border-border hover:border-primary/40 hover:bg-muted transition-all text-sm text-muted-foreground hover:text-foreground"
+            >
+              <Plus className="h-4 w-4" />
+              Crée ton premier template
+            </button>
+          )}
+          {userTemplatesForTab.map((template) => (
+            <TemplateCard
+              key={template.id}
+              template={template}
+              onStart={() => handleStartTemplate(template)}
+              onDelete={() => setTemplateToDelete(template)}
+            />
+          ))}
+        </div>
 
         {/* Templates par défaut */}
         <div className="space-y-3">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium px-1">
-            Programmes par défaut
-          </p>
+          <h2 className="text-xs text-muted-foreground uppercase tracking-wider font-medium px-1">
+            Templates par défaut
+          </h2>
           {defaultTemplates.map((template) => (
             <TemplateCard
               key={template.id}
@@ -248,6 +271,29 @@ function Templates() {
         onClose={() => setPreviewTemplate(null)}
         onStart={(t) => { setPreviewTemplate(null); handleMuscuTemplate(t); }}
       />
+
+      <Dialog open={templateToDelete !== null} onOpenChange={(open) => { if (!open) setTemplateToDelete(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Supprimer ce template ?</DialogTitle>
+            <DialogDescription>
+              {templateToDelete?.name} sera supprimé. Cette action est définitive.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 mt-4">
+            <Button variant="outline" onClick={() => setTemplateToDelete(null)} className="flex-1">
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={() => { if (templateToDelete) handleDeleteUserTemplate(templateToDelete.id); }}
+            >
+              Supprimer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <CreateTemplateDialog
         open={showCreateDialog}
