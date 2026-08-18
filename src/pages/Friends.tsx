@@ -13,6 +13,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Timestamp } from 'firebase/firestore';
 import {
   searchUsers,
@@ -43,6 +50,10 @@ export default function Friends() {
 
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isLoadingActivity, setIsLoadingActivity] = useState(false);
+
+  const [pendingUid, setPendingUid] = useState<string | null>(null);
+  const [pendingRequestId, setPendingRequestId] = useState<string | null>(null);
+  const [friendToRemove, setFriendToRemove] = useState<User | null>(null);
 
   // Load friends
   useEffect(() => {
@@ -113,11 +124,12 @@ export default function Friends() {
 
   const handleSendRequest = async (toUserId: string) => {
     if (!user) return;
+    setPendingUid(toUserId);
     try {
       await sendFriendRequest(user, toUserId);
       toast({
         title: 'Demande envoyée',
-        description: 'Votre demande d\'ami a été envoyée !',
+        description: 'Ta demande d\'ami a été envoyée !',
       });
       // Remove from search results to give feedback
       setSearchResults(prev => prev.filter(u => u.uid !== toUserId));
@@ -128,16 +140,19 @@ export default function Friends() {
         description: err.message || 'Impossible d\'envoyer la demande',
         variant: 'destructive',
       });
+    } finally {
+      setPendingUid(null);
     }
   };
 
   const handleAcceptRequest = async (request: FriendRequest) => {
     if (!user) return;
+    setPendingRequestId(request.id);
     try {
       await acceptFriendRequest(request.id, request.fromUserId, user.uid);
       toast({
         title: 'Ami ajouté',
-        description: `Vous êtes maintenant ami avec ${request.fromDisplayName}`,
+        description: `Tu es maintenant ami avec ${request.fromDisplayName}`,
       });
     } catch (error) {
       toast({
@@ -145,10 +160,13 @@ export default function Friends() {
         description: 'Impossible d\'accepter la demande',
         variant: 'destructive',
       });
+    } finally {
+      setPendingRequestId(null);
     }
   };
 
   const handleDeclineRequest = async (requestId: string) => {
+    setPendingRequestId(requestId);
     try {
       await declineFriendRequest(requestId);
       toast({
@@ -161,21 +179,22 @@ export default function Friends() {
         description: 'Impossible de refuser la demande',
         variant: 'destructive',
       });
+    } finally {
+      setPendingRequestId(null);
     }
   };
 
   const handleRemoveFriend = async (friendId: string) => {
     if (!user) return;
     try {
-      if (!confirm('Êtes-vous sûr de vouloir supprimer cet ami ?')) return;
-
       await removeFriend(user.uid, friendId);
       toast({
         title: 'Ami supprimé',
-        description: 'Cet utilisateur a été retiré de votre liste d\'amis.',
+        description: 'Cet utilisateur a été retiré de ta liste d\'amis.',
       });
       // Update local state
       setFriends(prev => prev.filter(f => f.uid !== friendId));
+      setFriendToRemove(null);
     } catch (error) {
       toast({
         title: 'Erreur',
@@ -193,12 +212,12 @@ export default function Friends() {
     if (!timestamp) return '';
     const date = timestamp.toDate();
     const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const dayDiff = Math.round((startOfDay(now) - startOfDay(date)) / 86400000);
 
     const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    if (diffDays <= 1) return `Aujourd'hui à ${timeStr}`;
-    if (diffDays <= 2) return `Hier à ${timeStr}`;
+    if (dayDiff === 0) return `Aujourd'hui à ${timeStr}`;
+    if (dayDiff === 1) return `Hier à ${timeStr}`;
     return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) + ` à ${timeStr}`;
   };
 
@@ -220,8 +239,9 @@ export default function Friends() {
             <TabsTrigger value="friends" className="relative">
               Amis
               {friendRequests.length > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground animate-pulse">
+                <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-[1.25rem] px-1 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
                   {friendRequests.length}
+                  <span className="sr-only"> demande{friendRequests.length > 1 ? 's' : ''} en attente</span>
                 </span>
               )}
             </TabsTrigger>
@@ -247,13 +267,13 @@ export default function Friends() {
                         <CardContent className="p-4">
                           <div className="flex items-center gap-4">
                             <UserAvatar user={friend} size="md" />
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                               <p className="text-sm">
                                 <span className="font-semibold">{friend.displayName}</span> a débloqué un badge !
                               </p>
                               <div className="flex items-center gap-2 mt-1">
                                 <span className="text-2xl">{item.badgeEmoji}</span>
-                                <span className="font-bold text-primary">{item.badgeName}</span>
+                                <span className="font-bold text-primary truncate">{item.badgeName}</span>
                               </div>
                               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
@@ -273,11 +293,11 @@ export default function Friends() {
                         <CardContent className="p-4">
                           <div className="flex items-center gap-4">
                             <UserAvatar user={friend} size="md" />
-                            <div className="flex-1">
+                            <div className="flex-1 min-w-0">
                               <p className="text-sm">
                                 <span className="font-semibold">{friend.displayName}</span> a un nouvel ami !
                               </p>
-                              <div className="flex items-center gap-2 mt-1 text-blue-600">
+                              <div className="flex items-center gap-2 mt-1 text-blue-600 dark:text-blue-400">
                                 <UserPlus className="h-4 w-4" />
                                 <span className="font-medium">Nouvelle connexion</span>
                               </div>
@@ -300,18 +320,18 @@ export default function Friends() {
                           <UserAvatar user={friend} size="md" />
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-start">
-                              <div>
-                                <h3 className="font-semibold text-sm">{friend.displayName}</h3>
+                              <div className="min-w-0">
+                                <h3 className="font-semibold text-sm truncate">{friend.displayName}</h3>
                                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                                   <Calendar className="h-3 w-3" />
                                   {formatDate(item.date || item.createdAt)}
                                 </p>
                               </div>
-                              <div className="text-right">
+                              <div className="text-right shrink-0 ml-2">
                                 <span className="text-lg font-bold text-primary">{item.totalReps}</span>
                                 <span className="text-xs text-muted-foreground ml-1">reps</span>
                                 {(item.totalCalories || 0) > 0 && (
-                                  <div className="flex items-center justify-end gap-1 text-orange-500 mt-1">
+                                  <div className="flex items-center justify-end gap-1 text-orange-700 dark:text-orange-400 mt-1">
                                     <Flame className="h-3 w-3" />
                                     <span className="text-xs font-bold">{item.totalCalories} kcal</span>
                                   </div>
@@ -334,7 +354,7 @@ export default function Friends() {
                               ))}
                               {item.exercises && item.exercises.length > 3 && (
                                 <p className="text-xs text-center text-muted-foreground pt-1">
-                                  + {item.exercises.length - 3} autres exercices
+                                  {`+ ${item.exercises.length - 3} autre${item.exercises.length - 3 > 1 ? 's' : ''} exercice${item.exercises.length - 3 > 1 ? 's' : ''}`}
                                 </p>
                               )}
                             </div>
@@ -345,13 +365,25 @@ export default function Friends() {
                   );
                 })}
               </div>
+            ) : (user.friends?.length ?? 0) === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <div className="bg-muted/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="h-8 w-8 opacity-50" />
+                </div>
+                <p className="mb-2">Ton fil est vide pour l'instant.</p>
+                <p className="text-sm opacity-75 mb-4">Ajoute des amis pour suivre leurs séances ici.</p>
+                <Button variant="secondary" onClick={() => setActiveTab('friends')}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Trouver des amis
+                </Button>
+              </div>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <div className="bg-muted/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Activity className="h-8 w-8 opacity-50" />
                 </div>
                 <p className="mb-2">Aucune activité récente.</p>
-                <p className="text-sm opacity-75">Vos amis n'ont pas encore fait de sport !</p>
+                <p className="text-sm opacity-75">Tes amis n'ont pas encore fait de sport !</p>
               </div>
             )}
           </TabsContent>
@@ -361,17 +393,27 @@ export default function Friends() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Ajouter un ami..."
+                type="text"
+                inputMode="search"
+                enterKeyHint="search"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                aria-label="Rechercher un utilisateur par pseudo ou e-mail"
+                placeholder="Pseudo ou e-mail…"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 bg-card/50"
+                className="pl-9 pr-10 bg-card/50"
               />
               {searchTerm && (
                 <button
+                  type="button"
+                  aria-label="Effacer la recherche"
                   onClick={() => setSearchTerm('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 p-2 rounded-full text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <X className="h-4 w-4 text-muted-foreground" />
+                  <X className="h-4 w-4" />
                 </button>
               )}
             </div>
@@ -393,20 +435,32 @@ export default function Friends() {
                           <div className="min-w-0">
                             <p className="font-medium truncate">{result.displayName}</p>
                             {user.friends?.includes(result.uid) ? (
-                              <p className="text-xs text-green-500 flex items-center gap-1">
+                              <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
                                 <Check className="h-3 w-3" /> Ami
                               </p>
                             ) : friendRequests.some(req => req.fromUserId === result.uid) ? (
-                              <p className="text-xs text-blue-500">Demande reçue</p>
+                              <p className="text-xs text-blue-600 dark:text-blue-400">Demande reçue</p>
                             ) : (
                               <p className="text-xs text-muted-foreground truncate">{result.email}</p>
                             )}
                           </div>
                         </div>
                         {!user.friends?.includes(result.uid) && !friendRequests.some(req => req.fromUserId === result.uid) && (
-                          <Button size="sm" variant="secondary" onClick={() => handleSendRequest(result.uid)} className="shrink-0">
-                            <UserPlus className="h-4 w-4 mr-2" />
-                            Ajouter
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            disabled={pendingUid === result.uid}
+                            onClick={() => handleSendRequest(result.uid)}
+                            className="shrink-0 active:scale-95"
+                          >
+                            {pendingUid === result.uid ? (
+                              <LoadingSpinner size="sm" />
+                            ) : (
+                              <>
+                                <UserPlus className="h-4 w-4 mr-2" />
+                                Ajouter
+                              </>
+                            )}
                           </Button>
                         )}
                       </CardContent>
@@ -414,7 +468,8 @@ export default function Friends() {
                   ))
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    <p>Aucun utilisateur trouvé.</p>
+                    <p>Aucun utilisateur ne correspond à « {searchTerm} ».</p>
+                    <p className="text-sm mt-1">Vérifie l'orthographe du pseudo ou essaie l'adresse e-mail exacte.</p>
                   </div>
                 )}
               </div>
@@ -424,7 +479,7 @@ export default function Friends() {
             {searchTerm.length < 2 && friendRequests.length > 0 && (
               <div className="space-y-3">
                 <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                  <div className="h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
                   Demandes en attente
                 </h3>
                 {friendRequests.map((request) => (
@@ -434,20 +489,25 @@ export default function Friends() {
                         <UserAvatar user={{ displayName: request.fromDisplayName }} emoji={request.fromAvatarEmoji} size="md" />
                         <div className="min-w-0">
                           <p className="font-medium truncate">{request.fromDisplayName}</p>
-                          <p className="text-xs text-muted-foreground">veut vous ajouter</p>
+                          <p className="text-xs text-muted-foreground">veut t'ajouter</p>
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 shrink-0">
                         <Button
                           size="icon"
-                          className="h-8 w-8 bg-black text-white hover:bg-primary hover:text-primary-foreground rounded-full transition-colors shadow-sm"
+                          aria-label={`Accepter la demande de ${request.fromDisplayName}`}
+                          className="rounded-full shrink-0 active:scale-95"
+                          disabled={pendingRequestId === request.id}
                           onClick={() => handleAcceptRequest(request)}
                         >
                           <Check className="h-4 w-4" />
                         </Button>
                         <Button
                           size="icon"
-                          className="h-8 w-8 bg-black text-white hover:bg-red-600 hover:text-white rounded-full transition-colors shadow-sm"
+                          variant="outline"
+                          aria-label={`Refuser la demande de ${request.fromDisplayName}`}
+                          className="rounded-full shrink-0 text-muted-foreground hover:text-destructive hover:border-destructive/40 active:scale-95"
+                          disabled={pendingRequestId === request.id}
                           onClick={() => handleDeclineRequest(request.id)}
                         >
                           <X className="h-4 w-4" />
@@ -462,7 +522,7 @@ export default function Friends() {
             {/* Liste d'amis (si pas de recherche active) */}
             {searchTerm.length < 2 && (
               <div className="space-y-3">
-                <h3 className="font-semibold text-sm text-muted-foreground">Mes Amis ({friends.length})</h3>
+                <h3 className="font-semibold text-sm text-muted-foreground">Mes amis ({friends.length})</h3>
                 {isLoadingFriends ? (
                   <div className="flex justify-center py-12">
                     <LoadingSpinner />
@@ -476,21 +536,21 @@ export default function Friends() {
                           <div className="min-w-0">
                             <p className="font-medium truncate">{friend.displayName}</p>
                             <p className="text-xs text-muted-foreground truncate">
-                              {friend.totalSessions} séances • {friend.totalReps} reps
+                              {friend.totalSessions} séance{friend.totalSessions > 1 ? 's' : ''} • {friend.totalReps} reps
                             </p>
                           </div>
                         </div>
 
                         <DropdownMenu modal={false}>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button variant="ghost" size="icon" className="shrink-0 -mr-2" aria-label={`Options pour ${friend.displayName}`}>
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
                               className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-100/10"
-                              onClick={() => handleRemoveFriend(friend.uid)}
+                              onClick={() => setFriendToRemove(friend)}
                             >
                               <UserMinus className="mr-2 h-4 w-4" />
                               Supprimer
@@ -505,8 +565,8 @@ export default function Friends() {
                     <div className="bg-muted/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Users className="h-8 w-8 opacity-50" />
                     </div>
-                    <p className="mb-2">Vous n'avez pas encore d'amis.</p>
-                    <p className="text-sm opacity-75">Utilisez la barre de recherche ci-dessus pour en ajouter !</p>
+                    <p className="mb-2">Tu n'as pas encore d'amis.</p>
+                    <p className="text-sm opacity-75">Utilise la barre de recherche ci-dessus pour en ajouter !</p>
                   </div>
                 )}
               </div>
@@ -514,6 +574,29 @@ export default function Friends() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={!!friendToRemove} onOpenChange={(o) => !o && setFriendToRemove(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Supprimer cet ami ?</DialogTitle>
+            <DialogDescription>
+              {friendToRemove?.displayName} ne verra plus ton activité et tu ne verras plus la sienne. Tu pourras le ré-ajouter plus tard.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 mt-2">
+            <Button variant="outline" className="flex-1" onClick={() => setFriendToRemove(null)}>
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={() => friendToRemove && handleRemoveFriend(friendToRemove.uid)}
+            >
+              Supprimer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 }
