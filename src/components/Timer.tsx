@@ -13,7 +13,9 @@ interface TimerProps {
  * Met à jour automatiquement toutes les secondes
  */
 export function Timer({ startTime, isActive, className }: TimerProps) {
-  const [duration, setDuration] = useState(0);
+  const [duration, setDuration] = useState(() =>
+    isActive && startTime ? Math.floor((Date.now() - startTime) / 1000) : 0
+  );
 
   useEffect(() => {
     if (!isActive || !startTime) {
@@ -21,10 +23,9 @@ export function Timer({ startTime, isActive, className }: TimerProps) {
       return;
     }
 
-    const interval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      setDuration(elapsed);
-    }, 1000);
+    const tick = () => setDuration(Math.floor((Date.now() - startTime) / 1000));
+    tick();
+    const interval = setInterval(tick, 1000);
 
     return () => clearInterval(interval);
   }, [isActive, startTime]);

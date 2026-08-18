@@ -9,7 +9,8 @@ import { BackButton } from '@/components/BackButton';
 import { useSession } from '@/hooks/useSession';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
-import { Play, Square, Plus, Dumbbell, Flame } from 'lucide-react';
+import { clearCurrentSessionFromLocal } from '@/firebase';
+import { Square, Plus, Dumbbell, Flame, Loader2, History } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/useSound';
 import confetti from 'canvas-confetti';
@@ -30,6 +31,7 @@ function Session() {
     totalReps,
     startSession,
     endSession,
+    resetSession,
     addExercise,
     removeExercise,
     addReps,
@@ -41,6 +43,7 @@ function Session() {
   const [removingExercise, setRemovingExercise] = useState<string | null>(null);
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   const [isLoadingLastSession, setIsLoadingLastSession] = useState(false);
+  const [isEnding, setIsEnding] = useState(false);
   const { user } = useUserStore();
   const { play } = useSound();
   const haptics = useHaptic();
@@ -64,12 +67,17 @@ function Session() {
 
   const handleEndSession = async () => {
     if (totalReps === 0) {
-      // Si 0 reps, on annule silencieusement (ou avec un petit message)
-      await endSession(); // Le store gérera l'annulation si 0 reps
+      resetSession();
+      clearCurrentSessionFromLocal();
+      toast({
+        title: 'Séance annulée',
+        description: "Aucune répétition enregistrée, rien n'a été sauvegardé.",
+      });
       navigate('/');
       return;
     }
 
+    setIsEnding(true);
     try {
       await endSession();
       toast({
@@ -93,6 +101,8 @@ function Session() {
         description: 'Impossible de sauvegarder la séance',
         variant: 'destructive',
       });
+    } finally {
+      setIsEnding(false);
     }
   };
 
@@ -122,8 +132,7 @@ function Session() {
       } else {
         toast({
           title: 'Aucune séance trouvée',
-          description: 'Impossible de trouver une séance précédente.',
-          variant: 'destructive',
+          description: "Tu n'as pas encore de séance enregistrée. Ajoute tes exercices à la main.",
         });
       }
     } catch (error) {
@@ -185,14 +194,14 @@ function Session() {
   }, 0);
 
   return (
-    <div className="bg-background pb-24">
+    <div className="bg-background pb-[calc(6rem+env(safe-area-inset-bottom))]">
       {/* Header Fixe */}
       <div className="sticky top-[env(safe-area-inset-top)] z-10 bg-background/80 backdrop-blur-md border-b">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <BackButton to="/" />
           <div className="flex flex-col items-center">
               <h1 className="font-bold text-lg leading-none">Séance</h1>
-              <div className="flex items-center gap-1 text-xs text-orange-500 font-medium animate-in fade-in slide-in-from-bottom-1">
+              <div className="flex items-center gap-1 text-xs text-orange-700 dark:text-orange-400 font-medium animate-in fade-in slide-in-from-bottom-1">
                   <Flame className="w-3 h-3 fill-current" />
                   <span>{Math.round(currentCalories)} kcal</span>
               </div>
@@ -210,7 +219,7 @@ function Session() {
                 key={exercise.name}
                 exercise={exercise}
                 onAddReps={(reps) => addReps(exercise.name, reps)}
-                onRemove={() => handleLongPress(exercise.name)}
+                onLongPress={() => handleLongPress(exercise.name)}
                 isRemoving={removingExercise === exercise.name}
                 onCancelRemove={() => setRemovingExercise(null)}
                 onConfirmRemove={() => handleRemoveExercise(exercise.name)}
@@ -228,7 +237,7 @@ function Session() {
                 </div>
                 <h3 className="font-semibold text-lg">Prêt à transpirer ?</h3>
                 <p className="text-muted-foreground text-sm max-w-[250px] mx-auto">
-                  Ajoutez des exercices pour commencer votre séance
+                  Ajoute des exercices pour commencer ta séance
                 </p>
               </div>
 
@@ -249,7 +258,7 @@ function Session() {
                     onClick={handleLoadLastSession}
                     disabled={isLoadingLastSession}
                   >
-                    <Play className="h-4 w-4 mb-1" />
+                    {isLoadingLastSession ? <Loader2 className="h-4 w-4 mb-1 animate-spin" /> : <History className="h-4 w-4 mb-1" />}
                     <span className="text-xs">Dernière séance</span>
                   </Button>
 
@@ -259,7 +268,7 @@ function Session() {
                     onClick={handleLoadTemplate}
                   >
                     <Dumbbell className="h-4 w-4 mb-1" />
-                    <span className="text-xs">Template Base</span>
+                    <span className="text-xs">Séance de base</span>
                   </Button>
                 </div>
               </div>
@@ -284,8 +293,9 @@ function Session() {
               variant="default"
               size="lg"
               className="w-full font-bold shadow-md"
+              disabled={isEnding}
             >
-              <Square className="mr-2 h-4 w-4 fill-current" />
+              {isEnding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Square className="mr-2 h-4 w-4 fill-current" />}
               Terminer la séance
             </Button>
           </div>

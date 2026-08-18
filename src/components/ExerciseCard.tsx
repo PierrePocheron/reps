@@ -12,7 +12,6 @@ import type { SessionExercise } from '@/firebase/types';
 interface ExerciseCardProps {
   exercise: SessionExercise;
   onAddReps: (reps: number) => void;
-  onRemove?: () => void;
   isRemoving?: boolean;
   onLongPress?: () => void;
   onCancelRemove?: () => void;
@@ -28,7 +27,6 @@ interface ExerciseCardProps {
 export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
   exercise,
   onAddReps,
-  // onRemove, // Removed unused prop to fix build error
   isRemoving = false,
   onLongPress,
   onCancelRemove,
@@ -42,6 +40,7 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
 
   const handleTouchStart = () => {
     longPressTimer = setTimeout(() => {
+      haptics.impact();
       onLongPress?.();
     }, 500); // 500ms pour le long press
   };
@@ -62,6 +61,7 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.2 }}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchEnd}
       onTouchEnd={handleTouchEnd}
       onMouseDown={handleTouchStart}
       onMouseUp={handleTouchEnd}
@@ -80,12 +80,24 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
             {/* Info exercice + Reps */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0">
-                <span className="text-3xl flex-shrink-0">{exercise.emoji}</span>
+                <span className="text-2xl flex-shrink-0">{exercise.emoji}</span>
                 <div className="min-w-0">
                   <h3 className="font-semibold text-lg truncate pr-2">{exercise.name}</h3>
                 </div>
               </div>
-              <p className="text-2xl font-bold text-primary flex-shrink-0 ml-2">{exercise.reps}</p>
+              <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                <p className="text-3xl font-bold text-primary tabular-nums">{exercise.reps}</p>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Supprimer ${exercise.name}`}
+                  onClick={onLongPress}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <Trash2 className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </div>
             </div>
 
             {/* Boutons d'action */}
@@ -93,14 +105,18 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
               {repButtons.map((value, index) => (
                 <motion.button
                   key={value}
+                  type="button"
+                  aria-label={`Ajouter ${value} répétitions`}
                   whileTap={{ scale: 0.9 }}
+                  onTouchStart={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
                   onClick={() => {
                       haptics.impact();
                       play('success');
                     onAddReps(value);
                   }}
                   className={cn(
-                    "rounded-2xl flex flex-col items-center justify-center transition-colors relative flex-1 min-w-[3.5rem]",
+                    "rounded-2xl flex flex-col items-center justify-center transition-colors relative flex-1 min-w-[3.5rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                     // Le dernier bouton est mis en avant (primaire), les autres sont secondaires
                     index === repButtons.length - 1
                       ? "h-14 bg-primary text-primary-foreground shadow-md hover:bg-primary/90"
