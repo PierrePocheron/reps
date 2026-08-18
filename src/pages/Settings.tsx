@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ColorPicker } from '@/components/ui/color-picker';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useTheme } from '@/hooks/useTheme';
 import { useSettingsStore, type LanguageSetting } from '@/store/settingsStore';
 import { detectDeviceLanguage } from '@/hooks/useLanguage';
-import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2, Shield, ChevronRight, Target, Download, Languages } from 'lucide-react';
+import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2, Shield, ChevronRight, Target, Download, Languages, Loader2 } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import { cn } from '@/utils/cn';
 import { useNavigate } from 'react-router-dom';
@@ -33,6 +35,7 @@ function Settings() {
   const { scheduleDailyReminder, cancelReminder } = useNotifications();
   const { sessions, gymSessions } = useSessionHistory(500);
   const [exporting, setExporting] = useState(false);
+  const [togglingNotif, setTogglingNotif] = useState(false);
 
   const handleExportData = async () => {
     setExporting(true);
@@ -81,7 +84,7 @@ function Settings() {
       a.download = `reps-export-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast({ title: 'Export réussi', description: 'Vos données ont été téléchargées.' });
+      toast({ title: 'Export réussi', description: 'Tes données ont été téléchargées.' });
     } catch {
       toast({ title: 'Erreur', description: "Impossible d'exporter les données.", variant: 'destructive' });
     } finally {
@@ -91,12 +94,17 @@ function Settings() {
 
   const handleNotificationToggle = async () => {
     const newState = !notificationsEnabled;
-    setNotificationsEnabled(newState);
-
-    if (newState) {
-      await scheduleDailyReminder(notificationTime);
-    } else {
-      await cancelReminder();
+    setTogglingNotif(true);
+    try {
+      if (newState) {
+        const ok = await scheduleDailyReminder(notificationTime);
+        setNotificationsEnabled(ok);
+      } else {
+        await cancelReminder();
+        setNotificationsEnabled(false);
+      }
+    } finally {
+      setTogglingNotif(false);
     }
   };
 
@@ -114,7 +122,7 @@ function Settings() {
         {/* Thème */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg font-bold">
               <Monitor className="h-5 w-5" />
               Apparence
             </CardTitle>
@@ -122,9 +130,10 @@ function Settings() {
           <CardContent className="space-y-4">
             <div>
               <p className="text-sm font-medium mb-2">Mode</p>
-              <div className="flex gap-2">
+              <div className="flex gap-2" role="group" aria-label="Mode d'affichage">
                 <Button
                   variant={theme === 'light' ? 'default' : 'outline'}
+                  aria-pressed={theme === 'light'}
                   onClick={() => setTheme('light')}
                   className="flex-1"
                 >
@@ -133,6 +142,7 @@ function Settings() {
                 </Button>
                 <Button
                   variant={theme === 'dark' ? 'default' : 'outline'}
+                  aria-pressed={theme === 'dark'}
                   onClick={() => setTheme('dark')}
                   className="flex-1"
                 >
@@ -141,6 +151,7 @@ function Settings() {
                 </Button>
                 <Button
                   variant={theme === 'system' ? 'default' : 'outline'}
+                  aria-pressed={theme === 'system'}
                   onClick={() => setTheme('system')}
                   className="flex-1"
                 >
@@ -160,7 +171,7 @@ function Settings() {
         {/* Session */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg font-bold">
               <Dumbbell className="h-5 w-5" />
               Session
             </CardTitle>
@@ -169,7 +180,7 @@ function Settings() {
             <div>
               <p className="text-sm font-medium mb-2">Boutons de répétitions</p>
               <p className="text-xs text-muted-foreground mb-3">
-                Choisissez jusqu'à 4 boutons à afficher (min 1).
+                Choisis jusqu'à 4 boutons à afficher (1 minimum).
               </p>
               <div className="flex flex-wrap gap-2">
                 {[1, 3, 5, 10, 20].map((value) => {
@@ -182,14 +193,17 @@ function Settings() {
                       key={value}
                       variant={isSelected ? 'default' : 'outline'}
                       className={cn(
-                        "h-10 w-10 p-0 rounded-full",
+                        "h-11 w-11 p-0 rounded-full active:scale-95",
                         isSelected && "ring-2 ring-offset-2 ring-primary"
                       )}
                       disabled={isDisabled}
                       onClick={async () => {
                         let newButtons;
                         if (isSelected) {
-                          if (currentButtons.length <= 1) return; // Prevent removing last button
+                          if (currentButtons.length <= 1) {
+                            toast({ title: 'Garde au moins un bouton', description: 'Sélectionne-en un autre avant de retirer celui-ci.' });
+                            return;
+                          }
                           newButtons = currentButtons.filter(b => b !== value);
                         } else {
                           newButtons = [...currentButtons, value].sort((a, b) => a - b);
@@ -213,7 +227,7 @@ function Settings() {
         {/* Objectif hebdomadaire */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg font-bold">
               <Target className="h-5 w-5" />
               Objectif hebdomadaire
             </CardTitle>
@@ -222,15 +236,16 @@ function Settings() {
             <p className="text-sm text-muted-foreground">
               Nombre de séances visées par semaine (affiché dans les statistiques).
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2" role="group" aria-label="Objectif hebdomadaire">
               {WEEKLY_GOAL_OPTIONS.map((g) => (
                 <Button
                   key={g}
                   variant={weeklyGoal === g ? 'default' : 'outline'}
-                  className={cn('flex-1 h-10', weeklyGoal === g && 'ring-2 ring-offset-2 ring-primary')}
+                  className={cn('flex-1 active:scale-95', weeklyGoal === g && 'ring-2 ring-offset-2 ring-primary')}
+                  aria-pressed={weeklyGoal === g}
                   onClick={() => setWeeklyGoal(g)}
                 >
-                  {g === 0 ? 'Off' : `${g}×`}
+                  {g === 0 ? 'Aucun' : `${g}×`}
                 </Button>
               ))}
             </div>
@@ -240,7 +255,7 @@ function Settings() {
         {/* Langue des exercices */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg font-bold">
               <Languages className="h-5 w-5" />
               Langue des exercices
             </CardTitle>
@@ -250,12 +265,13 @@ function Settings() {
               Noms, instructions et muscles de la bibliothèque d'exercices.
               {' '}En mode Auto, suit la langue de l'appareil ({deviceLanguage === 'fr' ? 'français' : 'anglais'} détecté).
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-2" role="group" aria-label="Langue des exercices">
               {LANGUAGE_OPTIONS.map((opt) => (
                 <Button
                   key={opt.id}
                   variant={language === opt.id ? 'default' : 'outline'}
-                  className={cn('flex-1 h-10', language === opt.id && 'ring-2 ring-offset-2 ring-primary')}
+                  className={cn('flex-1 active:scale-95', language === opt.id && 'ring-2 ring-offset-2 ring-primary')}
+                  aria-pressed={language === opt.id}
                   onClick={() => setLanguage(opt.id)}
                 >
                   {opt.label}
@@ -268,7 +284,7 @@ function Settings() {
         {/* Notifications */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg font-bold">
               <Bell className="h-5 w-5" />
               Notifications
             </CardTitle>
@@ -278,12 +294,15 @@ function Settings() {
               <div>
                 <p className="font-medium">Rappels d'entraînement</p>
                 <p className="text-sm text-muted-foreground">
-                  Recevez des rappels pour vos séances (App mobile)
+                  Reçois un rappel quotidien pour tes séances
                 </p>
               </div>
               <Button
                 variant={notificationsEnabled ? 'default' : 'outline'}
-                size="sm"
+                className="min-w-[6.5rem] shrink-0"
+                role="switch"
+                aria-checked={notificationsEnabled}
+                disabled={togglingNotif}
                 onClick={handleNotificationToggle}
               >
                 {notificationsEnabled ? 'Activé' : 'Désactivé'}
@@ -292,12 +311,13 @@ function Settings() {
 
             {notificationsEnabled && (
               <div>
-                <p className="text-sm font-medium mb-2">Heure du rappel</p>
-                <input
+                <Label htmlFor="notification-time" className="mb-2 block">Heure du rappel</Label>
+                <Input
+                  id="notification-time"
                   type="time"
                   value={notificationTime}
                   onChange={(e) => handleTimeChange(e.target.value)}
-                  className="w-full p-2 border rounded-md"
+                  className="h-11 dark:[color-scheme:dark]"
                 />
               </div>
             )}
@@ -307,7 +327,7 @@ function Settings() {
         {/* Autres */}
         <Card>
           <CardHeader>
-            <CardTitle>Autres</CardTitle>
+            <CardTitle className="text-lg font-bold">Autres</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
@@ -322,7 +342,9 @@ function Settings() {
               </div>
               <Button
                 variant={hapticFeedback ? 'default' : 'outline'}
-                size="sm"
+                className="min-w-[6.5rem] shrink-0"
+                role="switch"
+                aria-checked={hapticFeedback}
                 onClick={() => setHapticFeedback(!hapticFeedback)}
               >
                 {hapticFeedback ? 'Activé' : 'Désactivé'}
@@ -341,7 +363,9 @@ function Settings() {
               </div>
               <Button
                 variant={soundEnabled ? 'default' : 'outline'}
-                size="sm"
+                className="min-w-[6.5rem] shrink-0"
+                role="switch"
+                aria-checked={soundEnabled}
                 onClick={() => setSoundEnabled(!soundEnabled)}
               >
                 {soundEnabled ? 'Activé' : 'Désactivé'}
@@ -352,32 +376,36 @@ function Settings() {
         {/* À propos */}
         <Card>
           <CardHeader>
-            <CardTitle>À propos</CardTitle>
+            <CardTitle className="text-lg font-bold">À propos</CardTitle>
           </CardHeader>
           <CardContent className="p-0 divide-y">
             <button
               onClick={handleExportData}
               disabled={exporting}
-              className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 transition-colors disabled:opacity-50"
+              className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 active:bg-muted transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
               <div className="flex items-center gap-3">
-                <Download className="h-5 w-5 text-muted-foreground" />
+                {exporting ? (
+                  <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+                ) : (
+                  <Download className="h-5 w-5 text-muted-foreground" />
+                )}
                 <div className="text-left">
-                  <p className="font-medium text-sm">Exporter mes données</p>
-                  <p className="text-xs text-muted-foreground">Télécharger toutes vos séances en JSON</p>
+                  <p className="font-medium text-sm">{exporting ? 'Export en cours…' : 'Exporter mes données'}</p>
+                  <p className="text-xs text-muted-foreground">Télécharge toutes tes séances en JSON</p>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </button>
             <button
               onClick={() => navigate('/privacy-policy')}
-              className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 transition-colors rounded-b-lg"
+              className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 active:bg-muted transition-colors rounded-b-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
               <div className="flex items-center gap-3">
                 <Shield className="h-5 w-5 text-muted-foreground" />
                 <div className="text-left">
                   <p className="font-medium text-sm">Politique de confidentialité</p>
-                  <p className="text-xs text-muted-foreground">Vos données et vos droits</p>
+                  <p className="text-xs text-muted-foreground">Tes données et tes droits</p>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />

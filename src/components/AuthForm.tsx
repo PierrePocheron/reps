@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
@@ -62,7 +63,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         await signUpWithEmail(email, password, firstName, lastName);
         toast({
           title: 'Bienvenue !',
-          description: 'Votre aventure commence maintenant ! 🐥',
+          description: 'Ton aventure commence maintenant ! 🐥',
         });
       } else {
         await signInWithEmail(email, password);
@@ -88,7 +89,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       } else if (firebaseError.code === 'auth/invalid-email') {
         errorMessage = 'Email invalide';
       } else if (firebaseError.code === 'auth/too-many-requests') {
-        errorMessage = 'Trop de tentatives, veuillez réessayer plus tard';
+        errorMessage = 'Trop de tentatives, réessaie dans quelques minutes';
       }
 
       toast({
@@ -154,7 +155,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
       const firebaseError = error as { code?: string; message?: string };
       toast({
         title: 'Erreur',
-        description: `Impossible de se connecter: ${firebaseError.message || 'Erreur inconnue'}`,
+        description: `Impossible de se connecter : ${firebaseError.message || 'Erreur inconnue'}`,
         variant: 'destructive',
       });
     } finally {
@@ -214,7 +215,7 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Ou</span>
+              <span className="bg-card px-2 text-muted-foreground">Ou</span>
             </div>
           </div>
 
@@ -225,10 +226,13 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                   <div className="space-y-2">
                     <div className="relative">
                       <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <input
+                      <Input
                         type="text"
                         placeholder="Prénom"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label="Prénom"
+                        autoComplete="given-name"
+                        className="pl-9"
+                        disabled={isLoading}
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         required
@@ -238,10 +242,13 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
                   <div className="space-y-2">
                     <div className="relative">
                       <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <input
+                      <Input
                         type="text"
                         placeholder="Nom"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-9 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label="Nom"
+                        autoComplete="family-name"
+                        className="pl-9"
+                        disabled={isLoading}
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         required
@@ -256,13 +263,16 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <input
+                <Input
                   id="email"
                   type="email"
                   placeholder="ton@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="pl-10"
+                  disabled={isLoading}
+                  autoComplete="email"
+                  inputMode="email"
                   required
                 />
               </div>
@@ -288,17 +298,20 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <input
+                <Input
                   id="password"
                   type="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="pl-10"
+                  disabled={isLoading}
+                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
                   required
                   minLength={6}
                 />
               </div>
+              {isSignUp && <p className="text-xs text-muted-foreground">Au moins {PASSWORD_MIN_LENGTH} caractères, avec une lettre et un chiffre</p>}
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
@@ -348,13 +361,14 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <input
+                <Input
                   id="reset-email"
                   type="email"
                   placeholder="ton@email.com"
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="pl-10"
+                  disabled={isResetting}
                   required
                 />
               </div>

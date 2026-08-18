@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { BackButton } from '@/components/BackButton';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { useUserStore } from '@/store/userStore';
 import { BADGES, getUnlockedBadges } from '@/utils/constants';
 import { useToast } from '@/hooks/use-toast';
@@ -9,7 +9,7 @@ import { cn } from '@/utils/cn';
 import { logger } from '@/utils/logger';
 import { Lock, Check, User } from 'lucide-react';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function Achievements() {
   const { user, stats, updateProfile, markBadgesAsSeen } = useUserStore();
@@ -19,6 +19,7 @@ export default function Achievements() {
   const shouldMarkAsSeen = useRef(false);
   // Protection contre le StrictMode (double invoke mount/unmount)
   const canPerformCleanup = useRef(false);
+  const [settingAvatar, setSettingAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.newBadgeIds && user.newBadgeIds.length > 0) {
@@ -56,12 +57,13 @@ export default function Achievements() {
   const progressPercentage = (unlockedCount / totalBadges) * 100;
 
   const handleSetAvatar = async (emoji: string) => {
+    setSettingAvatar(emoji);
     try {
       await updateProfile({ avatarEmoji: emoji });
 
       toast({
         title: 'Avatar mis à jour',
-        description: `L'emoji ${emoji} est maintenant votre avatar !`,
+        description: `L'emoji ${emoji} est maintenant ton avatar !`,
       });
     } catch (error) {
       logger.error('Avatar update failed', error as Error);
@@ -70,19 +72,14 @@ export default function Achievements() {
         description: "Impossible de mettre à jour l'avatar",
         variant: 'destructive',
       });
+    } finally {
+      setSettingAvatar(null);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 pb-20">
+    <PageLayout title="SUCCÈS" variant="secondary">
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <BackButton />
-          <h1 className="text-2xl font-bold">Succès</h1>
-          <div className="w-10" /> {/* Spacer */}
-        </div>
-
         {/* Global Progress */}
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
           <CardContent className="p-6 text-center space-y-4">
@@ -91,8 +88,16 @@ export default function Achievements() {
               <p className="text-muted-foreground font-medium">Badges débloqués</p>
             </div>
             <div className="space-y-2">
-              <Progress value={progressPercentage} className="h-3" />
-              <p className="text-xs text-muted-foreground text-right">{Math.round(progressPercentage)}% complété</p>
+              <Progress
+                value={progressPercentage}
+                className="h-3"
+                role="progressbar"
+                aria-label="Progression des badges"
+                aria-valuenow={Math.round(progressPercentage)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              />
+              <p className="text-xs text-muted-foreground text-right">{Math.round(progressPercentage)}&nbsp;% débloqués</p>
             </div>
           </CardContent>
         </Card>
@@ -110,6 +115,7 @@ export default function Achievements() {
             .map((badge) => {
             const isUnlocked = unlockedBadgeIds.includes(badge.id);
             const isNew = user.newBadgeIds?.includes(badge.id); // Check if badge is new
+            const isCurrentAvatar = user.avatarEmoji === badge.emoji;
 
             const progress = !isUnlocked ? (() => {
                // ... (existing progress logic)
@@ -124,16 +130,17 @@ export default function Achievements() {
                 default: return 0;
               }
             })() : 100;
+            const clamped = Math.min(100, Math.max(0, progress));
 
             return (
               <Card key={badge.id} className={cn(
                 "transition-all duration-200",
-                !isUnlocked && "opacity-70 bg-muted/30",
+                !isUnlocked && "bg-muted/30 border-dashed",
                 isNew && "border-orange-500 bg-orange-500/5 shadow-[0_0_15px_-3px_rgba(249,115,22,0.3)]"
               )}>
                 <CardContent className="p-4 flex items-center gap-4 relative overflow-hidden">
                   {isNew && (
-                    <div className="absolute top-0 right-0 bg-orange-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg animate-pulse">
+                    <div className="absolute top-0 right-0 bg-orange-500 text-white text-[10px] tracking-wide font-bold px-2 py-0.5 rounded-bl-lg animate-pulse">
                       NOUVEAU
                     </div>
                   )}
@@ -148,16 +155,24 @@ export default function Achievements() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-bold truncate pr-2">{badge.name}</h3>
+                      <h3 className={cn("font-bold truncate pr-2", !isUnlocked && "text-muted-foreground")}>{badge.name}</h3>
                       {isUnlocked && <Check className="h-4 w-4 text-green-500 shrink-0" />}
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">{badge.description}</p>
 
                     {!isUnlocked && (
                       <div className="space-y-1">
-                        <Progress value={Math.min(100, Math.max(0, progress))} className="h-1.5" />
-                        <p className="text-[10px] text-muted-foreground text-right">
-                          {Math.round(Math.min(100, Math.max(0, progress)))}%
+                        <Progress
+                          value={clamped}
+                          className="h-1.5"
+                          role="progressbar"
+                          aria-label={`Progression vers ${badge.name}`}
+                          aria-valuenow={Math.round(clamped)}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                        />
+                        <p className="text-xs text-muted-foreground text-right">
+                          {Math.round(clamped)}&nbsp;%
                         </p>
                       </div>
                     )}
@@ -166,11 +181,22 @@ export default function Achievements() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 text-xs mt-1 px-2"
+                        className="h-9 -ml-3 px-3 text-xs mt-1 active:scale-95"
+                        disabled={isCurrentAvatar || settingAvatar === badge.emoji}
+                        aria-pressed={isCurrentAvatar}
                         onClick={() => handleSetAvatar(badge.emoji)}
                       >
-                        <User className="h-3 w-3 mr-1.5" />
-                        Utiliser en avatar
+                        {isCurrentAvatar ? (
+                          <>
+                            <Check className="h-3 w-3 mr-1.5" />
+                            Avatar actuel
+                          </>
+                        ) : (
+                          <>
+                            <User className="h-3 w-3 mr-1.5" />
+                            Utiliser en avatar
+                          </>
+                        )}
                       </Button>
                     )}
                   </div>
@@ -180,6 +206,6 @@ export default function Achievements() {
           })}
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 }

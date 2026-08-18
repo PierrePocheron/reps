@@ -36,18 +36,21 @@ export function Layout({ children }: LayoutProps) {
 
       {/* Bannière offline */}
       {isOffline && (
-        <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-2 fixed top-0 left-0 right-0 z-50">
+        <div role="status" className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] fixed top-0 left-0 right-0 z-[60]">
           <div className="flex items-center gap-2 text-sm text-yellow-600 dark:text-yellow-400 max-w-2xl mx-auto">
-            <AlertCircle className="h-4 w-4" />
-            <span>Mode hors ligne - Les données seront synchronisées à la reconnexion</span>
+            <AlertCircle className="h-4 w-4" aria-hidden="true" />
+            <span>Mode hors ligne — tes données seront synchronisées à la reconnexion</span>
           </div>
         </div>
       )}
 
       {/* Contenu principal avec padding dynamique pour la pub */}
       <main
-        className="pt-safe min-h-screen transition-all duration-300"
-        style={{ paddingBottom: bannerHeight > 0 ? `${bannerHeight}px` : undefined }}
+        className="min-h-screen transition-all duration-300"
+        style={{
+          paddingTop: isOffline ? 'calc(env(safe-area-inset-top) + 2.3125rem)' : 'env(safe-area-inset-top)',
+          paddingBottom: bannerHeight > 0 ? `${bannerHeight}px` : undefined,
+        }}
       >
         {children}
       </main>

@@ -122,7 +122,7 @@ function VisualSocial() {
       <div className="rounded-2xl border bg-card p-4 flex items-center gap-3 shadow-sm text-left">
         <Users className="h-5 w-5 text-primary flex-shrink-0" />
         <p className="text-xs text-muted-foreground">
-          Ajoute tes amis, lance des défis et débloquez des badges ensemble
+          Ajoute tes amis, lance des défis et débloque des badges avec eux
         </p>
       </div>
     </div>
@@ -182,12 +182,12 @@ export function OnboardingSlides({ onFinish }: OnboardingSlidesProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-between p-6 pb-safe">
+    <div className="fixed inset-0 z-[100] bg-background flex flex-col items-center justify-between p-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
       {/* Skip */}
       <div className="w-full flex justify-end">
         <button
           onClick={onFinish}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2 px-3"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] px-4 -mr-4"
         >
           Passer
         </button>
@@ -220,10 +220,15 @@ export function OnboardingSlides({ onFinish }: OnboardingSlidesProps) {
               key={s.title}
               onClick={() => setStep(i)}
               aria-label={`Aller à l'étape ${i + 1}`}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                i === step ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/30'
-              }`}
-            />
+              aria-current={i === step ? 'step' : undefined}
+              className="p-2 -m-1 rounded-full"
+            >
+              <span
+                className={`block h-2 rounded-full transition-all duration-300 ${
+                  i === step ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/30'
+                }`}
+              />
+            </button>
           ))}
         </div>
 
