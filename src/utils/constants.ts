@@ -427,7 +427,7 @@ export const BADGES: Badge[] = [
  * Phrases motivantes par défaut (si Firestore n'est pas disponible)
  */
 export const DEFAULT_MOTIVATIONAL_PHRASES = [
-  { text: "C'est l'heure de pousser, champion 💪", emoji: '💪' },
+  { text: "C'est l'heure de pousser, champion", emoji: '💪' },
   { text: "T'as promis à toi-même, allez !", emoji: '🔥' },
   { text: 'Chaque rep compte, continue !', emoji: '⚡' },
   { text: 'Tu es plus fort que tu ne le penses !', emoji: '💥' },

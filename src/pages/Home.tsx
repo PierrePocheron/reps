@@ -128,7 +128,7 @@ function Home() {
         {hasActiveSession && (
           <button
             onClick={() => navigate(gymPhase !== 'idle' ? '/gym' : '/session')}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-primary/10 border border-primary/30 hover:bg-primary/15 active:scale-[0.98] transition-all"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-primary/10 border border-primary/30 hover:bg-primary/15 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <span className="relative flex h-3 w-3 flex-shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
@@ -148,7 +148,7 @@ function Home() {
         {/* Message de bienvenue */}
         <div className="mb-2">
             <h2 className="text-xl font-medium text-muted-foreground">
-                Bonjour <span className="text-foreground font-bold">{user?.displayName}</span>
+                Bonjour <span className="text-foreground font-bold">{user?.firstName || user?.displayName}</span>
             </h2>
             {motivationalPhrase && (
                 <p className="text-sm text-muted-foreground">{motivationalPhrase.text} {motivationalPhrase.emoji}</p>
@@ -241,17 +241,17 @@ function Home() {
         {/* Last Session Card */}
         {lastSessionDetail && (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold px-1">Dernière activité</h3>
+            <h2 className="text-lg font-semibold">Dernière activité</h2>
             <Card className="overflow-hidden border-none shadow-md bg-card/50 backdrop-blur-sm">
               <CardContent className="p-0">
                 <div className="flex items-stretch">
                   <div className="w-2 bg-primary/60" />
                   <div className="flex-1 p-5 space-y-4">
                     {/* Header: Date + Total Reps */}
-                    <div className="flex items-center justify-between border-b pb-3 border-border/50">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3 border-border/50">
                       <div className="flex items-center gap-2 text-foreground">
                         <Calendar className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-semibold capitalize">
+                        <span className="inline-block text-sm font-semibold first-letter:uppercase">
                           {lastSessionDetail.date ? (
                             <>
                               {new Date(lastSessionDetail.date.toDate()).toLocaleDateString('fr-FR', {
@@ -271,7 +271,7 @@ function Home() {
                           )}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0">
                         <div className="flex items-center gap-1.5 bg-background/50 px-2 py-1 rounded-md border border-border/50">
                           <Activity className="h-3.5 w-3.5 text-muted-foreground" />
                           <span className="text-sm font-mono font-bold">{lastSessionDetail.totalReps}</span>
