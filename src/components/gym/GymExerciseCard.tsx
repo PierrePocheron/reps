@@ -50,7 +50,8 @@ export function GymExerciseCard({
 
         <button
           onClick={onRemoveExercise}
-          className="p-2 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+          aria-label={`Retirer ${exercise.name}`}
+          className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive active:scale-95 transition-all flex-shrink-0"
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -88,9 +89,10 @@ export function GymExerciseCard({
 
             <button
               onClick={() => onRemoveSet(i)}
-              className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+              aria-label={`Supprimer la série ${i + 1}`}
+              className="h-9 w-9 -my-1 -mr-1 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="h-4 w-4" />
             </button>
           </div>
         ))}

@@ -78,7 +78,7 @@ export async function getUserGymSessions(
     })) as GymSession[];
   } catch (error) {
     logger.error('Erreur lors de la récupération des séances muscu:', error as Error);
-    return [];
+    throw error;
   }
 }
 

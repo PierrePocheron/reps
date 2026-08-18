@@ -25,7 +25,7 @@ import {
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
 import {
   Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
-  Clock, Weight, ArrowLeft, X, Trash2,
+  Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { cn } from '@/utils/cn';
@@ -67,6 +67,7 @@ function GymSession() {
   const lang = useLanguage();
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [ending, setEnding] = useState(false);
   const cancellingRef = useRef(false);
   const [detailExerciseId, setDetailExerciseId] = useState<string | null>(null);
   const [libDetail, setLibDetail] = useState<LibraryExercise | null>(null);
@@ -109,7 +110,7 @@ function GymSession() {
         }
       }
       setHistoryDefaults(defaults);
-    });
+    }).catch(() => { /* defaults facultatifs : on ignore l'échec */ });
   }, [user?.uid, phase]);
 
 
@@ -145,6 +146,8 @@ function GymSession() {
 
 
   const handleEndSession = async () => {
+    if (ending) return;
+    setEnding(true);
     try {
       await endSession();
       toast({
@@ -159,6 +162,8 @@ function GymSession() {
       setTimeout(() => navigate('/'), 100);
     } catch {
       toast({ title: 'Erreur', description: 'Impossible de sauvegarder', variant: 'destructive' });
+    } finally {
+      setEnding(false);
     }
   };
 
@@ -183,7 +188,8 @@ function GymSession() {
         <div className="sticky top-[env(safe-area-inset-top)] z-10 bg-background/80 backdrop-blur-md border-b">
           <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
             <button
-            onClick={handleCancel}
+            onClick={() => (exercises.length > 0 ? setShowCancelConfirm(true) : handleCancel())}
+            aria-label="Quitter la planification"
             className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -217,9 +223,9 @@ function GymSession() {
                 <Dumbbell className="h-8 w-8 text-blue-500" />
               </div>
               <div className="text-center">
-                <h3 className="font-semibold text-lg">Planifiez votre séance</h3>
+                <h3 className="font-semibold text-lg">Planifie ta séance</h3>
                 <p className="text-muted-foreground text-sm max-w-[250px] mx-auto mt-1">
-                  Ajoutez des exercices et définissez vos séries (poids × reps)
+                  Ajoute des exercices et définis tes séries (poids × reps)
                 </p>
               </div>
             </div>
@@ -255,6 +261,30 @@ function GymSession() {
           </div>
         )}
 
+        {/* Modale confirmation abandon planification */}
+        {showCancelConfirm && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCancelConfirm(false)} />
+            <div role="dialog" aria-modal="true" aria-labelledby="cancel-plan-title" className="relative z-10 w-full sm:max-w-sm bg-background rounded-t-3xl sm:rounded-2xl shadow-xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 space-y-4">
+              <div className="text-center space-y-2">
+                <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <Trash2 className="h-6 w-6 text-destructive" />
+                </div>
+                <h3 id="cancel-plan-title" className="font-bold text-lg">Abandonner la planification ?</h3>
+                <p className="text-sm text-muted-foreground">Les exercices et séries que tu as planifiés seront perdus.</p>
+              </div>
+              <div className="flex gap-3">
+                <Button variant="outline" className="flex-1" onClick={() => setShowCancelConfirm(false)}>
+                  Continuer
+                </Button>
+                <Button variant="destructive" className="flex-1" onClick={handleCancelConfirm}>
+                  Abandonner
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <AddGymExerciseDialog
           open={showExerciseDialog}
           onOpenChange={setShowExerciseDialog}
@@ -275,6 +305,7 @@ function GymSession() {
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => navigate('/')}
+            aria-label="Retour à l'accueil"
             className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -291,7 +322,15 @@ function GymSession() {
       </div>
 
       {/* Barre de progression */}
-      <div className="w-full bg-muted h-1">
+      <div
+        className="w-full bg-muted h-1"
+        role="progressbar"
+        aria-label="Progression de la séance"
+        aria-valuemin={0}
+        aria-valuemax={totalSets}
+        aria-valuenow={completedSets}
+        aria-valuetext={`${completedSets} séries sur ${totalSets}`}
+      >
         <div
           className="bg-primary h-1 transition-all duration-500"
           style={{ width: `${totalSets > 0 ? (completedSets / totalSets) * 100 : 0}%` }}
@@ -370,28 +409,30 @@ function GymSession() {
             <button
               onClick={() => showRestTimer ? dismissRestTimer() : startRestTimer()}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors',
+                'flex items-center gap-1.5 min-w-11 px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors',
                 showRestTimer
                   ? 'bg-primary/10 border-primary/30 text-primary'
                   : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/30'
               )}
             >
               <TimerIcon className="h-4 w-4" />
-              {showRestTimer ? 'Stop' : `${restDuration}s`}
+              {showRestTimer ? 'Arrêter' : (REST_PRESETS.find((p) => p.value === restDuration)?.label ?? `${restDuration}s`)}
             </button>
 
             <Button
               size="default"
+              disabled={ending || completedSets === 0}
               className={cn('flex-1 font-semibold', allSetsCompleted && 'bg-green-600 hover:bg-green-700')}
               onClick={handleEndSession}
             >
-              <Square className="mr-2 h-4 w-4 fill-current" />
+              {ending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Square className="mr-2 h-4 w-4 fill-current" />}
               {allSetsCompleted ? 'Terminer !' : 'Terminer'}
             </Button>
 
             <button
               onClick={() => setShowCancelConfirm(true)}
-              className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
+              aria-label="Annuler la séance"
+              className="flex items-center justify-center min-w-11 px-3 py-2.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive/20 active:scale-95 transition-all"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -403,12 +444,12 @@ function GymSession() {
       {showCancelConfirm && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCancelConfirm(false)} />
-          <div className="relative z-10 w-full sm:max-w-sm bg-background rounded-t-3xl sm:rounded-2xl shadow-xl p-6 space-y-4">
+          <div role="dialog" aria-modal="true" aria-labelledby="cancel-session-title" className="relative z-10 w-full sm:max-w-sm bg-background rounded-t-3xl sm:rounded-2xl shadow-xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 space-y-4">
             <div className="text-center space-y-2">
               <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
                 <Trash2 className="h-6 w-6 text-destructive" />
               </div>
-              <h3 className="font-bold text-lg">Annuler la séance ?</h3>
+              <h3 id="cancel-session-title" className="font-bold text-lg">Annuler la séance ?</h3>
               <p className="text-sm text-muted-foreground">La séance en cours sera définitivement supprimée, sans sauvegarde.</p>
             </div>
             <div className="flex gap-3">
@@ -481,6 +522,7 @@ function SetExecuteRow({
   const [reps, setReps] = useState(String(set.actualReps ?? set.reps));
   const [weight, setWeight] = useState(String(set.actualWeight ?? set.weight));
   const { play } = useSound();
+  const haptics = useHaptic();
 
   return (
     <div className={cn(
@@ -517,13 +559,16 @@ function SetExecuteRow({
 
       <button
         onClick={() => {
+          if (set.completed) return;
+          haptics.impact();
           play('success');
           onComplete(exerciseId, setIndex, Number(reps) || 0, Number(weight) || 0);
         }}
+        aria-label={set.completed ? `Série ${setIndex + 1} validée` : `Valider la série ${setIndex + 1}`}
         className={cn(
-          'p-1.5 rounded-lg transition-colors flex-shrink-0',
+          'h-11 w-11 -my-1.5 -mr-1.5 flex items-center justify-center rounded-lg transition-all active:scale-95 flex-shrink-0',
           set.completed
-            ? 'text-green-500 hover:bg-green-500/10'
+            ? 'text-green-500'
             : 'text-muted-foreground hover:text-green-500 hover:bg-green-500/10'
         )}
       >
@@ -562,7 +607,11 @@ function ExecuteExerciseCard({
           className="flex-1 min-w-0 text-left"
           onClick={() => onShowDetail(exercise.exerciseId)}
         >
-          <h3 className="font-bold text-base truncate hover:text-primary transition-colors">{exercise.name}</h3>
+          <h3 className="font-bold text-base flex items-center gap-1.5 min-w-0">
+            <span className="truncate min-w-0">{exercise.name}</span>
+            <Info className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" aria-hidden />
+            <span className="sr-only">, voir la fiche</span>
+          </h3>
           <p className="text-xs text-muted-foreground">
             {completedCount}/{exercise.sets.length} série{exercise.sets.length !== 1 ? 's' : ''} complétée{completedCount !== 1 ? 's' : ''}
           </p>
@@ -634,7 +683,7 @@ function InlineRestTimer({
             {Math.floor(remaining / 60)}:{(remaining % 60).toString().padStart(2, '0')}
           </span>
         </div>
-        <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground p-1">
+        <button onClick={onDismiss} className="p-2.5 -m-2.5 rounded-lg text-muted-foreground hover:text-foreground" aria-label="Fermer le minuteur de repos">
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -652,7 +701,7 @@ function InlineRestTimer({
             key={p.value}
             onClick={() => onChangeDuration(p.value)}
             className={cn(
-              'flex-1 py-1 rounded-lg text-xs font-medium transition-colors',
+              'flex-1 py-2 min-h-9 rounded-lg text-xs font-medium transition-colors active:scale-95',
               durationSeconds === p.value
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground hover:bg-muted/80'
