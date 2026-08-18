@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import exerciseDetails from '@/data/exerciseDetails.json';
+import { useLanguage, type Language } from '@/hooks/useLanguage';
 
 /**
- * Détails d'exercices embarqués dans l'app (aucun appel réseau).
+ * Détails des exercices essentiels embarqués dans l'app (aucun appel réseau).
  * Générés par scripts/import-exercise-media.mjs depuis le dataset
  * hasaneyldrm/exercises-dataset (données MIT, médias © Gym visual).
  */
@@ -22,34 +24,50 @@ interface RawDetail {
   secondaryMuscles: string[];
   equipment: string;
   steps: string[];
+  stepsEn?: string[];
   image: string;
   gif: string;
 }
 
-const infoMap: Record<string, ExerciseInfo> = {};
-Object.entries(exerciseDetails as Record<string, RawDetail>).forEach(([id, d]) => {
-  infoMap[id] = {
-    imageUrl: d.image,
-    gifUrl: d.gif,
-    description: d.steps.join(' '),
-    steps: d.steps,
-    target: d.target,
-    secondaryMuscles: d.secondaryMuscles,
-    equipment: d.equipment,
-  };
-});
+const RAW = exerciseDetails as Record<string, RawDetail>;
 
-const imageMap: Record<string, string> = {};
-Object.entries(infoMap).forEach(([id, info]) => {
-  if (info.imageUrl) imageMap[id] = info.imageUrl;
+function buildInfoMap(lang: Language): Record<string, ExerciseInfo> {
+  const map: Record<string, ExerciseInfo> = {};
+  Object.entries(RAW).forEach(([id, d]) => {
+    const steps = lang === 'en' && d.stepsEn?.length ? d.stepsEn : d.steps;
+    map[id] = {
+      imageUrl: d.image,
+      gifUrl: d.gif,
+      description: steps.join(' '),
+      steps,
+      target: d.target,
+      secondaryMuscles: d.secondaryMuscles,
+      equipment: d.equipment,
+    };
+  });
+  return map;
+}
+
+const INFO_BY_LANG: Record<Language, Record<string, ExerciseInfo>> = {
+  fr: buildInfoMap('fr'),
+  en: buildInfoMap('en'),
+};
+
+/** Vignettes locales (identiques quelle que soit la langue) */
+const IMAGE_MAP: Record<string, string> = {};
+Object.entries(RAW).forEach(([id, d]) => {
+  IMAGE_MAP[id] = d.image;
 });
 
 export function useExerciseImages() {
-  const getImageUrl = (exerciseId: string): string | null =>
-    infoMap[exerciseId]?.imageUrl ?? null;
+  const lang = useLanguage();
+  const infoMap = INFO_BY_LANG[lang];
 
-  const getDescription = (exerciseId: string): string | null =>
-    infoMap[exerciseId]?.description ?? null;
-
-  return { imageMap, infoMap, getImageUrl, getDescription, loading: false };
+  return useMemo(() => {
+    const getImageUrl = (exerciseId: string): string | null =>
+      infoMap[exerciseId]?.imageUrl ?? null;
+    const getDescription = (exerciseId: string): string | null =>
+      infoMap[exerciseId]?.description ?? null;
+    return { imageMap: IMAGE_MAP, infoMap, getImageUrl, getDescription, loading: false, lang };
+  }, [infoMap, lang]);
 }

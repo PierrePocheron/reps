@@ -15,6 +15,12 @@
       "Marque une pause lorsque ta poitrine est juste au-dessus du sol, puis repousse-toi vers le haut pour revenir à la position de départ en tendant tes bras.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Start in a high plank position with your hands slightly wider than shoulder-width apart and your feet together.",
+      "Engage your core and lower your body towards the ground by bending your elbows, keeping your body in a straight line.",
+      "Pause for a moment when your chest is just above the ground, then push yourself back up to the starting position by straightening your arms.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/pushups.jpg",
     "gif": "/exercises/pushups.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -34,6 +40,13 @@
       "Abaisse ta poitrine vers le losange formé par tes mains, en gardant les coudes près de ton corps.",
       "Marque une pause en bas, puis pousse-toi vers le haut jusqu'à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Start in a high plank position with your hands close together, forming a diamond shape with your thumbs and index fingers.",
+      "Keep your body in a straight line from head to toe, engaging your core and glutes.",
+      "Lower your chest towards the diamond shape formed by your hands, keeping your elbows close to your body.",
+      "Pause for a moment at the bottom, then push yourself back up to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/diamond_pushups.jpg",
     "gif": "/exercises/diamond_pushups.gif",
@@ -55,6 +68,13 @@
       "Pousse à travers tes paumes pour étendre tes bras et revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Start in a high plank position with your hands wider than shoulder-width apart.",
+      "Keep your body in a straight line from head to toe.",
+      "Lower your chest towards the ground by bending your elbows, keeping them close to your sides.",
+      "Push through your palms to extend your arms and return to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/wide_pushups.jpg",
     "gif": "/exercises/wide_pushups.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -75,6 +95,13 @@
       "Pousse à travers tes paumes pour étendre tes bras et revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Place your hands on the ground slightly wider than shoulder-width apart, with your feet elevated on a stable surface.",
+      "Keep your body in a straight line from head to toe, engaging your core muscles.",
+      "Lower your chest towards the ground by bending your elbows, keeping them close to your body.",
+      "Push through your palms to extend your arms and return to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/decline_pushups.jpg",
     "gif": "/exercises/decline_pushups.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -93,6 +120,12 @@
       "Abaisse ton corps en fléchissant tes coudes jusqu'à ce que tes épaules soient sous tes coudes.",
       "Repousse-toi vers le haut jusqu'à la position de départ en tendant tes bras.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Position yourself on parallel bars with your arms fully extended and your body straight.",
+      "Lower your body by bending your elbows until your shoulders are below your elbows.",
+      "Push yourself back up to the starting position by straightening your arms.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/dips.jpg",
     "gif": "/exercises/dips.gif",
@@ -114,6 +147,13 @@
       "Marque une pause en haut du mouvement, puis abaisse lentement ton corps jusqu'à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Hang from a pull-up bar with your palms facing away from you and your arms fully extended.",
+      "Engage your core and squeeze your shoulder blades together.",
+      "Pull your body up towards the bar by bending your elbows and bringing your chest towards the bar.",
+      "Pause at the top of the movement, then slowly lower your body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/pullups.jpg",
     "gif": "/exercises/pullups.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -133,6 +173,13 @@
       "Continue à tirer jusqu'à ce que ton menton soit au-dessus de la barre.",
       "Marque une pause en haut, puis abaisse lentement ton corps pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Hang from a pull-up bar with your palms facing towards you and your hands shoulder-width apart.",
+      "Engage your core and pull your body up towards the bar, leading with your chest.",
+      "Continue pulling until your chin is above the bar.",
+      "Pause for a moment at the top, then slowly lower your body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/chin_ups.jpg",
     "gif": "/exercises/chin_ups.gif",
@@ -156,6 +203,15 @@
       "Marque une pause en haut, puis abaisse-toi lentement pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Set up a bar at waist height or use a suspension trainer.",
+      "Stand facing the bar or suspension trainer, with your feet shoulder-width apart.",
+      "Grab the bar or handles with an overhand grip, slightly wider than shoulder-width apart.",
+      "Lean back, keeping your body straight and your heels on the ground.",
+      "Pull your chest towards the bar or handles, squeezing your shoulder blades together.",
+      "Pause for a moment at the top, then slowly lower yourself back to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/inverted_rows.jpg",
     "gif": "/exercises/inverted_rows.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -176,6 +232,13 @@
       "En remontant du squat, étends tes bras au-dessus de la tête en tendant vers le plafond.",
       "Reviens à la position de départ en abaissant tes bras et en fléchissant tes genoux pour t'accroupir de nouveau.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Stand with your feet shoulder-width apart and toes slightly turned out.",
+      "Lower your body down into a squat position by bending your knees and pushing your hips back.",
+      "As you come up from the squat, extend your arms overhead, reaching towards the ceiling.",
+      "Return to the starting position by lowering your arms and bending your knees to squat down again.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/squats.jpg",
     "gif": "/exercises/squats.gif",
@@ -199,6 +262,14 @@
       "Atterris en douceur sur la pointe des pieds et enchaîne immédiatement avec la répétition suivante.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Stand with your feet shoulder-width apart.",
+      "Lower your body into a squat position by bending your knees and pushing your hips back.",
+      "Jump explosively off the ground, extending your hips, knees, and ankles.",
+      "While in mid-air, quickly bring your arms forward for balance.",
+      "Land softly on the balls of your feet and immediately go into the next repetition.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/jump_squats.jpg",
     "gif": "/exercises/jump_squats.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -219,6 +290,13 @@
       "Fléchis ton genou droit à environ 90 degrés en gardant ton genou aligné avec ta cheville.",
       "Pousse sur ton pied droit et reviens à la position de départ.",
       "Répète avec ta jambe gauche, en alternant les côtés pour le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Stand with your feet hip-width apart and hands on your hips.",
+      "Take a big step forward with your right foot, lowering your body into a lunge position.",
+      "Bend your right knee to about 90 degrees, keeping your knee aligned with your ankle.",
+      "Push off with your right foot and return to the starting position.",
+      "Repeat with your left leg, alternating sides for the desired number of repetitions."
     ],
     "image": "/exercises/lunges.jpg",
     "gif": "/exercises/lunges.gif",
@@ -241,6 +319,13 @@
       "Continue à descendre jusqu'à ce que ta cuisse avant soit parallèle au sol, puis pousse sur ton talon avant pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité, puis change de jambe et recommence."
     ],
+    "stepsEn": [
+      "Stand with your feet shoulder-width apart, holding a dumbbell in each hand.",
+      "Take a step forward with one foot and position your feet so that your front foot is flat on the ground and your back foot is elevated on a bench or step.",
+      "Lower your body by bending your front knee and hip, keeping your back knee slightly bent and your back heel off the ground.",
+      "Continue lowering until your front thigh is parallel to the ground, then push through your front heel to return to the starting position.",
+      "Repeat for the desired number of repetitions, then switch legs and repeat."
+    ],
     "image": "/exercises/bulgarian_squats.jpg",
     "gif": "/exercises/bulgarian_squats.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -260,6 +345,13 @@
       "Contracte tes fessiers et tes ischio-jambiers, puis soulève tes hanches du banc jusqu'à ce que ton corps forme une ligne droite de tes genoux à tes épaules.",
       "Marque une pause en haut, puis abaisse lentement tes hanches pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Sit on the edge of a bench with your back against it and your feet flat on the ground.",
+      "Place your hands on the bench beside your hips for support.",
+      "Engage your glutes and hamstrings, then lift your hips off the bench until your body forms a straight line from your knees to your shoulders.",
+      "Pause for a moment at the top, then slowly lower your hips back down to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/glute_bridge.jpg",
     "gif": "/exercises/glute_bridge.gif",
@@ -281,6 +373,13 @@
       "Marque une pause en haut, puis abaisse lentement tes talons pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Stand with your feet shoulder-width apart, toes pointing forward.",
+      "Place your hands on a wall or stable surface for balance.",
+      "Slowly raise your heels off the ground, lifting your body weight onto the balls of your feet.",
+      "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/calf_raises.jpg",
     "gif": "/exercises/calf_raises.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -301,6 +400,13 @@
       "Continue à alterner les touchés d'épaule tout en gardant tes hanches et ton torse stables.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Start in a high plank position with your hands directly under your shoulders and your body in a straight line.",
+      "Engage your core and lift your right hand off the ground, reaching across to tap your left shoulder.",
+      "Place your right hand back on the ground and repeat with your left hand tapping your right shoulder.",
+      "Continue alternating shoulder taps while keeping your hips and torso stable.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/shoulder_taps.jpg",
     "gif": "/exercises/shoulder_taps.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -320,6 +426,13 @@
       "Marque une pause en haut, puis abaisse lentement tes épaules pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Lie flat on your back with your knees bent and feet flat on the ground.",
+      "Place your hands behind your head with your elbows pointing outwards.",
+      "Engage your abs and lift your shoulders off the ground, curling forward towards your knees.",
+      "Pause for a moment at the top, then slowly lower your shoulders back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/abs.jpg",
     "gif": "/exercises/abs.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -338,6 +451,13 @@
       "Garde les jambes tendues et serrées, et lève-les vers le plafond.",
       "Marque une pause en haut, puis abaisse lentement tes jambes pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Lie flat on a flat bench with your back pressed against it.",
+      "Place your hands under your glutes for support.",
+      "Keep your legs straight and together, and lift them up towards the ceiling.",
+      "Pause for a moment at the top, then slowly lower your legs back down to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/leg_raises.jpg",
     "gif": "/exercises/leg_raises.gif",
@@ -360,6 +480,15 @@
       "Marque une pause, puis fais pivoter ton torse vers la gauche, en amenant tes mains ou le poids vers le côté gauche de ton corps.",
       "Continue à alterner les côtés pour le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Sit on the ground with your knees bent and feet flat on the floor.",
+      "Lean back slightly while keeping your back straight and your core engaged.",
+      "Hold your hands together in front of your chest or hold a weight if desired.",
+      "Lift your feet off the ground, balancing on your sit bones.",
+      "Twist your torso to the right, bringing your hands or weight towards the right side of your body.",
+      "Pause for a moment, then twist your torso to the left, bringing your hands or weight towards the left side of your body.",
+      "Continue alternating sides for the desired number of repetitions."
+    ],
     "image": "/exercises/russian_twists.jpg",
     "gif": "/exercises/russian_twists.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -381,6 +510,13 @@
       "Maintiens un rythme régulier et respire de façon régulière pendant tout l'exercice.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Start in a high plank position with your hands directly under your shoulders and your body in a straight line.",
+      "Engage your core and bring your right knee towards your chest, then quickly switch and bring your left knee towards your chest.",
+      "Continue alternating legs in a running motion, keeping your hips low and your core engaged.",
+      "Maintain a steady pace and breathe evenly throughout the exercise.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/mountain_climbers.jpg",
     "gif": "/exercises/mountain_climbers.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -398,6 +534,12 @@
       "Gaine ta sangle abdominale et lève tes jambes et ton haut du corps simultanément, en tendant tes mains vers tes orteils.",
       "Marque une pause en haut, puis abaisse lentement tes jambes et le haut de ton corps pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Lie flat on your back with your legs extended and your arms overhead.",
+      "Engage your core and lift your legs and upper body simultaneously, reaching your hands towards your toes.",
+      "Pause for a moment at the top, then slowly lower your legs and upper body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/v_ups.jpg",
     "gif": "/exercises/v_ups.gif",
@@ -417,6 +559,13 @@
       "Amène ton coude droit vers ton genou gauche tout en tendant simultanément ta jambe droite.",
       "Reviens à la position de départ et répète le mouvement du côté opposé, en amenant ton coude gauche vers ton genou droit tout en tendant ta jambe gauche.",
       "Continue à alterner les côtés dans un mouvement de pédalage pour le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Lie flat on your back with your hands placed behind your head.",
+      "Lift your legs off the ground and bend your knees at a 90-degree angle.",
+      "Bring your right elbow towards your left knee while simultaneously straightening your right leg.",
+      "Return to the starting position and repeat the movement on the opposite side, bringing your left elbow towards your right knee while straightening your left leg.",
+      "Continue alternating sides in a pedaling motion for the desired number of repetitions."
     ],
     "image": "/exercises/bicycle_crunches.jpg",
     "gif": "/exercises/bicycle_crunches.gif",
@@ -443,6 +592,15 @@
       "Saute vers le haut de manière explosive, en tendant les bras au-dessus de ta tête.",
       "Atterris en douceur et redescends immédiatement en position de squat pour commencer la répétition suivante."
     ],
+    "stepsEn": [
+      "Start in a standing position with your feet shoulder-width apart.",
+      "Lower your body into a squat position by bending your knees and placing your hands on the floor in front of you.",
+      "Kick your feet back into a push-up position.",
+      "Perform a push-up, keeping your body in a straight line.",
+      "Jump your feet back into the squat position.",
+      "Jump up explosively, reaching your arms overhead.",
+      "Land softly and immediately lower back into a squat position to begin the next repetition."
+    ],
     "image": "/exercises/burpees.jpg",
     "gif": "/exercises/burpees.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -461,6 +619,12 @@
       "Saute en écartant les pieds et en levant les bras au-dessus de ta tête.",
       "À l'atterrissage, saute rapidement pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Stand with your feet together and your arms by your sides.",
+      "Jump up, spreading your feet apart and raising your arms above your head.",
+      "As you land, quickly jump back to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/jumping_jacks.jpg",
     "gif": "/exercises/jumping_jacks.gif",
@@ -486,6 +650,15 @@
       "Maintiens un rythme rapide et garde le haut du corps stable pendant tout l'exercice.",
       "Répète pendant la durée souhaitée ou le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Stand facing a wall with your feet hip-width apart.",
+      "Place your hands on the wall for support.",
+      "Engage your core and lift your right knee up towards your chest, while keeping your left foot on the ground.",
+      "Quickly switch legs, bringing your left knee up towards your chest and lowering your right foot back down.",
+      "Continue alternating legs in a running motion, bringing your knees up as high as possible.",
+      "Maintain a fast pace and keep your upper body stable throughout the exercise.",
+      "Repeat for the desired duration or number of repetitions."
+    ],
     "image": "/exercises/high_knees.jpg",
     "gif": "/exercises/high_knees.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -507,6 +680,14 @@
       "Maintiens cette position pendant quelques secondes, en engageant tes mollets pour garder l'équilibre.",
       "Descends lentement avec le pied posé sur la boîte, en revenant à la position de départ.",
       "Répète l'exercice avec l'autre jambe."
+    ],
+    "stepsEn": [
+      "Stand in front of a box or platform with your feet shoulder-width apart.",
+      "Bend your knees and jump onto the box, landing softly with one foot on the box and the other foot hanging off the edge.",
+      "Stabilize yourself on the box with the foot that is on it, while keeping the other foot off the ground.",
+      "Hold this position for a few seconds, engaging your calf muscles to maintain balance.",
+      "Slowly step down with the foot that is on the box, returning to the starting position.",
+      "Repeat the exercise with the other leg."
     ],
     "image": "/exercises/box_jumps.jpg",
     "gif": "/exercises/box_jumps.gif",
@@ -530,6 +711,15 @@
       "Repousse la barre vers le haut jusqu'à la position de départ en étendant tes bras.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
+      "Grasp the barbell with an overhand grip slightly wider than shoulder-width apart.",
+      "Lift the barbell off the rack and hold it directly above your chest with your arms fully extended.",
+      "Lower the barbell slowly towards your chest, keeping your elbows tucked in.",
+      "Pause for a moment when the barbell touches your chest.",
+      "Push the barbell back up to the starting position by extending your arms.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/bench_press.jpg",
     "gif": "/exercises/bench_press.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -551,6 +741,14 @@
       "Marque une pause en bas, puis pousse la barre vers le haut jusqu'à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Set up an incline bench at a 45-degree angle.",
+      "Lie down on the bench with your feet flat on the ground.",
+      "Grasp the barbell with an overhand grip, slightly wider than shoulder-width apart.",
+      "Unrack the barbell and lower it slowly towards your chest, keeping your elbows at a 45-degree angle.",
+      "Pause for a moment at the bottom, then push the barbell back up to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/incline_bench.jpg",
     "gif": "/exercises/incline_bench.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -569,6 +767,13 @@
       "En gardant une légère flexion des coudes, abaisse les bras sur les côtés en un large arc jusqu'à ressentir un étirement dans la poitrine.",
       "Marque une pause, puis inverse le mouvement et ramène les haltères vers le haut jusqu'à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Lie flat on a bench with a dumbbell in each hand, palms facing each other.",
+      "Extend your arms straight up over your chest, with a slight bend in your elbows.",
+      "Keeping a slight bend in your elbows, lower your arms out to the sides in a wide arc until you feel a stretch in your chest.",
+      "Pause for a moment, then reverse the movement and bring the dumbbells back up to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/dumbbell_fly.jpg",
     "gif": "/exercises/dumbbell_fly.gif",
@@ -592,6 +797,15 @@
       "Marque une pause au centre, puis ramène lentement tes bras à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Attach cables to both sides of a cable machine at chest height.",
+      "Stand in the center of the machine with one foot slightly in front of the other.",
+      "Grasp the handles with an overhand grip and extend your arms out to the sides.",
+      "Keep a slight bend in your elbows and maintain a slight forward lean.",
+      "Engage your chest muscles and bring your arms forward in a sweeping motion.",
+      "Pause for a moment at the center, then slowly return your arms back to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/cable_fly.jpg",
     "gif": "/exercises/cable_fly.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -610,6 +824,12 @@
       "Abaisse ton corps en fléchissant tes coudes jusqu'à ce que tes épaules soient sous tes coudes.",
       "Repousse-toi vers le haut jusqu'à la position de départ en tendant tes bras.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Position yourself on parallel bars with your arms fully extended and your body straight.",
+      "Lower your body by bending your elbows until your shoulders are below your elbows.",
+      "Push yourself back up to the starting position by straightening your arms.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/chest_dips.jpg",
     "gif": "/exercises/chest_dips.gif",
@@ -632,6 +852,14 @@
       "Abaisse la barre jusqu'au sol en fléchissant les hanches et les genoux, en gardant ton dos droit.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Stand with your feet shoulder-width apart and the barbell on the ground in front of you.",
+      "Bend your knees and hinge at the hips to lower your torso and grip the barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+      "Keep your back straight and chest lifted as you drive through your heels to lift the barbell off the ground, extending your hips and knees.",
+      "As you stand up straight, squeeze your glutes and keep your core engaged.",
+      "Lower the barbell back down to the ground by bending at the hips and knees, keeping your back straight.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/deadlift.jpg",
     "gif": "/exercises/deadlift.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -653,6 +881,14 @@
       "Marque une pause en haut, puis abaisse lentement la barre pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Stand with your feet shoulder-width apart and knees slightly bent.",
+      "Bend forward at the hips while keeping your back straight and chest up.",
+      "Grasp the barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+      "Pull the barbell towards your lower chest by retracting your shoulder blades and squeezing your back muscles.",
+      "Pause for a moment at the top, then slowly lower the barbell back to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/barbell_row.jpg",
     "gif": "/exercises/barbell_row.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -673,6 +909,14 @@
       "Tire les haltères vers ta poitrine en contractant tes omoplates l'une vers l'autre.",
       "Marque une pause en haut, puis abaisse lentement les haltères pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Stand with your feet shoulder-width apart, knees slightly bent, and hold a dumbbell in each hand with your palms facing your body.",
+      "Bend forward at the hips, keeping your back straight and your core engaged.",
+      "Let your arms hang straight down towards the floor, with your elbows slightly bent.",
+      "Pull the dumbbells up towards your chest, squeezing your shoulder blades together.",
+      "Pause for a moment at the top, then slowly lower the dumbbells back down to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/dumbbell_row.jpg",
     "gif": "/exercises/dumbbell_row.gif",
@@ -696,6 +940,15 @@
       "Marque une pause en bas du mouvement, puis relâche lentement la barre jusqu'à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Adjust the cable pulldown machine so that the seat is at a comfortable height and the knee pad is secured.",
+      "Sit on the seat with your back straight and your feet flat on the ground.",
+      "Grasp the cable bar with an overhand grip, slightly wider than shoulder-width apart.",
+      "Lean back slightly and engage your core.",
+      "Pull the cable bar down towards your chest, squeezing your shoulder blades together.",
+      "Pause for a moment at the bottom of the movement, then slowly release the bar back to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/lat_pulldown.jpg",
     "gif": "/exercises/lat_pulldown.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -715,6 +968,13 @@
       "Tire les poignées vers ton corps en contractant tes omoplates l'une vers l'autre.",
       "Marque une pause au sommet du mouvement, puis relâche lentement les poignées pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Sit on the cable row machine with your feet flat on the footrests and your knees slightly bent.",
+      "Grasp the handles with an overhand grip, keeping your back straight and your shoulders relaxed.",
+      "Pull the handles towards your body, squeezing your shoulder blades together.",
+      "Pause for a moment at the peak of the movement, then slowly release the handles back to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/cable_row.jpg",
     "gif": "/exercises/cable_row.gif",
@@ -736,6 +996,14 @@
       "Continue à tirer jusqu'à ce que ton menton soit au-dessus de la barre.",
       "Marque une pause en haut, puis abaisse lentement ton corps pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Grab the pull-up bar with an overhand grip, slightly wider than shoulder-width apart.",
+      "Hang from the bar with your arms fully extended and your body straight.",
+      "Engage your back muscles and pull your body up towards the bar, keeping your elbows close to your body.",
+      "Continue pulling until your chin is above the bar.",
+      "Pause for a moment at the top, then slowly lower your body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/weighted_pullups.jpg",
     "gif": "/exercises/weighted_pullups.gif",
@@ -762,6 +1030,16 @@
       "Pousse sur tes talons pour te relever, en étendant tes hanches et tes genoux.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Stand with your feet shoulder-width apart, toes slightly turned out.",
+      "Hold the barbell across your upper back, resting it on your traps or rear delts.",
+      "Engage your core and keep your chest up as you begin to lower your body down.",
+      "Bend at the knees and hips, pushing your hips back and down as if sitting into a chair.",
+      "Lower yourself until your thighs are parallel to the ground or slightly below.",
+      "Keep your knees in line with your toes and your weight in your heels.",
+      "Drive through your heels to stand back up, extending your hips and knees.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/barbell_squat.jpg",
     "gif": "/exercises/barbell_squat.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -785,6 +1063,15 @@
       "Marque une pause en haut du mouvement, puis abaisse lentement la plateforme vers ton corps en fléchissant tes genoux.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Adjust the seat and footplate of the sled machine to a comfortable position.",
+      "Sit on the sled machine with your back against the backrest and your feet shoulder-width apart on the footplate.",
+      "Grip the handles on the sides of the seat for stability.",
+      "Push the footplate away from your body by extending your legs, keeping your heels on the footplate.",
+      "Continue pushing until your legs are almost fully extended, but without locking your knees.",
+      "Pause for a moment at the top of the movement, then slowly lower the footplate back towards your body by bending your knees.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/leg_press.jpg",
     "gif": "/exercises/leg_press.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -806,6 +1093,15 @@
       "Inspire et abaisse lentement le levier jusqu'à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Adjust the machine to fit your body and select the desired weight.",
+      "Lie face down on the machine with your legs straight and your heels against the padded lever.",
+      "Grasp the handles or the sides of the machine for stability.",
+      "Keeping your upper body stationary, exhale and curl your legs up as far as possible without lifting your hips off the pad.",
+      "Hold the contracted position for a brief pause as you squeeze your hamstrings.",
+      "Inhale and slowly lower the lever back to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/leg_curl.jpg",
     "gif": "/exercises/leg_curl.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -825,6 +1121,14 @@
       "Étends tes jambes vers l'avant en tendant les genoux, en soulevant le poids.",
       "Marque une pause en haut, puis abaisse lentement le poids pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Adjust the seat height and backrest of the machine to fit your body.",
+      "Sit on the machine with your back against the backrest and your feet on the footpad.",
+      "Grasp the handles or sidebars for stability.",
+      "Extend your legs forward by straightening your knees, lifting the weight.",
+      "Pause for a moment at the top, then slowly lower the weight back to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/leg_extension.jpg",
     "gif": "/exercises/leg_extension.gif",
@@ -849,6 +1153,16 @@
       "Contracte tes fessiers en haut du mouvement.",
       "Abaisse la barre jusqu'à la position de départ et répète pour le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Stand with your feet shoulder-width apart and your toes pointing forward.",
+      "Hold the barbell with an overhand grip, hands slightly wider than shoulder-width apart.",
+      "Bend at the hips, keeping your back straight and your knees slightly bent.",
+      "Lower the barbell towards the ground, keeping it close to your body.",
+      "Feel the stretch in your hamstrings as you lower the barbell.",
+      "Once you feel a stretch in your hamstrings, push your hips forward and stand up straight.",
+      "Squeeze your glutes at the top of the movement.",
+      "Lower the barbell back down to the starting position and repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/romanian_deadlift.jpg",
     "gif": "/exercises/romanian_deadlift.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -870,6 +1184,14 @@
       "Abaisse lentement tes hanches vers la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Start by lying flat on your back on the ground with your knees bent and feet flat on the floor.",
+      "Place a barbell across your hips, holding it securely with both hands.",
+      "Engage your glutes and core muscles, then lift your hips off the ground until your body forms a straight line from your knees to your shoulders.",
+      "Pause for a moment at the top, squeezing your glutes.",
+      "Slowly lower your hips back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/weighted_hip_thrust.jpg",
     "gif": "/exercises/weighted_hip_thrust.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -890,6 +1212,13 @@
       "Marque une pause en haut, puis abaisse lentement tes talons pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Adjust the machine to your height and stand with your feet shoulder-width apart.",
+      "Place your shoulders under the pads and hold onto the handles for stability.",
+      "Raise your heels as high as possible by extending your ankles.",
+      "Pause for a moment at the top, then slowly lower your heels back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/machine_calf.jpg",
     "gif": "/exercises/machine_calf.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -908,6 +1237,12 @@
       "Soulève la barre à hauteur des épaules, en gardant tes coudes légèrement devant la barre.",
       "Développe la barre au-dessus de ta tête, en tendant complètement tes bras.",
       "Abaisse la barre à hauteur des épaules et répète pour le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Stand with your feet shoulder-width apart and hold the barbell with an overhand grip, slightly wider than shoulder-width.",
+      "Lift the barbell to shoulder height, keeping your elbows slightly in front of the bar.",
+      "Press the barbell overhead, extending your arms fully.",
+      "Lower the barbell back to shoulder height and repeat for the desired number of repetitions."
     ],
     "image": "/exercises/overhead_press.jpg",
     "gif": "/exercises/overhead_press.gif",
@@ -928,6 +1263,13 @@
       "Marque une pause en haut, puis abaisse lentement tes bras pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Stand with your feet shoulder-width apart and hold a dumbbell in each hand, palms facing your body.",
+      "Keep your back straight and engage your core.",
+      "Raise your arms out to the sides until they are parallel to the floor, keeping a slight bend in your elbows.",
+      "Pause for a moment at the top, then slowly lower your arms back down to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/db_lateral_raise.jpg",
     "gif": "/exercises/db_lateral_raise.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -946,6 +1288,12 @@
       "En gardant les bras tendus, expire et lève les haltères devant toi jusqu'à ce qu'ils soient à hauteur d'épaule.",
       "Marque une pause en haut, puis inspire et abaisse lentement les haltères pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with your palms facing your thighs.",
+      "Keeping your arms straight, exhale and lift the dumbbells in front of you until they are at shoulder level.",
+      "Pause for a moment at the top, then inhale and slowly lower the dumbbells back down to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/front_raise.jpg",
     "gif": "/exercises/front_raise.gif",
@@ -967,6 +1315,14 @@
       "Inspire pendant que tu commences lentement à abaisser la barre jusqu'à la position de départ.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Stand up straight with your feet shoulder-width apart and hold a barbell with an underhand grip, palms facing forward.",
+      "Keep your elbows close to your torso and exhale as you curl the weights while contracting your biceps.",
+      "Continue to raise the bar until your biceps are fully contracted and the bar is at shoulder level.",
+      "Hold the contracted position for a brief pause as you squeeze your biceps.",
+      "Inhale as you slowly begin to lower the bar back to the starting position.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/barbell_curl.jpg",
     "gif": "/exercises/barbell_curl.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -986,6 +1342,14 @@
       "Maintiens la position contractée pendant une brève pause en contractant tes biceps.",
       "Inspire et commence lentement à abaisser les haltères jusqu'à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Stand up straight with a dumbbell in each hand, palms facing forward and arms fully extended.",
+      "Keeping your upper arms stationary, exhale and curl the weights while contracting your biceps.",
+      "Continue to raise the weights until your biceps are fully contracted and the dumbbells are at shoulder level.",
+      "Hold the contracted position for a brief pause as you squeeze your biceps.",
+      "Inhale and slowly begin to lower the dumbbells back to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/dumbbell_curl.jpg",
     "gif": "/exercises/dumbbell_curl.gif",
@@ -1009,6 +1373,16 @@
       "Ensuite, inspire et commence lentement à abaisser les haltères vers la position de départ.",
       "Répète le nombre de répétitions recommandé."
     ],
+    "stepsEn": [
+      "Stand up straight with a dumbbell in each hand, palms facing your torso.",
+      "Keep your elbows close to your torso and rotate the palms of your hands until they are facing forward.",
+      "This will be your starting position.",
+      "Now, keeping the upper arms stationary, exhale and curl the weights while contracting your biceps.",
+      "Continue to raise the weights until your biceps are fully contracted and the dumbbells are at shoulder level.",
+      "Hold the contracted position for a brief pause as you squeeze your biceps.",
+      "Then, inhale and slowly begin to lower the dumbbells back to the starting position.",
+      "Repeat for the recommended amount of repetitions."
+    ],
     "image": "/exercises/hammer_curl.jpg",
     "gif": "/exercises/hammer_curl.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -1027,6 +1401,13 @@
       "En gardant le haut des bras immobile, abaisse lentement la barre vers ton front en fléchissant tes coudes.",
       "Marque une pause lorsque la barre est juste au-dessus de ton front, puis étends tes bras pour revenir à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Lie flat on a bench with your feet flat on the ground and your head at the end of the bench.",
+      "Hold the barbell with an overhand grip, hands shoulder-width apart, and extend your arms straight up over your chest.",
+      "Keeping your upper arms stationary, slowly lower the barbell towards your forehead by bending your elbows.",
+      "Pause for a moment when the barbell is just above your forehead, then extend your arms back up to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/skull_crusher.jpg",
     "gif": "/exercises/skull_crusher.gif",
@@ -1049,6 +1430,15 @@
       "Marque une pause, puis inspire et reviens lentement à la position de départ en laissant tes coudes fléchir.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Attach a rope attachment to a high pulley on a cable machine.",
+      "Stand facing the machine with your feet shoulder-width apart and a slight bend in your knees.",
+      "Grasp the rope with an overhand grip, palms facing each other.",
+      "Keep your elbows close to your sides and your upper arms stationary throughout the exercise.",
+      "Exhale and push the rope downward by extending your elbows until your arms are fully extended.",
+      "Pause for a moment, then inhale and slowly return to the starting position by allowing your elbows to flex.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/tricep_pushdown.jpg",
     "gif": "/exercises/tricep_pushdown.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -1067,6 +1457,13 @@
       "Plie ton coude et abaisse l'haltère derrière ta tête en gardant le haut de ton bras immobile.",
       "Étends ton bras pour revenir vers le haut en position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Stand with your feet shoulder-width apart and hold a dumbbell in one hand.",
+      "Raise the dumbbell overhead, keeping your arm straight.",
+      "Bend your elbow and lower the dumbbell behind your head, keeping your upper arm stationary.",
+      "Extend your arm back up to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/overhead_ext.jpg",
     "gif": "/exercises/overhead_ext.gif",
@@ -1089,6 +1486,15 @@
       "Reviens lentement à la position de départ en contractant les abdominaux et en te tirant vers le haut.",
       "Répète le nombre de répétitions souhaité."
     ],
+    "stepsEn": [
+      "Adjust the seat height and chest pad position according to your comfort.",
+      "Sit on the machine with your back against the chest pad and your feet flat on the floor.",
+      "Grasp the handles or side bars for stability.",
+      "Engage your abs and slowly lean back, allowing the chest pad to move with you.",
+      "Pause for a moment at the maximum contraction, feeling the tension in your abs.",
+      "Slowly return to the starting position by contracting your abs and pulling yourself back up.",
+      "Repeat for the desired number of repetitions."
+    ],
     "image": "/exercises/crunch_machine.jpg",
     "gif": "/exercises/crunch_machine.gif",
     "attribution": "© Gym visual — https://gymvisual.com/"
@@ -1108,6 +1514,14 @@
       "Continue à rouler vers l'avant jusqu'à ce que ton corps soit complètement étendu et que tes bras soient au-dessus de ta tête.",
       "Marque une pause, puis fais rouler lentement la roue vers tes genoux, en gardant le contrôle et en gainant tes abdominaux.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Kneel on the floor and place the wheel roller in front of you.",
+      "Place your hands on the handles of the wheel roller and extend your arms straight out in front of you.",
+      "Engage your core muscles and slowly roll the wheel forward, keeping your back straight and your abs tight.",
+      "Continue rolling forward until your body is fully extended and your arms are overhead.",
+      "Pause for a moment, then slowly roll the wheel back towards your knees, maintaining control and keeping your abs engaged.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/ab_wheel.jpg",
     "gif": "/exercises/ab_wheel.gif",
@@ -1131,6 +1545,16 @@
       "Maintiens cette position pendant la durée souhaitée.",
       "Abaisse ton corps jusqu'à la position de départ.",
       "Répète le nombre de répétitions souhaité."
+    ],
+    "stepsEn": [
+      "Start by lying face down on the floor.",
+      "Place your forearms on the ground, with your elbows directly under your shoulders.",
+      "Extend your legs straight out behind you, with your toes on the ground.",
+      "Engage your core and lift your body off the ground, balancing on your forearms and toes.",
+      "Keep your body in a straight line from your head to your heels.",
+      "Hold this position for the desired amount of time.",
+      "Lower your body back down to the starting position.",
+      "Repeat for the desired number of repetitions."
     ],
     "image": "/exercises/weighted_plank.jpg",
     "gif": "/exercises/weighted_plank.gif",

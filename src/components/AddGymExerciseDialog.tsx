@@ -5,11 +5,12 @@ import { EXERCISE_CATEGORIES, MUSCULATION_EXERCISES } from '@/utils/constants';
 import { Search, Check, ChevronRight, Loader2 } from 'lucide-react';
 import type { ExerciseCategory, Exercise } from '@/firebase/types';
 import { useHaptic } from '@/hooks/useHaptic';
+import { useLanguage } from '@/hooks/useLanguage';
+import { equipmentLabel } from '@/utils/exerciseLabels';
 import {
   loadExerciseLibrary,
   searchLibrary,
   toExercise,
-  equipmentLabel,
   libraryImageUrl,
   LIBRARY_ID_PREFIX,
   type LibraryExercise,
@@ -58,13 +59,16 @@ export function AddGymExerciseDialog({
   const [search, setSearch] = useState('');
   const [library, setLibrary] = useState<LibraryExercise[] | null>(null);
   const haptics = useHaptic();
+  const lang = useLanguage();
 
-  // Charger la bibliothèque au premier passage sur l'onglet
+  // Charger la bibliothèque (dans la langue courante) au premier passage sur l'onglet
   useEffect(() => {
-    if (source === 'library' && !library) {
-      loadExerciseLibrary().then(setLibrary);
-    }
-  }, [source, library]);
+    if (source !== 'library') return;
+    let cancelled = false;
+    setLibrary(null);
+    loadExerciseLibrary(lang).then((lib) => { if (!cancelled) setLibrary(lib); });
+    return () => { cancelled = true; };
+  }, [source, lang]);
 
   // Merge static exercises with enriched data (imageUrl locale)
   const exercises = MUSCULATION_EXERCISES.map((ex) => {
@@ -79,7 +83,7 @@ export function AddGymExerciseDialog({
   });
 
   const libraryResults = source === 'library' && library
-    ? searchLibrary(library, search, selectedCategory)
+    ? searchLibrary(library, search, selectedCategory, undefined, lang)
     : [];
 
   const muscuCategories = EXERCISE_CATEGORIES.filter(
@@ -240,7 +244,7 @@ export function AddGymExerciseDialog({
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{libEx.name}</p>
                       <p className="text-xs text-muted-foreground truncate">
-                        {equipmentLabel(libEx.equipment)}
+                        {equipmentLabel(libEx.equipment, lang)}
                         {' · '}
                         {EXERCISE_CATEGORIES.find((c) => c.id === libEx.category)?.label}
                       </p>

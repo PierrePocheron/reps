@@ -2,6 +2,9 @@ import { create } from 'zustand';
 import type { ThemeColor } from '@/utils/theme-colors';
 import { logger } from '@/utils/logger';
 
+/** Langue des contenus d'exercices : auto = langue de l'appareil */
+export type LanguageSetting = 'auto' | 'fr' | 'en';
+
 interface SettingsState {
   // État
   theme: 'light' | 'dark' | 'system';
@@ -11,6 +14,7 @@ interface SettingsState {
   hapticFeedback: boolean;
   soundEnabled: boolean;
   weeklyGoal: number; // nombre de séances visées par semaine (0 = désactivé)
+  language: LanguageSetting;
 
   // Actions
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
@@ -20,6 +24,7 @@ interface SettingsState {
   setHapticFeedback: (enabled: boolean) => void;
   setSoundEnabled: (enabled: boolean) => void;
   setWeeklyGoal: (goal: number) => void;
+  setLanguage: (language: LanguageSetting) => void;
   loadSettings: () => void;
   saveSettings: () => void;
   applyTheme: () => void;
@@ -55,6 +60,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     hapticFeedback: storedSettings.hapticFeedback ?? true,
     soundEnabled: storedSettings.soundEnabled ?? true,
     weeklyGoal: storedSettings.weeklyGoal ?? 3,
+    language: storedSettings.language ?? 'auto',
 
     // Actions
     setTheme: (theme) => {
@@ -100,6 +106,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
       get().saveSettings();
     },
 
+    setLanguage: (language) => {
+      set({ language });
+      get().saveSettings();
+    },
+
     /**
      * Charge les paramètres depuis localStorage
      */
@@ -116,7 +127,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
      */
     saveSettings: () => {
       try {
-        const { theme, colorTheme, notificationsEnabled, notificationTime, hapticFeedback, weeklyGoal } =
+        const { theme, colorTheme, notificationsEnabled, notificationTime, hapticFeedback, weeklyGoal, language } =
           get();
         localStorage.setItem(
           STORAGE_KEY,
@@ -128,6 +139,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
             hapticFeedback,
             soundEnabled: get().soundEnabled,
             weeklyGoal,
+            language,
           })
         );
       } catch (error) {

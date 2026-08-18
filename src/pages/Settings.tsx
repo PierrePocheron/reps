@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ColorPicker } from '@/components/ui/color-picker';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useTheme } from '@/hooks/useTheme';
-import { useSettingsStore } from '@/store/settingsStore';
-import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2, Shield, ChevronRight, Target, Download } from 'lucide-react';
+import { useSettingsStore, type LanguageSetting } from '@/store/settingsStore';
+import { detectDeviceLanguage } from '@/hooks/useLanguage';
+import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2, Shield, ChevronRight, Target, Download, Languages } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import { cn } from '@/utils/cn';
 import { useNavigate } from 'react-router-dom';
@@ -16,13 +17,19 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { version as APP_VERSION } from '../../package.json';
 
 const WEEKLY_GOAL_OPTIONS = [0, 2, 3, 4, 5] as const;
+const LANGUAGE_OPTIONS: { id: LanguageSetting; label: string }[] = [
+  { id: 'auto', label: 'Auto' },
+  { id: 'fr', label: 'Français' },
+  { id: 'en', label: 'English' },
+];
 
 function Settings() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { theme, colorTheme, setTheme, setColorTheme } = useTheme();
   const { user, updateProfile } = useUserStore();
-  const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, weeklyGoal, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled, setWeeklyGoal } = useSettingsStore();
+  const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, weeklyGoal, language, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled, setWeeklyGoal, setLanguage } = useSettingsStore();
+  const deviceLanguage = detectDeviceLanguage();
   const { scheduleDailyReminder, cancelReminder } = useNotifications();
   const { sessions, gymSessions } = useSessionHistory(500);
   const [exporting, setExporting] = useState(false);
@@ -224,6 +231,34 @@ function Settings() {
                   onClick={() => setWeeklyGoal(g)}
                 >
                   {g === 0 ? 'Off' : `${g}×`}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Langue des exercices */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Languages className="h-5 w-5" />
+              Langue des exercices
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Noms, instructions et muscles de la bibliothèque d'exercices.
+              {' '}En mode Auto, suit la langue de l'appareil ({deviceLanguage === 'fr' ? 'français' : 'anglais'} détecté).
+            </p>
+            <div className="flex gap-2">
+              {LANGUAGE_OPTIONS.map((opt) => (
+                <Button
+                  key={opt.id}
+                  variant={language === opt.id ? 'default' : 'outline'}
+                  className={cn('flex-1 h-10', language === opt.id && 'ring-2 ring-offset-2 ring-primary')}
+                  onClick={() => setLanguage(opt.id)}
+                >
+                  {opt.label}
                 </Button>
               ))}
             </div>

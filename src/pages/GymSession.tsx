@@ -15,6 +15,7 @@ import { useSound } from '@/hooks/useSound';
 import { getUserGymSessions } from '@/firebase/gymSessions';
 import type { GymSessionExercise, PlannedSet } from '@/firebase/types';
 import { useExerciseImages } from '@/hooks/useExerciseImages';
+import { useLanguage } from '@/hooks/useLanguage';
 import {
   getLibraryExercise,
   libraryGifUrl,
@@ -63,6 +64,7 @@ function GymSession() {
 
   const { user } = useUserStore();
   const { imageMap, infoMap } = useExerciseImages();
+  const lang = useLanguage();
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const cancellingRef = useRef(false);
@@ -72,11 +74,11 @@ function GymSession() {
   // Détails (étapes, muscles) des exercices issus de la bibliothèque complète
   useEffect(() => {
     if (detailExerciseId?.startsWith(LIBRARY_ID_PREFIX)) {
-      getLibraryExercise(detailExerciseId).then(setLibDetail);
+      getLibraryExercise(detailExerciseId, lang).then(setLibDetail);
     } else {
       setLibDetail(null);
     }
-  }, [detailExerciseId]);
+  }, [detailExerciseId, lang]);
   // Defaults from history: exerciseId → { reps, weight }
   const [historyDefaults, setHistoryDefaults] = useState<Record<string, { reps: number; weight: number }>>({});
 

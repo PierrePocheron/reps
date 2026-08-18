@@ -10,9 +10,13 @@
  * Produit :
  *   public/exercises/<repsId>.jpg   — vignette 180×180
  *   public/exercises/<repsId>.gif   — animation
- *   src/data/exerciseDetails.json   — instructions FR + muscles + chemins locaux
- *   src/data/exerciseLibrary.json   — bibliothèque complète (1324 exercices,
- *                                     médias servis via CDN jsDelivr à la demande)
+ *   src/data/exerciseDetails.json     — instructions FR/EN + muscles + chemins locaux
+ *   src/data/exerciseLibrary.fr.json  — bibliothèque complète en français
+ *   src/data/exerciseLibrary.en.json  — bibliothèque complète en anglais
+ *                                        (médias servis via CDN jsDelivr à la demande)
+ *
+ * Les noms français des 1324 exercices proviennent de
+ * scripts/data/exercise-names.fr.json (traduction relue, versionnée).
  *
  * Usage :  node scripts/import-exercise-media.mjs [--data-only]
  */
@@ -26,7 +30,9 @@ const RAW_BASE = 'https://raw.githubusercontent.com/hasaneyldrm/exercises-datase
 const CACHE = path.join(ROOT, 'scripts', '.cache', 'exercises-dataset.json');
 const MEDIA_DIR = path.join(ROOT, 'public', 'exercises');
 const OUT_JSON = path.join(ROOT, 'src', 'data', 'exerciseDetails.json');
-const OUT_LIBRARY = path.join(ROOT, 'src', 'data', 'exerciseLibrary.json');
+const OUT_LIBRARY_FR = path.join(ROOT, 'src', 'data', 'exerciseLibrary.fr.json');
+const OUT_LIBRARY_EN = path.join(ROOT, 'src', 'data', 'exerciseLibrary.en.json');
+const NAMES_FR = path.join(ROOT, 'scripts', 'data', 'exercise-names.fr.json');
 const ATTRIBUTION = '© Gym visual — https://gymvisual.com/';
 
 /** body_part du dataset → catégorie REPS */
@@ -152,6 +158,7 @@ async function main() {
     }
 
     const steps = ex.instruction_steps?.fr ?? [];
+    const stepsEn = ex.instruction_steps?.en ?? [];
     if (steps.length === 0) console.warn(`⚠ ${repsId} : pas d'instructions FR`);
 
     out[repsId] = {
@@ -161,6 +168,7 @@ async function main() {
       secondaryMuscles: ex.secondary_muscles ?? [],
       equipment: ex.equipment,
       steps,
+      stepsEn,
       image: `/exercises/${repsId}.jpg`,
       gif: `/exercises/${repsId}.gif`,
       attribution: ATTRIBUTION,
@@ -179,20 +187,34 @@ async function main() {
   if (!dataOnly) console.log(`${downloaded} fichiers médias → ${path.relative(ROOT, MEDIA_DIR)}`);
 
   // ─── Bibliothèque complète (données embarquées, médias via CDN) ─────────
-  const library = dataset.map((ex) => ({
+  let namesFr = {};
+  try {
+    namesFr = JSON.parse(await readFile(NAMES_FR, 'utf8'));
+  } catch {
+    console.warn(`⚠ ${path.relative(ROOT, NAMES_FR)} introuvable — noms FR = noms EN`);
+  }
+  const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
+  const buildLibrary = (lang) => dataset.map((ex) => ({
     id: ex.id,
-    name: ex.name,
+    name: lang === 'fr' ? (namesFr[ex.id] ?? capitalize(ex.name)) : capitalize(ex.name),
     category: BODY_PART_TO_CATEGORY[ex.body_part] ?? 'core',
     bodyPart: ex.body_part,
     target: ex.target,
     secondaryMuscles: ex.secondary_muscles ?? [],
     equipment: ex.equipment,
-    steps: ex.instruction_steps?.fr ?? [],
+    steps: ex.instruction_steps?.[lang] ?? [],
     // "0001-2gPfomN" → images/<media>.jpg et videos/<media>.gif sur le CDN
     media: ex.image.split('/').pop().replace(/\.jpg$/, ''),
   }));
-  await writeFile(OUT_LIBRARY, JSON.stringify(library));
-  console.log(`${library.length} exercices → ${path.relative(ROOT, OUT_LIBRARY)} (bibliothèque complète)`);
+
+  const libFr = buildLibrary('fr');
+  const libEn = buildLibrary('en');
+  const missingFr = libFr.filter((e) => !namesFr[e.id]).length;
+  await writeFile(OUT_LIBRARY_FR, JSON.stringify(libFr));
+  await writeFile(OUT_LIBRARY_EN, JSON.stringify(libEn));
+  console.log(`${libFr.length} exercices → ${path.relative(ROOT, OUT_LIBRARY_FR)} (${missingFr} sans nom FR)`);
+  console.log(`${libEn.length} exercices → ${path.relative(ROOT, OUT_LIBRARY_EN)}`);
 }
 
 main().catch((err) => {

@@ -1,34 +1,12 @@
 import { X } from 'lucide-react';
 import { MEDIA_ATTRIBUTION } from '@/hooks/useExerciseImages';
+import { useLanguage } from '@/hooks/useLanguage';
+import { targetLabel } from '@/utils/exerciseLabels';
 
-/** Traductions FR des groupes musculaires du dataset */
-const TARGET_FR: Record<string, string> = {
-  abs: 'Abdominaux',
-  biceps: 'Biceps',
-  calves: 'Mollets',
-  'cardiovascular system': 'Cardio',
-  delts: 'Épaules',
-  forearms: 'Avant-bras',
-  glutes: 'Fessiers',
-  hamstrings: 'Ischio-jambiers',
-  lats: 'Grand dorsal',
-  pectorals: 'Pectoraux',
-  quads: 'Quadriceps',
-  spine: 'Lombaires',
-  traps: 'Trapèzes',
-  triceps: 'Triceps',
-  'upper back': 'Haut du dos',
-  'lower back': 'Bas du dos',
-  'hip flexors': 'Fléchisseurs de hanche',
-  shoulders: 'Épaules',
-  'inner thighs': 'Adducteurs',
-  obliques: 'Obliques',
-  'rotator cuff': 'Coiffe des rotateurs',
-};
-
-function targetLabel(target: string): string {
-  return TARGET_FR[target] ?? target;
-}
+const T = {
+  fr: { howTo: 'Comment faire', noDesc: 'Pas de description disponible.', illustration: 'Illustration' },
+  en: { howTo: 'How to', noDesc: 'No description available.', illustration: 'Illustration' },
+} as const;
 
 interface Props {
   exerciseId: string;
@@ -52,6 +30,8 @@ export function ExerciseDetailSheet({
   secondaryMuscles,
   onClose,
 }: Props) {
+  const lang = useLanguage();
+  const t = T[lang];
   const hasSteps = steps && steps.length > 0;
 
   return (
@@ -97,14 +77,14 @@ export function ExerciseDetailSheet({
           {target && (
             <div className="flex flex-wrap gap-1.5">
               <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
-                {targetLabel(target)}
+                {targetLabel(target, lang)}
               </span>
               {secondaryMuscles?.filter((m) => m !== target).map((m) => (
                 <span
                   key={m}
                   className="px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium"
                 >
-                  {targetLabel(m)}
+                  {targetLabel(m, lang)}
                 </span>
               ))}
             </div>
@@ -113,7 +93,7 @@ export function ExerciseDetailSheet({
           {/* Instructions */}
           {hasSteps ? (
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-foreground">Comment faire</h3>
+              <h3 className="text-sm font-semibold text-foreground">{t.howTo}</h3>
               <ol className="space-y-2">
                 {steps.map((step, i) => (
                   <li key={step} className="flex gap-3 text-sm text-muted-foreground leading-relaxed">
@@ -127,19 +107,19 @@ export function ExerciseDetailSheet({
             </div>
           ) : description ? (
             <div className="space-y-1.5">
-              <h3 className="text-sm font-semibold text-foreground">Comment faire</h3>
+              <h3 className="text-sm font-semibold text-foreground">{t.howTo}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground text-center py-4">
-              Pas de description disponible.
+              {t.noDesc}
             </p>
           )}
 
           {/* Attribution obligatoire des médias Gym visual */}
           {imageUrl && (
             <p className="text-[10px] text-muted-foreground/60 text-center">
-              Illustration {MEDIA_ATTRIBUTION}
+              {t.illustration} {MEDIA_ATTRIBUTION}
             </p>
           )}
         </div>

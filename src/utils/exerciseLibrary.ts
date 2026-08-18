@@ -1,11 +1,14 @@
-import type { Exercise, ExerciseCategory } from '@/firebase/types';
+import type { Exercise, ExerciseCategory, WorkoutType } from '@/firebase/types';
+import type { Language } from '@/hooks/useLanguage';
+import { equipmentLabel } from '@/utils/exerciseLabels';
 
 /**
  * Bibliothèque complète d'exercices (1324) issue du dataset
  * hasaneyldrm/exercises-dataset.
  *
- * - Données (noms, muscles, instructions FR) : embarquées, chargées en lazy
- *   (~250 Ko gzippés) via import dynamique — aucun impact sur le démarrage.
+ * - Données (noms FR/EN, muscles, instructions FR/EN) : embarquées, un fichier
+ *   par langue chargé en lazy (~125 Ko gzippés) via import dynamique — aucun
+ *   impact sur le démarrage.
  * - Médias : servis à la demande depuis le CDN jsDelivr (fichiers statiques
  *   du repo GitHub, pas d'API). Les 55 exercices par défaut de REPS gardent
  *   leurs médias embarqués et restent disponibles hors ligne.
@@ -33,41 +36,6 @@ export const libraryImageUrl = (ex: LibraryExercise): string =>
 export const libraryGifUrl = (ex: LibraryExercise): string =>
   `${CDN_BASE}/videos/${ex.media}.gif`;
 
-/** Libellés français des équipements du dataset */
-export const EQUIPMENT_FR: Record<string, string> = {
-  assisted: 'Assisté',
-  band: 'Élastique',
-  barbell: 'Barre',
-  'body weight': 'Poids du corps',
-  'bosu ball': 'Bosu',
-  cable: 'Poulie',
-  dumbbell: 'Haltère',
-  'elliptical machine': 'Elliptique',
-  'ez barbell': 'Barre EZ',
-  hammer: 'Machine Hammer',
-  kettlebell: 'Kettlebell',
-  'leverage machine': 'Machine',
-  'medicine ball': 'Médecine ball',
-  'olympic barbell': 'Barre olympique',
-  'resistance band': 'Bande de résistance',
-  roller: 'Rouleau',
-  rope: 'Corde',
-  'skierg machine': 'SkiErg',
-  'sled machine': 'Presse / Sled',
-  'smith machine': 'Smith machine',
-  'stability ball': 'Swiss ball',
-  'stationary bike': 'Vélo',
-  'stepmill machine': 'Escalier',
-  tire: 'Pneu',
-  'trap bar': 'Trap bar',
-  'upper body ergometer': 'Ergomètre',
-  weighted: 'Lesté',
-  'wheel roller': 'Roue abdominale',
-};
-
-export const equipmentLabel = (equipment: string): string =>
-  EQUIPMENT_FR[equipment] ?? equipment;
-
 /** Emoji par catégorie pour les exercices de la bibliothèque */
 const CATEGORY_EMOJI: Record<string, string> = {
   chest: '💪',
@@ -79,55 +47,90 @@ const CATEGORY_EMOJI: Record<string, string> = {
   cardio: '🔥',
 };
 
-let cache: LibraryExercise[] | null = null;
-let pending: Promise<LibraryExercise[]> | null = null;
+/** MET indicatif par catégorie pour le calcul calorique en renforcement */
+const CATEGORY_MET: Record<string, number> = {
+  cardio: 7.0,
+  legs: 5.0,
+  back: 5.0,
+  chest: 4.5,
+  shoulders: 4.0,
+  core: 3.5,
+  arms: 3.5,
+};
 
-/** Charge la bibliothèque (import dynamique, mise en cache module) */
-export function loadExerciseLibrary(): Promise<LibraryExercise[]> {
-  if (cache) return Promise.resolve(cache);
-  pending ??= import('@/data/exerciseLibrary.json').then((mod) => {
-    cache = mod.default as LibraryExercise[];
-    return cache;
+const cache: Partial<Record<Language, LibraryExercise[]>> = {};
+const pending: Partial<Record<Language, Promise<LibraryExercise[]>>> = {};
+
+/** Charge la bibliothèque dans la langue demandée (import dynamique, cache module) */
+export function loadExerciseLibrary(lang: Language = 'fr'): Promise<LibraryExercise[]> {
+  const cached = cache[lang];
+  if (cached) return Promise.resolve(cached);
+  pending[lang] ??= (
+    lang === 'en'
+      ? import('@/data/exerciseLibrary.en.json')
+      : import('@/data/exerciseLibrary.fr.json')
+  ).then((mod) => {
+    const data = mod.default as LibraryExercise[];
+    cache[lang] = data;
+    return data;
   });
-  return pending;
+  return pending[lang]!;
 }
 
 /** Retrouve un exercice bibliothèque depuis un id de séance (`lib_<id>`) */
-export async function getLibraryExercise(sessionExerciseId: string): Promise<LibraryExercise | null> {
+export async function getLibraryExercise(
+  sessionExerciseId: string,
+  lang: Language = 'fr'
+): Promise<LibraryExercise | null> {
   if (!sessionExerciseId.startsWith(LIBRARY_ID_PREFIX)) return null;
   const id = sessionExerciseId.slice(LIBRARY_ID_PREFIX.length);
-  const lib = await loadExerciseLibrary();
+  const lib = await loadExerciseLibrary(lang);
   return lib.find((e) => e.id === id) ?? null;
 }
 
 /** Convertit un exercice bibliothèque vers le modèle Exercise de REPS */
-export function toExercise(ex: LibraryExercise): Exercise {
-  return {
+export function toExercise(ex: LibraryExercise, workoutType: WorkoutType = 'musculation'): Exercise {
+  const base: Exercise = {
     id: `${LIBRARY_ID_PREFIX}${ex.id}`,
     name: ex.name,
     emoji: CATEGORY_EMOJI[ex.category] ?? '💪',
     category: ex.category,
-    workoutType: 'musculation',
+    workoutType,
     imageUrl: libraryImageUrl(ex),
   };
+  if (workoutType === 'renforcement') {
+    base.met = CATEGORY_MET[ex.category] ?? 4.0;
+    base.timePerRep = 2.0;
+  }
+  return base;
 }
 
-/** Recherche insensible à la casse sur le nom, l'équipement et le muscle ciblé */
+/** Recherche insensible à la casse/accents sur le nom, l'équipement et le muscle ciblé */
 export function searchLibrary(
   library: LibraryExercise[],
   query: string,
   category: ExerciseCategory | 'all' = 'all',
-  equipment?: string
+  equipment?: string,
+  lang: Language = 'fr'
 ): LibraryExercise[] {
-  const q = query.trim().toLowerCase();
+  const q = normalize(query);
   return library.filter((ex) => {
     if (category !== 'all' && ex.category !== category) return false;
     if (equipment && ex.equipment !== equipment) return false;
     if (!q) return true;
     return (
-      ex.name.toLowerCase().includes(q) ||
-      ex.target.toLowerCase().includes(q) ||
-      equipmentLabel(ex.equipment).toLowerCase().includes(q)
+      normalize(ex.name).includes(q) ||
+      normalize(ex.target).includes(q) ||
+      normalize(equipmentLabel(ex.equipment, lang)).includes(q)
     );
   });
+}
+
+/** Minuscules + suppression des accents pour une recherche tolérante */
+function normalize(s: string): string {
+  return s
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 }
