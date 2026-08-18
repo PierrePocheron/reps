@@ -6,6 +6,7 @@ import { useUserStore } from '@/store/userStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { Flame, Dumbbell, Calendar, Zap, AlertTriangle, Trophy, Sunrise, Sun, Moon, TrendingUp, ChevronRight, Target } from 'lucide-react';
 import { AdSpace } from '@/components/AdSpace';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ADS_CONFIG } from '@/config/ads';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
 import type { Session, GymSession } from '@/firebase/types';
@@ -54,7 +55,7 @@ function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymS
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card border rounded-xl p-5"
+      className="bg-card border rounded-2xl p-4"
     >
       <h3 className="text-sm font-semibold mb-0.5 flex items-center gap-2">
         <Calendar className="w-4 h-4 text-primary" />
@@ -65,9 +66,13 @@ function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymS
       </p>
 
       <div className="overflow-x-auto pb-1">
-        <div className="flex gap-[3px]">
+        <div
+          className="flex gap-[3px]"
+          role="img"
+          aria-label={`Activité des 90 derniers jours : ${activeDays} jours d'entraînement`}
+        >
           {weeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-[3px]">
+            <div key={wi} className="flex flex-col gap-[3px]" aria-hidden="true">
               {week.map((cell, di) => (
                 <div
                   key={di}
@@ -86,7 +91,7 @@ function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymS
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 mt-3 text-[11px] text-muted-foreground">
+      <div className="flex items-center gap-1.5 mt-3 text-xs text-muted-foreground">
         <span>Moins</span>
         <div className="w-3 h-3 rounded-sm bg-muted" />
         <div className="w-3 h-3 rounded-sm bg-primary/50" />
@@ -101,6 +106,7 @@ function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymS
 
 function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessions: GymSession[] }) {
   const [mode, setMode] = useState<'reps' | 'volume'>('reps');
+  const navigate = useNavigate();
   const today = new Date();
 
   const buckets = Array.from({ length: 8 }, (_, i) => {
@@ -127,7 +133,29 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
   const hasReps = buckets.some((b) => b.reps > 0);
   const hasVolume = buckets.some((b) => b.volume > 0);
 
-  if (!hasReps && !hasVolume) return null;
+  if (!hasReps && !hasVolume) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-card border rounded-2xl p-4"
+      >
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-primary" />
+          Progression hebdomadaire
+        </h3>
+        <p className="text-xs text-muted-foreground text-center py-6">
+          Pas encore de séance sur les 8 dernières semaines.
+        </p>
+        <button
+          onClick={() => navigate('/session')}
+          className="mx-auto block text-xs font-semibold text-primary min-h-[44px] px-4"
+        >
+          Lancer une séance
+        </button>
+      </motion.div>
+    );
+  }
 
   // Auto-switch to volume if no reps data
   const activeMode = mode === 'reps' && !hasReps ? 'volume' : mode === 'volume' && !hasVolume ? 'reps' : mode;
@@ -139,7 +167,7 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card border rounded-xl p-5"
+      className="bg-card border rounded-2xl p-4"
     >
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold flex items-center gap-2">
@@ -149,10 +177,11 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
 
         {/* Toggle reps / volume */}
         {hasReps && hasVolume && (
-          <div className="flex gap-1 p-0.5 bg-muted rounded-lg">
+          <div className="flex gap-1 p-0.5 bg-muted rounded-lg" role="group" aria-label="Type de données">
             <button
               onClick={() => setMode('reps')}
-              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all ${
+              aria-pressed={activeMode === 'reps'}
+              className={`flex items-center gap-1 px-3 py-1.5 min-h-9 rounded-md text-xs font-medium transition-all active:scale-95 ${
                 activeMode === 'reps' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'
               }`}
             >
@@ -161,7 +190,8 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
             </button>
             <button
               onClick={() => setMode('volume')}
-              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all ${
+              aria-pressed={activeMode === 'volume'}
+              className={`flex items-center gap-1 px-3 py-1.5 min-h-9 rounded-md text-xs font-medium transition-all active:scale-95 ${
                 activeMode === 'volume' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'
               }`}
             >
@@ -172,9 +202,14 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
         )}
       </div>
 
-      <div className="flex items-end gap-1.5" style={{ height: `${BAR_HEIGHT + 4}px` }}>
+      <div
+        className="flex items-end gap-1.5"
+        style={{ height: `${BAR_HEIGHT + 4}px` }}
+        role="img"
+        aria-label={`Progression sur 8 semaines, cette semaine ${values[values.length - 1]} ${activeMode === 'reps' ? 'reps' : 'kg'}`}
+      >
         {values.map((val, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center justify-end">
+          <div key={i} className="flex-1 flex flex-col items-center justify-end" aria-hidden="true">
             {val > 0 ? (
               <div
                 className={`w-full rounded-t-sm transition-all ${
@@ -193,8 +228,8 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
       <div className="flex gap-1.5 mt-1.5">
         {buckets.map((b, i) => (
           <div key={i} className="flex-1 text-center">
-            <span className="text-[9px] text-muted-foreground leading-none">
-              {i === buckets.length - 1 ? 'Auj.' : b.start.getDate()}
+            <span className="text-[10px] text-muted-foreground leading-none">
+              {i === buckets.length - 1 ? 'Auj.' : b.start.toLocaleDateString('fr-FR', { day: 'numeric', month: 'numeric' })}
             </span>
           </div>
         ))}
@@ -206,8 +241,8 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
           Cette semaine :{' '}
           <span className="font-semibold text-foreground">
             {activeMode === 'reps'
-              ? `${values[values.length - 1]} reps`
-              : `${values[values.length - 1]} kg soulevés`}
+              ? `${values[values.length - 1]!.toLocaleString('fr-FR')} reps`
+              : `${values[values.length - 1]!.toLocaleString('fr-FR')} kg soulevés`}
           </span>
         </p>
       )}
@@ -242,7 +277,7 @@ export default function Statistics() {
         {/* Lien historique */}
         <button
           onClick={() => navigate('/history')}
-          className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border bg-card hover:bg-muted transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border bg-card hover:bg-muted active:scale-[0.98] transition-all"
         >
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -297,17 +332,17 @@ export default function Statistics() {
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 p-3 rounded-lg flex gap-3 text-sm items-start"
+            className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 p-3 rounded-2xl flex gap-3 text-sm items-start"
           >
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-medium">Profil incomplet</p>
               <p className="opacity-90 text-xs mt-0.5">
-                Renseignez votre poids, taille et sexe pour un calcul précis des calories.
+                Renseigne ton poids, ta taille et ton sexe pour un calcul précis des calories.
               </p>
               <button
                 onClick={() => navigate('/profil')}
-                className="text-xs font-semibold underline mt-1.5"
+                className="mt-2 inline-flex items-center min-h-[40px] px-3 -ml-3 rounded-lg text-xs font-semibold underline underline-offset-2 active:scale-95 transition-transform"
               >
                 Mettre à jour mon profil
               </button>
@@ -327,16 +362,16 @@ export default function Statistics() {
 
           <div className="relative z-10">
             <h2 className="text-muted-foreground text-sm font-medium uppercase tracking-wider mb-1">
-              Calories Brûlées
+              Calories brûlées
             </h2>
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-bold tracking-tight">
-                {user.totalCalories || 0}
+                {(user.totalCalories || 0).toLocaleString('fr-FR')}
               </span>
               <span className="text-primary font-medium">kcal</span>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              Estimation basée sur vos répétitions
+              Estimation basée sur tes répétitions
             </p>
           </div>
         </motion.div>
@@ -348,14 +383,14 @@ export default function Statistics() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.1 }}
-              className="bg-card/50 border rounded-xl p-4 flex flex-col items-center justify-center text-center gap-2"
+              className="bg-card border rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2"
             >
               <div className="bg-red-500/10 p-2 rounded-full">
                 <Dumbbell className="w-5 h-5 text-red-500" />
               </div>
               <div className="space-y-0.5">
-                <span className="text-2xl font-bold block">{user.totalReps}</span>
-                <span className="text-xs text-muted-foreground uppercase">Reps Total</span>
+                <span className="text-2xl font-bold block">{user.totalReps.toLocaleString('fr-FR')}</span>
+                <span className="text-xs text-muted-foreground uppercase">Reps au total</span>
               </div>
             </motion.div>
 
@@ -363,7 +398,7 @@ export default function Statistics() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="bg-card/50 border rounded-xl p-4 flex flex-col items-center justify-center text-center gap-2"
+              className="bg-card border rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2"
             >
               <div className="bg-blue-500/10 p-2 rounded-full">
                 <Calendar className="w-5 h-5 text-blue-500" />
@@ -380,7 +415,7 @@ export default function Statistics() {
            initial={{ opacity: 0, y: 10 }}
            animate={{ opacity: 1, y: 0 }}
            transition={{ delay: 0.3 }}
-           className="bg-card border rounded-xl p-4 flex items-center justify-between"
+           className="bg-card border rounded-2xl p-4 flex items-center justify-between"
         >
              <div className="flex items-center gap-4">
                  <div className="bg-primary/10 p-3 rounded-full">
@@ -407,7 +442,7 @@ export default function Statistics() {
 
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <Trophy className="w-4 h-4 text-primary" />
-              Exercices Favoris
+              Exercices favoris
             </h3>
 
             {/* Top 3 Cards */}
@@ -436,7 +471,7 @@ export default function Statistics() {
             </div>
 
             {/* Liste Détaillée */}
-            <div className="bg-card border rounded-xl overflow-hidden">
+            <div className="bg-card border rounded-2xl overflow-hidden">
                <div className="p-3 bg-muted/30 border-b text-xs font-medium flex justify-between items-center text-muted-foreground">
                    <span>Exercice</span>
                    <div className="flex gap-4 text-right">
@@ -468,7 +503,7 @@ export default function Statistics() {
         {/* Séries (Streaks) */}
         {stats && (
             <div className="grid grid-cols-2 gap-3">
-                <div className="bg-card border rounded-xl p-4 flex flex-col justify-between overflow-hidden relative">
+                <div className="bg-card border rounded-2xl p-4 flex flex-col justify-between overflow-hidden relative">
                     <div className="absolute top-2 right-2 opacity-10">
                         <Flame className="w-12 h-12" />
                     </div>
@@ -478,7 +513,7 @@ export default function Statistics() {
                         <span className="text-sm text-muted-foreground ml-1">jours</span>
                      </div>
                 </div>
-                <div className="bg-card border rounded-xl p-4 flex flex-col justify-between overflow-hidden relative">
+                <div className="bg-card border rounded-2xl p-4 flex flex-col justify-between overflow-hidden relative">
                     <div className="absolute top-2 right-2 opacity-10">
                         <Trophy className="w-12 h-12" />
                     </div>
@@ -495,7 +530,11 @@ export default function Statistics() {
         {/* Habitudes (Distribution) */}
 
         {/* Graphiques historiques */}
-        {!historyLoading && (
+        {historyLoading ? (
+          <div className="bg-card border rounded-2xl p-4 flex justify-center py-10">
+            <LoadingSpinner size="md" />
+          </div>
+        ) : (
           <>
             <ActivityCalendar sessions={sessions} gymSessions={gymSessions} />
             <WeeklyChart sessions={sessions} gymSessions={gymSessions} />
@@ -508,7 +547,7 @@ export default function Statistics() {
           slotId={ADS_CONFIG.ADSENSE.SLOTS.STATISTICS_BOTTOM}
         />
 
-        <div className="bg-card border rounded-xl p-5">
+        <div className="bg-card border rounded-2xl p-4">
             <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-primary" />
                 Habitudes d'entraînement
@@ -572,45 +611,50 @@ export default function Statistics() {
 
 
         {/* Note informative */}
-        <div className="bg-muted/50 p-4 rounded-lg text-xs text-muted-foreground">
-          <p>
-            <strong>Note :</strong> Le calcul des calories est personnalisé selon votre profil (Poids, Taille) et l'intensité (MET) de chaque exercice.
-          </p>
-          <ul className="list-disc list-inside mt-2 space-y-1 ml-1 opacity-80">
-            <li>Formule : ACSM (American College of Sports Medicine)</li>
-            <li>Facteurs : Poids, Taille, MET, Temps sous tension</li>
-          </ul>
+        <details className="bg-muted/50 p-4 rounded-2xl text-xs text-muted-foreground">
+          <summary className="cursor-pointer font-semibold min-h-[44px] flex items-center">
+            Comment sont calculées les calories ?
+          </summary>
+          <div className="mt-3">
+            <p>
+              Le calcul des calories est personnalisé selon ton profil (poids, taille) et l'intensité (MET) de chaque exercice.
+            </p>
+            <ul className="list-disc list-inside mt-2 space-y-1 ml-1 opacity-80">
+              <li>Formule : ACSM (American College of Sports Medicine)</li>
+              <li>Facteurs : Poids, Taille, MET, Temps sous tension</li>
+            </ul>
 
-          <div className="mt-4 pt-4 border-t border-border/50">
-            <p className="font-semibold mb-2">Moyenne pour 10 reps (75kg) :</p>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 opacity-80">
-                <div className="flex justify-between">
-                    <span>Tractions</span>
-                    <span className="text-primary font-medium">~5.0 kcal</span>
-                </div>
-                <div className="flex justify-between">
-                    <span>Dips</span>
-                    <span className="text-primary font-medium">~3.6 kcal</span>
-                </div>
-                 <div className="flex justify-between">
-                    <span>Squats</span>
-                    <span className="text-primary font-medium">~2.6 kcal</span>
-                </div>
-                <div className="flex justify-between">
-                    <span>Pompes</span>
-                    <span className="text-primary font-medium">~2.1 kcal</span>
-                </div>
-                 <div className="flex justify-between">
-                    <span>Abdos</span>
-                    <span className="text-primary font-medium">~1.3 kcal</span>
-                </div>
-                <div className="flex justify-between">
-                    <span>Fentes</span>
-                    <span className="text-primary font-medium">~3.0 kcal</span>
-                </div>
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <p className="font-semibold mb-2">Moyenne pour 10 reps (75kg) :</p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 opacity-80">
+                  <div className="flex justify-between">
+                      <span>Tractions</span>
+                      <span className="text-primary font-medium">~5.0 kcal</span>
+                  </div>
+                  <div className="flex justify-between">
+                      <span>Dips</span>
+                      <span className="text-primary font-medium">~3.6 kcal</span>
+                  </div>
+                   <div className="flex justify-between">
+                      <span>Squats</span>
+                      <span className="text-primary font-medium">~2.6 kcal</span>
+                  </div>
+                  <div className="flex justify-between">
+                      <span>Pompes</span>
+                      <span className="text-primary font-medium">~2.1 kcal</span>
+                  </div>
+                   <div className="flex justify-between">
+                      <span>Abdos</span>
+                      <span className="text-primary font-medium">~1.3 kcal</span>
+                  </div>
+                  <div className="flex justify-between">
+                      <span>Fentes</span>
+                      <span className="text-primary font-medium">~3.0 kcal</span>
+                  </div>
+              </div>
             </div>
           </div>
-        </div>
+        </details>
       </div>
 
     </PageLayout>
