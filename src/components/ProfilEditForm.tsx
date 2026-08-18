@@ -59,7 +59,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
       if (username !== user.displayName) {
         // 1. Check Rate Limit
         if (!canEditUsername) {
-          throw new Error(`Vous devez attendre ${getDaysBeforeNextChange()} jours avant de changer de pseudo.`);
+          throw new Error(`Tu dois attendre ${getDaysBeforeNextChange()} jours avant de changer de pseudo.`);
         }
 
         // 2. Check Regex
@@ -135,7 +135,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
 
       toast({
         title: 'Profil mis à jour',
-        description: 'Vos informations ont été enregistrées.',
+        description: 'Tes infos sont enregistrées.',
       });
 
       if (onSuccess) {
@@ -171,8 +171,8 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
           />
         </div>
         {!canEditUsername && (
-            <p className="text-xs text-muted-foreground text-orange-500">
-                Vous pourrez changer de pseudo dans {getDaysBeforeNextChange()} jours.
+            <p className="text-xs text-orange-700 dark:text-orange-400">
+                Tu pourras changer de pseudo dans {getDaysBeforeNextChange()} jours.
             </p>
         )}
         {canEditUsername && (
@@ -205,9 +205,10 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label>Date de naissance</Label>
-          <div className="grid grid-cols-3 gap-2">
+          <Label id="birthdate-label">Date de naissance</Label>
+          <div role="group" aria-labelledby="birthdate-label" className="grid grid-cols-3 gap-2">
             <select
+              aria-label="Jour de naissance"
               className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={formData.birthDate ? parseInt(formData.birthDate.split('-')[2] || '0') || '' : ''}
               onChange={(e) => {
@@ -223,6 +224,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
             </select>
 
             <select
+              aria-label="Mois de naissance"
               className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={formData.birthDate ? parseInt(formData.birthDate.split('-')[1] || '0') || '' : ''}
               onChange={(e) => {
@@ -238,6 +240,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
             </select>
 
             <select
+              aria-label="Année de naissance"
               className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={formData.birthDate ? parseInt(formData.birthDate.split('-')[0] || '0') || '' : ''}
               onChange={(e) => {
@@ -255,12 +258,13 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label>Sexe</Label>
-          <div className="flex gap-2">
+          <Label id="gender-label">Sexe</Label>
+          <div role="group" aria-labelledby="gender-label" className="flex gap-2">
             <button
               type="button"
+              aria-pressed={formData.gender === 'male'}
               onClick={() => setFormData({ ...formData, gender: 'male' })}
-              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors border ${
+              className={`flex-1 h-11 px-3 rounded-md text-sm font-medium transition-colors border ${
                 formData.gender === 'male'
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-background hover:bg-muted border-input'
@@ -270,14 +274,27 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
             </button>
             <button
               type="button"
+              aria-pressed={formData.gender === 'female'}
               onClick={() => setFormData({ ...formData, gender: 'female' })}
-              className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors border ${
+              className={`flex-1 h-11 px-3 rounded-md text-sm font-medium transition-colors border ${
                 formData.gender === 'female'
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-background hover:bg-muted border-input'
               }`}
             >
               Femme
+            </button>
+            <button
+              type="button"
+              aria-pressed={formData.gender === 'other'}
+              onClick={() => setFormData({ ...formData, gender: 'other' })}
+              className={`flex-1 h-11 px-3 rounded-md text-sm font-medium transition-colors border ${
+                formData.gender === 'other'
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background hover:bg-muted border-input'
+              }`}
+            >
+              Autre
             </button>
           </div>
         </div>
@@ -334,7 +351,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
         {showAvatarPicker && (
             <div className="p-4 rounded-lg bg-muted/30 border border-muted animate-in fade-in zoom-in-95 duration-200">
             <div className="text-xs text-muted-foreground mb-3 font-medium">
-                Choisissez parmi vos badges débloqués :
+                Choisis parmi tes badges débloqués :
             </div>
 
             <div className="grid grid-cols-6 gap-2">
@@ -370,7 +387,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
             </div>
             {BADGES.filter(b => user.badges?.includes(b.id)).length === 0 && (
                 <p className="text-xs text-center text-muted-foreground mt-2">
-                Débloquez des badges pour obtenir plus d'avatars !
+                Débloque des badges pour obtenir plus d'avatars !
                 </p>
             )}
             </div>

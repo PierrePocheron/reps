@@ -28,7 +28,7 @@ function ProfilEditDialog({ user }: { user: User }) {
       <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Modifier le profil</DialogTitle>
-          <DialogDescription className="hidden">
+          <DialogDescription className="sr-only">
             Formulaire de modification du profil
           </DialogDescription>
         </DialogHeader>
@@ -57,7 +57,7 @@ function Profil() {
     } catch {
       toast({
         title: 'Erreur',
-        description: 'Impossible de supprimer le compte. Reconnectez-vous et réessayez.',
+        description: 'Impossible de supprimer le compte. Reconnecte-toi et réessaie.',
         variant: 'destructive',
       });
       setIsDeleting(false);
@@ -103,7 +103,7 @@ function Profil() {
         title="MON PROFIL"
         variant="secondary"
         headerAction={
-            <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} className="-mr-2">
+            <Button variant="ghost" size="icon" aria-label="Réglages" onClick={() => navigate('/settings')} className="-mr-2">
                 <Settings className="h-5 w-5" />
             </Button>
         }
@@ -115,8 +115,8 @@ function Profil() {
           <CardContent className="p-6">
             <div className="flex items-center gap-4 mb-6">
               <UserAvatar user={user} size="xl" />
-              <div className="flex-1">
-                <h2 className="text-xl font-bold">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl font-bold truncate">
                   {user.firstName && user.lastName
                     ? `${user.firstName} ${user.lastName}`
                     : user.displayName}
@@ -124,23 +124,16 @@ function Profil() {
                 {(user.firstName || user.lastName) && (
                   <p className="text-sm text-muted-foreground">@{user.displayName}</p>
                 )}
-                <p className="text-muted-foreground">{user.email}</p>
+                <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                 <button
                   onClick={() => navigate('/friends')}
-                  className="text-sm font-medium text-primary hover:underline mt-1 flex items-center gap-1"
+                  className="text-sm font-medium text-primary hover:underline mt-1 -mb-2 py-2 min-h-[44px] flex items-center gap-1.5"
                 >
-                  <Users className="h-3 w-3" />
-                  {user.friends?.length || 0} Amis
+                  <Users className="h-4 w-4" />
+                  {user.friends?.length || 0} {(user.friends?.length || 0) > 1 ? 'amis' : 'ami'}
                 </button>
               </div>
               <ProfilEditDialog user={user} />
-            </div>
-
-            <div className="flex justify-center pb-6">
-              <Button variant="secondary" className="w-full" onClick={() => navigate('/friends')}>
-                <Users className="h-4 w-4 mr-2" />
-                Gérer les amis
-              </Button>
             </div>
 
             <div className="grid grid-cols-3 gap-4 border-t pt-4">
@@ -148,7 +141,13 @@ function Profil() {
                 <p className="text-sm text-muted-foreground">Âge</p>
                 <p className="font-semibold">
                   {user.birthDate
-                    ? `${new Date().getFullYear() - new Date(user.birthDate).getFullYear()} ans`
+                    ? `${(() => {
+                        const b = new Date(user.birthDate);
+                        const t = new Date();
+                        let a = t.getFullYear() - b.getFullYear();
+                        if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--;
+                        return a;
+                      })()} ans`
                     : '-'}
                 </p>
               </div>
@@ -197,9 +196,15 @@ function Profil() {
                 ))}
               </div>
             ) : (
-              <p className="text-muted-foreground text-center py-4">
-                Aucun badge débloqué pour le moment
-              </p>
+              <div className="text-center py-6 space-y-3">
+                <span className="text-3xl" role="img" aria-label="Badge">🏅</span>
+                <p className="text-sm text-muted-foreground">
+                  Aucun badge débloqué pour le moment. Lance ta première séance pour en gagner !
+                </p>
+                <Button variant="secondary" size="sm" onClick={() => navigate('/')}>
+                  Lancer une séance
+                </Button>
+              </div>
             )}
 
             {nextBadge && (
@@ -208,7 +213,7 @@ function Profil() {
                 <div className="flex-1">
                   <p className="font-semibold">Prochain badge</p>
                   <p className="text-sm text-muted-foreground">
-                    {nextBadge.name} - {
+                    {nextBadge.name} — encore {
                       nextBadge.category === 'total_reps' ? `${formatNumber(nextBadge.threshold - stats!.totalReps)} reps` :
                       nextBadge.category === 'streak' ? `${nextBadge.threshold - stats!.currentStreak} jours` :
                       nextBadge.category === 'total_calories' ? `${formatNumber(nextBadge.threshold - (stats!.totalCalories || 0))} kcal` :
@@ -216,7 +221,7 @@ function Profil() {
                       nextBadge.category === 'time_lunch' ? `${nextBadge.threshold - (stats!.lunchSessions || 0)} séances` :
                       nextBadge.category === 'time_night' ? `${nextBadge.threshold - (stats!.nightSessions || 0)} séances` :
                       `${nextBadge.threshold - stats!.totalSessions} séances`
-                    } restants
+                    }
                   </p>
                 </div>
                 <span className="text-2xl">{nextBadge.emoji}</span>
@@ -237,7 +242,7 @@ function Profil() {
             <DialogHeader>
               <DialogTitle>Se déconnecter ?</DialogTitle>
               <DialogDescription>
-                Êtes-vous sûr de vouloir vous déconnecter ?
+                Tu es sûr de vouloir te déconnecter ?
               </DialogDescription>
             </DialogHeader>
             <div className="flex gap-3 mt-4">
@@ -245,7 +250,7 @@ function Profil() {
                 Annuler
               </Button>
               <Button onClick={handleSignOut} variant="default" className="flex-1">
-                Déconnexion
+                Me déconnecter
               </Button>
             </div>
           </DialogContent>
@@ -267,11 +272,11 @@ function Profil() {
               <DialogTitle className="text-destructive">Supprimer le compte</DialogTitle>
               <DialogDescription className="space-y-2 pt-1">
                 <span className="block">
-                  Cette action est <strong>irréversible</strong>. Toutes vos données seront effacées :
+                  Cette action est <strong>irréversible</strong>. Toutes tes données seront effacées :
                   séances, statistiques, badges, amis, templates.
                 </span>
                 <span className="block">
-                  Tapez <strong>SUPPRIMER</strong> pour confirmer.
+                  Tape <strong>SUPPRIMER</strong> pour confirmer.
                 </span>
               </DialogDescription>
             </DialogHeader>
@@ -280,6 +285,11 @@ function Profil() {
                 placeholder="SUPPRIMER"
                 value={deleteConfirmText}
                 onChange={(e) => setDeleteConfirmText(e.target.value)}
+                autoCapitalize="characters"
+                autoCorrect="off"
+                autoComplete="off"
+                spellCheck={false}
+                aria-label="Tape SUPPRIMER pour confirmer"
                 className="border-destructive/40 focus-visible:ring-destructive"
               />
               <div className="flex gap-3">
