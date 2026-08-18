@@ -32,6 +32,7 @@ import confetti from 'canvas-confetti';
 import { NumberTicker } from '@/components/ui/NumberTicker';
 
 import { useSound } from '@/hooks/useSound';
+import { useHaptic } from '@/hooks/useHaptic';
 import { logger } from '@/utils/logger';
 
 interface ChallengeCardProps {
@@ -49,6 +50,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
   const { toast } = useToast();
   const [isValidating, setIsValidating] = useState(false);
   const { play } = useSound();
+  const { notification } = useHaptic();
 
   // 1. STATE: Active Challenge or Preview
   const def = activeChallenge
@@ -74,7 +76,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                         Défi du moment
                     </h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Relevez le défi pour booster votre progression !
+                        Relève le défi pour booster ta progression !
                     </p>
                 </div>
             </div>
@@ -164,8 +166,11 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
         const stepIndex = activeChallenge.history.length;
         const targetReps = getTargetForDay(def, stepIndex);
 
-        // 1. Play Sound
+        await validateChallengeDay(activeChallenge.id, userId, targetReps, new Date());
+
+        // 1. Play Sound + Haptic
         play('success');
+        notification();
 
         // 2. Trigger Confetti
         confetti({
@@ -174,8 +179,6 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
             origin: { y: 0.6 },
             colors: ['#22c55e', '#eab308', '#f97316'] // green, yellow, orange
         });
-
-        await validateChallengeDay(activeChallenge.id, userId, targetReps, new Date());
 
         toast({
             title: isLate ? "Rattrapage réussi ! 💪" : "Bien joué ! 🔥",
@@ -242,17 +245,17 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
     <Card className={`overflow-visible border-2 ${borderColor} relative transition-all ${stackClasses}`}>
       <CardContent className="p-5">
         <div className="flex justify-between items-start mb-2">
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 min-w-0 flex-1">
                  <div className="text-2xl bg-background/50 rounded-md w-10 h-10 flex items-center justify-center border border-border/50 shrink-0">
                     {getEmoji(def.exerciseId)}
                 </div>
-                <div>
-                    <h3 className="font-bold text-lg leading-tight flex items-center gap-2">
+                <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-lg leading-tight flex items-center gap-2 break-words">
                         {def.title}
                     </h3>
 
                     <div className="flex flex-col gap-0.5 mt-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
                             {/* Difficulty Badge */}
                              <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border ${
                                 def.difficulty === 'easy' ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-500/20 dark:text-green-400 dark:border-green-500/30' :
@@ -268,7 +271,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                             {/* Late Badge */}
                             {isActive && isLate && (
                                 <span className="bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-400 dark:border-orange-500/30 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border">
-                                    Retard: {lateDays}j
+                                    Retard&nbsp;: {lateDays}&nbsp;j
                                 </span>
                             )}
 
@@ -305,7 +308,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                 {isActive && (
                      <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-2 text-muted-foreground hover:text-foreground">
+                            <Button variant="ghost" size="icon" aria-label="Options du défi" className="-mt-2.5 -mr-3.5 text-muted-foreground hover:text-foreground">
                                 <MoreVertical className="w-4 h-4" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -373,7 +376,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                     </div>
 
                     {isDoneToday ? (
-                        <Button variant="outline" className="flex-1 bg-green-500/10 border-green-500/20 text-green-700 hover:bg-green-500/20 px-2" disabled>
+                        <Button variant="outline" className="flex-1 bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400 hover:bg-green-500/20 px-2" disabled>
                             <CheckCircle2 className="w-4 h-4 mr-1.5" />
                             Validé
                         </Button>

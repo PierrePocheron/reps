@@ -138,6 +138,6 @@ describe('ChallengeCard Component', () => {
         renderCard({ activeChallenge: lateChallenge });
 
         expect(screen.getByText(/Rattraper J1/)).toBeInTheDocument();
-        expect(screen.getByText(/Retard: 2j/)).toBeInTheDocument();
+        expect(screen.getByText(/Retard\s*:\s*2\s*j/)).toBeInTheDocument();
     });
 });

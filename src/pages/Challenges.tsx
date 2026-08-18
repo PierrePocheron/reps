@@ -60,9 +60,11 @@ function Challenges() {
 
   if (isLoading) {
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center">
-            <LoadingSpinner size="lg" />
-        </div>
+        <PageLayout title="MES DÉFIS">
+            <div className="flex items-center justify-center py-20">
+                <LoadingSpinner size="lg" />
+            </div>
+        </PageLayout>
     );
   }
 

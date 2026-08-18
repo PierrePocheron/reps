@@ -87,17 +87,17 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <div className="border-2 border-dashed border-primary/30 rounded-xl p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-primary/5 transition-colors group">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <button type="button" className="w-full border-2 border-dashed border-primary/30 rounded-xl p-6 flex flex-col items-center justify-center gap-3 hover:bg-primary/5 active:scale-[0.98] transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                    <span className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <Plus className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="text-center">
-                        <h3 className="font-bold text-foreground">Créer mon propre défi</h3>
-                        <p className="text-sm text-muted-foreground">Choisis l'exercice, la durée et la difficulté</p>
-                    </div>
-                </div>
+                    </span>
+                    <span className="text-center">
+                        <span className="block font-bold text-foreground">Créer mon propre défi</span>
+                        <span className="block text-sm text-muted-foreground">Choisis l'exercice, la durée et la difficulté</span>
+                    </span>
+                </button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Créer un défi personnalisé</DialogTitle>
                     <DialogDescription>
@@ -107,13 +107,15 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="py-4">
+                <div className="py-4 flex-1 min-h-0 overflow-y-auto">
                     {/* STEP 1: EXERCISE */}
                     {step === 1 && (
                         <div className="grid grid-cols-2 gap-3">
                             {DEFAULT_EXERCISES.map(ex => (
                                 <button
                                     key={ex.id}
+                                    type="button"
+                                    aria-pressed={selectedExercise === ex.id}
                                     onClick={() => setSelectedExercise(ex.id)}
                                     className={`p-4 rounded-lg border-2 flex flex-col items-center gap-2 transition-all ${
                                         selectedExercise === ex.id
@@ -137,23 +139,23 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                                 let baseColor = '', dotColor = '';
 
                                 if (d === 7) {
-                                    title = '7 Jours'; desc = 'Découverte express';
+                                    title = '7 jours'; desc = 'Découverte express';
                                     baseColor = 'text-sky-500 border-sky-500/30 bg-sky-500/5'; dotColor = 'bg-sky-500';
                                 }
                                 if (d === 30) {
-                                    title = '30 Jours'; desc = 'Idéal pour commencer';
+                                    title = '30 jours'; desc = 'Idéal pour commencer';
                                     baseColor = 'text-green-500 border-green-500/30 bg-green-500/5'; dotColor = 'bg-green-500';
                                 }
                                 if (d === 60) {
-                                    title = '60 Jours'; desc = 'Pour ancrer l\'habitude';
+                                    title = '60 jours'; desc = 'Pour ancrer l\'habitude';
                                     baseColor = 'text-yellow-500 border-yellow-500/30 bg-yellow-500/5'; dotColor = 'bg-yellow-500';
                                 }
                                 if (d === 180) {
-                                    title = '6 Mois'; desc = 'Transformation complète';
+                                    title = '6 mois'; desc = 'Transformation complète';
                                     baseColor = 'text-orange-500 border-orange-500/30 bg-orange-500/5'; dotColor = 'bg-orange-500';
                                 }
                                 if (d === 365) {
-                                    title = '1 An'; desc = 'Mode Spartan activé';
+                                    title = '1 an'; desc = 'Mode Spartan activé';
                                     baseColor = 'text-red-500 border-red-500/30 bg-red-500/5'; dotColor = 'bg-red-500';
                                 }
 
@@ -167,6 +169,8 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                                 return (
                                     <button
                                         key={d}
+                                        type="button"
+                                        aria-pressed={isSelected}
                                         onClick={() => setDuration(d)}
                                         className={`w-full p-3 rounded-lg border-2 flex items-center justify-between transition-all ${finalClass}`}
                                     >
@@ -191,16 +195,20 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                         <div className="space-y-3">
                             <div className="flex bg-muted rounded-lg p-1 mb-4">
                                 <button
+                                    type="button"
+                                    aria-pressed={logic === 'progressive'}
                                     onClick={() => setLogic('progressive')}
                                     className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${logic === 'progressive' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                                 >
                                     Progressif 📈
                                 </button>
                                 <button
+                                    type="button"
+                                    aria-pressed={logic === 'fixed'}
                                     onClick={() => setLogic('fixed')}
                                     className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${logic === 'fixed' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                                 >
-                                    Montant Fixe 🎯
+                                    Montant fixe 🎯
                                 </button>
                             </div>
                             {(['easy', 'medium', 'hard', 'extreme'] as const).map(diff => {
@@ -231,6 +239,8 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                                 return (
                                     <button
                                         key={diff}
+                                        type="button"
+                                        aria-pressed={isSelected}
                                         onClick={() => setDifficulty(diff)}
                                         className={`w-full p-3 rounded-lg border-2 flex items-center justify-between transition-all ${finalClass}`}
                                     >
