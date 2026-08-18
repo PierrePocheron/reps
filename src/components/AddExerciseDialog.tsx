@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { DEFAULT_EXERCISES, EXERCISE_CATEGORIES } from '@/utils/constants';
-import { Check, Search, Plus, ChevronRight, Loader2 } from 'lucide-react';
+import { Check, Search, Plus, ChevronRight, Loader2, X } from 'lucide-react';
 import type { ExerciseCategory, Exercise } from '@/firebase/types';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useExerciseImages } from '@/hooks/useExerciseImages';
@@ -67,6 +67,8 @@ export function AddExerciseDialog({
   const [search, setSearch] = useState('');
   const [source, setSource] = useState<'essentials' | 'library'>('essentials');
   const [library, setLibrary] = useState<LibraryExercise[] | null>(null);
+  const [libraryError, setLibraryError] = useState(false);
+  const [libraryRetry, setLibraryRetry] = useState(0);
   const haptics = useHaptic();
   const { imageMap } = useExerciseImages();
   const lang = useLanguage();
@@ -76,9 +78,12 @@ export function AddExerciseDialog({
     if (source !== 'library') return;
     let cancelled = false;
     setLibrary(null);
-    loadExerciseLibrary(lang).then((lib) => { if (!cancelled) setLibrary(lib); });
+    setLibraryError(false);
+    loadExerciseLibrary(lang)
+      .then((lib) => { if (!cancelled) setLibrary(lib); })
+      .catch(() => { if (!cancelled) setLibraryError(true); });
     return () => { cancelled = true; };
-  }, [source, lang]);
+  }, [source, lang, libraryRetry]);
 
   // Bibliothèque : uniquement les exercices au poids du corps
   const libraryResults = source === 'library' && library
@@ -103,8 +108,10 @@ export function AddExerciseDialog({
     }
   };
 
+  const duplicate = hasExercise(customName.trim());
+
   const handleAddCustom = () => {
-    if (customName.trim() && customEmoji) {
+    if (customName.trim() && customEmoji && !duplicate) {
       haptics.impact();
       onAddCustom(customName.trim(), customEmoji);
       setCustomName('');
@@ -129,7 +136,7 @@ export function AddExerciseDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setShowCustomForm(false); }}>
-      <DialogContent className="h-[90vh] flex flex-col p-0 gap-0 rounded-t-2xl sm:rounded-2xl">
+      <DialogContent className="h-[90vh] flex flex-col p-0 gap-0 border-0 rounded-t-3xl rounded-b-none top-auto bottom-0 translate-y-0 pb-safe sm:top-[50%] sm:bottom-auto sm:translate-y-[-50%] sm:rounded-2xl sm:border">
 
         {!showCustomForm ? (
           <>
@@ -150,7 +157,8 @@ export function AddExerciseDialog({
                     <button
                       key={key}
                       onClick={() => { haptics.selection(); setSource(key); }}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      aria-pressed={source === key}
+                      className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all active:scale-[0.98] ${
                         source === key
                           ? 'bg-background shadow-sm text-foreground'
                           : 'text-muted-foreground'
@@ -168,12 +176,18 @@ export function AddExerciseDialog({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder={source === 'library' ? 'Rechercher un exercice au poids du corps…' : 'Rechercher...'}
+                  placeholder={source === 'library' ? 'Rechercher dans la bibliothèque…' : 'Rechercher…'}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 h-10 bg-muted border-0 focus-visible:ring-1"
+                  enterKeyHint="search"
+                  className="pl-9 pr-10 h-10 bg-muted border-0 focus-visible:ring-1"
                   autoFocus={false}
                 />
+                {search && (
+                  <button type="button" aria-label="Effacer la recherche" onClick={() => setSearch('')} className="absolute right-1 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:text-foreground">
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
 
@@ -185,7 +199,8 @@ export function AddExerciseDialog({
                     <button
                       key={cat.id}
                       onClick={() => { haptics.selection(); setSelectedCategory(cat.id); }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                      aria-pressed={selectedCategory === cat.id}
+                      className={`flex items-center gap-1.5 px-3 py-2 active:scale-95 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                         selectedCategory === cat.id
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -204,14 +219,25 @@ export function AddExerciseDialog({
             {/* Liste */}
             <div className="flex-1 overflow-y-auto min-h-0 px-5 pb-2">
               {source === 'library' ? (
-                !library ? (
+                libraryError ? (
+                  <div className="flex flex-col items-center gap-3 py-10 text-center">
+                    <p className="text-sm text-muted-foreground">Impossible de charger la bibliothèque. Vérifie ta connexion.</p>
+                    <Button variant="outline" size="sm" onClick={() => setLibraryRetry((n) => n + 1)}>Réessayer</Button>
+                  </div>
+                ) : !library ? (
                   <div className="flex justify-center py-10">
                     <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                   </div>
                 ) : libraryResults.length === 0 ? (
-                  <p className="text-center text-muted-foreground text-sm py-10">
-                    Aucun exercice trouvé
-                  </p>
+                  <div className="flex flex-col items-center gap-3 py-10 text-center">
+                    <p className="text-sm text-muted-foreground">{search ? <>Aucun résultat pour « {search} »</> : 'Aucun exercice dans cette catégorie'}</p>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {(search || selectedCategory !== 'all') && (
+                        <Button variant="outline" size="sm" onClick={() => { setSearch(''); setSelectedCategory('all'); }}>Réinitialiser</Button>
+                      )}
+                      <Button size="sm" onClick={() => setShowCustomForm(true)}>Créer un exercice personnalisé</Button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="space-y-1">
                     {libraryResults.slice(0, LIBRARY_RENDER_LIMIT).map((libEx) => {
@@ -252,9 +278,17 @@ export function AddExerciseDialog({
                   </div>
                 )
               ) : filteredExercises.length === 0 ? (
-                <p className="text-center text-muted-foreground text-sm py-10">
-                  Aucun exercice trouvé
-                </p>
+                <div className="flex flex-col items-center gap-3 py-10 text-center">
+                  <p className="text-sm text-muted-foreground">{search ? <>Aucun résultat pour « {search} »</> : 'Aucun exercice dans cette catégorie'}</p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {(search || selectedCategory !== 'all') && (
+                      <Button variant="outline" size="sm" onClick={() => { setSearch(''); setSelectedCategory('all'); }}>Réinitialiser</Button>
+                    )}
+                    {onAddLibrary && (
+                      <Button size="sm" onClick={() => { haptics.selection(); setSource('library'); }}>Chercher dans la bibliothèque</Button>
+                    )}
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-1">
                   {filteredExercises.map((exercise) => {
@@ -323,12 +357,13 @@ export function AddExerciseDialog({
                 <Label htmlFor="customName" className="text-sm font-medium">Nom</Label>
                 <Input
                   id="customName"
-                  placeholder="Ex: Planche"
+                  placeholder="Ex. : Planche"
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
                   className="h-11"
                   autoFocus
                 />
+                {duplicate && <p className="text-xs text-destructive">Tu as déjà un exercice avec ce nom</p>}
               </div>
 
               <div className="space-y-2">
@@ -361,7 +396,7 @@ export function AddExerciseDialog({
                 </Button>
                 <Button
                   onClick={handleAddCustom}
-                  disabled={!customName.trim()}
+                  disabled={!customName.trim() || duplicate}
                   className="flex-1 h-11"
                 >
                   Ajouter

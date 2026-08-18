@@ -73,6 +73,10 @@ export function loadExerciseLibrary(lang: Language = 'fr'): Promise<LibraryExerc
     const data = mod.default as LibraryExercise[];
     cache[lang] = data;
     return data;
+  }).catch((err: unknown) => {
+    // Permet un nouvel essai (bouton « Réessayer ») après un échec réseau
+    pending[lang] = undefined;
+    throw err;
   });
   return pending[lang]!;
 }

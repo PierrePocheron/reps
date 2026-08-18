@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { MEDIA_ATTRIBUTION } from '@/hooks/useExerciseImages';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -33,12 +34,26 @@ export function ExerciseDetailSheet({
   const lang = useLanguage();
   const t = T[lang];
   const hasSteps = steps && steps.length > 0;
+  const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => { setImgFailed(false); }, [imageUrl]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative z-10 w-full sm:max-w-md bg-background rounded-t-3xl shadow-xl flex flex-col max-h-[85dvh]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="exercise-detail-title"
+        className="relative z-10 w-full sm:max-w-md bg-background rounded-t-3xl sm:rounded-2xl shadow-xl flex flex-col max-h-[85dvh]"
+      >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1 shrink-0">
           <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
@@ -47,23 +62,26 @@ export function ExerciseDetailSheet({
         {/* Header */}
         <div className="flex items-center gap-3 px-5 py-3 shrink-0">
           <span className="text-2xl">{emoji}</span>
-          <h2 className="flex-1 font-bold text-lg leading-tight">{name}</h2>
+          <h2 id="exercise-detail-title" className="flex-1 font-bold text-lg leading-tight">{name}</h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Fermer"
+            className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto flex-1 px-5 pb-8 space-y-4">
+        <div className="overflow-y-auto flex-1 px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] space-y-4">
           {/* Image / GIF */}
-          {imageUrl ? (
-            <div className="w-full rounded-2xl overflow-hidden bg-white flex items-center justify-center">
+          {imageUrl && !imgFailed ? (
+            <div className="w-full min-h-48 rounded-2xl overflow-hidden bg-white flex items-center justify-center">
               <img
                 src={imageUrl}
                 alt={name}
+                loading="lazy"
+                onError={() => setImgFailed(true)}
                 className="w-full max-h-72 object-contain"
               />
             </div>
@@ -118,7 +136,7 @@ export function ExerciseDetailSheet({
 
           {/* Attribution obligatoire des médias Gym visual */}
           {imageUrl && (
-            <p className="text-[10px] text-muted-foreground/60 text-center">
+            <p className="text-xs text-muted-foreground text-center">
               {t.illustration} {MEDIA_ATTRIBUTION}
             </p>
           )}
