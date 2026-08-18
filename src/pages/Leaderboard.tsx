@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { EmptyState } from '@/components/EmptyState';
 import { useUserStore } from '@/store/userStore';
+import { useHaptic } from '@/hooks/useHaptic';
+import { useToast } from '@/hooks/use-toast';
 import { getLeaderboardStats, getFriendsDetails } from '@/firebase/firestore';
-import { Trophy, Medal, Calendar, TrendingUp } from 'lucide-react';
+import { Trophy, Medal, Calendar, TrendingUp, UserPlus } from 'lucide-react';
 import { User } from '@/firebase/types';
 import { UserAvatar } from '@/components/UserAvatar';
 import { logger } from '@/utils/logger';
@@ -14,6 +19,9 @@ import { ADS_CONFIG } from '@/config/ads';
 
 export default function Leaderboard() {
   const { user } = useUserStore();
+  const navigate = useNavigate();
+  const haptics = useHaptic();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('all_time');
   const [stats, setStats] = useState<{ userId: string; totalReps: number; totalSessions: number; totalCalories: number }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,13 +69,15 @@ export default function Leaderboard() {
         }
       } catch (error) {
         logger.error('Erreur chargement classement:', error);
+        setStats([]);
+        toast({ title: 'Classement indisponible', description: 'Impossible de charger le classement. Vérifie ta connexion et réessaie.', variant: 'destructive' });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchStats();
-  }, [user, activeTab, friendsDetails.length]);
+  }, [user, activeTab, friendsDetails.length, toast]);
 
   const getUserDetails = (userId: string) => {
     if (user?.uid === userId) return user;
@@ -76,9 +86,9 @@ export default function Leaderboard() {
 
   const getRankStyle = (index: number) => {
     switch (index) {
-      case 0: return "bg-yellow-500/10 border-yellow-500/50 text-yellow-600";
-      case 1: return "bg-gray-400/10 border-gray-400/50 text-gray-600";
-      case 2: return "bg-orange-500/10 border-orange-500/50 text-orange-600";
+      case 0: return "bg-yellow-500/10 border-yellow-500/50 text-yellow-700 dark:text-yellow-300";
+      case 1: return "bg-gray-400/10 border-gray-400/50 text-gray-700 dark:text-gray-200";
+      case 2: return "bg-orange-500/10 border-orange-500/50 text-orange-700 dark:text-orange-300";
       default: return "bg-card/50 border-transparent";
     }
   };
@@ -98,23 +108,23 @@ export default function Leaderboard() {
     <PageLayout title="CLASSEMENT">
       <div className="max-w-2xl mx-auto space-y-6">
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="daily" className="text-xs">Jour</TabsTrigger>
-            <TabsTrigger value="weekly" className="text-xs">Semaine</TabsTrigger>
-            <TabsTrigger value="monthly" className="text-xs">Mois</TabsTrigger>
-            <TabsTrigger value="all_time" className="text-xs">Toujours</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={(v) => { haptics.selection(); setActiveTab(v); }} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-6 h-12">
+            <TabsTrigger value="daily" className="text-xs h-10">Jour</TabsTrigger>
+            <TabsTrigger value="weekly" className="text-xs h-10">Semaine</TabsTrigger>
+            <TabsTrigger value="monthly" className="text-xs h-10">Mois</TabsTrigger>
+            <TabsTrigger value="all_time" className="text-xs h-10">Total</TabsTrigger>
           </TabsList>
 
           <div className="space-y-4 animate-in fade-in-50">
-            <div className="text-center mb-6">
-              <h2 className="text-xl font-bold flex items-center justify-center gap-2">
-                {activeTab === 'daily' && <Calendar className="h-6 w-6 text-primary" />}
-                {activeTab === 'weekly' && <TrendingUp className="h-6 w-6 text-primary" />}
-                {activeTab === 'monthly' && <Calendar className="h-6 w-6 text-primary" />}
-                {activeTab === 'all_time' && <Trophy className="h-6 w-6 text-yellow-500" />}
+            <div className="mb-2">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                {activeTab === 'daily' && <Calendar className="h-5 w-5 text-primary" />}
+                {activeTab === 'weekly' && <TrendingUp className="h-5 w-5 text-primary" />}
+                {activeTab === 'monthly' && <Calendar className="h-5 w-5 text-primary" />}
+                {activeTab === 'all_time' && <Trophy className="h-5 w-5 text-yellow-500" />}
 
-                {activeTab === 'daily' && "Top du Jour"}
+                {activeTab === 'daily' && "Top du jour"}
                 {activeTab === 'weekly' && "Top Semaine"}
                 {activeTab === 'monthly' && "Top Mois"}
                 {activeTab === 'all_time' && "Légendes"}
@@ -132,17 +142,31 @@ export default function Leaderboard() {
                 <LoadingSpinner />
               </div>
             ) : (
+              <>
+              {(user.friends?.length ?? 0) === 0 && (
+                <EmptyState
+                  icon="👥"
+                  title="Personne à défier pour l'instant"
+                  description="Ajoute des amis pour te mesurer à eux et voir qui est le plus chaud."
+                  action={<Button onClick={() => navigate('/friends')}><UserPlus className="h-4 w-4 mr-2" />Ajouter des amis</Button>}
+                />
+              )}
+              {activeTab !== 'all_time' && stats.length > 0 && stats.every(s => s.totalReps === 0) && (
+                <p className="text-center text-sm text-muted-foreground">Personne n'a encore bougé sur cette période. Sois le premier&nbsp;!</p>
+              )}
               <div className="space-y-3">
                 {stats.map((stat, index) => {
                   const player = getUserDetails(stat.userId);
                   if (!player) return null;
 
+                  const onPodium = stat.totalReps > 0;
+
                   return (
                     <div key={stat.userId}>
-                        <Card className={`overflow-hidden border-2 shadow-sm transition-all ${getRankStyle(index)}`}>
+                        <Card className={`overflow-hidden border-2 shadow-sm transition-all ${getRankStyle(onPodium ? index : -1)}`}>
                         <CardContent className="p-4 flex items-center gap-4">
                             <div className="flex-shrink-0 w-8 flex justify-center">
-                            {getRankIcon(index)}
+                            {onPodium ? getRankIcon(index) : <span className="font-bold text-muted-foreground w-6 text-center">{index + 1}</span>}
                             </div>
 
                             <UserAvatar user={player} size="lg" className="border-2 border-background" />
@@ -151,23 +175,23 @@ export default function Leaderboard() {
                             <div className="flex items-center gap-2">
                                 <h3 className="font-bold truncate">{player.displayName}</h3>
                                 {player.uid === user.uid && (
-                                <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
+                                <span className="shrink-0 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
                                     Moi
                                 </span>
                                 )}
                             </div>
-                            <p className="text-xs opacity-80 truncate">
-                                {stat.totalSessions} séances
+                            <p className="text-xs text-muted-foreground truncate">
+                                {stat.totalSessions} {stat.totalSessions > 1 ? 'séances' : 'séance'}
                             </p>
                             </div>
 
                             <div className="text-right flex flex-col items-end">
-                            <span className="text-xl font-black block leading-none">{stat.totalReps}</span>
-                            <span className="text-[10px] uppercase tracking-wider opacity-70 mb-1">Reps</span>
+                            <span className="text-xl font-black block leading-none">{stat.totalReps.toLocaleString('fr-FR')}</span>
+                            <span className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Reps</span>
 
                             {stat.totalCalories > 0 && (
                                 <span className="text-xs font-medium text-orange-500 flex items-center gap-0.5">
-                                    {Math.round(stat.totalCalories)} kcal
+                                    {Math.round(stat.totalCalories).toLocaleString('fr-FR')} kcal
                                 </span>
                             )}
                             </div>
@@ -197,10 +221,11 @@ export default function Leaderboard() {
 
                 {stats.length === 0 && (
                    <div className="text-center py-12 text-muted-foreground">
-                    <p>Aucune activité sur cette période.</p>
+                    <p>Le classement n'a pas pu être chargé. Vérifie ta connexion et réessaie.</p>
                   </div>
                 )}
               </div>
+              </>
             )}
           </div>
         </Tabs>
