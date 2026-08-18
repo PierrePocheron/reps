@@ -1,19 +1,54 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { DEFAULT_EXERCISES, EXERCISE_CATEGORIES } from '@/utils/constants';
-import { Check, Search, Plus, ChevronRight } from 'lucide-react';
-import type { ExerciseCategory } from '@/firebase/types';
+import { Check, Search, Plus, ChevronRight, Loader2 } from 'lucide-react';
+import type { ExerciseCategory, Exercise } from '@/firebase/types';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useExerciseImages } from '@/hooks/useExerciseImages';
+import { useLanguage } from '@/hooks/useLanguage';
+import { targetLabel } from '@/utils/exerciseLabels';
+import {
+  loadExerciseLibrary,
+  searchLibrary,
+  toExercise,
+  libraryImageUrl,
+  LIBRARY_ID_PREFIX,
+  type LibraryExercise,
+} from '@/utils/exerciseLibrary';
+
+/** Nombre max de lignes rendues en mode bibliothèque (performances) */
+const LIBRARY_RENDER_LIMIT = 80;
+
+/** Vignette avec fallback emoji si le CDN est injoignable (offline) */
+function ExerciseThumb({ src, alt, emoji }: { src: string | null; alt: string; emoji: string }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="h-10 w-10 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
+      {src && !failed ? (
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          onError={() => setFailed(true)}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <span className="text-xl">{emoji}</span>
+      )}
+    </div>
+  );
+}
 
 interface AddExerciseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAddDefault: (exerciseId: string) => void;
   onAddCustom: (name: string, emoji: string) => void;
+  /** Ajout d'un exercice issu de la bibliothèque complète (poids du corps) */
+  onAddLibrary?: (exercise: Exercise) => void;
   hasExercise: (name: string) => boolean;
 }
 
@@ -22,6 +57,7 @@ export function AddExerciseDialog({
   onOpenChange,
   onAddDefault,
   onAddCustom,
+  onAddLibrary,
   hasExercise,
 }: AddExerciseDialogProps) {
   const [customName, setCustomName] = useState('');
@@ -29,8 +65,34 @@ export function AddExerciseDialog({
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | 'all'>('all');
   const [search, setSearch] = useState('');
+  const [source, setSource] = useState<'essentials' | 'library'>('essentials');
+  const [library, setLibrary] = useState<LibraryExercise[] | null>(null);
   const haptics = useHaptic();
   const { imageMap } = useExerciseImages();
+  const lang = useLanguage();
+
+  // Charger la bibliothèque (dans la langue courante) au premier passage sur l'onglet
+  useEffect(() => {
+    if (source !== 'library') return;
+    let cancelled = false;
+    setLibrary(null);
+    loadExerciseLibrary(lang).then((lib) => { if (!cancelled) setLibrary(lib); });
+    return () => { cancelled = true; };
+  }, [source, lang]);
+
+  // Bibliothèque : uniquement les exercices au poids du corps
+  const libraryResults = source === 'library' && library
+    ? searchLibrary(library, search, selectedCategory, 'body weight', lang)
+    : [];
+
+  const handleAddLibrary = (libEx: LibraryExercise) => {
+    const exercise = toExercise(libEx, 'renforcement');
+    if (!hasExercise(exercise.name) && onAddLibrary) {
+      haptics.selection();
+      onAddLibrary(exercise);
+      onOpenChange(false);
+    }
+  };
 
   const handleAddDefault = (exerciseId: string) => {
     const exercise = DEFAULT_EXERCISES.find((ex) => ex.id === exerciseId);
@@ -60,7 +122,7 @@ export function AddExerciseDialog({
 
   // Only show categories that have exercises
   const visibleCategories = EXERCISE_CATEGORIES.filter(
-    (cat) => cat.id === 'all' || DEFAULT_EXERCISES.some((ex) => ex.category === cat.id)
+    (cat) => cat.id === 'all' || source === 'library' || DEFAULT_EXERCISES.some((ex) => ex.category === cat.id)
   );
 
   const commonEmojis = ['💪', '🏋️', '🦵', '🤸', '🔥', '⚡', '💥', '🚀', '🏃', '🧘'];
@@ -77,12 +139,36 @@ export function AddExerciseDialog({
               </DialogHeader>
             </div>
 
+            {/* Source : essentiels / bibliothèque complète (poids du corps) */}
+            {onAddLibrary && (
+              <div className="px-5 pb-3 flex-shrink-0">
+                <div className="flex rounded-xl bg-muted p-1">
+                  {([
+                    ['essentials', 'Essentiels'],
+                    ['library', 'Bibliothèque'],
+                  ] as const).map(([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => { haptics.selection(); setSource(key); }}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                        source === key
+                          ? 'bg-background shadow-sm text-foreground'
+                          : 'text-muted-foreground'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Recherche */}
             <div className="px-5 pb-3 flex-shrink-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher..."
+                  placeholder={source === 'library' ? 'Rechercher un exercice au poids du corps…' : 'Rechercher...'}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9 h-10 bg-muted border-0 focus-visible:ring-1"
@@ -117,7 +203,55 @@ export function AddExerciseDialog({
 
             {/* Liste */}
             <div className="flex-1 overflow-y-auto min-h-0 px-5 pb-2">
-              {filteredExercises.length === 0 ? (
+              {source === 'library' ? (
+                !library ? (
+                  <div className="flex justify-center py-10">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : libraryResults.length === 0 ? (
+                  <p className="text-center text-muted-foreground text-sm py-10">
+                    Aucun exercice trouvé
+                  </p>
+                ) : (
+                  <div className="space-y-1">
+                    {libraryResults.slice(0, LIBRARY_RENDER_LIMIT).map((libEx) => {
+                      const isAdded = hasExercise(libEx.name);
+                      return (
+                        <button
+                          key={`${LIBRARY_ID_PREFIX}${libEx.id}`}
+                          disabled={isAdded}
+                          onClick={() => handleAddLibrary(libEx)}
+                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left ${
+                            isAdded
+                              ? 'opacity-50 cursor-not-allowed'
+                              : 'hover:bg-muted active:bg-muted/80 active:scale-[0.99]'
+                          }`}
+                        >
+                          <ExerciseThumb src={libraryImageUrl(libEx)} alt={libEx.name} emoji="💪" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{libEx.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {targetLabel(libEx.target, lang)}
+                            </p>
+                          </div>
+                          {isAdded ? (
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground flex-shrink-0">
+                              <Check className="h-3.5 w-3.5" />
+                            </span>
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })}
+                    {libraryResults.length > LIBRARY_RENDER_LIMIT && (
+                      <p className="text-center text-xs text-muted-foreground py-3">
+                        {libraryResults.length} résultats — affine ta recherche pour voir les autres
+                      </p>
+                    )}
+                  </div>
+                )
+              ) : filteredExercises.length === 0 ? (
                 <p className="text-center text-muted-foreground text-sm py-10">
                   Aucun exercice trouvé
                 </p>

@@ -297,6 +297,7 @@ function Session() {
         onOpenChange={setShowExerciseDialog}
         onAddDefault={handleAddDefaultExercise}
         onAddCustom={handleAddCustomExercise}
+        onAddLibrary={(exercise) => { if (!hasExercise(exercise.name)) addExercise(exercise); }}
         hasExercise={hasExercise}
       />
     </div>
