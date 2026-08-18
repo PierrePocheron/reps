@@ -1,7 +1,10 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { Button } from '@/components/ui/button';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
 import { useExerciseImages } from '@/hooks/useExerciseImages';
+import { useGymSessionStore } from '@/store/gymSessionStore';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy } from 'lucide-react';
 import type { Session, GymSession } from '@/firebase/types';
@@ -11,9 +14,10 @@ type Tab = 'musculation' | 'renforcement' | 'records';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString('fr-FR', {
+  const s = date.toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function formatTime(date: Date): string {
@@ -54,7 +58,7 @@ function RenforcementCard({ session }: { session: Session }) {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold capitalize">{formatDate(date)}</p>
+              <p className="text-sm font-semibold">{formatDate(date)}</p>
               <p className="text-xs text-muted-foreground">{formatTime(date)}</p>
             </div>
             <div className="flex items-center gap-2">
@@ -116,7 +120,7 @@ function MuscuCard({ session, imageMap }: { session: GymSession; imageMap: Recor
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold capitalize">{formatDate(date)}</p>
+              <p className="text-sm font-semibold">{formatDate(date)}</p>
               <p className="text-xs text-muted-foreground">{formatTime(date)}</p>
             </div>
             <div className="flex items-center gap-1.5">
@@ -149,14 +153,14 @@ function MuscuCard({ session, imageMap }: { session: GymSession; imageMap: Recor
               const firstSet = completedSetsList[0];
               const w = firstSet ? (firstSet.actualWeight ?? firstSet.weight) : 0;
               const setsSummary = completedSetsList.length > 0
-                ? `${completedSetsList.length} × ${w > 0 ? `${w} kg` : 'bw'}`
+                ? `${completedSetsList.length} × ${w > 0 ? `${w} kg` : 'poids du corps'}`
                 : `${ex.sets.length} série${ex.sets.length > 1 ? 's' : ''}`;
 
               return (
                 <div key={i} className="flex items-center gap-3">
                   <div className="h-9 w-9 rounded-lg overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
                     {imgUrl ? (
-                      <img src={imgUrl} alt={ex.name} className="h-full w-full object-cover" />
+                      <img src={imgUrl} alt={ex.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     ) : (
                       <span className="text-lg">{ex.emoji}</span>
                     )}
@@ -168,14 +172,17 @@ function MuscuCard({ session, imageMap }: { session: GymSession; imageMap: Recor
             })}
 
             {session.exercises.length > 3 && (
-              <button
-                onClick={() => setExpanded((v) => !v)}
-                className="text-xs text-primary font-medium mt-1 hover:underline"
-              >
-                {expanded
-                  ? 'Voir moins'
-                  : `+ ${session.exercises.length - 3} exercice${session.exercises.length - 3 > 1 ? 's' : ''}`}
-              </button>
+              <div>
+                <button
+                  onClick={() => setExpanded((v) => !v)}
+                  aria-expanded={expanded}
+                  className="inline-flex items-center min-h-[44px] -my-2.5 px-1 -mx-1 text-xs text-primary font-medium hover:underline active:opacity-70 transition-opacity"
+                >
+                  {expanded
+                    ? 'Voir moins'
+                    : `+ ${session.exercises.length - 3} exercice${session.exercises.length - 3 > 1 ? 's' : ''}`}
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -200,7 +207,7 @@ function PRCard({ pr }: { pr: PersonalRecord }) {
             {/* Image ou emoji */}
             <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
               {pr.imageUrl ? (
-                <img src={pr.imageUrl} alt={pr.name} className="h-full w-full object-cover" />
+                <img src={pr.imageUrl} alt={pr.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
               ) : (
                 <span className="text-2xl">{pr.emoji}</span>
               )}
@@ -214,15 +221,17 @@ function PRCard({ pr }: { pr: PersonalRecord }) {
             </div>
 
             {/* Badge PR */}
-            {pr.bestWeight > 0 && (
+            {(pr.bestWeight > 0 || pr.bestReps > 0) && (
               <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                 <div className="flex items-center gap-1 bg-yellow-500/10 px-2.5 py-1 rounded-lg">
                   <Trophy className="h-3.5 w-3.5 text-yellow-500" />
                   <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400">
-                    {pr.bestWeight} kg
+                    {pr.bestWeight > 0 ? `${pr.bestWeight} kg` : `${pr.bestReps} reps`}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">× {pr.bestReps} reps</p>
+                {pr.bestWeight > 0 && (
+                  <p className="text-xs text-muted-foreground">× {pr.bestReps} reps</p>
+                )}
               </div>
             )}
           </div>
@@ -230,7 +239,7 @@ function PRCard({ pr }: { pr: PersonalRecord }) {
           {/* 1RM estimé */}
           {oneRepMax !== null && oneRepMax > pr.bestWeight && (
             <div className="mt-3 pt-3 border-t flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">1RM estimé (formule Epley)</p>
+              <p className="text-xs text-muted-foreground">Max estimé sur 1 rep</p>
               <p className="text-xs font-semibold">~{oneRepMax} kg</p>
             </div>
           )}
@@ -244,8 +253,10 @@ function PRCard({ pr }: { pr: PersonalRecord }) {
 
 function History() {
   const [activeTab, setActiveTab] = useState<Tab>('musculation');
-  const { sessions, gymSessions, loading } = useSessionHistory(100);
+  const { sessions, gymSessions, loading, error, refetch } = useSessionHistory(100);
   const { imageMap } = useExerciseImages();
+  const navigate = useNavigate();
+  const { startFreeSession } = useGymSessionStore();
 
   // Calcul des records personnels depuis l'historique muscu
   const personalRecords = useMemo<PersonalRecord[]>(() => {
@@ -257,7 +268,7 @@ function History() {
       const sessionDate = session.date.toDate();
       for (const ex of session.exercises) {
         const existing = map.get(ex.exerciseId);
-        let pr: PersonalRecord = existing ?? {
+        const pr: PersonalRecord = existing ?? {
           exerciseId: ex.exerciseId,
           name: ex.name,
           emoji: ex.emoji,
@@ -280,6 +291,8 @@ function History() {
             pr.bestVolume = vol;
             pr.bestWeight = w;
             pr.bestReps = r;
+          } else if (w === 0 && pr.bestWeight === 0 && r > pr.bestReps) {
+            pr.bestReps = r;
           }
           if (sessionDate > pr.lastPerformed) {
             pr.lastPerformed = sessionDate;
@@ -295,19 +308,17 @@ function History() {
   }, [gymSessions, imageMap]);
 
   return (
-    <PageLayout>
+    <PageLayout title="HISTORIQUE" backButton>
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold">Historique</h1>
-          <p className="text-sm text-muted-foreground mt-1">Toutes tes séances passées.</p>
-        </div>
+        <p className="text-sm text-muted-foreground -mt-2">Toutes tes séances passées.</p>
 
         {/* Tabs */}
-        <div className="flex gap-1 p-1 bg-muted rounded-xl">
+        <div role="tablist" aria-label="Type d'historique" className="flex gap-1 p-1 bg-muted rounded-xl">
           <button
+            role="tab"
+            aria-selected={activeTab === 'musculation'}
             onClick={() => setActiveTab('musculation')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
               activeTab === 'musculation'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -316,14 +327,16 @@ function History() {
             <Dumbbell className="h-4 w-4 text-blue-500" />
             Muscu
             {gymSessions.length > 0 && (
-              <span className="text-xs bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded-full font-semibold">
+              <span className="text-xs bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full font-semibold">
                 {gymSessions.length}
               </span>
             )}
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'renforcement'}
             onClick={() => setActiveTab('renforcement')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
               activeTab === 'renforcement'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -332,14 +345,16 @@ function History() {
             <Zap className="h-4 w-4 text-orange-500" />
             Renfo
             {sessions.length > 0 && (
-              <span className="text-xs bg-orange-500/10 text-orange-500 px-1.5 py-0.5 rounded-full font-semibold">
+              <span className="text-xs bg-orange-500/10 text-orange-700 dark:text-orange-400 px-1.5 py-0.5 rounded-full font-semibold">
                 {sessions.length}
               </span>
             )}
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'records'}
             onClick={() => setActiveTab('records')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
               activeTab === 'records'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -356,7 +371,13 @@ function History() {
         </div>
 
         {/* Content */}
-        {loading ? (
+        {error ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
+            <p className="font-semibold">Impossible de charger ton historique</p>
+            <p className="text-sm text-muted-foreground">Vérifie ta connexion puis réessaie.</p>
+            <Button variant="outline" size="sm" className="rounded-xl" onClick={refetch}>Réessayer</Button>
+          </div>
+        ) : loading ? (
           <div className="flex justify-center py-16">
             <LoadingSpinner size="lg" />
           </div>
@@ -368,6 +389,7 @@ function History() {
               </div>
               <p className="font-semibold">Aucune séance muscu</p>
               <p className="text-sm text-muted-foreground">Tes séances de musculation apparaîtront ici.</p>
+              <Button size="sm" className="mt-2 rounded-xl active:scale-95 transition-transform" onClick={() => { startFreeSession(); navigate('/gym'); }}>Démarrer une séance muscu</Button>
             </div>
           ) : (
             <div className="space-y-3">
@@ -384,6 +406,7 @@ function History() {
               </div>
               <p className="font-semibold">Aucune séance renforcement</p>
               <p className="text-sm text-muted-foreground">Tes séances de renforcement apparaîtront ici.</p>
+              <Button size="sm" className="mt-2 rounded-xl active:scale-95 transition-transform" onClick={() => navigate('/session')}>Démarrer une séance renfo</Button>
             </div>
           ) : (
             <div className="space-y-3">
