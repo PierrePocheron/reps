@@ -33,7 +33,7 @@ export default function PrivacyPolicy() {
           <p>
             La présente politique décrit quelles données nous collectons, pourquoi et comment vous pouvez
             exercer vos droits. Elle s'applique à l'application mobile Android, à l'application iOS et à
-            la version web accessible sur <strong>reps-app.vercel.app</strong>.
+            la version web accessible sur <strong>pedro-reps.web.app</strong>.
           </p>
         </section>
 
@@ -147,7 +147,8 @@ export default function PrivacyPolicy() {
             <li><strong className="text-foreground">Google Firebase</strong> — hébergement, base de données, authentification (Google LLC, États-Unis)</li>
             <li><strong className="text-foreground">Google AdMob</strong> — publicités mobiles (Google LLC, États-Unis)</li>
             <li><strong className="text-foreground">Sentry</strong> — rapports d'erreurs (Functional Software, Inc., États-Unis)</li>
-            <li><strong className="text-foreground">Vercel</strong> — hébergement de la version web (Vercel Inc., États-Unis)</li>
+            <li><strong className="text-foreground">Firebase Hosting</strong> — hébergement de la version web (Google LLC, États-Unis)</li>
+            <li><strong className="text-foreground">jsDelivr</strong> — réseau de diffusion (CDN) qui sert les illustrations de la bibliothèque d'exercices, chargées à la demande ; seule votre adresse IP transite, aucune donnée de compte</li>
           </ul>
           <p className="text-muted-foreground">
             Tous ces sous-traitants opèrent sous des clauses contractuelles types conformes au RGPD.

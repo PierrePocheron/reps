@@ -8,7 +8,7 @@
 📖 **Documentation** : [Tests](docs/TESTS.md) · [Outils](docs/TOOLS.md)
 
 <div align="center">
-  <a href="https://reps-app.vercel.app">
+  <a href="https://pedro-reps.web.app">
     <img src="https://img.shields.io/badge/iOS_PWA-Add_to_Home_Screen-black?style=for-the-badge&logo=apple" alt="iOS PWA" height="40" />
   </a>
   <a href="https://github.com/PierrePocheron/reps/releases/latest">

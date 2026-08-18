@@ -14,7 +14,7 @@
 | Catégorie | Santé & Fitness |
 | Sous-catégorie | Fitness |
 | Classification de contenu | Tout public (PEGI 3) |
-| URL politique de confidentialité | `https://reps-app.vercel.app/privacy-policy` |
+| URL politique de confidentialité | `https://pedro-reps.web.app/privacy-policy` (Firebase Hosting — redéployer le web avant de la renseigner) |
 
 ---
 
@@ -38,7 +38,8 @@ Que vous fassiez du renforcement musculaire au poids du corps ou de la musculati
 ━━━ SUIVI D'ENTRAÎNEMENT ━━━
 
 • Renforcement musculaire : créez vos séances personnalisées, ajoutez vos exercices et comptez vos répétitions en temps réel.
-• Musculation : planifiez vos programmes avec poids, séries et temps de repos. Choisissez parmi une bibliothèque complète d'exercices ou utilisez vos templates personnalisés.
+• Musculation : planifiez vos programmes avec poids, séries et temps de repos, puis cochez vos séries au fil de la séance.
+• Bibliothèque de 1 324 exercices illustrés : animation, muscles ciblés et instructions étape par étape, en français ou en anglais (suit la langue de votre téléphone).
 • Historique complet : retrouvez toutes vos séances passées avec le détail des exercices, le volume soulevé et la durée.
 
 ━━━ STATISTIQUES & PROGRESSION ━━━
@@ -61,6 +62,7 @@ Que vous fassiez du renforcement musculaire au poids du corps ou de la musculati
 
 ━━━ EXPÉRIENCE NATIVE ━━━
 
+• Tutoriel de prise en main au premier lancement.
 • Rappels d'entraînement personnalisables pour ne jamais manquer une séance.
 • Retours haptiques et effets sonores pour une expérience immersive.
 • Mode sombre, clair ou automatique selon votre préférence.
@@ -73,7 +75,7 @@ Vos données d'entraînement vous appartiennent. Reps utilise Firebase pour la s
 Débutant ou athlète confirmé, Reps est fait pour vous. Commencez dès aujourd'hui — chaque répétition compte.
 ```
 
-*(~1 750 caractères)*
+*(~1 950 caractères)*
 
 ---
 
@@ -83,6 +85,7 @@ Débutant ou athlète confirmé, Reps est fait pour vous. Commencez dès aujourd
 Première version de Reps !
 
 • Suivi renforcement musculaire et musculation
+• Bibliothèque de 1 324 exercices illustrés (FR/EN)
 • Templates de séances personnalisables
 • Statistiques, heatmap et graphiques de progression
 • Système de badges et de niveaux
@@ -108,6 +111,8 @@ Première version de Reps !
 | Informations de santé et de forme (poids, taille) | Oui | Non | Fonctionnalité de l'application | Non |
 | Activités sportives (séances) | Oui | Non | Fonctionnalité de l'application | Oui |
 | Identifiants de l'appareil (AD_ID) | Oui | Oui (Google AdMob) | Publicités | Non |
+
+> **AD_ID** : le SDK AdMob reste embarqué (publicités mobiles désactivées pour la v1, `ENABLED_MOBILE: false`), donc la permission `com.google.android.gms.permission.AD_ID` figure dans le manifest fusionné. Google exige que la déclaration soit cohérente : **déclarer « Identifiants de l'appareil » collectés** même sans pub affichée. À la question « Votre appli contient-elle des annonces ? » répondre **Non** tant que `ENABLED_MOBILE` est `false`, puis passer à **Oui** et mettre à jour cette section quand AdMob sera réactivé.
 | Journaux de pannes | Oui | Oui (Sentry) | Analytique | Non |
 
 ### Pratiques de sécurité
@@ -139,27 +144,34 @@ Format recommandé : **1080 × 1920 px** (9:16) ou **1080 × 2400 px** (9:20)
 ## Checklist avant soumission
 
 ### Technique
-- [ ] `versionCode` incrémenté dans `android/app/build.gradle`
-- [ ] `versionName` mis à jour (ex. `"1.0"`)
-- [ ] Keystore configurée (`android/keystore.properties` + `android/reps-release.keystore`)
-- [ ] Vrai AdMob App ID dans `AndroidManifest.xml` (remplacer l'ID de test)
-- [ ] Vrais AdMob Banner IDs dans `src/config/ads.ts`
-- [ ] `ENABLED_MOBILE: true` dans `src/config/ads.ts` (si publicités activées)
-- [ ] `VITE_RECAPTCHA_SITE_KEY` réelle configurée dans `.env`
-- [ ] AAB buildé et signé : `bash scripts/build-android-release.sh`
+- [x] `targetSdk 36`, AAB, R8/ProGuard, `allowBackup=false`, `POST_NOTIFICATIONS`
+- [x] Suppression de compte in-app, export JSON, politique de confidentialité (`/privacy-policy`, ancre `#suppression-compte`)
+- [x] `VITE_RECAPTCHA_SITE_KEY` réelle dans `.env` (⚠️ vérifier que c'est bien la clé enregistrée dans Firebase → App Check ; ne pas activer l'*enforcement* App Check tant que ce n'est pas testé sur l'APK signé)
+- [x] Publicités mobiles coupées (`ENABLED_MOBILE: false`) — l'ID AdMob de test reste dans le manifest, sans effet tant que le SDK n'est pas initialisé
+- [ ] **Redéployer la version web** (`yarn build && firebase deploy --only hosting`) : le build en ligne sur `pedro-reps.web.app` est ancien et n'a pas la page `/privacy-policy` — l'URL doit répondre AVANT la soumission
+- [ ] Fusionner `dev` → `main` (release v1.0.0)
+- [ ] Keystore : `bash scripts/setup-keystore.sh` (crée `android/reps-release.keystore` + `keystore.properties`, tous deux gitignorés — **sauvegarder le keystore et ses mots de passe hors du Mac**, sa perte = impossible de mettre l'app à jour)
+- [ ] `versionCode = 1`, `versionName = "1.0"` — OK pour la première soumission (incrémenter `versionCode` à chaque envoi suivant)
+- [ ] AAB buildé et signé : `bash scripts/build-android-release.sh` → `android/app/release/app-release.aab`
+- [ ] Licence des illustrations : lire les [CGU Gym visual](https://gymvisual.com/content/3-terms-and-conditions-of-use) (les médias du dataset sont © Gym visual, redistribués avec permission sous condition d'attribution + 180×180 — les deux sont respectées dans l'app) ; en cas de doute, un mail à Gym visual pour confirmer l'usage embarqué
 
 ### Play Console
-- [ ] Compte développeur créé (25 € one-time)
-- [ ] Application créée dans la console
-- [ ] Data Safety renseigné (tableau ci-dessus)
-- [ ] Politique de confidentialité URL renseignée : `https://reps-app.vercel.app/privacy-policy`
-- [ ] Captures d'écran uploadées (min. 2 téléphone)
-- [ ] Feature Graphic uploadée
+- [x] Compte développeur créé (25 €)
+- [ ] Application créée dans la console (nom `Reps`, id `com.pierre.reps.app`, gratuite)
+- [ ] **Play App Signing** activé (par défaut) → récupérer l'empreinte **SHA-1 de la clé de signature Google** dans *Intégrité de l'application* et l'ajouter dans Firebase → Paramètres du projet → Application Android (en plus du SHA-1 de la keystore d'upload). Sans ça, la connexion Google échoue sur l'app installée depuis le Play Store
+- [ ] Data Safety renseigné (tableau ci-dessus, AD_ID inclus)
+- [ ] Politique de confidentialité URL renseignée : `https://pedro-reps.web.app/privacy-policy`
+- [ ] Contenu de l'appli : « Annonces » = Non (v1), « Accès à l'appli » = fournir un compte de test (email + mot de passe) car l'app exige une connexion, « Applis santé » = déclarer les données de forme physique (poids, taille, séances)
+- [ ] Classification de contenu remplie (questionnaire → Tout public)
+- [ ] Captures d'écran uploadées (min. 2 téléphone, idéalement 6-8, format 9:16 ou 9:20)
+- [ ] Feature Graphic 1 024 × 500 uploadée
 - [ ] Description courte et longue renseignées
-- [ ] Classification de contenu remplie (questionnaire Play Console)
 - [ ] Pays de distribution sélectionnés
+- [ ] **Test fermé obligatoire** (compte perso créé après nov. 2023) : au moins **12 testeurs inscrits pendant 14 jours consécutifs** sur une piste de test fermé, puis demande d'accès à la production depuis la console. À lancer dès que l'AAB est prêt — c'est le chemin critique du calendrier
 
 ### Avant la publication
-- [ ] Tester l'AAB sur un appareil physique Android
-- [ ] Vérifier que la connexion Google fonctionne sur l'APK signé (SHA-1 à ajouter dans Firebase Console)
-- [ ] Vérifier que les publicités AdMob s'affichent (si activées)
+- [ ] Installer l'AAB via la piste de test interne sur un appareil physique Android
+- [ ] Vérifier la connexion Google sur le build signé (SHA-1 upload + SHA-1 Play App Signing dans Firebase)
+- [ ] Vérifier le tutoriel au premier lancement, la bibliothèque (vignettes CDN + mode avion), les notifications locales, le mode sombre
+- [ ] Vérifier que le crash reporting Sentry remonte bien depuis le build release (ProGuard : `proguard-rules.pro` conserve les numéros de ligne)
+- [ ] Publicités : ne rien réactiver avant que le compte AdMob soit rétabli ET que Data Safety + « Annonces » soient mis à jour
