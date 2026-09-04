@@ -106,6 +106,7 @@ function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymS
 
 function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessions: GymSession[] }) {
   const [mode, setMode] = useState<'reps' | 'volume'>('reps');
+  const [selectedBar, setSelectedBar] = useState<number | null>(null);
   const navigate = useNavigate();
   const today = new Date();
 
@@ -205,24 +206,55 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
       <div
         className="flex items-end gap-1.5"
         style={{ height: `${BAR_HEIGHT + 4}px` }}
-        role="img"
-        aria-label={`Progression sur 8 semaines, cette semaine ${values[values.length - 1]} ${activeMode === 'reps' ? 'reps' : 'kg'}`}
+        onMouseLeave={() => setSelectedBar(null)}
       >
-        {values.map((val, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center justify-end" aria-hidden="true">
-            {val > 0 ? (
+        {values.map((val, i) => {
+          const isLast = i === buckets.length - 1;
+          const barHeight = val > 0 ? Math.max(4, (val / maxVal) * BAR_HEIGHT) : 4;
+          const isSelected = selectedBar === i;
+          const weekLabel = isLast
+            ? 'Cette semaine'
+            : `Semaine du ${buckets[i]!.start.toLocaleDateString('fr-FR', { day: 'numeric', month: 'numeric' })}`;
+          const valueLabel = `${val.toLocaleString('fr-FR')} ${activeMode === 'reps' ? 'reps' : 'kg'}`;
+          return (
+            <button
+              key={i}
+              type="button"
+              aria-label={`${weekLabel} : ${valueLabel}`}
+              aria-pressed={isSelected}
+              onMouseEnter={() => setSelectedBar(i)}
+              onFocus={() => setSelectedBar(i)}
+              onBlur={() => setSelectedBar((cur) => (cur === i ? null : cur))}
+              onClick={() => setSelectedBar((cur) => (cur === i ? null : i))}
+              className="relative h-full flex-1 flex flex-col items-center justify-end rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {isSelected && (
+                <span
+                  className={`pointer-events-none absolute z-10 whitespace-nowrap rounded-md bg-foreground px-1.5 py-0.5 text-[10px] font-semibold text-background shadow-sm ${
+                    i === 0 ? 'left-0' : i === buckets.length - 1 ? 'right-0' : 'left-1/2 -translate-x-1/2'
+                  }`}
+                  style={{ bottom: `${Math.min(barHeight + 6, BAR_HEIGHT - 12)}px` }}
+                >
+                  {valueLabel}
+                </span>
+              )}
               <div
                 className={`w-full rounded-t-sm transition-all ${
-                  i === buckets.length - 1 ? 'bg-primary' : 'bg-primary/60'
+                  val > 0
+                    ? isSelected
+                      ? 'bg-primary'
+                      : isLast
+                        ? 'bg-primary/90'
+                        : 'bg-primary/60'
+                    : isSelected
+                      ? 'bg-muted-foreground/40'
+                      : 'bg-muted'
                 }`}
-                style={{ height: `${Math.max(4, (val / maxVal) * BAR_HEIGHT)}px` }}
-                title={activeMode === 'reps' ? `${val} reps` : `${val} kg`}
+                style={{ height: `${barHeight}px` }}
               />
-            ) : (
-              <div className="w-full rounded-t-sm bg-muted" style={{ height: '4px' }} />
-            )}
-          </div>
-        ))}
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex gap-1.5 mt-1.5">
