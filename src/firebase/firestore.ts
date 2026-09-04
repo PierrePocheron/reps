@@ -19,8 +19,9 @@ import {
   writeBatch,
   documentId,
   collectionGroup,
+  deleteField,
 } from 'firebase/firestore';
-import { db } from './config';
+import { db, auth } from './config';
 import type { User, Session, Exercise, Notification, MotivationalPhrase, UserStats, FriendRequest } from './types';
 import { getUnlockedBadges, DEFAULT_EXERCISES } from '@/utils/constants';
 import { logger } from '@/utils/logger';
@@ -32,6 +33,66 @@ import { logger } from '@/utils/logger';
 // ==================== USERS ====================
 
 /**
+ * Champs sensibles : jamais dans le doc public users/{uid} (lisible par tout
+ * utilisateur authentifié), toujours dans users/{uid}/private/profile
+ * (owner-only, cf. firestore.rules).
+ */
+const PRIVATE_PROFILE_FIELDS = ['email', 'weight', 'height', 'birthDate', 'gender'] as const;
+
+function splitUserFields(data: Partial<User>): { publicData: Partial<User>; privateData: Partial<User> } {
+  const publicData: Record<string, unknown> = {};
+  const privateData: Record<string, unknown> = {};
+  Object.entries(data).forEach(([key, value]) => {
+    if ((PRIVATE_PROFILE_FIELDS as readonly string[]).includes(key)) privateData[key] = value;
+    else publicData[key] = value;
+  });
+  return { publicData: publicData as Partial<User>, privateData: privateData as Partial<User> };
+}
+
+/** SHA-256 hex de l'email normalisé — permet la recherche par email sans exposer l'email. */
+export async function hashEmail(email: string): Promise<string> {
+  const bytes = new TextEncoder().encode(email.trim().toLowerCase());
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+function privateProfileRef(uid: string) {
+  return doc(db, 'users', uid, 'private', 'profile');
+}
+
+/**
+ * Migration à la volée : si le doc public d'un compte existant contient
+ * encore des champs sensibles (ancien modèle), les déplacer vers
+ * private/profile et les purger du doc public. Best-effort.
+ */
+async function migrateLegacyPublicFields(uid: string, publicDoc: Record<string, unknown>): Promise<void> {
+  const legacy: Record<string, unknown> = {};
+  PRIVATE_PROFILE_FIELDS.forEach((f) => {
+    if (publicDoc[f] !== undefined) legacy[f] = publicDoc[f];
+  });
+  if (publicDoc.fcmToken !== undefined) {
+    await setDoc(doc(db, 'users', uid, 'private', 'notifications'), { fcmToken: publicDoc.fcmToken }, { merge: true }).catch(() => {});
+  }
+  if (Object.keys(legacy).length === 0 && publicDoc.fcmToken === undefined) return;
+  try {
+    if (Object.keys(legacy).length > 0) {
+      await setDoc(privateProfileRef(uid), legacy, { merge: true });
+    }
+    const removals: Record<string, unknown> = {};
+    [...PRIVATE_PROFILE_FIELDS, 'fcmToken'].forEach((f) => {
+      if (publicDoc[f] !== undefined) removals[f] = deleteField();
+    });
+    if (typeof publicDoc.email === 'string' && publicDoc.email) {
+      removals.emailHash = await hashEmail(publicDoc.email);
+    }
+    await updateDoc(doc(db, 'users', uid), removals);
+    logger.info('[Migration] Champs sensibles déplacés vers private/profile');
+  } catch (e) {
+    logger.warn('[Migration] Migration du profil impossible (réessaiera au prochain chargement)', { error: e });
+  }
+}
+
+/**
  * Créer un document utilisateur
  */
 export async function createUserDocument(
@@ -40,12 +101,13 @@ export async function createUserDocument(
 ): Promise<void> {
   try {
     const userRef = doc(db, 'users', uid);
-    const userDoc: Omit<User, 'uid'> = {
+    const { publicData, privateData } = splitUserFields(userData);
+
+    const userDoc: Partial<User> = {
       displayName: userData.displayName || 'Utilisateur',
       searchName: (userData.displayName || 'Utilisateur').toLowerCase(),
       firstName: userData.firstName,
       lastName: userData.lastName,
-      email: userData.email || '',
       avatarEmoji: '🐥',
       colorTheme: userData.colorTheme || 'blue',
       totalReps: 0,
@@ -56,9 +118,12 @@ export async function createUserDocument(
       longestStreak: 0,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
-      ...userData, // Écrase les valeurs par défaut si présentes dans userData
+      ...publicData, // Écrase les valeurs par défaut si présentes
       lastConnection: userData.lastConnection || null,
     };
+    if (typeof userData.email === 'string' && userData.email) {
+      userDoc.emailHash = await hashEmail(userData.email);
+    }
 
     // Nettoyage des champs undefined
     Object.keys(userDoc).forEach(key => userDoc[key as keyof typeof userDoc] === undefined && delete userDoc[key as keyof typeof userDoc]);
@@ -66,6 +131,11 @@ export async function createUserDocument(
     // Utiliser merge: true pour ne pas écraser les données existantes si le document existe déjà
     // (Protection contre les race conditions entre auth.ts et userStore.ts)
     await setDoc(userRef, userDoc, { merge: true });
+
+    // Données sensibles → sous-collection privée (owner-only)
+    if (Object.keys(privateData).length > 0) {
+      await setDoc(privateProfileRef(uid), privateData, { merge: true });
+    }
   } catch (error) {
     logger.error('Erreur lors de la création du document utilisateur:', error);
     throw error;
@@ -108,11 +178,24 @@ export async function getUserDocument(uid: string): Promise<User | null> {
   try {
     const userRef = doc(db, 'users', uid);
     const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return null;
 
-    if (userSnap.exists()) {
-      return { uid, ...userSnap.data() } as User;
+    const publicDoc = userSnap.data();
+
+    // Pour son propre profil : fusionner les champs privés + migrer l'ancien modèle
+    if (auth.currentUser?.uid === uid) {
+      void migrateLegacyPublicFields(uid, publicDoc);
+      try {
+        const privateSnap = await getDoc(privateProfileRef(uid));
+        if (privateSnap.exists()) {
+          return { uid, ...publicDoc, ...privateSnap.data() } as User;
+        }
+      } catch (e) {
+        logger.warn('Lecture du profil privé impossible', { error: e });
+      }
     }
-    return null;
+
+    return { uid, ...publicDoc } as User;
   } catch (error) {
     logger.error('Erreur lors de la récupération du document utilisateur:', error);
     throw error;
@@ -126,15 +209,24 @@ export async function updateUserDocument(uid: string, updates: Partial<User>): P
   try {
     const userRef = doc(db, 'users', uid);
 
-    const finalUpdates = { ...updates };
-    if (finalUpdates.displayName) {
-      finalUpdates.searchName = finalUpdates.displayName.toLowerCase();
+    const { publicData, privateData } = splitUserFields(updates);
+    if (publicData.displayName) {
+      publicData.searchName = publicData.displayName.toLowerCase();
     }
 
-    await updateDoc(userRef, {
-      ...finalUpdates,
-      updatedAt: serverTimestamp(),
-    });
+    if (Object.keys(privateData).length > 0) {
+      await setDoc(privateProfileRef(uid), privateData, { merge: true });
+      if (typeof privateData.email === 'string' && privateData.email) {
+        (publicData as Record<string, unknown>).emailHash = await hashEmail(privateData.email);
+      }
+    }
+
+    if (Object.keys(publicData).length > 0) {
+      await updateDoc(userRef, {
+        ...publicData,
+        updatedAt: serverTimestamp(),
+      });
+    }
   } catch (error) {
     logger.error('Erreur lors de la mise à jour du document utilisateur:', error);
     throw error;
@@ -149,20 +241,44 @@ export function subscribeToUser(
   callback: (user: User | null) => void
 ): Unsubscribe {
   const userRef = doc(db, 'users', uid);
-  return onSnapshot(
+  const isSelf = auth.currentUser?.uid === uid;
+
+  let publicData: Record<string, unknown> | null = null;
+  let privateData: Record<string, unknown> = {};
+
+  const emit = () => {
+    if (publicData) callback({ uid, ...publicData, ...privateData } as User);
+    else callback(null);
+  };
+
+  const unsubPublic = onSnapshot(
     userRef,
     (snap) => {
-      if (snap.exists()) {
-        callback({ uid, ...snap.data() } as User);
-      } else {
-        callback(null);
-      }
+      publicData = snap.exists() ? snap.data() : null;
+      emit();
     },
     (error) => {
       logger.error('Erreur lors de l\'écoute du document utilisateur:', error);
       callback(null);
     }
   );
+
+  // Champs sensibles (email, poids…) : sous-collection privée, pour soi uniquement
+  const unsubPrivate = isSelf
+    ? onSnapshot(
+        privateProfileRef(uid),
+        (snap) => {
+          privateData = snap.exists() ? snap.data() : {};
+          emit();
+        },
+        () => { /* profil privé illisible : on continue avec le doc public */ }
+      )
+    : null;
+
+  return () => {
+    unsubPublic();
+    unsubPrivate?.();
+  };
 }
 
 // ==================== SESSIONS ====================
@@ -649,19 +765,11 @@ export async function searchUsers(searchTerm: string, limitCount = 10): Promise<
     const term = searchTerm.toLowerCase();
     const results = new Map<string, User>();
 
-    // 1. Recherche par Email (Exacte)
+    // 1. Recherche par email (exacte, via hash — l'email en clair n'est pas stocké)
     if (term.includes('@')) {
-      const emailQuery = query(usersRef, where('email', '==', searchTerm)); // Email exact (souvent sensible à la casse ou déjà lowercase)
-      // On essaie aussi lowercase juste au cas où
-      const emailQueryLower = query(usersRef, where('email', '==', term));
-
-      const [emailSnap, emailLowerSnap] = await Promise.all([
-        getDocs(emailQuery),
-        getDocs(emailQueryLower)
-      ]);
-
+      const emailHashQuery = query(usersRef, where('emailHash', '==', await hashEmail(term)));
+      const emailSnap = await getDocs(emailHashQuery);
       emailSnap.forEach(doc => results.set(doc.id, { uid: doc.id, ...doc.data() } as User));
-      emailLowerSnap.forEach(doc => results.set(doc.id, { uid: doc.id, ...doc.data() } as User));
     }
 
     // 2. Recherche par searchName (Insensible à la casse - Préfixe)
@@ -708,42 +816,30 @@ export async function searchUsers(searchTerm: string, limitCount = 10): Promise<
  */
 export async function sendFriendRequest(fromUser: User, toUserId: string): Promise<void> {
   try {
-    const requestsRef = collection(db, 'friend_requests');
+    // IDs déterministes `${from}_${to}` : pas de doublon possible, et les
+    // règles Firestore peuvent vérifier la relation par get() ciblé.
+    const outgoingRef = doc(db, 'friend_requests', `${fromUser.uid}_${toUserId}`);
+    const incomingRef = doc(db, 'friend_requests', `${toUserId}_${fromUser.uid}`);
 
-    // 1. Vérifier s'il y a déjà une demande INVERSE (de toUserId vers fromUser) en attente
-    // Si oui, on accepte automatiquement cette demande (Match !)
-    const reverseQuery = query(
-      requestsRef,
-      where('fromUserId', '==', toUserId),
-      where('toUserId', '==', fromUser.uid),
-      where('status', '==', 'pending')
-    );
-
-    const reverseDocs = await getDocs(reverseQuery);
-    if (!reverseDocs.empty) {
-      // On a trouvé une demande inverse -> On l'accepte
-      const reverseRequest = reverseDocs.docs[0];
-      if (reverseRequest) {
-        await acceptFriendRequest(reverseRequest.id, toUserId, fromUser.uid);
-        return;
-      }
+    // 1. Demande inverse en attente ? → Match : on l'accepte directement.
+    const incomingSnap = await getDoc(incomingRef).catch(() => null);
+    if (incomingSnap?.exists() && incomingSnap.data().status === 'pending') {
+      await acceptFriendRequest(incomingRef.id, toUserId, fromUser.uid);
+      return;
     }
 
-    // 2. Vérifier si une demande existe déjà (dans le sens normal)
-    const q = query(
-      requestsRef,
-      where('fromUserId', '==', fromUser.uid),
-      where('toUserId', '==', toUserId),
-      where('status', '==', 'pending')
-    );
-
-    const existingDocs = await getDocs(q);
-    if (!existingDocs.empty) {
-      throw new Error('Une demande est déjà en attente');
+    // 2. Demande sortante existante ?
+    const outgoingSnap = await getDoc(outgoingRef).catch(() => null);
+    if (outgoingSnap?.exists()) {
+      const status = outgoingSnap.data().status;
+      if (status === 'pending') throw new Error('Une demande est déjà en attente');
+      if (status === 'accepted') throw new Error('Vous êtes déjà amis');
+      // rejected : on supprime l'ancienne demande pour pouvoir en renvoyer une
+      await deleteDoc(outgoingRef);
     }
 
     // 3. Créer la demande
-    await addDoc(requestsRef, {
+    await setDoc(outgoingRef, {
       fromUserId: fromUser.uid,
       fromDisplayName: fromUser.displayName,
       fromAvatarEmoji: fromUser.avatarEmoji || '🐥',
@@ -751,16 +847,6 @@ export async function sendFriendRequest(fromUser: User, toUserId: string): Promi
       status: 'pending',
       createdAt: serverTimestamp(),
     });
-
-    // Créer une notification pour le destinataire
-    await createNotification({
-      userId: toUserId,
-      title: 'Nouvelle demande d\'ami',
-      message: `${fromUser.displayName} veut vous ajouter en ami`,
-      type: 'friend_activity',
-      read: false,
-    });
-
   } catch (error) {
     logger.error('Erreur lors de l\'envoi de la demande d\'ami:', error);
     throw error;
@@ -817,16 +903,6 @@ export async function acceptFriendRequest(requestId: string, fromUserId: string,
       batch.update(fromUserRef, { friends: [...fromFriends, currentUserId] });
     }
 
-    // 4. Notification pour l'expéditeur
-    const notifRef = doc(collection(db, 'notifications'));
-    batch.set(notifRef, {
-      userId: fromUserId,
-      title: 'Demande acceptée',
-      message: `${currentUserData.displayName} a accepté votre demande d'ami`,
-      type: 'friend_activity',
-      read: false,
-      createdAt: serverTimestamp(),
-    });
 
     // 5. Nettoyage : Vérifier s'il existe une demande inverse (de current vers from) et la marquer comme acceptée aussi
     // Cela évite d'avoir une demande "fantôme" si les deux se sont ajoutés en même temps
@@ -865,6 +941,18 @@ export async function acceptFriendRequest(requestId: string, fromUserId: string,
     // Mieux : On crée l'événement visible dans le feed.
 
     await batch.commit();
+
+    // Notification pour l'expéditeur — hors batch (best-effort) : après le
+    // commit, la relation d'amitié existe, la règle notifications l'autorise.
+    await addDoc(collection(db, 'notifications'), {
+      userId: fromUserId,
+      fromUserId: currentUserId,
+      title: 'Demande acceptée',
+      message: `${currentUserData.displayName} a accepté ta demande d'ami`,
+      type: 'friend_activity',
+      read: false,
+      createdAt: serverTimestamp(),
+    }).catch((e) => logger.warn('Notification d\'acceptation non envoyée', { error: e }));
   } catch (error) {
     logger.error('Erreur lors de l\'acceptation de la demande:', error);
     throw error;
@@ -890,17 +978,50 @@ export async function removeFriend(currentUserId: string, friendId: string): Pro
     }
 
     // 2. Retirer currentUserId de la liste de friendId
+    // (écriture croisée : les règles n'autorisent que le champ friends,
+    // et uniquement pour se retirer soi-même)
     const friendRef = doc(db, 'users', friendId);
     const friendSnap = await getDoc(friendRef);
     if (friendSnap.exists()) {
       const friendFriends = friendSnap.data().friends || [];
-      batch.update(friendRef, {
-        friends: friendFriends.filter((id: string) => id !== currentUserId),
-        updatedAt: serverTimestamp(),
-      });
+      if (friendFriends.includes(currentUserId)) {
+        batch.update(friendRef, {
+          friends: friendFriends.filter((id: string) => id !== currentUserId),
+        });
+      }
     }
 
+    // 3. Supprimer les demandes d'ami entre les deux (sinon l'ex-ami
+    // pourrait se ré-ajouter via la demande « accepted » restante)
+    const reqAB = doc(db, 'friend_requests', `${currentUserId}_${friendId}`);
+    const reqBA = doc(db, 'friend_requests', `${friendId}_${currentUserId}`);
+    const [snapAB, snapBA] = await Promise.all([
+      getDoc(reqAB).catch(() => null),
+      getDoc(reqBA).catch(() => null),
+    ]);
+    if (snapAB?.exists()) batch.delete(reqAB);
+    if (snapBA?.exists()) batch.delete(reqBA);
+
     await batch.commit();
+
+    // Demandes à ancien format (ID auto) : nettoyage best-effort
+    try {
+      const [sentSnap, receivedSnap] = await Promise.all([
+        getDocs(query(collection(db, 'friend_requests'),
+          where('fromUserId', '==', currentUserId), where('toUserId', '==', friendId))),
+        getDocs(query(collection(db, 'friend_requests'),
+          where('fromUserId', '==', friendId), where('toUserId', '==', currentUserId))),
+      ]);
+      const cleanup = writeBatch(db);
+      let count = 0;
+      [...sentSnap.docs, ...receivedSnap.docs].forEach((d) => {
+        if (d.id !== reqAB.id && d.id !== reqBA.id) {
+          cleanup.delete(d.ref);
+          count++;
+        }
+      });
+      if (count > 0) await cleanup.commit();
+    } catch { /* best-effort */ }
   } catch (error) {
     logger.error('Erreur lors de la suppression de l\'ami:', error);
     throw error;

@@ -2,108 +2,200 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Helper Functions ---
+    // ─── Helpers ────────────────────────────────────────────────────────────
 
-    // Vérifie si l'utilisateur est connecté
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Vérifie si l'utilisateur connecté est le propriétaire de la donnée
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // --- Collection Rules ---
+    // Une demande d'ami (ID déterministe `${from}_${to}`) au statut donné
+    // existe-t-elle entre a et b, dans un sens ou l'autre ?
+    // NB : les get()/exists() d'un batch voient l'état AVANT le batch.
+    function requestBetween(a, b, statuses) {
+      return (exists(/databases/$(database)/documents/friend_requests/$(a + '_' + b))
+                && get(/databases/$(database)/documents/friend_requests/$(a + '_' + b)).data.status in statuses)
+          || (exists(/databases/$(database)/documents/friend_requests/$(b + '_' + a))
+                && get(/databases/$(database)/documents/friend_requests/$(b + '_' + a)).data.status in statuses);
+    }
 
-    // Users: Lecture publique (authentifiée), modification propriétaire uniquement
+    // ─── users ──────────────────────────────────────────────────────────────
+    // Le doc public ne doit contenir AUCUNE donnée sensible : les champs
+    // privés (email, fcmToken, poids, taille, date de naissance, genre)
+    // vivent dans users/{uid}/private/* (owner-only).
+
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
+
+      allow create: if isOwner(userId)
+        && validUserDoc(request.resource.data)
+        && request.resource.data.friends == [];
+
+      // Propriétaire : tout le doc (validé).
+      // Autre partie d'une demande acceptée : UNIQUEMENT le champ friends,
+      // pour s'ajouter ou se retirer lui-même (acceptation / suppression d'ami).
+      allow update: if (isOwner(userId) && validUserDoc(request.resource.data))
+                    || friendLinkUpdate(userId);
+
       allow delete: if isOwner(userId);
+
+      function validUserDoc(d) {
+        return d.displayName is string && d.displayName.size() >= 1 && d.displayName.size() <= 50
+          && d.totalReps is number && d.totalReps >= 0
+          && d.totalSessions is number && d.totalSessions >= 0
+          && d.badges is list && d.badges.size() <= 300
+          && d.friends is list && d.friends.size() <= 500
+          && (!('searchName' in d) || (d.searchName is string && d.searchName.size() <= 50))
+          && (!('firstName' in d) || (d.firstName is string && d.firstName.size() <= 50))
+          && (!('lastName' in d) || (d.lastName is string && d.lastName.size() <= 50))
+          && (!('avatarEmoji' in d) || (d.avatarEmoji is string && d.avatarEmoji.size() <= 16))
+          && (!('emailHash' in d) || (d.emailHash is string && d.emailHash.size() == 64))
+          // Interdits dans le doc public (ils vont dans private/*)
+          && !('email' in d) && !('fcmToken' in d)
+          && !('weight' in d) && !('height' in d)
+          && !('birthDate' in d) && !('gender' in d);
+      }
+
+      function friendLinkUpdate(userId) {
+        let added = request.resource.data.friends.toSet().difference(resource.data.friends.toSet());
+        let removed = resource.data.friends.toSet().difference(request.resource.data.friends.toSet());
+        return isAuthenticated()
+          && request.auth.uid != userId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends'])
+          // il s'ajoute lui-même (acceptation) ou se retire lui-même (suppression)
+          && (
+            (added == [request.auth.uid].toSet() && removed.size() == 0
+              && requestBetween(request.auth.uid, userId, ['accepted']))
+            || (removed == [request.auth.uid].toSet() && added.size() == 0)
+          );
+      }
+
+      // Données privées du compte : token FCM, email, mensurations…
+      match /private/{docId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      // User Events (badges, feed) — écrits par le propriétaire,
+      // lisibles par les authentifiés (feed social, voir collection group).
+      match /userEvents/{eventId} {
+        allow read: if isAuthenticated();
+        allow write: if isOwner(userId);
+      }
     }
 
-    // User Events (Badges, etc.)
-    match /users/{userId}/userEvents/{eventId} {
-      allow read, write: if isOwner(userId);
-    }
-
-    // User Challenges
+    // ─── user_challenges ─────────────────────────────────────────────────────
     match /user_challenges/{challengeId} {
-      // Lecture : Propriétaire uniquement
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      // Écriture : Création par soi-même, modif par soi-même
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.exerciseId is string
+        && request.resource.data.exerciseId.size() <= 80
+        && request.resource.data.history is list;
       allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
-    // Friend Requests
+    // ─── friend_requests ─────────────────────────────────────────────────────
+    // ID déterministe obligatoire : `${fromUserId}_${toUserId}`.
+    // Empêche les doublons et permet les get() ciblés dans les règles.
     match /friend_requests/{requestId} {
-      // Lecture : Expéditeur ou Destinataire
-      allow read: if isAuthenticated() && (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
-      // Création : Seulement si on est l'expéditeur
-      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.fromUserId;
-      // Mise à jour (Accepter/Refuser) : Concernés uniquement
-      allow update: if isAuthenticated() && (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
+      allow read: if isAuthenticated()
+        && (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
+
+      allow create: if isAuthenticated()
+        && request.resource.data.fromUserId == request.auth.uid
+        && request.resource.data.toUserId is string
+        && request.resource.data.toUserId != request.auth.uid
+        && requestId == request.auth.uid + '_' + request.resource.data.toUserId
+        && request.resource.data.status == 'pending'
+        && request.resource.data.fromDisplayName is string
+        && request.resource.data.fromDisplayName.size() <= 50;
+
+      // Seul le DESTINATAIRE répond, et uniquement sur le champ status.
+      allow update: if isAuthenticated()
+        && request.auth.uid == resource.data.toUserId
+        && resource.data.status == 'pending'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['accepted', 'rejected'];
+
+      // Annulation (expéditeur), nettoyage ou suppression de compte (les deux).
+      allow delete: if isAuthenticated()
+        && (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
     }
 
-    // Sessions (Sous-collection)
-    // Lecture publique (authentifiée) pour le feed social
-    // Écriture propriétaire uniquement
+    // ─── sessions (renforcement) ────────────────────────────────────────────
+    // Lecture authentifiée : assumé pour le feed social entre amis
+    // (contenu : reps/durée/exercices — pas de PII).
     match /sessions/{userId}/userSessions/{sessionId} {
       allow read: if isAuthenticated();
       allow write: if isOwner(userId);
     }
 
-    // Collection Group Queries pour les sessions (nécessaire pour le feed "tous les amis")
     match /{path=**}/userSessions/{sessionId} {
       allow read: if isAuthenticated();
     }
 
-    // Collection Group Queries pour les événements
     match /{path=**}/userEvents/{eventId} {
       allow read: if isAuthenticated();
     }
 
-    // Exercices par défaut — images depuis Wger (lecture seule pour tous les users connectés)
+    // ─── gym_sessions (musculation) ─────────────────────────────────────────
+    match /gym_sessions/{userId}/userGymSessions/{sessionId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ─── userTemplates ──────────────────────────────────────────────────────
+    match /userTemplates/{userId}/templates/{templateId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ─── exercises (personnalisés) ──────────────────────────────────────────
+    match /exercises/{exerciseId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() <= 80;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // ─── default_exercises (héritage, lecture seule) ────────────────────────
     match /default_exercises/{exerciseId} {
       allow read: if isAuthenticated();
       allow write: if false;
     }
 
-    // Gym Sessions (Musculation)
-    match /gym_sessions/{userId}/userGymSessions/{sessionId} {
-      allow read, write: if isOwner(userId);
-    }
-
-    // User Templates
-    match /userTemplates/{userId}/templates/{templateId} {
-      allow read, write: if isOwner(userId);
-    }
-
-    // Exercises (Personnalisés)
-    match /exercises/{exerciseId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
-    }
-
-    // Notifications
+    // ─── notifications ──────────────────────────────────────────────────────
+    // Création : en son propre nom, vers soi, vers un ami, ou vers l'autre
+    // partie d'une demande d'ami (pending suffit : la notif d'acceptation
+    // part dans le même batch que le passage à accepted).
     match /notifications/{notificationId} {
       allow read: if isOwner(resource.data.userId);
-      // Création limitée à l'envoyeur ou au destinataire (pas de spam tiers)
-      allow create: if isAuthenticated() &&
-        (request.auth.uid == request.resource.data.userId ||
-         request.auth.uid == request.resource.data.fromUserId);
-      allow update: if isOwner(resource.data.userId);
+
+      allow create: if isAuthenticated()
+        && request.resource.data.fromUserId == request.auth.uid
+        && request.resource.data.userId is string
+        && request.resource.data.title is string && request.resource.data.title.size() <= 100
+        && request.resource.data.message is string && request.resource.data.message.size() <= 300
+        && request.resource.data.type is string && request.resource.data.type.size() <= 40
+        && request.resource.data.read == false
+        && (
+          request.resource.data.userId == request.auth.uid
+          || get(/databases/$(database)/documents/users/$(request.resource.data.userId)).data.friends.hasAny([request.auth.uid])
+          || requestBetween(request.auth.uid, request.resource.data.userId, ['pending', 'accepted'])
+        );
+
+      allow update: if isOwner(resource.data.userId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow delete: if isOwner(resource.data.userId);
     }
 
-    // Phrases motivantes (Publiques)
+    // ─── phrases (contenu public en lecture) ────────────────────────────────
     match /phrases/{phraseId} {
       allow read: if true;
-      allow write: if false; // Admin seulement
+      allow write: if false;
     }
   }
 }
-

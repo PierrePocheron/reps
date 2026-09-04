@@ -1,5 +1,5 @@
 import { getToken, onMessage } from 'firebase/messaging';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { messaging, db } from './config';
 import { logger } from '@/utils/logger';
 
@@ -70,16 +70,17 @@ export async function requestFCMToken(): Promise<string | null> {
 }
 
 /**
- * Sauvegarde le token FCM dans le document utilisateur Firestore.
- * Stocke aussi l'heure de rappel souhaitée.
+ * Sauvegarde le token FCM dans la sous-collection PRIVÉE de l'utilisateur
+ * (users/{uid}/private/notifications, owner-only) : un token push ne doit
+ * jamais être lisible par les autres comptes.
  */
 export async function saveFCMToken(userId: string, token: string, reminderTime: string): Promise<void> {
   try {
-    await updateDoc(doc(db, 'users', userId), {
+    await setDoc(doc(db, 'users', userId, 'private', 'notifications'), {
       fcmToken: token,
       notificationTime: reminderTime,
       notificationsEnabled: true,
-    });
+    }, { merge: true });
   } catch (err) {
     logger.error('Erreur sauvegarde token FCM:', err as Error);
     throw err;
@@ -91,9 +92,9 @@ export async function saveFCMToken(userId: string, token: string, reminderTime: 
  */
 export async function disableFCMNotifications(userId: string): Promise<void> {
   try {
-    await updateDoc(doc(db, 'users', userId), {
+    await setDoc(doc(db, 'users', userId, 'private', 'notifications'), {
       notificationsEnabled: false,
-    });
+    }, { merge: true });
   } catch (err) {
     logger.error('Erreur désactivation notifications FCM:', err as Error);
   }

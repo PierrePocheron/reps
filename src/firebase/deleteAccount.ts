@@ -22,6 +22,16 @@ async function deleteUserFirestoreData(userId: string): Promise<void> {
   const eventsSnap = await getDocs(collection(db, 'users', userId, 'userEvents'));
   eventsSnap.forEach((d) => batch.delete(d.ref));
 
+  // Sous-collection privée (email, mensurations, token FCM…)
+  const privateSnap = await getDocs(collection(db, 'users', userId, 'private'));
+  privateSnap.forEach((d) => batch.delete(d.ref));
+
+  // Notifications reçues
+  const notifSnap = await getDocs(
+    query(collection(db, 'notifications'), where('userId', '==', userId))
+  );
+  notifSnap.forEach((d) => batch.delete(d.ref));
+
   // ── Séances renforcement ───────────────────────────────────────────────────
   const sessionsSnap = await getDocs(collection(db, 'sessions', userId, 'userSessions'));
   sessionsSnap.forEach((d) => batch.delete(d.ref));

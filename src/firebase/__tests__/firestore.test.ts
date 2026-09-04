@@ -35,7 +35,7 @@ import {
   getRandomMotivationalPhrase,
 } from '../firestore';
 
-vi.mock('../config', () => ({ db: {} }));
+vi.mock('../config', () => ({ db: {}, auth: { currentUser: null } }));
 
 const mockUserData = {
   displayName: 'testuser',
@@ -71,9 +71,15 @@ beforeEach(() => {
 // ==================== USERS ====================
 
 describe('createUserDocument', () => {
-  it('should call setDoc with user data', async () => {
-    await createUserDocument('uid123', { displayName: 'Pierre', email: 'pierre@test.com' });
-    expect(setDoc).toHaveBeenCalledTimes(1);
+  it('should write public doc and private profile (email split)', async () => {
+    await createUserDocument('uid123', { displayName: 'Pierre', email: 'user@test.com' });
+    // 1 setDoc public + 1 setDoc users/{uid}/private/profile
+    expect(setDoc).toHaveBeenCalledTimes(2);
+    const publicCall = vi.mocked(setDoc).mock.calls[0]!;
+    expect(publicCall[1]).not.toHaveProperty('email');
+    expect(publicCall[1]).toHaveProperty('emailHash');
+    const privateCall = vi.mocked(setDoc).mock.calls[1]!;
+    expect(privateCall[1]).toMatchObject({ email: 'user@test.com' });
   });
 
   it('should use default displayName if not provided', async () => {
@@ -153,7 +159,15 @@ describe('updateUserDocument', () => {
 
   it('should throw on error', async () => {
     vi.mocked(updateDoc).mockRejectedValueOnce(new Error('Update failed'));
-    await expect(updateUserDocument('uid123', {})).rejects.toThrow('Update failed');
+    await expect(updateUserDocument('uid123', { displayName: 'x' })).rejects.toThrow('Update failed');
+  });
+
+  it('should route private fields to users/{uid}/private/profile', async () => {
+    await updateUserDocument('uid123', { weight: 72, displayName: 'Pierre' });
+    expect(setDoc).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(setDoc).mock.calls[0]![1]).toMatchObject({ weight: 72 });
+    expect(updateDoc).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(updateDoc).mock.calls[0]![1]).not.toHaveProperty('weight');
   });
 });
 

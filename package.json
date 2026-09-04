@@ -17,7 +17,8 @@
     "cap:add:android": "cap add android",
     "cap:open:ios": "cap open ios",
     "cap:open:android": "cap open android",
-    "deploy": "yarn build && firebase deploy"
+    "deploy": "yarn build && firebase deploy",
+    "test:rules": "firebase emulators:exec --only firestore \"node scripts/test-firestore-rules.mjs\""
   },
   "dependencies": {
     "@capacitor-community/admob": "8",
@@ -52,6 +53,7 @@
     "@capacitor/core": "8",
     "@capacitor/haptics": "8",
     "@capacitor/status-bar": "8",
+    "@firebase/rules-unit-testing": "^5.0.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",

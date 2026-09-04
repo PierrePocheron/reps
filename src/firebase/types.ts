@@ -12,7 +12,10 @@ export interface User {
   lastName?: string;
   searchName?: string; // Lowercase display name for search
   avatarEmoji?: string;
-  email: string;
+  /** Uniquement pour son propre profil (fusionné depuis users/{uid}/private/profile) */
+  email?: string;
+  /** SHA-256 de l'email normalisé — sert à la recherche par email sans exposer l'email */
+  emailHash?: string;
   birthDate?: string; // YYYY-MM-DD
   height?: number; // en cm
   weight?: number; // en kg

@@ -441,7 +441,7 @@ export default function Friends() {
                             ) : friendRequests.some(req => req.fromUserId === result.uid) ? (
                               <p className="text-xs text-blue-600 dark:text-blue-400">Demande reçue</p>
                             ) : (
-                              <p className="text-xs text-muted-foreground truncate">{result.email}</p>
+                              <p className="text-xs text-muted-foreground truncate">Envoie-lui une demande d'ami</p>
                             )}
                           </div>
                         </div>
