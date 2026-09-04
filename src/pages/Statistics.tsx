@@ -20,6 +20,7 @@ function toDateKey(date: Date): string {
 // ─── Activity Heatmap ─────────────────────────────────────────────────────────
 
 function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymSessions: GymSession[] }) {
+  const [selectedDay, setSelectedDay] = useState<{ date: Date; count: number } | null>(null);
   const activityMap = new Map<string, number>();
 
   for (const s of sessions) {
@@ -49,7 +50,21 @@ function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymS
   const weeks: { date: Date; count: number }[][] = [];
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
 
+  // Libellé de mois au-dessus d'une colonne quand le mois change
+  const monthLabels = weeks.map((week, wi) => {
+    const month = week[0]!.date.getMonth();
+    const prev = wi > 0 ? weeks[wi - 1]![0]!.date.getMonth() : null;
+    return month !== prev ? week[0]!.date.toLocaleDateString('fr-FR', { month: 'short' }) : null;
+  });
+
+  const DAY_LABELS = ['Lun', '', 'Mer', '', 'Ven', '', 'Dim'];
   const activeDays = cells.filter((c) => c.count > 0).length;
+
+  const cellColor = (count: number, isSelected: boolean) => {
+    if (count === 0) return isSelected ? 'bg-muted-foreground/40' : 'bg-muted';
+    if (count === 1) return isSelected ? 'bg-primary' : 'bg-primary/50';
+    return isSelected ? 'bg-primary ring-1 ring-foreground/40' : 'bg-primary';
+  };
 
   return (
     <motion.div
@@ -62,41 +77,70 @@ function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymS
         Activité (90 jours)
       </h3>
       <p className="text-xs text-muted-foreground mb-4">
-        {activeDays} jour{activeDays !== 1 ? 's' : ''} d'entraînement
+        {activeDays} jour{activeDays !== 1 ? 's' : ''} d'entraînement — chaque case est un jour, touche-la pour le détail
       </p>
 
       <div className="overflow-x-auto pb-1">
-        <div
-          className="flex gap-[3px]"
-          role="img"
-          aria-label={`Activité des 90 derniers jours : ${activeDays} jours d'entraînement`}
-        >
+        <div className="inline-flex gap-[3px]" onMouseLeave={() => setSelectedDay(null)}>
+          {/* Libellés des jours (lignes) */}
+          <div className="flex flex-col gap-[3px] pr-1">
+            <div className="h-[14px]" />
+            {DAY_LABELS.map((label, i) => (
+              <div key={i} className="h-3 flex items-center">
+                <span className="text-[9px] leading-none text-muted-foreground w-6">{label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Colonnes = semaines, avec le mois quand il change */}
           {weeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-[3px]" aria-hidden="true">
-              {week.map((cell, di) => (
-                <div
-                  key={di}
-                  title={`${cell.date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}: ${cell.count > 0 ? `${cell.count} séance(s)` : 'repos'}`}
-                  className={`w-3 h-3 rounded-sm transition-colors ${
-                    cell.count === 0
-                      ? 'bg-muted'
-                      : cell.count === 1
-                        ? 'bg-primary/50'
-                        : 'bg-primary'
-                  }`}
-                />
-              ))}
+            <div key={wi} className="flex flex-col gap-[3px]">
+              <div className="relative h-[14px] w-3">
+                {monthLabels[wi] && (
+                  <span className="absolute left-0 top-0 text-[9px] leading-none text-muted-foreground whitespace-nowrap first-letter:uppercase">
+                    {monthLabels[wi]}
+                  </span>
+                )}
+              </div>
+              {week.map((cell, di) => {
+                const isSelected = selectedDay?.date.getTime() === cell.date.getTime();
+                const dateLabel = cell.date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+                return (
+                  <button
+                    key={di}
+                    type="button"
+                    aria-label={`${dateLabel} : ${cell.count > 0 ? `${cell.count} séance${cell.count > 1 ? 's' : ''}` : 'repos'}`}
+                    onMouseEnter={() => setSelectedDay(cell)}
+                    onFocus={() => setSelectedDay(cell)}
+                    onClick={() => setSelectedDay((cur) => (cur?.date.getTime() === cell.date.getTime() ? null : cell))}
+                    className={`w-3 h-3 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${cellColor(cell.count, isSelected)}`}
+                  />
+                );
+              })}
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5 mt-3 text-xs text-muted-foreground">
-        <span>Moins</span>
-        <div className="w-3 h-3 rounded-sm bg-muted" />
-        <div className="w-3 h-3 rounded-sm bg-primary/50" />
-        <div className="w-3 h-3 rounded-sm bg-primary" />
-        <span>Plus</span>
+      {/* Détail du jour sélectionné (emplacement réservé, pas de saut de mise en page) */}
+      <p className="mt-2 min-h-4 text-xs text-muted-foreground" aria-live="polite">
+        {selectedDay && (
+          <>
+            <span className="font-medium text-foreground first-letter:uppercase inline-block">
+              {selectedDay.date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </span>
+            {' — '}
+            {selectedDay.count > 0
+              ? `${selectedDay.count} séance${selectedDay.count > 1 ? 's' : ''}`
+              : 'repos'}
+          </>
+        )}
+      </p>
+
+      <div className="flex items-center gap-2 mt-2 text-[10px] text-muted-foreground">
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-muted" /> 0 séance</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-primary/50" /> 1 séance</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-primary" /> 2 et +</span>
       </div>
     </motion.div>
   );
