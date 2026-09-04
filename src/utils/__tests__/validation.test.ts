@@ -22,19 +22,19 @@ describe('Validation Utils', () => {
         });
 
         it('should fail if no letter', () => {
-             const result = validatePassword('123456');
+             const result = validatePassword('12345678');
              expect(result.isValid).toBe(false);
              expect(result.message).toContain('une lettre');
         });
 
         it('should fail if no number', () => {
-             const result = validatePassword('abcdef');
+             const result = validatePassword('abcdefgh');
              expect(result.isValid).toBe(false);
              expect(result.message).toContain('un chiffre');
         });
 
         it('should pass if valid', () => {
-             const result = validatePassword('abc1234');
+             const result = validatePassword('abcd1234');
              expect(result.isValid).toBe(true);
         });
     });

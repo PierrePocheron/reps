@@ -17,6 +17,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
     environment: import.meta.env.MODE,
+    sendDefaultPii: false,
 
     // Intégrations
     integrations: [
@@ -28,8 +29,10 @@ if (import.meta.env.VITE_SENTRY_DSN) {
         matchRoutes,
       }),
       Sentry.replayIntegration({
-        maskAllText: false,
-        blockAllMedia: false,
+        // Confidentialité : le replay ne doit jamais capturer le contenu
+        // (emails, poids, amis) — cf. politique de confidentialité
+        maskAllText: true,
+        blockAllMedia: true,
       }),
     ],
 

@@ -42,17 +42,20 @@ function Profil() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { toast } = useToast();
-  const { user, stats, isLoading, deleteAccount } = useUserStore();
+  const { user, stats, isLoading, deleteAccount, currentUser } = useUserStore();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const isPasswordAccount = currentUser?.providerData.some((p) => p.providerId === 'password') ?? false;
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'SUPPRIMER') return;
+    if (isPasswordAccount && !deletePassword) return;
     setIsDeleting(true);
     try {
-      await deleteAccount();
+      await deleteAccount(isPasswordAccount ? deletePassword : undefined);
       navigate('/login');
     } catch {
       toast({
@@ -259,7 +262,7 @@ function Profil() {
         {/* Suppression du compte */}
         <Dialog open={showDeleteDialog} onOpenChange={(open) => {
           setShowDeleteDialog(open);
-          if (!open) setDeleteConfirmText('');
+          if (!open) { setDeleteConfirmText(''); setDeletePassword(''); }
         }}>
           <DialogTrigger asChild>
             <Button variant="ghost" className="w-full text-destructive hover:text-destructive hover:bg-destructive/10" size="sm">
@@ -292,6 +295,17 @@ function Profil() {
                 aria-label="Tape SUPPRIMER pour confirmer"
                 className="border-destructive/40 focus-visible:ring-destructive"
               />
+              {isPasswordAccount && (
+                <Input
+                  type="password"
+                  placeholder="Ton mot de passe"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  autoComplete="current-password"
+                  aria-label="Mot de passe requis pour supprimer le compte"
+                  className="border-destructive/40 focus-visible:ring-destructive"
+                />
+              )}
               <div className="flex gap-3">
                 <Button
                   variant="outline"
@@ -304,7 +318,7 @@ function Profil() {
                 <Button
                   variant="destructive"
                   className="flex-1"
-                  disabled={deleteConfirmText !== 'SUPPRIMER' || isDeleting}
+                  disabled={deleteConfirmText !== 'SUPPRIMER' || (isPasswordAccount && !deletePassword) || isDeleting}
                   onClick={handleDeleteAccount}
                 >
                   {isDeleting ? <LoadingSpinner size="sm" /> : 'Supprimer définitivement'}

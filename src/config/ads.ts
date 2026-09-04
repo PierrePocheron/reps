@@ -1,6 +1,8 @@
 export const ADS_CONFIG = {
-  // Master toggle pour activer/désactiver les publicités globalement
-  ENABLED: true,
+  // Master toggle pour activer/désactiver les publicités globalement.
+  // ⚠️ Ne pas réactiver sans CMP certifiée TCF (bannière de consentement) :
+  // Google l'exige en Europe et l'app n'en a pas.
+  ENABLED: false,
   // Toggle spécifique mobile (pour validation stores)
   ENABLED_MOBILE: false,
 

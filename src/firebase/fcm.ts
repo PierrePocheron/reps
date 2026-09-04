@@ -1,5 +1,5 @@
 import { getToken, onMessage } from 'firebase/messaging';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, deleteField } from 'firebase/firestore';
 import { messaging, db } from './config';
 import { logger } from '@/utils/logger';
 
@@ -94,6 +94,7 @@ export async function disableFCMNotifications(userId: string): Promise<void> {
   try {
     await setDoc(doc(db, 'users', userId, 'private', 'notifications'), {
       notificationsEnabled: false,
+      fcmToken: deleteField(),
     }, { merge: true });
   } catch (err) {
     logger.error('Erreur désactivation notifications FCM:', err as Error);

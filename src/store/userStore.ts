@@ -34,7 +34,7 @@ interface UserState {
   updateThemeColor: (color: ThemeColor) => Promise<void>;
   refreshStats: () => Promise<void>;
   markBadgesAsSeen: () => Promise<void>;
-  deleteAccount: () => Promise<void>;
+  deleteAccount: (password?: string) => Promise<void>;
   reset: () => void;
 }
 
@@ -253,10 +253,10 @@ export const useUserStore = create<UserState>((set, get) => ({
   /**
    * Supprime définitivement le compte et toutes les données
    */
-  deleteAccount: async () => {
+  deleteAccount: async (password?: string) => {
     const { user } = get();
     if (!user) throw new Error('Aucun utilisateur connecté');
-    await deleteUserAccount(user.uid);
+    await deleteUserAccount(user.uid, password);
     get().reset();
   },
 

@@ -3,7 +3,7 @@
  * Règle actuelle : Minimum 6 caractères
  * (C'est la règle par défaut de Firebase)
  */
-export const PASSWORD_MIN_LENGTH = 6;
+export const PASSWORD_MIN_LENGTH = 8;
 
 export interface ValidationResult {
   isValid: boolean;

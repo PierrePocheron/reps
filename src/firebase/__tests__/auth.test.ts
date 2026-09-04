@@ -21,6 +21,7 @@ vi.mock('firebase/auth', () => {
   return {
     signInWithEmailAndPassword: vi.fn(),
     createUserWithEmailAndPassword: vi.fn(),
+  sendEmailVerification: vi.fn().mockResolvedValue(undefined),
     sendPasswordResetEmail: vi.fn(),
     signInWithPopup: vi.fn(),
     signInWithCredential: vi.fn(),

@@ -101,11 +101,14 @@ export const messaging: Messaging | null = (() => {
 // Initialisation de App Check
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 
-// TODO: Remplacer par la clé de site ReCAPTCHA v3 depuis la console Firebase
-// Pour le développement local, on peut utiliser le token de debug
-const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'; // Clé de test/placeholder
+// Clé ReCAPTCHA v3 : obligatoire via l'environnement — jamais de fallback
+// sur la clé de test publique de Google (App Check serait décoratif).
+// NB : sur l'app native (WebView), ReCAPTCHA v3 n'est pas fiable ; ne pas
+// activer l'enforcement App Check côté console tant qu'un provider
+// Play Integrity n'est pas en place pour Android.
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && RECAPTCHA_SITE_KEY && !Capacitor.isNativePlatform()) {
   try {
     initializeAppCheck(app, {
       provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),
@@ -114,6 +117,8 @@ if (typeof window !== 'undefined') {
   } catch (err) {
     logger.warn('Erreur lors de l\'initialisation de App Check', { error: err });
   }
+} else if (!RECAPTCHA_SITE_KEY) {
+  logger.warn('VITE_RECAPTCHA_SITE_KEY absente : App Check non initialisé');
 }
 
 export default app;

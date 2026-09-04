@@ -1,6 +1,7 @@
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendEmailVerification,
   sendPasswordResetEmail as firebaseSendPasswordResetEmail,
   signInWithPopup,
   GoogleAuthProvider,
@@ -68,6 +69,11 @@ export async function signUpWithEmail(
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
+
+    // Email de vérification (best-effort : ne bloque pas l'inscription)
+    sendEmailVerification(user).catch((e) =>
+      logger.warn('Email de vérification non envoyé', { error: e })
+    );
     const normalizedFirstName = firstName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
     const normalizedLastName = lastName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
     let displayName = `${normalizedFirstName}${normalizedLastName}`;
