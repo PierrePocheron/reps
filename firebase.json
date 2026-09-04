@@ -42,7 +42,7 @@
           },
           {
             "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self' https://www.google.com https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://cdn.jsdelivr.net https://*.googleusercontent.com; connect-src 'self' https://*.googleapis.com wss://*.firebaseio.com https://*.firebaseio.com https://www.google.com https://*.sentry.io https://cdn.jsdelivr.net; frame-src https://pedro-reps.firebaseapp.com https://accounts.google.com https://www.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+            "value": "default-src 'self'; script-src 'self' https://www.google.com https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://cdn.jsdelivr.net https://*.googleusercontent.com; connect-src 'self' https://*.googleapis.com wss://*.firebaseio.com https://*.firebaseio.com https://www.google.com https://*.sentry.io https://cdn.jsdelivr.net; frame-src https://pedro-reps.firebaseapp.com https://accounts.google.com https://www.google.com; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
           }
         ]
       },
