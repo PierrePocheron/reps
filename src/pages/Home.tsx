@@ -155,6 +155,28 @@ function Home() {
             )}
         </div>
 
+        {/* CTA nouvelle séance */}
+        {!hasActiveSession && (
+          <div className="relative overflow-hidden rounded-2xl p-6 border border-primary/20 bg-primary/5 shadow-sm">
+            <div className="absolute top-0 right-0 -mt-20 -mr-20 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
+            <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
+            <div className="relative z-10 space-y-4">
+              <div>
+                <h2 className="text-2xl font-bold text-foreground font-heading">Prêt à t'entraîner ?</h2>
+                <p className="text-muted-foreground">Chaque rep compte.</p>
+              </div>
+              <Button
+                onClick={() => setShowPicker(true)}
+                size="lg"
+                className="w-full font-semibold shadow-sm h-12 text-lg"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Nouvelle séance
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Section Challenge */}
         <div>
             {activeChallenges.length > 0 ? (
@@ -213,30 +235,6 @@ function Home() {
                 <ChallengeCard userId={user?.uid || ''} />
             )}
         </div>
-
-        {/* CTA nouvelle séance */}
-        {!hasActiveSession && (
-          <div className="relative overflow-hidden rounded-2xl p-6 border border-primary/20 bg-primary/5 shadow-sm">
-            <div className="absolute top-0 right-0 -mt-20 -mr-20 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
-            <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-40 w-40 rounded-full bg-primary/10 blur-3xl" />
-            <div className="relative z-10 space-y-4">
-              <div>
-                <h2 className="text-2xl font-bold text-foreground font-heading">Prêt à t'entraîner ?</h2>
-                <p className="text-muted-foreground">Chaque rep compte.</p>
-              </div>
-              <Button
-                onClick={() => setShowPicker(true)}
-                size="lg"
-                className="w-full font-semibold shadow-sm h-12 text-lg"
-              >
-                <Plus className="mr-2 h-5 w-5" />
-                Nouvelle séance
-              </Button>
-            </div>
-          </div>
-        )}
-
-
 
         {/* Last Session Card */}
         {lastSessionDetail && (
