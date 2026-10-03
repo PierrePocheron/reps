@@ -131,6 +131,17 @@ const def = { id: 'c_pushups_medium', exerciseId: 'pushups', title: 'Pompes Inte
 const history = Array.from({ length: 6 }, (_, i) => ({ date: new Date(now - (6 - i) * DAY).toISOString().slice(0, 10), amount: 15 + 2 * i, completed: true }));
 fr.set(db.doc('user_challenges/demo_pushups'), { id: 'demo_pushups', userId: 'demo', challengeId: def.id, definitionSnapshot: def, startDate: at(6, 8), lastLogDate: at(1, 19), totalProgress: 6, status: 'active', history });
 
+// Modèle perso de Léa (copiable par ses amis)
+fr.set(db.doc('userTemplates/lea/templates/lea_haut'), {
+  name: 'Haut du corps', emoji: '💪', description: 'Développé couché · Rowing · Développé militaire', workoutType: 'musculation', userId: 'lea',
+  muscuExercises: [
+    { exerciseId: 'bench_press', sets: [{ weight: 40, reps: 10 }, { weight: 40, reps: 10 }, { weight: 40, reps: 8 }] },
+    { exerciseId: 'barbell_row', sets: [{ weight: 35, reps: 10 }, { weight: 35, reps: 10 }, { weight: 35, reps: 10 }] },
+    { exerciseId: 'overhead_press', sets: [{ weight: 25, reps: 8 }, { weight: 25, reps: 8 }] },
+  ],
+  createdAt: Timestamp.now(),
+});
+
 // Événement de badge dans le fil d'activité
 fr.set(db.collection('users').doc('lea').collection('userEvents').doc(), { type: 'badge_unlocked', userId: 'lea', badgeName: 'Série de 7 jours', badgeEmoji: '🔥', createdAt: at(2, 18) });
 await fr.commit();

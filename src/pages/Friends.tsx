@@ -33,15 +33,17 @@ import {
 } from '@/firebase/firestore';
 import { UserAvatar } from '@/components/UserAvatar';
 import type { User, FriendRequest, Session } from '@/firebase/types';
-import { UserPlus, Search, Check, X, Users, Activity, Calendar, Award, MoreVertical, UserMinus, Flame } from 'lucide-react';
+import { UserPlus, Search, Check, X, Users, Activity, Calendar, Award, MoreVertical, UserMinus, Flame, Copy } from 'lucide-react';
 import { logger } from '@/utils/logger';
 import { KudosButton } from '@/components/Kudos';
+import { FriendTemplatesDialog } from '@/components/FriendTemplatesDialog';
 
 export default function Friends() {
   const { user, friendRequests } = useUserStore();
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState('activity');
+  const [templatesOf, setTemplatesOf] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -550,6 +552,10 @@ export default function Friends() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem className="cursor-pointer" onClick={() => setTemplatesOf(friend)}>
+                              <Copy className="mr-2 h-4 w-4" />
+                              Voir ses modèles
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                               className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-100/10"
                               onClick={() => setFriendToRemove(friend)}
@@ -599,6 +605,7 @@ export default function Friends() {
           </div>
         </DialogContent>
       </Dialog>
+      <FriendTemplatesDialog friend={templatesOf} onClose={() => setTemplatesOf(null)} />
     </PageLayout>
   );
 }

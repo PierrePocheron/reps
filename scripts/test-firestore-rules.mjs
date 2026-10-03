@@ -153,6 +153,13 @@ await test('on retire seulement sa propre réaction', async () => {
   await assertSucceeds(deleteDoc(kudo(alice, 'alice')));
 });
 
+console.log('\n─ Modèles des amis ─');
+// (bob a toujours alice en ami ; alice ne l'a plus depuis le test de suppression)
+await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'userTemplates/bob/templates/t1'), { name: 'Push', workoutType: 'musculation' }));
+await test('un ami lit les modèles pour les copier', () => assertSucceeds(getDoc(doc(alice, 'userTemplates/bob/templates/t1'))));
+await test('un inconnu ne lit pas les modèles', () => assertFails(getDoc(doc(mallory, 'userTemplates/bob/templates/t1'))));
+await test('un ami ne modifie pas les modèles d\'autrui', () => assertFails(setDoc(doc(alice, 'userTemplates/bob/templates/t1'), { name: 'pwn' })));
+
 console.log('\n─ Divers ─');
 await test('phrases lisibles par tous', () => assertSucceeds(getDoc(doc(anon, 'phrases/p1'))));
 await test('phrases non modifiables', () => assertFails(setDoc(doc(mallory, 'phrases/p1'), { text: 'pwn' })));

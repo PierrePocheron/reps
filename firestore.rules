@@ -160,8 +160,11 @@ service cloud.firestore {
     }
 
     // ─── userTemplates ──────────────────────────────────────────────────────
+    // Modèles perso : lisibles par les amis pour les copier (Hevy), modifiables par le propriétaire seul
     match /userTemplates/{userId}/templates/{templateId} {
-      allow read, write: if isOwner(userId);
+      allow read: if isOwner(userId)
+        || (isAuthenticated() && get(/databases/$(database)/documents/users/$(userId)).data.friends.hasAny([request.auth.uid]));
+      allow write: if isOwner(userId);
     }
 
     // ─── exercises (personnalisés) ──────────────────────────────────────────
