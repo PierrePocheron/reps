@@ -35,3 +35,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | #2 | Records détectés et célébrés pendant la séance (1RM estimé, trophée sur la série, rappel en fin de séance) | `27a60b4` |
 | 2026-10-03 | #39 (passe UI/UX accueil) | Carte défi sans débordement ; « Dernière activité » couvre la muscu ; bug P0 trouvé : séance muscu non persistée (#40) | `09cbf9a` |
 | 2026-10-03 | #40 | La séance muscu en cours survit à la fermeture / au rechargement (persist Zustand + test) | `1ed034e` |
+| 2026-10-03 | #4 | Graphique de progression par exercice (1RM estimé, charge max, volume ; 3 mois / 1 an / tout) | `411794a` |
