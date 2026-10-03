@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { trainingStreaks, liveStreak } from '../streak';
+import { trainingStreaks, liveStreak, weeklyStreaks, liveWeeklyStreak } from '../streak';
 
 // Samedi 3 octobre 2026, midi
 const today = new Date(2026, 9, 3, 12);
@@ -60,5 +60,30 @@ describe('liveStreak', () => {
     expect(liveStreak(5, daysAgo(2), key(4), today)).toBe(0); // joker déjà pris mardi
     expect(liveStreak(5, daysAgo(2), key(10), today)).toBe(5); // joker d'une autre semaine
     expect(liveStreak(5, daysAgo(3), null, today)).toBe(0);
+  });
+});
+
+describe('weeklyStreaks', () => {
+  // semaines : 14 sept, 21 sept, 28 sept, 5 oct… (aujourd'hui = samedi 3 octobre, semaine du 28 sept)
+  const at = (y: number, m: number, d: number) => new Date(y, m, d, 18);
+  it('semaines consécutives avec l\'objectif atteint, semaine en cours comptée si atteinte', () => {
+    const dates = [at(2026, 8, 14), at(2026, 8, 16), at(2026, 8, 22), at(2026, 8, 24), at(2026, 8, 29), at(2026, 9, 1)];
+    expect(weeklyStreaks(dates, 2, today)).toMatchObject({ current: 3, longest: 3 });
+  });
+
+  it('semaine en cours pas encore atteinte : la série tient grâce à la semaine précédente', () => {
+    const dates = [at(2026, 8, 22), at(2026, 8, 24), at(2026, 8, 29)];
+    expect(weeklyStreaks(dates, 2, today)).toMatchObject({ current: 1, longest: 1 });
+  });
+
+  it('une semaine sous l\'objectif casse la série', () => {
+    const dates = [at(2026, 8, 7), at(2026, 8, 8), at(2026, 8, 15), at(2026, 8, 29), at(2026, 9, 1)];
+    expect(weeklyStreaks(dates, 2, today)).toMatchObject({ current: 1, longest: 1 });
+  });
+
+  it('liveWeeklyStreak : 0 si la dernière semaine réussie date d\'il y a plus d\'une semaine', () => {
+    const r = weeklyStreaks([at(2026, 8, 14), at(2026, 8, 15)], 2, new Date(2026, 8, 20));
+    expect(liveWeeklyStreak(r.current, r.lastMetWeek, new Date(2026, 8, 25))).toBe(1);
+    expect(liveWeeklyStreak(r.current, r.lastMetWeek, today)).toBe(0);
   });
 });

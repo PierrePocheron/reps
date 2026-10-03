@@ -509,7 +509,7 @@ function TrainingHabits({ sessions, gymSessions }: { sessions: Session[]; gymSes
 export default function Statistics() {
   const { user, stats } = useUserStore();
   const navigate = useNavigate();
-  const { weeklyGoal } = useSettingsStore();
+  const { weeklyGoal, streakMode } = useSettingsStore();
   const { sessions, gymSessions, loading: historyLoading } = useSessionHistory();
 
   // Séances de la semaine en cours (lundi → dimanche)
@@ -527,6 +527,10 @@ export default function Statistics() {
 
   if (!user) return null;
   const isEmpty = !historyLoading && sessions.length === 0 && gymSessions.length === 0;
+  const weeklyMode = streakMode === 'weekly';
+  const streakNow = stats ? (weeklyMode ? stats.weeklyStreak ?? 0 : stats.currentStreak) : 0;
+  const streakBest = stats ? (weeklyMode ? stats.longestWeeklyStreak ?? 0 : stats.longestStreak) : 0;
+  const streakUnit = (n: number) => (weeklyMode ? (n > 1 ? 'semaines' : 'semaine') : (n > 1 ? 'jours' : 'jour'));
 
   return (
     <PageLayout title="STATISTIQUES">
@@ -784,13 +788,15 @@ export default function Statistics() {
                     </div>
                      <span className="text-xs text-muted-foreground uppercase font-semibold">Série actuelle</span>
                      <div className="mt-2">
-                        <span className="text-3xl font-bold">{stats.currentStreak}</span>
-                        <span className="text-sm text-muted-foreground ml-1">{stats.currentStreak > 1 ? 'jours' : 'jour'}</span>
+                        <span className="text-3xl font-bold">{streakNow}</span>
+                        <span className="text-sm text-muted-foreground ml-1">{streakUnit(streakNow)}</span>
                      </div>
                      <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
-                        {stats.jokerPending
-                          ? "Joker utilisé hier : une séance aujourd'hui et ta série continue."
-                          : '1 jour de repos par semaine ne casse pas ta série.'}
+                        {weeklyMode
+                          ? `Chaque semaine à ${Math.max(1, weeklyGoal)} séance${weeklyGoal > 1 ? 's' : ''} prolonge ta série.`
+                          : stats.jokerPending
+                            ? "Joker utilisé hier : une séance aujourd'hui et ta série continue."
+                            : '1 jour de repos par semaine ne casse pas ta série.'}
                      </p>
                 </div>
                 <div className="bg-card border rounded-2xl p-4 flex flex-col justify-between overflow-hidden relative">
@@ -799,8 +805,8 @@ export default function Statistics() {
                     </div>
                      <span className="text-xs text-muted-foreground uppercase font-semibold">Meilleure série</span>
                      <div className="mt-2">
-                        <span className="text-3xl font-bold">{stats.longestStreak}</span>
-                        <span className="text-sm text-muted-foreground ml-1">{stats.longestStreak > 1 ? 'jours' : 'jour'}</span>
+                        <span className="text-3xl font-bold">{streakBest}</span>
+                        <span className="text-sm text-muted-foreground ml-1">{streakUnit(streakBest)}</span>
                      </div>
                 </div>
             </div>

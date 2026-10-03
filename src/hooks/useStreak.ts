@@ -9,7 +9,8 @@ import { logger } from '@/utils/logger';
  */
 export function useStreak() {
   const uid = useUserStore((s) => s.user?.uid);
-  const needsRefresh = useUserStore((s) => !!s.user && s.user.lastTrainingDate === undefined);
+  // Jamais calculée (ancienne série de connexions) ou sans la série hebdo (#45) : recalcul unique
+  const needsRefresh = useUserStore((s) => !!s.user && (s.user.lastTrainingDate === undefined || s.user.weeklyStreak === undefined));
   const done = useRef<string | null>(null);
 
   useEffect(() => {

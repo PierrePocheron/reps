@@ -25,7 +25,8 @@ import { db, auth } from './config';
 import type { User, Session, Exercise, Notification, MotivationalPhrase, UserStats, FriendRequest } from './types';
 import { getUnlockedBadges, DEFAULT_EXERCISES } from '@/utils/constants';
 import { logger } from '@/utils/logger';
-import { trainingStreaks } from '@/utils/streak';
+import { trainingStreaks, weeklyStreaks } from '@/utils/streak';
+import { useSettingsStore } from '@/store/settingsStore';
 import { getUserGymSessions } from './gymSessions';
 
 /**
@@ -119,6 +120,8 @@ export async function createUserDocument(
       currentStreak: 0,
       longestStreak: 0,
       lastTrainingDate: null, // série déjà « calculée » : pas de recalcul au premier lancement (cf. useStreak)
+      weeklyStreak: 0,
+      lastMetWeek: null,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
       ...publicData, // Écrase les valeurs par défaut si présentes
@@ -468,7 +471,9 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
 
     // Séries : jours distincts avec une séance, renfo + muscu
     const trainingDates = [...sessions, ...gymSessions].map((sess) => sess.date).filter(Boolean);
-    const { current: currentStreak, longest: longestStreak, pendingJoker, lastJokerDay } = trainingStreaks(trainingDates.map((d) => d.toDate()));
+    const dates = trainingDates.map((d) => d.toDate());
+    const { current: currentStreak, longest: longestStreak, pendingJoker, lastJokerDay } = trainingStreaks(dates);
+    const weekly = weeklyStreaks(dates, useSettingsStore.getState().weeklyGoal);
     const lastTrainingDate = trainingDates.reduce<Timestamp | undefined>(
       (latest, d) => (!latest || d.toDate() > latest.toDate() ? d : latest), undefined);
 
@@ -539,6 +544,9 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
       lastTrainingDate,
       jokerPending: pendingJoker !== null,
       lastJokerDay,
+      weeklyStreak: weekly.current,
+      longestWeeklyStreak: weekly.longest,
+      lastMetWeek: weekly.lastMetWeek,
       morningSessions,
       lunchSessions,
       nightSessions,
@@ -566,6 +574,8 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
       longestStreak: stats.longestStreak,
       lastTrainingDate: stats.lastTrainingDate ?? null,
       lastJokerDay: stats.lastJokerDay ?? null,
+      weeklyStreak: stats.weeklyStreak ?? 0,
+      lastMetWeek: stats.lastMetWeek ?? null,
     };
 
     // Vérifier les nouveaux badges

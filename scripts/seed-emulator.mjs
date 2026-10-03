@@ -109,7 +109,7 @@ await auth.createUser({ uid: 'alex', email: 'alex@reps.test', password: 'reps-de
 await db.doc('users/alex').set({
   displayName: 'alex', searchName: 'alex', firstName: 'Alex', avatarEmoji: '🐥', colorTheme: 'violet', emailHash: sha256('alex@reps.test'),
   totalReps: 0, totalSessions: 0, totalCalories: 0, badges: ['poussin'], friends: [], currentStreak: 0, longestStreak: 0,
-  lastTrainingDate: null, lastConnection: null, createdAt: Timestamp.now(), updatedAt: Timestamp.now(),
+  lastTrainingDate: null, weeklyStreak: 0, lastMetWeek: null, lastConnection: null, createdAt: Timestamp.now(), updatedAt: Timestamp.now(),
 });
 await db.doc('users/alex/private/profile').set({ email: 'alex@reps.test' });
 

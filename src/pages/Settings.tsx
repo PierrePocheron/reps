@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ColorPicker } from '@/components/ui/color-picker';
@@ -22,6 +22,8 @@ import { sessionsToCsv } from '@/utils/exportCsv';
 
 import { useNotifications } from '@/hooks/useNotifications';
 import { version as APP_VERSION } from '../../package.json';
+import { updateUserStatsAfterSession } from '@/firebase/firestore';
+import { logger } from '@/utils/logger';
 
 const WEEKLY_GOAL_OPTIONS = [0, 2, 3, 4, 5] as const;
 const LANGUAGE_OPTIONS: { id: LanguageSetting; label: string }[] = [
@@ -35,13 +37,20 @@ function Settings() {
   const { toast } = useToast();
   const { theme, colorTheme, setTheme, setColorTheme } = useTheme();
   const { user, updateProfile } = useUserStore();
-  const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, weeklyGoal, language, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled, setWeeklyGoal, setLanguage } = useSettingsStore();
+  const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, weeklyGoal, language, streakMode, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled, setWeeklyGoal, setLanguage, setStreakMode } = useSettingsStore();
   const deviceLanguage = detectDeviceLanguage();
   const { scheduleDailyReminder, cancelReminder } = useNotifications();
   const { sessions, gymSessions, loading: historyLoading } = useSessionHistory(500);
   const [exporting, setExporting] = useState(false);
   const { autoRest, setAutoRest, showRpe, setShowRpe, suggestLoad, setSuggestLoad } = useGymSessionStore();
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  // La série hebdo dépend de l'objectif : recalcul quand l'objectif ou le mode change (pas au premier rendu)
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) { firstRender.current = false; return; }
+    if (user?.uid) updateUserStatsAfterSession(user.uid, 0).catch((err) => logger.error('Recalcul de la série :', err));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- seulement sur changement d'objectif ou de mode
+  }, [weeklyGoal, streakMode]);
   const [togglingNotif, setTogglingNotif] = useState(false);
 
   const handleExportData = async (format: 'json' | 'csv') => {
@@ -271,6 +280,20 @@ function Settings() {
                   {g === 0 ? 'Aucun' : `${g}×`}
                 </Button>
               ))}
+            </div>
+            <div className="flex items-center justify-between gap-3 pt-4 mt-4 border-t">
+              <div>
+                <p className="text-sm font-medium">Série affichée</p>
+                <p className="text-xs text-muted-foreground">Jours d'affilée (avec joker) ou semaines à l'objectif</p>
+              </div>
+              <div className="flex gap-1 p-0.5 bg-muted rounded-lg shrink-0" role="group" aria-label="Série affichée">
+                {(['daily', 'weekly'] as const).map((m) => (
+                  <button key={m} type="button" onClick={() => setStreakMode(m)} aria-pressed={streakMode === m}
+                    className={cn('px-3 min-h-11 rounded-md text-xs font-medium', streakMode === m ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground')}>
+                    {m === 'daily' ? 'Jours' : 'Semaines'}
+                  </button>
+                ))}
+              </div>
             </div>
             <button
               type="button"

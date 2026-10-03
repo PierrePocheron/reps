@@ -63,3 +63,28 @@ export function liveStreak(streak: number, lastTraining: Date | null | undefined
   const jokerFree = !lastJokerDay || weekKey(lastJokerDay) !== weekKey(missed);
   return nextDayKey(missed) === t && jokerFree ? streak : 0;
 }
+
+/**
+ * Série hebdomadaire (Hevy) : semaines consécutives (lundi → dimanche) avec au moins `goal` séances.
+ * La semaine en cours compte dès que l'objectif est atteint, et ne casse rien tant qu'elle n'est pas finie.
+ */
+export function weeklyStreaks(dates: Date[], goal: number, today = new Date()): { current: number; longest: number; lastMetWeek: number | null } {
+  const need = Math.max(1, goal);
+  const perWeek = new Map<number, number>();
+  for (const d of dates) { const w = weekKey(dayKey(d)); perWeek.set(w, (perWeek.get(w) ?? 0) + 1); }
+  const met = [...perWeek].filter(([, n]) => n >= need).map(([w]) => w).sort((a, b) => a - b);
+  const prevWeek = (w: number) => { const d = new Date(w); d.setDate(d.getDate() - 7); return weekKey(dayKey(d)); };
+  let longest = 0, run = 0, prev: number | null = null;
+  for (const w of met) { run = prev !== null && prevWeek(w) === prev ? run + 1 : 1; longest = Math.max(longest, run); prev = w; }
+  const thisWeek = weekKey(dayKey(today));
+  const alive = prev !== null && (prev === thisWeek || prev === prevWeek(thisWeek));
+  return { current: alive ? run : 0, longest, lastMetWeek: prev };
+}
+
+/** Série hebdo enregistrée, remise à 0 si ni cette semaine ni la précédente n'ont atteint l'objectif. */
+export function liveWeeklyStreak(streak: number, lastMetWeek: number | null | undefined, today = new Date()): number {
+  if (!lastMetWeek) return 0;
+  const thisWeek = weekKey(dayKey(today));
+  const d = new Date(thisWeek); d.setDate(d.getDate() - 7);
+  return lastMetWeek === thisWeek || lastMetWeek === weekKey(dayKey(d)) ? streak : 0;
+}

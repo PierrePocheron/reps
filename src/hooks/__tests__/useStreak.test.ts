@@ -29,10 +29,16 @@ describe('useStreak', () => {
   });
 
   it('ne recalcule pas si la série est déjà à jour', () => {
-    setUser({ lastTrainingDate: Timestamp.now() });
+    setUser({ lastTrainingDate: Timestamp.now(), weeklyStreak: 2 });
     renderHook(() => useStreak());
-    setUser({ lastTrainingDate: null }); // compte sans séance : déjà calculé
+    setUser({ lastTrainingDate: null, weeklyStreak: 0 }); // compte sans séance : déjà calculé
     renderHook(() => useStreak());
     expect(updateUserStatsAfterSession).not.toHaveBeenCalled();
+  });
+
+  it('recalcule une fois les comptes sans série hebdomadaire (#45)', () => {
+    setUser({ uid: 'u2', lastTrainingDate: Timestamp.now() });
+    renderHook(() => useStreak());
+    expect(updateUserStatsAfterSession).toHaveBeenCalledWith('u2', 0);
   });
 });

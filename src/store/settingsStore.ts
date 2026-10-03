@@ -14,6 +14,7 @@ interface SettingsState {
   hapticFeedback: boolean;
   soundEnabled: boolean;
   weeklyGoal: number; // nombre de séances visées par semaine (0 = désactivé)
+  streakMode: 'daily' | 'weekly'; // série en jours d'affilée (avec joker) ou en semaines à l'objectif atteint
   language: LanguageSetting;
 
   // Actions
@@ -24,6 +25,7 @@ interface SettingsState {
   setHapticFeedback: (enabled: boolean) => void;
   setSoundEnabled: (enabled: boolean) => void;
   setWeeklyGoal: (goal: number) => void;
+  setStreakMode: (mode: 'daily' | 'weekly') => void;
   setLanguage: (language: LanguageSetting) => void;
   loadSettings: () => void;
   saveSettings: () => void;
@@ -60,6 +62,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     hapticFeedback: storedSettings.hapticFeedback ?? true,
     soundEnabled: storedSettings.soundEnabled ?? true,
     weeklyGoal: storedSettings.weeklyGoal ?? 3,
+    streakMode: storedSettings.streakMode ?? 'daily',
     language: storedSettings.language ?? 'auto',
 
     // Actions
@@ -101,6 +104,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
       get().saveSettings();
     },
 
+    setStreakMode: (mode) => {
+      set({ streakMode: mode });
+      get().saveSettings();
+    },
+
     setWeeklyGoal: (goal) => {
       set({ weeklyGoal: goal });
       get().saveSettings();
@@ -139,6 +147,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
             hapticFeedback,
             soundEnabled: get().soundEnabled,
             weeklyGoal,
+            streakMode: get().streakMode,
             language,
           })
         );
