@@ -70,3 +70,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | #28 | Poids et mensurations datés sur le profil (courbe, évolution, poids du profil synchronisé), stockés en privé sans changer les règles | `2983821` |
 | 2026-10-04 | passe UI/UX store | Captures Play régénérées (8, dont le récap mensuel) ; récap sans tuile « 0 record » | `0cdac8a` |
 | 2026-10-04 | #45 | Série hebdomadaire en option (semaines à l'objectif) : réglage, en-tête, stats, recalculs | `ccf0f32` |
+| 2026-10-04 | #30 | Kudos 👏 sur les séances des amis + bandeau « X a encouragé ta séance » ; règles + 7 tests (déploiement par Pierre) | `ce84d11` |
