@@ -75,7 +75,7 @@ function VisualProgress() {
       <div className="rounded-2xl border bg-card p-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2">
           <Flame className="h-5 w-5 text-orange-500" />
-          <span className="text-sm font-semibold">Streak</span>
+          <span className="text-sm font-semibold">Série</span>
         </div>
         <span className="text-lg font-bold">5 jours</span>
       </div>
@@ -149,7 +149,7 @@ const SLIDES = [
   },
   {
     title: 'Suis ta progression',
-    description: 'Streak, objectif hebdomadaire, records personnels, graphiques et heatmap — tout est dans Statistiques et Historique.',
+    description: 'Séries, objectif de la semaine, records et courbes de progression par exercice — tout est dans Statistiques et Historique.',
     visual: VisualProgress,
   },
   {

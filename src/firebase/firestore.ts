@@ -118,6 +118,7 @@ export async function createUserDocument(
       friends: [],
       currentStreak: 0,
       longestStreak: 0,
+      lastTrainingDate: null, // série déjà « calculée » : pas de recalcul au premier lancement (cf. useStreak)
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
       ...publicData, // Écrase les valeurs par défaut si présentes

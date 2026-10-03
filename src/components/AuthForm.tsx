@@ -56,17 +56,9 @@ export function AuthForm() {
             return;
         }
 
-        await signUpWithEmail(email, password, firstName, lastName);
-        toast({
-          title: 'Bienvenue !',
-          description: 'Ton aventure commence maintenant ! 🐥',
-        });
+        await signUpWithEmail(email, password, firstName, lastName); // l'accueil se fait par le tutoriel
       } else {
         await signInWithEmail(email, password);
-        toast({
-          title: 'Connexion réussie',
-          description: 'Bon retour ! 💪',
-        });
       }
     } catch (error: unknown) {
       // ... existing error handling ...
@@ -140,10 +132,6 @@ export function AuthForm() {
     setIsLoading(true);
     try {
       await signInWithGoogle();
-      toast({
-        title: 'Connexion réussie',
-        description: 'Bon retour ! 💪',
-      });
     } catch (error: unknown) {
       logger.error('Erreur connexion Google:', error);
       const firebaseError = error as { code?: string; message?: string };

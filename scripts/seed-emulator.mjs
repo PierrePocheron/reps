@@ -3,7 +3,8 @@
  * Refuse de tourner hors émulateur : ne touche jamais la prod.
  *
  * Compte démo (émulateur uniquement) : demo@reps.test / reps-demo-2026
- * Personnages fictifs : Camille (compte démo), Léa et Sam (amis), Noa (demande en attente).
+ * Personnages fictifs : Camille (compte démo), Léa et Sam (amis), Noa (demande en attente),
+ * Alex (compte neuf, aucune donnée : premier lancement et états vides).
  */
 
 import { createHash } from 'node:crypto';
@@ -102,6 +103,15 @@ async function seedPerson(p, { renfoEvery, gymEvery, activityScale, dailySince =
   await batch.commit();
   return sessions;
 }
+
+// Compte neuf : profil créé comme à l'inscription, aucune séance ni ami
+await auth.createUser({ uid: 'alex', email: 'alex@reps.test', password: 'reps-demo-2026', displayName: 'alex', emailVerified: true });
+await db.doc('users/alex').set({
+  displayName: 'alex', searchName: 'alex', firstName: 'Alex', avatarEmoji: '🐥', colorTheme: 'violet', emailHash: sha256('alex@reps.test'),
+  totalReps: 0, totalSessions: 0, totalCalories: 0, badges: ['poussin'], friends: [], currentStreak: 0, longestStreak: 0,
+  lastTrainingDate: null, lastConnection: null, createdAt: Timestamp.now(), updatedAt: Timestamp.now(),
+});
+await db.doc('users/alex/private/profile').set({ email: 'alex@reps.test' });
 
 const counts = [];
 counts.push(await seedPerson(PEOPLE[0], { renfoEvery: 4, gymEvery: 3, activityScale: 1, dailySince: 7 }));

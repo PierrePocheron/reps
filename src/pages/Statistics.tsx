@@ -391,6 +391,7 @@ export default function Statistics() {
   }, [sessions, gymSessions]);
 
   if (!user) return null;
+  const isEmpty = !historyLoading && sessions.length === 0 && gymSessions.length === 0;
 
   return (
     <PageLayout title="STATISTIQUES">
@@ -471,6 +472,24 @@ export default function Statistics() {
           </motion.div>
         )}
 
+        {isEmpty ? (
+          <div className="bg-card border rounded-2xl p-6 text-center space-y-3">
+            <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-primary" />
+            </div>
+            <p className="font-semibold">Tes stats arrivent après ta première séance</p>
+            <p className="text-sm text-muted-foreground">
+              Calories, séries, records et courbes de progression se remplissent au fil de tes entraînements.
+            </p>
+            <button
+              onClick={() => navigate('/templates')}
+              className="inline-flex items-center gap-1.5 min-h-11 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold active:scale-95 transition-transform"
+            >
+              Lancer ma première séance <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+        <>
         {/* Résumé Calories */}
         <motion.div
            initial={{ opacity: 0, y: 20 }}
@@ -669,6 +688,9 @@ export default function Statistics() {
         />
 
         <TrainingHabits sessions={sessions} gymSessions={gymSessions} />
+
+        </>
+        )}
 
         {/* Note informative */}
         <details className="bg-muted/50 p-4 rounded-2xl text-xs text-muted-foreground">
