@@ -69,7 +69,9 @@ export default function PrivacyPolicy() {
               <p className="font-medium">Informations de profil optionnelles</p>
               <p className="text-muted-foreground">
                 Poids, taille, genre — utilisés uniquement pour calculer vos statistiques (calories,
-                IMC). Ces champs sont facultatifs.
+                IMC) — et, si vous les saisissez, l'historique daté de votre poids et de vos mensurations
+                (taille, poitrine, bras, cuisse). Ces données sont facultatives, stockées dans un espace
+                privé accessible à vous seul, et supprimées avec votre compte.
               </p>
             </div>
 

@@ -16,6 +16,7 @@ import { Settings, LogOut, Award, Target, Users, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/UserAvatar';
 import type { User } from '@/firebase/types';
+import { BodyMetrics } from '@/components/BodyMetrics';
 
 function ProfilEditDialog({ user }: { user: User }) {
   const [open, setOpen] = useState(false);
@@ -166,7 +167,7 @@ function Profil() {
           </CardContent>
         </Card>
 
-
+        <BodyMetrics />
 
         {/* Badges */}
         <Card>
