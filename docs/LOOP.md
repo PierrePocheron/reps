@@ -58,3 +58,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | #9 | Partager sa séance en image (carte 1080×1350, historique + toast de fin de séance, feuille de partage native) | `6224c68` |
 | 2026-10-03 | passe UI/UX renfo, profil, amis, défis | Annuler le dernier ajout de reps en séance renfo (manque relevé) ; autres écrans conformes à 360 px | `117d0eb` |
 | 2026-10-03 | #13 | RPE par série optionnel (sélecteur à la place de la coche, historique, CSV) + réglage « Repos automatique » | `19358c2` |
+| 2026-10-03 | #21 | Joker de repos hebdomadaire : un jour sans séance isolé ne casse plus la série (en-tête, stats, 10 tests) ; série hebdo en suivi | `6b98cc7` |
