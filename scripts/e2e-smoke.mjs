@@ -55,6 +55,9 @@ const steps = [
     await page.getByRole('textbox', { name: /^Note pour/ }).first().fill(note);
     await page.getByRole('button', { name: 'Valider la série 1' }).first().click();
     await page.getByRole('switch', { name: /Repos auto/ }).waitFor(); // le repos s'est lancé tout seul
+    // la barre « minuteur + Terminer » doit rester fixée à l'écran (un parent transformé la renvoyait en bas du contenu)
+    const end = await page.getByRole('button', { name: /^Terminer/ }).boundingBox();
+    assert.ok(end && end.y + end.height <= page.viewportSize().height, 'bouton Terminer hors de l\'écran');
     await page.getByRole('button', { name: /^Terminer/ }).click();
     await page.waitForURL(`${BASE}/`);
     await assertAlive('fin de séance muscu');

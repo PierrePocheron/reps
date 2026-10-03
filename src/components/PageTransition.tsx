@@ -6,19 +6,12 @@ interface PageTransitionProps {
   className?: string;
 }
 
+// Fondu seul, sans transform : un parent transformé devient le repère des `position: fixed` de la page
+// (le translateY résiduel renvoyait la barre « minuteur + Terminer » de la séance tout en bas du contenu)
 const pageVariants = {
-  initial: {
-    opacity: 0,
-    y: 20,
-  },
-  in: {
-    opacity: 1,
-    y: 0,
-  },
-  out: {
-    opacity: 0,
-    y: -20,
-  },
+  initial: { opacity: 0 },
+  in: { opacity: 1 },
+  out: { opacity: 0 },
 };
 
 const pageTransition = {
