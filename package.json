@@ -20,7 +20,8 @@
     "deploy": "yarn build && firebase deploy",
     "test:rules": "firebase emulators:exec --config firebase.rules-test.json --only firestore --project reps-rules-test \"node scripts/test-firestore-rules.mjs\"",
     "dev:demo": "firebase emulators:exec --only auth,firestore --project demo-reps \"node scripts/seed-emulator.mjs && vite --mode demo --port 5199 --strictPort\"",
-    "store:screenshots": "node scripts/store-screenshots.mjs"
+    "store:screenshots": "node scripts/store-screenshots.mjs",
+    "e2e": "node scripts/e2e-smoke.mjs"
   },
   "dependencies": {
     "@capacitor-community/admob": "8",

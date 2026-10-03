@@ -32,11 +32,8 @@ export default function Login() {
             Suis tes séances de renforcement et de musculation
           </p>
         </div>
-        <AuthForm
-          onSuccess={() => {
-            navigate('/');
-          }}
-        />
+        {/* La redirection se fait dans l'effet ci-dessus, dès que l'utilisateur est connu */}
+        <AuthForm />
         <p className="text-center text-xs text-muted-foreground">
           En te connectant, tu acceptes notre{' '}
           <Link to="/privacy-policy" className="underline underline-offset-2 hover:text-foreground transition-colors">

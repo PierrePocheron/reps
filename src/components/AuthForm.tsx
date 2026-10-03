@@ -10,14 +10,10 @@ import { sendPasswordResetEmail } from '@/firebase/auth';
 import { validatePassword, PASSWORD_MIN_LENGTH } from '@/utils/validation';
 import { logger } from '@/utils/logger';
 
-interface AuthFormProps {
-  onSuccess?: () => void;
-}
-
 /**
  * Formulaire d'authentification (connexion et inscription)
  */
-export function AuthForm({ onSuccess }: AuthFormProps) {
+export function AuthForm() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -72,7 +68,6 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
           description: 'Bon retour ! 💪',
         });
       }
-      onSuccess?.();
     } catch (error: unknown) {
       // ... existing error handling ...
       let errorMessage = 'Une erreur est survenue';
@@ -149,7 +144,6 @@ export function AuthForm({ onSuccess }: AuthFormProps) {
         title: 'Connexion réussie',
         description: 'Bon retour ! 💪',
       });
-      onSuccess?.();
     } catch (error: unknown) {
       logger.error('Erreur connexion Google:', error);
       const firebaseError = error as { code?: string; message?: string };

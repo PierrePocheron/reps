@@ -18,7 +18,7 @@
 
 ## Type de tests utilisés
 
-Ce projet utilise exclusivement des **tests unitaires** et des **tests d'intégration légère** (mocks de dépendances externes). Il n'y a pas de tests E2E (end-to-end) pour le moment.
+Ce projet utilise des **tests unitaires**, des **tests d'intégration légère** (mocks de dépendances externes) et un **test de fumée de bout en bout** sur la démo (émulateurs Firebase).
 
 | Catégorie | Description | Exemples dans ce projet |
 |---|---|---|
@@ -27,8 +27,19 @@ Ce projet utilise exclusivement des **tests unitaires** et des **tests d'intégr
 | **Composant React** | Teste le rendu et l'interactivité d'un composant UI | `components/BottomNav.tsx`, `pages/Home.tsx` |
 | **Hook React** | Teste la logique d'un custom hook | `hooks/useStreak.ts`, `hooks/useChallenges.ts` |
 
-> **Pourquoi pas de tests E2E ?**
-> L'application dépend de Firebase (Firestore, Auth) et de plugins Capacitor natifs. Les tests E2E nécessiteraient un émulateur Firebase et des simulateurs iOS/Android, ce qui sort du scope actuel. Les tests d'intégration mockés couvrent les cas critiques de manière fiable et rapide.
+### Test de fumée E2E (`yarn e2e`)
+
+`scripts/e2e-smoke.mjs` pilote un vrai navigateur (Playwright) sur la démo : connexion, navigation, séance muscu
+complète (refaire, note, repos auto, terminer), séance renfo, courbe de progression. Il échoue si une page lève une
+erreur JS ou se fige (boucle de rendu).
+
+```bash
+yarn dev:demo   # terminal 1 : émulateurs + données de démo
+yarn e2e        # terminal 2
+```
+
+À lancer avant chaque PR vers `main`. Il a déjà attrapé deux bugs invisibles aux tests unitaires : le gel en fin de
+séance muscu (#43) et le retour forcé à l'accueil juste après la connexion.
 
 ---
 
