@@ -21,6 +21,7 @@ interface GymSessionState {
   restDuration: number; // durée repos entre sets (secondes)
   showRestTimer: boolean;
   restEndsAt: number | null; // horodatage de fin du repos (le décompte en dérive)
+  autoRest: boolean; // lancer le repos quand une série est validée (préférence, persistée)
 
   // Actions — Planning
   startPlanning: () => void;
@@ -37,6 +38,7 @@ interface GymSessionState {
   startRestTimer: () => void;
   dismissRestTimer: () => void;
   setRestDuration: (seconds: number) => void;
+  setAutoRest: (on: boolean) => void;
   endSession: () => Promise<void>;
   cancelSession: () => void;
 
@@ -64,6 +66,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   restDuration: 90, // 90 secondes par défaut
   showRestTimer: false,
   restEndsAt: null,
+  autoRest: true,
 
   // ─── Planning ─────────────────────────────────────────────────────────
 
@@ -187,6 +190,8 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     if (get().showRestTimer) get().startRestTimer(); // changer la durée relance le repos
   },
 
+  setAutoRest: (on: boolean) => set({ autoRest: on }),
+
   endSession: async () => {
     try {
       const { startTime, exercises } = get();
@@ -294,5 +299,6 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     currentSetIndex: s.currentSetIndex,
     startTime: s.startTime,
     restDuration: s.restDuration,
+    autoRest: s.autoRest,
   }),
 }));

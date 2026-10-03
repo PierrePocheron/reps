@@ -29,6 +29,8 @@ import {
   Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2, Trophy,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { ToastAction } from '@/components/ui/toast';
+import { exactAlarmDenied, openExactAlarmSettings } from '@/utils/restNotification';
 import { cn } from '@/utils/cn';
 
 const NUM_CLS = 'text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
@@ -48,6 +50,8 @@ function GymSession() {
     restDuration,
     showRestTimer,
     restEndsAt,
+    autoRest,
+    setAutoRest,
     addExercise,
     removeExercise,
     addSet,
@@ -131,6 +135,20 @@ function GymSession() {
     return () => clearInterval(interval);
   }, [phase, startTime]);
 
+  // Android 14+ : sans alarmes exactes, la notification de fin de repos peut arriver en retard — on le propose une fois
+  useEffect(() => {
+    if (!showRestTimer || localStorage.getItem(EXACT_ALARM_ASKED)) return;
+    void exactAlarmDenied().then((denied) => {
+      if (!denied) return;
+      localStorage.setItem(EXACT_ALARM_ASKED, '1');
+      toast({
+        title: 'Fin de repos à la seconde près ?',
+        description: 'Autorise les alarmes exactes pour que la notification arrive pile à l\'heure.',
+        action: <ToastAction altText="Ouvrir le réglage des alarmes" onClick={() => void openExactAlarmSettings()}>Autoriser</ToastAction>,
+      });
+    });
+  }, [showRestTimer, toast]);
+
   if (phase === 'idle' && !cancellingRef.current) {
     navigate('/');
     return null;
@@ -155,6 +173,7 @@ function GymSession() {
 
   const handleCompleteSet = (exerciseId: string, setIndex: number, reps: number, weight: number) => {
     completeSetAt(exerciseId, setIndex, reps, weight);
+    if (autoRest && completedSets + 1 < totalSets) startRestTimer(); // comme Strong : repos lancé à chaque série
     const best = bestsRef.current[exerciseId];
     const e1rm = estimate1RM(weight, reps);
     // Pas d'historique sur l'exercice = pas de « record » (évite le faux positif de la 1re séance)
@@ -429,6 +448,8 @@ function GymSession() {
               durationSeconds={restDuration}
               onDismiss={dismissRestTimer}
               onChangeDuration={setRestDuration}
+              autoRest={autoRest}
+              onToggleAutoRest={() => setAutoRest(!autoRest)}
             />
           )}
 
@@ -677,6 +698,8 @@ function ExecuteExerciseCard({
   );
 }
 
+const EXACT_ALARM_ASKED = 'reps_exact_alarm_asked';
+
 const REST_PRESETS = [
   { label: '30s', value: 30 },
   { label: '1 min', value: 60 },
@@ -690,11 +713,15 @@ function InlineRestTimer({
   durationSeconds,
   onDismiss,
   onChangeDuration,
+  autoRest,
+  onToggleAutoRest,
 }: {
   endsAt: number;
   durationSeconds: number;
   onDismiss: () => void;
   onChangeDuration: (v: number) => void;
+  autoRest: boolean;
+  onToggleAutoRest: () => void;
 }) {
   const haptics = useHaptic();
   const secondsLeft = () => Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
@@ -726,9 +753,21 @@ function InlineRestTimer({
             {Math.floor(remaining / 60)}:{(remaining % 60).toString().padStart(2, '0')}
           </span>
         </div>
-        <button onClick={onDismiss} className="p-2.5 -m-2.5 rounded-lg text-muted-foreground hover:text-foreground" aria-label="Fermer le minuteur de repos">
-          <X className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={autoRest}
+            onClick={onToggleAutoRest}
+            className={cn('min-h-9 px-2.5 rounded-full text-xs font-medium border transition-colors',
+              autoRest ? 'bg-primary/10 border-primary/30 text-primary' : 'border-border text-muted-foreground')}
+          >
+            Repos auto {autoRest ? '✓' : ''}
+          </button>
+          <button onClick={onDismiss} className="p-2.5 -m-2.5 rounded-lg text-muted-foreground hover:text-foreground" aria-label="Fermer le minuteur de repos">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       <div className="h-1.5 bg-muted rounded-full overflow-hidden">

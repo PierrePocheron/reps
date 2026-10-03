@@ -34,3 +34,16 @@ export function cancelRestEnd() {
   LocalNotifications.cancel({ notifications: [{ id: REST_ID }] })
     .catch((err) => logger.error('Annulation de la notification de repos :', err));
 }
+
+/** Android 14+ refuse les alarmes exactes par défaut : la notification peut alors arriver en retard. */
+export async function exactAlarmDenied(): Promise<boolean> {
+  if (Capacitor.getPlatform() !== 'android') return false;
+  try {
+    return (await LocalNotifications.checkExactNotificationSetting()).exact_alarm !== 'granted';
+  } catch {
+    return false;
+  }
+}
+
+export const openExactAlarmSettings = () =>
+  LocalNotifications.changeExactNotificationSetting().catch((err) => logger.error('Réglage alarmes exactes :', err));
