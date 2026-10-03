@@ -94,7 +94,7 @@ function Home() {
         date: lastGymSession.date,
         chips: [
           { icon: Weight, className: 'text-muted-foreground', value: Math.round(lastGymSession.totalVolume).toLocaleString('fr-FR'), unit: 'kg' },
-          { icon: Dumbbell, className: 'text-primary', value: String(lastGymSession.totalSets), unit: 'séries' },
+          { icon: Dumbbell, className: 'text-primary', value: String(lastGymSession.totalSets), unit: lastGymSession.totalSets > 1 ? 'séries' : 'série' },
         ],
         items: lastGymSession.exercises.map((ex) => {
           const done = ex.sets.filter((st) => st.completed).length;

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { Exercise, GymSessionExercise, PlannedSet } from '@/firebase/types';
 import { Timestamp } from 'firebase/firestore';
 import { createGymSession, calculateTotalVolume } from '@/firebase/gymSessions';
@@ -48,7 +49,9 @@ interface GymSessionState {
   startFreeSession: () => void;
 }
 
-export const useGymSessionStore = create<GymSessionState>((set, get) => ({
+// Persisté en localStorage : une séance en cours survit à un rechargement ou à
+// l'arrêt de la WebView par Android (terminer/annuler la remet à « idle »).
+export const useGymSessionStore = create<GymSessionState>()(persist((set, get) => ({
   phase: 'idle',
   exercises: [],
   currentExerciseIndex: 0,
@@ -269,4 +272,14 @@ export const useGymSessionStore = create<GymSessionState>((set, get) => ({
       showRestTimer: false,
     });
   },
+}), {
+  name: 'reps_gym_session',
+  partialize: (s) => ({
+    phase: s.phase,
+    exercises: s.exercises,
+    currentExerciseIndex: s.currentExerciseIndex,
+    currentSetIndex: s.currentSetIndex,
+    startTime: s.startTime,
+    restDuration: s.restDuration,
+  }),
 }));
