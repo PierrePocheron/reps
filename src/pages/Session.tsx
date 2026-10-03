@@ -7,7 +7,6 @@ import { Timer } from '@/components/Timer';
 import { AddExerciseDialog } from '@/components/AddExerciseDialog';
 import { BackButton } from '@/components/BackButton';
 import { useSession } from '@/hooks/useSession';
-import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { clearCurrentSessionFromLocal } from '@/firebase';
 import { Square, Plus, Dumbbell, Flame, Loader2, History } from 'lucide-react';
@@ -22,7 +21,6 @@ import { logger } from '@/utils/logger';
 
 function Session() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const {
     isActive,
@@ -57,11 +55,6 @@ function Session() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // On ne veut exécuter ça qu'au montage du composant
 
-  // Rediriger si non authentifié
-  if (!isAuthenticated) {
-    navigate('/');
-    return null;
-  }
 
 
 

@@ -172,7 +172,10 @@ function MuscuCard({ session, imageMap, onRedo }: { session: GymSession; imageMa
                       <span className="text-lg">{ex.emoji}</span>
                     )}
                   </div>
-                  <p className="text-sm font-medium flex-1 truncate">{ex.name}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{ex.name}</p>
+                    {ex.note && <p className="text-xs italic text-muted-foreground truncate">« {ex.note} »</p>}
+                  </div>
                   <p className="text-xs text-muted-foreground flex-shrink-0">{setsSummary}</p>
                 </div>
               );

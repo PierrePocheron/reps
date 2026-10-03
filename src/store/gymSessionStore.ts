@@ -9,6 +9,7 @@ import { scheduleRestEnd, cancelRestEnd } from '@/utils/restNotification';
 import { useUserStore } from './userStore';
 
 export type GymPhase = 'idle' | 'plan' | 'execute';
+export const NOTE_MAX = 300;
 
 interface GymSessionState {
   // État
@@ -31,6 +32,7 @@ interface GymSessionState {
   updateSet: (exerciseId: string, setIndex: number, partial: Partial<Omit<PlannedSet, 'completed'>>) => void;
   removeSet: (exerciseId: string, setIndex: number) => void;
   duplicateLastSet: (exerciseId: string) => void;
+  setExerciseNote: (exerciseId: string, note: string) => void;
 
   // Actions — Exécution
   startExecution: () => void;
@@ -127,6 +129,12 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     }));
   },
 
+  setExerciseNote: (exerciseId: string, note: string) => {
+    set((state) => ({
+      exercises: state.exercises.map((ex) => (ex.exerciseId === exerciseId ? { ...ex, note: note.slice(0, NOTE_MAX) } : ex)),
+    }));
+  },
+
   duplicateLastSet: (exerciseId: string) => {
     const { exercises } = get();
     const exercise = exercises.find((ex) => ex.exerciseId === exerciseId);
@@ -208,6 +216,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
         name: ex.name,
         emoji: ex.emoji,
         ...(ex.imageUrl ? { imageUrl: ex.imageUrl } : {}),
+        ...(ex.note?.trim() ? { note: ex.note.trim().slice(0, NOTE_MAX) } : {}),
         sets: ex.sets.map((s) => ({
           reps: s.reps,
           weight: s.weight,

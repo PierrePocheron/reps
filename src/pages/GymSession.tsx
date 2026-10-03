@@ -6,7 +6,7 @@ import { GymExerciseCard } from '@/components/gym/GymExerciseCard';
 import { AddGymExerciseDialog } from '@/components/AddGymExerciseDialog';
 import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
 import { Timer } from '@/components/Timer';
-import { useGymSessionStore } from '@/store/gymSessionStore';
+import { useGymSessionStore, NOTE_MAX } from '@/store/gymSessionStore';
 import { useUserStore } from '@/store/userStore';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +27,7 @@ import { estimate1RM, bestE1RMByExercise, exerciseHistory } from '@/utils/record
 import {
   Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
   Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2, Trophy,
+  StickyNote,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ToastAction } from '@/components/ui/toast';
@@ -57,6 +58,7 @@ function GymSession() {
     addSet,
     updateSet,
     removeSet,
+    setExerciseNote,
     startExecution,
     dismissRestTimer,
     setRestDuration,
@@ -74,7 +76,6 @@ function GymSession() {
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [ending, setEnding] = useState(false);
-  const cancellingRef = useRef(false);
   const [detailExerciseId, setDetailExerciseId] = useState<string | null>(null);
   const [libDetail, setLibDetail] = useState<LibraryExercise | null>(null);
 
@@ -149,9 +150,18 @@ function GymSession() {
     });
   }, [showRestTimer, toast]);
 
-  if (phase === 'idle' && !cancellingRef.current) {
-    navigate('/');
-    return null;
+  // Plus de séance (terminée, annulée, accès direct) : retour à l'accueil. Jamais pendant le rendu :
+  // la page reste montée pendant l'animation de sortie et relançait la navigation en boucle (gel à la fin de séance)
+  useEffect(() => {
+    if (phase === 'idle') navigate('/', { replace: true });
+  }, [phase, navigate]);
+
+  if (phase === 'idle') return null;
+
+  // Dernière note par exercice (historique trié du plus récent au plus ancien)
+  const lastNotes: Record<string, string> = {};
+  for (const past of gymHistory) {
+    for (const ex of past.exercises) if (ex.note && !lastNotes[ex.exerciseId]) lastNotes[ex.exerciseId] = ex.note;
   }
 
   const totalSets = getTotalSets();
@@ -204,7 +214,6 @@ function GymSession() {
       haptics.notification();
       play('complete');
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
-      setTimeout(() => navigate('/'), 100);
     } catch {
       toast({ title: 'Erreur', description: 'Impossible de sauvegarder', variant: 'destructive' });
     } finally {
@@ -212,11 +221,7 @@ function GymSession() {
     }
   };
 
-  const handleCancel = () => {
-    cancellingRef.current = true;
-    cancelSession();
-    navigate('/');
-  };
+  const handleCancel = () => cancelSession(); // l'effet ci-dessus ramène à l'accueil
 
   const handleCancelConfirm = () => {
     setShowCancelConfirm(false);
@@ -405,6 +410,8 @@ function GymSession() {
               updateSet(exerciseId, setIndex, { actualReps: reps, actualWeight: weight })
             }
             onShowDetail={(id) => setDetailExerciseId(id)}
+            lastNote={lastNotes[exercise.exerciseId]}
+            onNoteChange={(note) => setExerciseNote(exercise.exerciseId, note)}
             onAddSet={(exerciseId) => {
               const ex = exercises.find((e) => e.exerciseId === exerciseId);
               const last = ex?.sets[ex.sets.length - 1];
@@ -637,12 +644,16 @@ function ExecuteExerciseCard({
   onUpdateSet,
   onAddSet,
   onShowDetail,
+  lastNote,
+  onNoteChange,
 }: {
   exercise: GymSessionExercise;
   onCompleteSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
   onUpdateSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
   onAddSet: (exerciseId: string) => void;
   onShowDetail: (exerciseId: string) => void;
+  lastNote?: string;
+  onNoteChange: (note: string) => void;
 }) {
   const completedCount = exercise.sets.filter((s) => s.completed).length;
 
@@ -675,6 +686,23 @@ function ExecuteExerciseCard({
       </div>
 
       <div className="p-3 space-y-2">
+        {/* Note (Hevy) : la dernière est rappelée, la nouvelle part avec la séance */}
+        <div className="px-1">
+          {lastNote && (
+            <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+              <StickyNote className="h-3.5 w-3.5 mt-px flex-shrink-0" aria-hidden />
+              <span>Dernière fois : « {lastNote} »</span>
+            </p>
+          )}
+          <input
+            value={exercise.note ?? ''}
+            onChange={(e) => onNoteChange(e.target.value)}
+            maxLength={NOTE_MAX}
+            placeholder="Ajouter une note (réglage, sensation…)"
+            aria-label={`Note pour ${exercise.name}`}
+            className="w-full min-h-11 bg-transparent text-sm placeholder:text-muted-foreground/70 border-b border-dashed border-border focus:border-primary focus:outline-none"
+          />
+        </div>
         {exercise.sets.map((set, i) => (
           <SetExecuteRow
             key={i}

@@ -88,6 +88,7 @@ export interface GymSessionExercise {
   emoji: string;
   imageUrl?: string;
   sets: PlannedSet[];
+  note?: string; // réglage machine, sensation… (rappelée à la séance suivante)
 }
 
 // Séance musculation (collection séparée dans Firestore)
