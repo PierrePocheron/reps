@@ -49,3 +49,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | passe UI/UX mode clair + repères | Un seul <main> par écran (imbriqué avant), poids « 57,5 kg » partout ; mode clair vérifié sur 4 écrans | `430d89f` |
 | 2026-10-03 | #14 + #43 | Notes par exercice (rappel de la dernière, visibles dans l'historique) ; bug P0 trouvé en E2E et corrigé : gel de l'appli en fin de séance muscu (navigate pendant le rendu) | `d87e3dd` |
 | 2026-10-03 | test E2E | `yarn e2e` : test de fumée Playwright des parcours clés ; bug trouvé et corrigé : retour forcé à l'accueil juste après la connexion | `520ca37` |
+| 2026-10-03 | passe UI/UX premier lancement | Compte neuf dans la démo ; tutoriel sans toast parasite, « Série » partout, état vide des Statistiques avec appel à l'action | `d219a6f` |
