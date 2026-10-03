@@ -29,11 +29,13 @@ import {
   Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
   Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2, Trophy,
   StickyNote,
+  TrendingUp,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ToastAction } from '@/components/ui/toast';
 import { exactAlarmDenied, openExactAlarmSettings } from '@/utils/restNotification';
 import { gymCard, shareSessionCard } from '@/utils/shareCard';
+import { suggestNextWeight, type LoadSuggestion } from '@/utils/progression';
 import { cn } from '@/utils/cn';
 
 const NUM_CLS = 'text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
@@ -56,6 +58,7 @@ function GymSession() {
     autoRest,
     setAutoRest,
     showRpe,
+    suggestLoad,
     addExercise,
     removeExercise,
     addSet,
@@ -421,6 +424,10 @@ function GymSession() {
             onShowDetail={(id) => setDetailExerciseId(id)}
             lastNote={lastNotes[exercise.exerciseId]}
             isBarbell={infoMap[exercise.exerciseId]?.equipment === 'barbell'}
+            suggestion={suggestLoad ? suggestNextWeight(gymHistory, exercise.exerciseId) : null}
+            onApplySuggestion={(s) => exercise.sets.forEach((set, i) => {
+              if (!set.completed && set.type !== 'warmup' && (set.actualWeight ?? set.weight) < s.to) updateSet(exercise.exerciseId, i, { weight: s.to, actualWeight: s.to });
+            })}
             onNoteChange={(note) => setExerciseNote(exercise.exerciseId, note)}
             onAddSet={(exerciseId) => {
               const ex = exercises.find((e) => e.exerciseId === exerciseId);
@@ -684,6 +691,8 @@ function ExecuteExerciseCard({
   isBarbell,
   onRpe,
   onType,
+  suggestion,
+  onApplySuggestion,
 }: {
   exercise: GymSessionExercise;
   onCompleteSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
@@ -695,6 +704,8 @@ function ExecuteExerciseCard({
   isBarbell: boolean;
   onRpe?: (exerciseId: string, setIndex: number, rpe: number | undefined) => void;
   onType: (exerciseId: string, setIndex: number, type: SetType | undefined) => void;
+  suggestion: LoadSuggestion | null;
+  onApplySuggestion: (s: LoadSuggestion) => void;
 }) {
   const completedCount = exercise.sets.filter((s) => s.completed).length;
   const [showPlates, setShowPlates] = useState(false);
@@ -743,6 +754,23 @@ function ExecuteExerciseCard({
       )}
 
       <div className="p-3 space-y-2">
+        {/* Surcharge progressive : proposée tant qu'une série de travail reste sous la charge suggérée */}
+        {suggestion && exercise.sets.some((st) => !st.completed && st.type !== 'warmup' && (st.actualWeight ?? st.weight) < suggestion.to) && (
+          <div className="flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2">
+            <TrendingUp className="h-4 w-4 text-primary flex-shrink-0" aria-hidden />
+            <p className="flex-1 text-xs">
+              <span className="font-semibold">Essaie {suggestion.to.toLocaleString('fr-FR')} kg</span>
+              <span className="text-muted-foreground"> · tout réussi la dernière fois ({suggestion.summary})</span>
+            </p>
+            <button
+              type="button"
+              onClick={() => onApplySuggestion(suggestion)}
+              className="min-h-11 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold active:scale-95"
+            >
+              Appliquer
+            </button>
+          </div>
+        )}
         {/* Note (Hevy) : la dernière est rappelée, la nouvelle part avec la séance */}
         <div className="px-1">
           {lastNote && (
@@ -762,7 +790,7 @@ function ExecuteExerciseCard({
         </div>
         {exercise.sets.map((set, i) => (
           <SetExecuteRow
-            key={i}
+            key={`${i}-${set.weight}`} // remonte la ligne quand la charge change (suggestion appliquée)
             set={set}
             setIndex={i}
             exerciseId={exercise.exerciseId}

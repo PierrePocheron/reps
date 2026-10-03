@@ -25,6 +25,7 @@ interface GymSessionState {
   restEndsAt: number | null; // horodatage de fin du repos (le décompte en dérive)
   autoRest: boolean; // lancer le repos quand une série est validée (préférence, persistée)
   showRpe: boolean; // saisir le RPE des séries validées (préférence, persistée)
+  suggestLoad: boolean; // proposer la charge suivante quand tout a été réussi (préférence, persistée)
 
   // Actions — Planning
   startPlanning: () => void;
@@ -44,6 +45,7 @@ interface GymSessionState {
   setRestDuration: (seconds: number) => void;
   setAutoRest: (on: boolean) => void;
   setShowRpe: (on: boolean) => void;
+  setSuggestLoad: (on: boolean) => void;
   endSession: () => Promise<void>;
   cancelSession: () => void;
 
@@ -73,6 +75,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   restEndsAt: null,
   autoRest: true,
   showRpe: false,
+  suggestLoad: true,
 
   // ─── Planning ─────────────────────────────────────────────────────────
 
@@ -207,6 +210,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
 
   setAutoRest: (on: boolean) => set({ autoRest: on }),
   setShowRpe: (on: boolean) => set({ showRpe: on }),
+  setSuggestLoad: (on: boolean) => set({ suggestLoad: on }),
 
   endSession: async () => {
     try {
@@ -321,5 +325,6 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     restDuration: s.restDuration,
     autoRest: s.autoRest,
     showRpe: s.showRpe,
+    suggestLoad: s.suggestLoad,
   }),
 }));

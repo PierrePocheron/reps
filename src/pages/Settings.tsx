@@ -39,7 +39,7 @@ function Settings() {
   const { scheduleDailyReminder, cancelReminder } = useNotifications();
   const { sessions, gymSessions, loading: historyLoading } = useSessionHistory(500);
   const [exporting, setExporting] = useState(false);
-  const { autoRest, setAutoRest, showRpe, setShowRpe } = useGymSessionStore();
+  const { autoRest, setAutoRest, showRpe, setShowRpe, suggestLoad, setSuggestLoad } = useGymSessionStore();
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [togglingNotif, setTogglingNotif] = useState(false);
 
@@ -231,6 +231,7 @@ function Settings() {
             {[
               { label: 'Repos automatique', hint: 'Lance le minuteur à chaque série validée (muscu)', on: autoRest, toggle: () => setAutoRest(!autoRest) },
               { label: 'RPE par série', hint: "Note l'effort ressenti (6 à 10) des séries validées", on: showRpe, toggle: () => setShowRpe(!showRpe) },
+              { label: 'Suggestion de charge', hint: 'Toutes tes séries réussies la dernière fois ? +2,5 kg proposés (+1,25 kg bras et épaules)', on: suggestLoad, toggle: () => setSuggestLoad(!suggestLoad) },
             ].map((row) => (
               <div key={row.label} className="flex items-center justify-between gap-3 pt-4 border-t">
                 <div>
