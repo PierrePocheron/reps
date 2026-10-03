@@ -24,7 +24,7 @@ export default function PrivacyPolicy() {
 
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-8 text-sm leading-relaxed">
         <div>
-          <p className="text-muted-foreground">Dernière mise à jour : 16 juillet 2026</p>
+          <p className="text-muted-foreground">Dernière mise à jour : 3 octobre 2026</p>
         </div>
 
         <section className="space-y-3">
@@ -57,9 +57,11 @@ export default function PrivacyPolicy() {
             <div className="rounded-xl bg-muted/50 p-4 space-y-1">
               <p className="font-medium">Données d'entraînement</p>
               <p className="text-muted-foreground">
-                Séances (date, durée, exercices, répétitions, poids), templates personnalisés,
-                statistiques agrégées, badges débloqués, streak. Ces données constituent le cœur du
-                service et sont stockées dans notre base de données Firebase Firestore.
+                Séances (date, durée, exercices, répétitions, poids, type de série, effort ressenti
+                RPE si vous l'activez, notes par exercice), modèles de séance personnalisés,
+                statistiques agrégées, badges débloqués, série de jours d'entraînement. Ces données
+                constituent le cœur du service et sont stockées dans notre base de données Firebase
+                Firestore.
               </p>
             </div>
 
@@ -68,6 +70,16 @@ export default function PrivacyPolicy() {
               <p className="text-muted-foreground">
                 Poids, taille, genre — utilisés uniquement pour calculer vos statistiques (calories,
                 IMC). Ces champs sont facultatifs.
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-muted/50 p-4 space-y-1">
+              <p className="font-medium">Préférences et partages, sur votre appareil</p>
+              <p className="text-muted-foreground">
+                Les réponses au questionnaire de départ et vos réglages (repos automatique, RPE,
+                disques disponibles…) restent sur votre appareil. Les images de séance que vous
+                partagez et les fichiers d'export sont créés sur l'appareil : rien n'est envoyé tant
+                que vous ne choisissez pas vous-même une application de destination.
               </p>
             </div>
 
@@ -82,9 +94,10 @@ export default function PrivacyPolicy() {
             <div className="rounded-xl bg-muted/50 p-4 space-y-1">
               <p className="font-medium">Notifications push</p>
               <p className="text-muted-foreground">
-                Si vous activez les rappels, nous stockons votre token de notification (FCM pour le
-                web, Capacitor Local Notifications sur mobile) afin de vous envoyer des rappels
-                d'entraînement. Ce token est révocable à tout moment depuis les paramètres.
+                Sur mobile, le rappel d'entraînement et la fin du minuteur de repos sont des
+                notifications locales programmées sur votre appareil : aucun identifiant n'est
+                stocké ni envoyé. Sur le web, si vous activez les rappels, nous stockons votre token
+                de notification (FCM), révocable à tout moment depuis les paramètres.
               </p>
             </div>
 
@@ -101,8 +114,10 @@ export default function PrivacyPolicy() {
               <p className="font-medium">Rapports d'erreurs (Sentry)</p>
               <p className="text-muted-foreground">
                 En cas de crash ou d'erreur, des informations techniques sont envoyées à Sentry
-                (stack trace, version de l'app, type d'appareil). Aucune donnée personnelle
-                identifiable n'est incluse dans ces rapports.
+                (stack trace, version de l'app, type d'appareil), ainsi que, pour une partie des
+                sessions, une relecture de l'interface dont tous les textes sont masqués et les
+                images bloquées. Aucune donnée personnelle identifiable n'est incluse dans ces
+                rapports.
               </p>
             </div>
           </div>
@@ -197,7 +212,7 @@ export default function PrivacyPolicy() {
             <li><strong className="text-foreground">Accès</strong> — obtenir une copie de vos données</li>
             <li><strong className="text-foreground">Rectification</strong> — corriger des données inexactes</li>
             <li><strong className="text-foreground">Effacement</strong> — demander la suppression de votre compte</li>
-            <li><strong className="text-foreground">Portabilité</strong> — recevoir vos données dans un format standard</li>
+            <li><strong className="text-foreground">Portabilité</strong> — exporter vos données vous-même depuis Réglages (JSON complet, ou CSV de vos séances)</li>
             <li><strong className="text-foreground">Opposition</strong> — vous opposer au traitement basé sur l'intérêt légitime</li>
             <li><strong className="text-foreground">Retrait du consentement</strong> — pour les traitements basés sur le consentement</li>
           </ul>

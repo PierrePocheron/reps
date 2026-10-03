@@ -40,6 +40,7 @@ Reps, c'est ton carnet d'entraînement : gratuit, en français, pour la muscu co
 • Minuteur de repos lancé automatiquement après chaque série, avec notification même écran verrouillé.
 • Calculateur de disques : les disques à charger de chaque côté de la barre.
 • Note par exercice (réglage machine, sensation), rappelée à la séance suivante.
+• Types de séries (échauffement, dégressive, échec) et effort ressenti (RPE) en option.
 • Ta séance est sauvegardée en continu : même si l'appli se ferme, tu reprends où tu en étais.
 • 1 324 exercices illustrés, avec les muscles ciblés et les consignes pas à pas.
 • Modèles de séance, ou refais une séance passée en un geste depuis l'historique.
@@ -58,11 +59,13 @@ Reps, c'est ton carnet d'entraînement : gratuit, en français, pour la muscu co
 • Défis progressifs (pompes, squats, gainage…), ou crée le tien.
 • 22 badges à débloquer.
 • Ajoute tes amis : classement du jour, de la semaine, du mois ou depuis le début, et fil d'activité.
+• Partage ta séance en image (stories, messages) en un geste.
 • Rappel d'entraînement à l'heure de ton choix.
 
 ━━━ PENSÉ POUR TOI ━━━
 
-• Tutoriel en quelques écrans au premier lancement.
+• Tutoriel et questionnaire de départ : ton objectif de la semaine et un premier programme adapté.
+• Un jour de repos par semaine ne casse pas ta série.
 • Mode sombre ou clair, 8 couleurs d'accent.
 • Fonctionne hors connexion : tout se synchronise au retour du réseau.
 • Exercices en français ou en anglais selon la langue de ton téléphone.
@@ -74,7 +77,7 @@ Tes séances sont synchronisées de façon sécurisée et ne sont jamais revendu
 Débutant ou confirmé, lance ta première séance : chaque rep compte.
 ```
 
-*(~2 750 caractères. À ne pas promettre tant que ce n'est pas tranché : « sans pub », niveaux — il n'y a pas de système de niveaux dans l'appli.)*
+*(~3 000 caractères. À ne pas promettre tant que ce n'est pas tranché : « sans pub », niveaux — il n'y a pas de système de niveaux dans l'appli.)*
 
 ---
 
