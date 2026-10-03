@@ -183,7 +183,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare }: { session: GymSession
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{ex.name}</p>
+                    <p className="text-sm font-medium truncate">{ex.supersetId && <span className="text-primary" aria-label="Superset">🔗 </span>}{ex.name}</p>
                     {ex.note && <p className="text-xs italic text-muted-foreground truncate">« {ex.note} »</p>}
                   </div>
                   <p className="text-xs text-muted-foreground flex-shrink-0">{setsSummary}</p>
@@ -294,7 +294,7 @@ function History() {
   const redoGym = (s: GymSession) => {
     if (sessionInProgress()) return;
     loadGymTemplate(s.exercises.map((ex) => ({
-      exerciseId: ex.exerciseId, name: ex.name, emoji: ex.emoji, imageUrl: ex.imageUrl,
+      exerciseId: ex.exerciseId, name: ex.name, emoji: ex.emoji, imageUrl: ex.imageUrl, supersetId: ex.supersetId,
       sets: ex.sets.map((set) => ({ reps: set.actualReps ?? set.reps, weight: set.actualWeight ?? set.weight, completed: false })),
     })));
     startExecution();

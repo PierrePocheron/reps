@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { Fragment, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +30,7 @@ import {
   Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2, Trophy,
   StickyNote,
   TrendingUp,
+  Link2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ToastAction } from '@/components/ui/toast';
@@ -37,6 +38,7 @@ import { exactAlarmDenied, openExactAlarmSettings } from '@/utils/restNotificati
 import { gymCard, shareSessionCard } from '@/utils/shareCard';
 import { lastWorkSets, suggestNextWeight, type LoadSuggestion } from '@/utils/progression';
 import { loadPlatePrefs, warmupSets } from '@/utils/plates';
+import { restAfterSet, supersetLetters } from '@/utils/superset';
 import { cn } from '@/utils/cn';
 
 const NUM_CLS = 'text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
@@ -67,6 +69,7 @@ function GymSession() {
     removeSet,
     setExerciseNote,
     prependWarmup,
+    toggleSuperset,
     startExecution,
     dismissRestTimer,
     setRestDuration,
@@ -166,6 +169,7 @@ function GymSession() {
 
   if (phase === 'idle') return null;
 
+  const letters = supersetLetters(exercises);
   // Dernière note par exercice (historique trié du plus récent au plus ancien)
   const lastNotes: Record<string, string> = {};
   for (const past of gymHistory) {
@@ -191,7 +195,8 @@ function GymSession() {
 
   const handleCompleteSet = (exerciseId: string, setIndex: number, reps: number, weight: number) => {
     completeSetAt(exerciseId, setIndex, reps, weight);
-    if (autoRest && completedSets + 1 < totalSets) startRestTimer(); // comme Strong : repos lancé à chaque série
+    // Comme Strong : repos à chaque série… sauf au milieu d'un tour de superset
+    if (autoRest && completedSets + 1 < totalSets && restAfterSet(useGymSessionStore.getState().exercises, exerciseId)) startRestTimer();
     const best = bestsRef.current[exerciseId];
     const e1rm = estimate1RM(weight, reps);
     const warmup = exercises.find((ex) => ex.exerciseId === exerciseId)?.sets[setIndex]?.type === 'warmup';
@@ -413,10 +418,11 @@ function GymSession() {
           </div>
         )}
 
-        {enrichedExercises.map((exercise) => (
+        {enrichedExercises.map((exercise, idx) => (
+          <Fragment key={exercise.exerciseId}>
           <ExecuteExerciseCard
-            key={exercise.exerciseId}
             exercise={exercise}
+            supersetLabel={exercise.supersetId ? `Superset ${letters[exercise.supersetId]}` : undefined}
             onCompleteSet={handleCompleteSet}
             onRpe={showRpe ? (exerciseId, setIndex, rpe) => updateSet(exerciseId, setIndex, { rpe }) : undefined}
             onType={(exerciseId, setIndex, type) => updateSet(exerciseId, setIndex, { type, ...(type === 'warmup' ? { isRecord: false } : {}) })}
@@ -442,6 +448,25 @@ function GymSession() {
               });
             }}
           />
+          {idx < enrichedExercises.length - 1 && (() => {
+            const next = enrichedExercises[idx + 1]!;
+            const linked = !!exercise.supersetId && exercise.supersetId === next.supersetId;
+            return (
+              <div className="flex justify-center -my-1">
+                <button
+                  type="button"
+                  onClick={() => toggleSuperset(idx)}
+                  aria-pressed={linked}
+                  aria-label={linked ? `Délier ${exercise.name} et ${next.name}` : `Faire un superset avec ${next.name}`}
+                  className={cn('min-h-11 px-3 rounded-full border text-xs font-medium inline-flex items-center gap-1.5',
+                    linked ? 'border-primary/40 bg-primary/10 text-primary' : 'border-dashed border-border text-muted-foreground hover:text-foreground')}
+                >
+                  <Link2 className="h-3.5 w-3.5" aria-hidden /> {linked ? 'Superset' : 'Lier'}
+                </button>
+              </div>
+            );
+          })()}
+          </Fragment>
         ))}
 
         {allSetsCompleted && (
@@ -698,6 +723,7 @@ function ExecuteExerciseCard({
   suggestion,
   onApplySuggestion,
   onAddWarmup,
+  supersetLabel,
 }: {
   exercise: GymSessionExercise;
   onCompleteSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
@@ -712,6 +738,7 @@ function ExecuteExerciseCard({
   suggestion: LoadSuggestion | null;
   onApplySuggestion: (s: LoadSuggestion) => void;
   onAddWarmup: (sets: { weight: number; reps: number }[]) => void;
+  supersetLabel?: string;
 }) {
   const completedCount = exercise.sets.filter((s) => s.completed).length;
   const [showPlates, setShowPlates] = useState(false);
@@ -722,7 +749,10 @@ function ExecuteExerciseCard({
     ? warmupSets(nextWeight, isBarbell ? loadPlatePrefs() : null) : [];
 
   return (
-    <div className="rounded-2xl border-2 border-border bg-card overflow-hidden">
+    <div className={cn('rounded-2xl border-2 bg-card overflow-hidden', supersetLabel ? 'border-primary/40' : 'border-border')}>
+      {supersetLabel && (
+        <p className="px-4 pt-2 text-[11px] font-semibold uppercase tracking-wide text-primary">{supersetLabel} · repos après le dernier exercice</p>
+      )}
       <div className="flex items-center gap-3 p-4 border-b border-border/50">
         <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
           {exercise.imageUrl ? (

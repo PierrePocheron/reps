@@ -5,6 +5,7 @@ import { Timestamp } from 'firebase/firestore';
 import { createGymSession, calculateTotalVolume } from '@/firebase/gymSessions';
 import { updateUserStatsAfterSession } from '@/firebase/firestore';
 import { isWorkSet } from '@/utils/records';
+import { toggleSupersetLink } from '@/utils/superset';
 import { logger } from '@/utils/logger';
 import { scheduleRestEnd, cancelRestEnd } from '@/utils/restNotification';
 import { useUserStore } from './userStore';
@@ -36,6 +37,7 @@ interface GymSessionState {
   removeSet: (exerciseId: string, setIndex: number) => void;
   duplicateLastSet: (exerciseId: string) => void;
   prependWarmup: (exerciseId: string, sets: { weight: number; reps: number }[]) => void;
+  toggleSuperset: (index: number) => void;
   setExerciseNote: (exerciseId: string, note: string) => void;
 
   // Actions — Exécution
@@ -144,6 +146,8 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     }));
   },
 
+  toggleSuperset: (index: number) => set((state) => ({ exercises: toggleSupersetLink(state.exercises, index) })),
+
   setExerciseNote: (exerciseId: string, note: string) => {
     set((state) => ({
       exercises: state.exercises.map((ex) => (ex.exerciseId === exerciseId ? { ...ex, note: note.slice(0, NOTE_MAX) } : ex)),
@@ -237,6 +241,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
         emoji: ex.emoji,
         ...(ex.imageUrl ? { imageUrl: ex.imageUrl } : {}),
         ...(ex.note?.trim() ? { note: ex.note.trim().slice(0, NOTE_MAX) } : {}),
+        ...(ex.supersetId ? { supersetId: ex.supersetId } : {}),
         sets: ex.sets.map((s) => ({
           reps: s.reps,
           weight: s.weight,
