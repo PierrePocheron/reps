@@ -655,7 +655,7 @@ function SetExecuteRow({
           value={set.rpe ?? ''}
           onChange={(e) => onRpe(e.target.value ? Number(e.target.value) : undefined)}
           aria-label={`RPE (effort ressenti), série ${setIndex + 1}`}
-          className="h-11 w-11 -my-1.5 -mr-1.5 flex-shrink-0 appearance-none rounded-lg bg-transparent text-center text-xs font-semibold text-green-600 dark:text-green-400 border border-green-500/30"
+          className="h-11 w-11 -my-1.5 -mr-1.5 flex-shrink-0 appearance-none rounded-lg bg-transparent text-center text-xs font-semibold text-green-700 dark:text-green-400 border border-green-500/30"
         >
           <option value="">RPE</option>
           {RPE_VALUES.map((v) => <option key={v} value={v}>{v.toLocaleString('fr-FR')}</option>)}
@@ -822,7 +822,7 @@ function ExecuteExerciseCard({
             <button
               onClick={() => onAddWarmup(warmups)}
               aria-label={`Ajouter l'échauffement : ${warmups.map((w) => `${w.reps} × ${w.weight.toLocaleString('fr-FR')} kg`).join(', ')}`}
-              className="flex-1 min-h-11 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-all text-xs font-medium"
+              className="flex-1 min-h-11 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-amber-500/40 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 transition-all text-xs font-medium"
             >
               <Plus className="h-3.5 w-3.5" />
               Échauffement ({warmups.length})
@@ -838,9 +838,9 @@ const EXACT_ALARM_ASKED = 'reps_exact_alarm_asked';
 const RPE_VALUES = [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
 // Types de série (Hevy : W / D / F) ; toucher l'étiquette fait défiler normale → échauffement → dégressive → échec
 const SET_TYPE_META: Record<SetType, { short: string; label: string; cls: string }> = {
-  warmup: { short: 'É', label: 'échauffement', cls: 'text-amber-500' },
-  drop: { short: 'D', label: 'dégressive', cls: 'text-sky-500' },
-  failure: { short: '!', label: "jusqu'à l'échec", cls: 'text-red-500' },
+  warmup: { short: 'É', label: 'échauffement', cls: 'text-amber-700 dark:text-amber-400' },
+  drop: { short: 'D', label: 'dégressive', cls: 'text-sky-700 dark:text-sky-400' },
+  failure: { short: '!', label: "jusqu'à l'échec", cls: 'text-red-600 dark:text-red-400' },
 };
 const SET_TYPE_CYCLE: (SetType | undefined)[] = [undefined, 'warmup', 'drop', 'failure'];
 const nextSetType = (t: SetType | undefined) => SET_TYPE_CYCLE[(SET_TYPE_CYCLE.indexOf(t) + 1) % SET_TYPE_CYCLE.length];

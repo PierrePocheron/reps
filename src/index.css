@@ -15,10 +15,10 @@
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 215.4 16.3% 40%; /* 46,9 % : 4,3:1 sur les fonds teintés, sous le seuil AA */
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 72.2% 50.6%; /* rouge 600 : 4,8:1 (le 500 faisait 3,8:1 en texte) */
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
@@ -97,3 +97,14 @@
   }
 }
 
+
+/* Mode sombre : texte en couleur d'accent ou destructive éclairci pour le contraste AA (4,5:1).
+   La couleur d'accent est choisie par l'utilisateur : on la mélange au blanc plutôt que de fixer une teinte ;
+   les fonds (boutons) gardent la couleur d'origine. Repli : couleur d'origine si color-mix n'est pas pris en charge. */
+.dark .text-primary {
+  color: hsl(var(--primary));
+  color: color-mix(in srgb, hsl(var(--primary)) 62%, white);
+}
+.dark .text-destructive {
+  color: hsl(0 91% 71%);
+}

@@ -190,7 +190,7 @@ export default function Leaderboard() {
                             <span className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Reps</span>
 
                             {stat.totalCalories > 0 && (
-                                <span className="text-xs font-medium text-orange-500 flex items-center gap-0.5">
+                                <span className="text-xs font-medium text-orange-700 dark:text-orange-400 flex items-center gap-0.5">
                                     {Math.round(stat.totalCalories).toLocaleString('fr-FR')} kcal
                                 </span>
                             )}

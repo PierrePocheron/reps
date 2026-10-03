@@ -53,7 +53,7 @@ export function PlateCalculator({ open, onOpenChange, weight, exerciseName }: {
           <p className="font-semibold">
             {plates.length ? `Par côté : ${plates.map(fmt).join(' + ')} kg` : 'Barre seule'}
           </p>
-          <p className={cn('text-xs', exact ? 'text-muted-foreground' : 'text-amber-600 dark:text-amber-400')}>
+          <p className={cn('text-xs', exact ? 'text-muted-foreground' : 'text-amber-700 dark:text-amber-400')}>
             {exact ? `Total : ${fmt(total)} kg` : `Charge exacte impossible : ${fmt(total)} kg au plus proche`}
           </p>
         </div>

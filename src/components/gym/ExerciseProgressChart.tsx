@@ -99,7 +99,7 @@ export function ExerciseProgressChart({ points }: { points: ExercisePoint[] }) {
           <Trophy className="h-4 w-4 text-amber-500" /> Record : {fmt(max)} {unit}
         </span>
         {shown.length > 1 && (
-          <span className={cn('text-xs font-semibold', delta >= 0 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground')}>
+          <span className={cn('text-xs font-semibold', delta >= 0 ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground')}>
             {delta >= 0 ? '+' : '−'}{fmt(Math.abs(delta))} {unit} sur la période
           </span>
         )}

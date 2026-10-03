@@ -37,7 +37,7 @@ export function Layout({ children }: LayoutProps) {
       {/* Bannière offline */}
       {isOffline && (
         <div role="status" className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] fixed top-0 left-0 right-0 z-[60]">
-          <div className="flex items-center gap-2 text-sm text-yellow-600 dark:text-yellow-400 max-w-2xl mx-auto">
+          <div className="flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-400 max-w-2xl mx-auto">
             <AlertCircle className="h-4 w-4" aria-hidden="true" />
             <span>Mode hors ligne — tes données seront synchronisées à la reconnexion</span>
           </div>

@@ -40,6 +40,11 @@ yarn e2e        # terminal 2
 
 À lancer avant chaque PR vers `main`.
 
+### Audit de contraste (`yarn a11y`)
+
+`scripts/contrast-audit.mjs` calcule le contraste de chaque texte visible (WCAG AA : 4,5:1, 3:1 pour le grand texte)
+sur 8 écrans, en clair et en sombre, avec les fonds réels (transparences comprises). Démo lancée, puis `yarn a11y`.
+
 ### Démo sur l'émulateur Android (natif)
 
 Pour tester ce que le web ne couvre pas (notifications, feuille de partage, alarmes exactes) :

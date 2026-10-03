@@ -249,7 +249,7 @@ function PRCard({ pr, onOpen }: { pr: PersonalRecord; onOpen: () => void }) {
               <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                 <div className="flex items-center gap-1 bg-yellow-500/10 px-2.5 py-1 rounded-lg">
                   <Trophy className="h-3.5 w-3.5 text-yellow-500" />
-                  <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400">
+                  <span className="text-sm font-bold text-yellow-700 dark:text-yellow-400">
                     {pr.bestWeight > 0 ? `${formatNumber(pr.bestWeight)} kg` : `${pr.bestReps} reps`}
                   </span>
                 </div>
@@ -396,7 +396,7 @@ function History() {
             <Zap className="h-4 w-4 text-orange-500" />
             Renfo
             {sessions.length > 0 && (
-              <span className="text-xs bg-orange-500/10 text-orange-700 dark:text-orange-400 px-1.5 py-0.5 rounded-full font-semibold">
+              <span className="text-xs bg-orange-500/10 text-orange-800 dark:text-orange-400 px-1.5 py-0.5 rounded-full font-semibold">
                 {sessions.length}
               </span>
             )}
@@ -414,7 +414,7 @@ function History() {
             <Trophy className="h-4 w-4 text-yellow-500" />
             Records
             {personalRecords.length > 0 && (
-              <span className="text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 px-1.5 py-0.5 rounded-full font-semibold">
+              <span className="text-xs bg-yellow-500/10 text-yellow-800 dark:text-yellow-400 px-1.5 py-0.5 rounded-full font-semibold">
                 {personalRecords.length}
               </span>
             )}

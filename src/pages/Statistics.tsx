@@ -499,7 +499,7 @@ export default function Statistics() {
               />
             </div>
             {thisWeekCount >= weeklyGoal ? (
-              <p className="text-xs text-green-600 dark:text-green-400 font-medium">
+              <p className="text-xs text-green-700 dark:text-green-400 font-medium">
                 🎉 Objectif atteint ! Bravo !
               </p>
             ) : (
@@ -515,7 +515,7 @@ export default function Statistics() {
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 dark:text-yellow-400 p-3 rounded-2xl flex gap-3 text-sm items-start"
+            className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-700 dark:text-yellow-400 p-3 rounded-2xl flex gap-3 text-sm items-start"
           >
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
             <div className="flex-1">
@@ -654,9 +654,9 @@ export default function Statistics() {
                   className="bg-card border rounded-xl p-3 flex flex-col items-center gap-2 text-center relative overflow-hidden"
                 >
                   <div className={`absolute top-0 left-0 px-2 py-0.5 text-[10px] font-bold rounded-br-lg ${
-                    i === 0 ? 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400' :
+                    i === 0 ? 'bg-yellow-500/20 text-yellow-800 dark:text-yellow-400' :
                     i === 1 ? 'bg-slate-300/20 text-slate-600 dark:text-slate-400' :
-                    'bg-orange-300/20 text-orange-600 dark:text-orange-400'
+                    'bg-orange-300/20 text-orange-700 dark:text-orange-400'
                   }`}>
                     #{i + 1}
                   </div>

@@ -225,10 +225,10 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
 
   let actionButtonClass = '';
   if (!isActive) {
-       if (def.difficulty === 'easy') actionButtonClass = 'bg-green-500/10 border-green-500/20 text-green-700 hover:bg-green-500/20 dark:text-green-400 border';
-       else if (def.difficulty === 'medium') actionButtonClass = 'bg-yellow-500/10 border-yellow-500/20 text-yellow-700 hover:bg-yellow-500/20 dark:text-yellow-400 border';
-       else if (def.difficulty === 'hard') actionButtonClass = 'bg-orange-500/10 border-orange-500/20 text-orange-700 hover:bg-orange-500/20 dark:text-orange-400 border';
-       else actionButtonClass = 'bg-red-500/10 border-red-500/20 text-red-700 hover:bg-red-500/20 dark:text-red-400 border';
+       if (def.difficulty === 'easy') actionButtonClass = 'bg-green-500/10 border-green-500/20 text-green-800 hover:bg-green-500/20 dark:text-green-400 border';
+       else if (def.difficulty === 'medium') actionButtonClass = 'bg-yellow-500/10 border-yellow-500/20 text-yellow-800 hover:bg-yellow-500/20 dark:text-yellow-400 border';
+       else if (def.difficulty === 'hard') actionButtonClass = 'bg-orange-500/10 border-orange-500/20 text-orange-800 hover:bg-orange-500/20 dark:text-orange-400 border';
+       else actionButtonClass = 'bg-red-500/10 border-red-500/20 text-red-800 hover:bg-red-500/20 dark:text-red-400 border';
   }
 
   // Stack Effect for Late Days
@@ -393,7 +393,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                         <span className="text-xs font-semibold uppercase text-muted-foreground">Détails</span>
                         <div className="flex items-baseline gap-2 text-sm">
                            <span>Départ <b>{def.baseAmount}</b></span>
-                           <span className="text-muted-foreground/50">•</span>
+                           <span className="text-muted-foreground/50" aria-hidden>•</span>
                            <span>+<b>{def.increment}</b>/j</span>
                         </div>
                     </div>
