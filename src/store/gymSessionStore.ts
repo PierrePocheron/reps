@@ -189,8 +189,11 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   },
 
   dismissRestTimer: () => {
+    const { restEndsAt } = get();
     set({ showRestTimer: false, restEndsAt: null });
-    cancelRestEnd();
+    // Arrêté avant la fin : on annule. Fini tout seul : la notification doit rester (le décompte JS tourne
+    // encore en arrière-plan et la retirait 140 ms après son affichage sur l'écran verrouillé)
+    if (restEndsAt && Date.now() < restEndsAt) cancelRestEnd();
   },
 
   setRestDuration: (seconds: number) => {

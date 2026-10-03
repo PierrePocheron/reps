@@ -9,6 +9,10 @@ const config: CapacitorConfig = {
     iosScheme: 'https',
   },
   plugins: {
+    LocalNotifications: {
+      smallIcon: 'ic_stat_reps', // res/drawable/ic_stat_reps.xml (sinon icône générique « i »)
+      iconColor: '#7C3AED',
+    },
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,

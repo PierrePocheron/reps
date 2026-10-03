@@ -1,5 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { useGymSessionStore } from '../gymSessionStore';
+import { cancelRestEnd } from '@/utils/restNotification';
+
+vi.mock('@/utils/restNotification', () => ({ scheduleRestEnd: vi.fn(), cancelRestEnd: vi.fn() }));
 
 describe('gymSessionStore — persistance de la séance en cours', () => {
   it('sauvegarde séries et chrono, sans l\'affichage du minuteur de repos', () => {
@@ -30,5 +33,19 @@ describe('gymSessionStore — minuteur de repos', () => {
 
     dismissRestTimer();
     expect(useGymSessionStore.getState()).toMatchObject({ showRestTimer: false, restEndsAt: null });
+  });
+});
+
+describe('gymSessionStore — notification de fin de repos', () => {
+  it('annule la notification si le repos est arrêté avant la fin, la garde s\'il est terminé', () => {
+    const { startRestTimer, dismissRestTimer } = useGymSessionStore.getState();
+    vi.mocked(cancelRestEnd).mockClear();
+    startRestTimer();
+    dismissRestTimer(); // arrêt anticipé
+    expect(cancelRestEnd).toHaveBeenCalledTimes(1);
+
+    useGymSessionStore.setState({ showRestTimer: true, restEndsAt: Date.now() - 1000 });
+    dismissRestTimer(); // repos écoulé : la notification affichée doit rester
+    expect(cancelRestEnd).toHaveBeenCalledTimes(1);
   });
 });

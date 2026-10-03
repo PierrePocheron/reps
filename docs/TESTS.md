@@ -38,7 +38,23 @@ yarn dev:demo   # terminal 1 : émulateurs + données de démo
 yarn e2e        # terminal 2
 ```
 
-À lancer avant chaque PR vers `main`. Il a déjà attrapé deux bugs invisibles aux tests unitaires : le gel en fin de
+À lancer avant chaque PR vers `main`.
+
+### Démo sur l'émulateur Android (natif)
+
+Pour tester ce que le web ne couvre pas (notifications, feuille de partage, alarmes exactes) :
+
+```bash
+yarn dev:demo                                   # terminal 1 : émulateurs Firebase
+yarn vite build --mode demo && npx cap sync android && (cd android && ./gradlew assembleDebug)
+adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+adb reverse tcp:9099 tcp:9099 && adb reverse tcp:8085 tcp:8085   # l'appli joint les émulateurs du Mac
+```
+
+Le build **debug** autorise le HTTP en clair vers `127.0.0.1` (`android/app/src/debug/res/xml/network_security_config.xml`) ;
+le build release l'interdit. La WebView d'un build debug se pilote avec l'API `_android` de Playwright
+(`device.webView({ pkg: 'com.pierre.reps.app' })`). Repasser ensuite sur les vraies valeurs : `yarn build && npx cap sync android`.
+ Il a déjà attrapé deux bugs invisibles aux tests unitaires : le gel en fin de
 séance muscu (#43) et le retour forcé à l'accueil juste après la connexion.
 
 ---
