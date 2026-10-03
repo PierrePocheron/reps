@@ -39,3 +39,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | passe UI/UX séance muscu + Records | Séance muscu accessible (cibles 44 px, champs nommés) ; les cartes Records ouvrent la courbe de progression | `02f03be` |
 | 2026-10-03 | #3 | Notification de fin de repos écran verrouillé ; décompte calé sur l'heure de fin (ne se fige plus en arrière-plan) | `cf43f9f` |
 | 2026-10-03 | #38 | Une seule série (jours d'entraînement renfo + muscu) dans l'en-tête et les stats ; record juste ; badges de série via la muscu | `6903f88` |
+| 2026-10-03 | passe UI/UX Statistiques | Habitudes calculées sur les vraies séances (renfo + muscu, créneau favori) ; libellés et cibles corrigés | `8d3902d` |
