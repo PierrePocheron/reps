@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -23,9 +23,10 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onSave: (data: Omit<WorkoutTemplate, 'id' | 'userId' | 'createdAt'>) => Promise<void>;
+  initial?: WorkoutTemplate | null; // modèle à modifier (formulaire prérempli)
 }
 
-export function CreateTemplateDialog({ open, onClose, onSave }: Props) {
+export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) {
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState('💪');
   const [workoutType, setWorkoutType] = useState<WorkoutType>('renforcement');
@@ -34,6 +35,19 @@ export function CreateTemplateDialog({ open, onClose, onSave }: Props) {
   const [showExercisePicker, setShowExercisePicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [expandedEx, setExpandedEx] = useState<string | null>(null);
+
+  // Modification : préremplir avec le modèle existant
+  useEffect(() => {
+    if (!open || !initial) return;
+    setName(initial.name);
+    setEmoji(initial.emoji);
+    setWorkoutType(initial.workoutType);
+    setSelectedIds(initial.exerciseIds ?? []);
+    setMuscuExercises((initial.muscuExercises ?? []).map((me) => {
+      const ex = MUSCULATION_EXERCISES.find((e) => e.id === me.exerciseId);
+      return { exerciseId: me.exerciseId, name: ex?.name ?? me.exerciseId, emoji: ex?.emoji ?? '🏋️', sets: me.sets.map((s) => ({ ...s })) };
+    }));
+  }, [open, initial]);
 
   if (!open) return null;
 
@@ -161,7 +175,7 @@ export function CreateTemplateDialog({ open, onClose, onSave }: Props) {
       <div className="relative z-10 w-full sm:max-w-md bg-background rounded-t-3xl sm:rounded-2xl shadow-xl flex flex-col max-h-[90dvh]">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b shrink-0">
-          <h2 className="font-semibold text-base">Nouveau modèle</h2>
+          <h2 className="font-semibold text-base">{initial ? 'Modifier le modèle' : 'Nouveau modèle'}</h2>
           <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">
             <X className="w-5 h-5" />
           </button>

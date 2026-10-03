@@ -3,6 +3,7 @@ import {
   addDoc,
   getDocs,
   deleteDoc,
+  updateDoc,
   doc,
   query,
   orderBy,
@@ -59,6 +60,18 @@ export async function deleteUserTemplate(userId: string, templateId: string): Pr
     await deleteDoc(ref);
   } catch (error) {
     logger.error('Erreur lors de la suppression du template:', error as Error);
+    throw error;
+  }
+}
+
+/**
+ * Met à jour un modèle perso en place (même ID)
+ */
+export async function updateUserTemplate(userId: string, templateId: string, data: CreateTemplateData): Promise<void> {
+  try {
+    await updateDoc(doc(db, 'userTemplates', userId, 'templates', templateId), { ...data });
+  } catch (error) {
+    logger.error('Erreur lors de la mise à jour du template:', error as Error);
     throw error;
   }
 }

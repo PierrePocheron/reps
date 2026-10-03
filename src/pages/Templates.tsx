@@ -21,7 +21,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { Zap, Dumbbell, ChevronRight, ArrowRight, Plus, Trash2 } from 'lucide-react';
+import { Zap, Dumbbell, ChevronRight, ArrowRight, Plus, Trash2, Pencil } from 'lucide-react';
 import type { WorkoutTemplate, GymSessionExercise } from '@/firebase/types';
 import { GymTemplatePreviewSheet } from '@/components/GymTemplatePreviewSheet';
 
@@ -33,11 +33,13 @@ function TemplateCard({
   template,
   onStart,
   onDelete,
+  onEdit,
   suggested = false,
 }: {
   template: WorkoutTemplate;
   onStart: () => void;
   onDelete?: () => void;
+  onEdit?: () => void;
   suggested?: boolean;
 }) {
   const exerciseCount = template.exerciseIds?.length ?? template.muscuExercises?.length ?? 0;
@@ -81,6 +83,15 @@ function TemplateCard({
         </div>
       </button>
 
+      {onEdit && (
+        <button
+          onClick={onEdit}
+          aria-label={`Modifier ${template.name}`}
+          className="flex items-center justify-center w-11 min-h-[44px] rounded-2xl border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground active:scale-95 transition-all"
+        >
+          <Pencil className="w-4 h-4" />
+        </button>
+      )}
       {onDelete && (
         <button
           onClick={onDelete}
@@ -103,11 +114,12 @@ function Templates() {
   const suggested = new URLSearchParams(useLocation().search).get('suggest'); // modèle conseillé par le questionnaire
   const [activeTab, setActiveTab] = useState<Tab>(suggested?.startsWith('muscu_') ? 'musculation' : 'renforcement');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editing, setEditing] = useState<WorkoutTemplate | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<WorkoutTemplate | null>(null);
   const [templateToDelete, setTemplateToDelete] = useState<WorkoutTemplate | null>(null);
   const { isActive, loadExercisesFromTemplate } = useSessionStore();
   const { phase: gymPhase, loadGymTemplate, startExecution } = useGymSessionStore();
-  const { templates: userTemplates, loading: templatesLoading, create, remove } = useUserTemplates();
+  const { templates: userTemplates, loading: templatesLoading, create, remove, update } = useUserTemplates();
 
   const hasActiveSession = isActive || gymPhase !== 'idle';
 
@@ -238,6 +250,7 @@ function Templates() {
               template={template}
               onStart={() => handleStartTemplate(template)}
               onDelete={() => setTemplateToDelete(template)}
+              onEdit={() => setEditing(template)}
             />
           ))}
         </div>
@@ -303,11 +316,17 @@ function Templates() {
       </Dialog>
 
       <CreateTemplateDialog
-        open={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
+        open={showCreateDialog || !!editing}
+        initial={editing}
+        onClose={() => { setShowCreateDialog(false); setEditing(null); }}
         onSave={async (data) => {
-          await create(data);
-          toast({ title: 'Modèle créé !', description: data.name });
+          if (editing) {
+            await update(editing.id, data);
+            toast({ title: 'Modèle modifié', description: data.name });
+          } else {
+            await create(data);
+            toast({ title: 'Modèle créé !', description: data.name });
+          }
         }}
       />
     </PageLayout>

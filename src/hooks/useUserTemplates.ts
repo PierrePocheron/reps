@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getUserTemplates, createUserTemplate, deleteUserTemplate } from '@/firebase/templates';
+import { getUserTemplates, createUserTemplate, deleteUserTemplate, updateUserTemplate } from '@/firebase/templates';
 import { useUserStore } from '@/store/userStore';
 import type { WorkoutTemplate } from '@/firebase/types';
 
@@ -36,5 +36,14 @@ export function useUserTemplates() {
     [user?.uid]
   );
 
-  return { templates, loading, create, remove };
+  const update = useCallback(
+    async (templateId: string, data: Omit<WorkoutTemplate, 'id' | 'userId' | 'createdAt'>) => {
+      if (!user) return;
+      await updateUserTemplate(user.uid, templateId, data);
+      setTemplates((prev) => prev.map((t) => (t.id === templateId ? { ...t, ...data } : t)));
+    },
+    [user?.uid]
+  );
+
+  return { templates, loading, create, remove, update };
 }
