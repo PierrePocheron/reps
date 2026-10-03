@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { Exercise, GymSessionExercise, PlannedSet } from '@/firebase/types';
 import { Timestamp } from 'firebase/firestore';
 import { createGymSession, calculateTotalVolume } from '@/firebase/gymSessions';
+import { updateUserStatsAfterSession } from '@/firebase/firestore';
 import { logger } from '@/utils/logger';
 import { scheduleRestEnd, cancelRestEnd } from '@/utils/restNotification';
 import { useUserStore } from './userStore';
@@ -219,6 +220,9 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
         totalVolume: Math.round(totalVolume),
         totalSets,
       });
+      // Série et badges comptent aussi la muscu ; un échec ne doit pas bloquer la fin de séance
+      await updateUserStatsAfterSession(currentUser.uid, 0)
+        .catch((err) => logger.error('Mise à jour des stats après séance muscu :', err));
 
       get().cancelSession();
     } catch (error) {

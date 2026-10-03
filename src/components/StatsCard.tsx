@@ -64,7 +64,7 @@ export function StatsCard({ stats, className, headerAction, limit }: StatsCardPr
     },
     {
       label: 'Série actuelle',
-      value: `${stats.currentStreak} jours`,
+      value: `${stats.currentStreak} jour${stats.currentStreak > 1 ? 's' : ''}`,
       icon: Trophy,
       color: 'text-yellow-500',
     },

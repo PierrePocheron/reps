@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { UserAvatar } from '@/components/UserAvatar';
 import { useUserStore } from '@/store/userStore';
 import { useStreak } from '@/hooks/useStreak';
+import { liveStreak } from '@/utils/streak';
 import { Flame, ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,6 +22,7 @@ export function PageLayout({ children, title, isHome, headerAction, backButton, 
 
     // Initialize Streak Logic
     useStreak();
+    const streak = user ? liveStreak(user.currentStreak || 0, user.lastTrainingDate?.toDate()) : 0;
 
     return (
         <div className="flex flex-col min-h-screen pb-24 bg-background">
@@ -58,13 +60,13 @@ export function PageLayout({ children, title, isHome, headerAction, backButton, 
                                 {user && (
                                     <div
                                         role="img"
-                                        aria-label={`Série en cours : ${user.currentStreak || 0} jour${(user.currentStreak || 0) > 1 ? 's' : ''}`}
-                                        title="Série de jours consécutifs"
+                                        aria-label={`Série en cours : ${streak} jour${streak > 1 ? 's' : ''} d'entraînement d'affilée`}
+                                        title="Jours d'entraînement d'affilée"
                                         className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20"
                                     >
-                                        <Flame className={`w-4 h-4 ${user.currentStreak > 0 ? 'text-orange-500 fill-orange-500' : 'text-muted-foreground'}`} />
-                                        <span className={`text-sm font-bold ${user.currentStreak > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-muted-foreground'}`}>
-                                            {user.currentStreak || 0}
+                                        <Flame className={`w-4 h-4 ${streak > 0 ? 'text-orange-500 fill-orange-500' : 'text-muted-foreground'}`} />
+                                        <span className={`text-sm font-bold ${streak > 0 ? 'text-orange-600 dark:text-orange-400' : 'text-muted-foreground'}`}>
+                                            {streak}
                                         </span>
                                     </div>
                                 )}

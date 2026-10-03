@@ -32,6 +32,7 @@ export interface User {
   currentStreak: number;
   longestStreak: number;
   lastConnection: Timestamp | null;
+  lastTrainingDate?: Timestamp | null; // dernière séance (renfo ou muscu) : la série affichée en dépend
 
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -161,6 +162,7 @@ export interface UserStats {
   lastSessionDate?: Timestamp;
   lastSessionReps?: number;
   currentStreak: number; // jours consécutifs
+  lastTrainingDate?: Timestamp;
   longestStreak: number;
   morningSessions: number; // 7h-9h
   lunchSessions: number; // 12h-14h

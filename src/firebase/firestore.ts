@@ -25,6 +25,8 @@ import { db, auth } from './config';
 import type { User, Session, Exercise, Notification, MotivationalPhrase, UserStats, FriendRequest } from './types';
 import { getUnlockedBadges, DEFAULT_EXERCISES } from '@/utils/constants';
 import { logger } from '@/utils/logger';
+import { trainingStreaks } from '@/utils/streak';
+import { getUserGymSessions } from './gymSessions';
 
 /**
  * Helpers Firestore pour les opérations CRUD
@@ -448,7 +450,10 @@ export async function deleteExercise(exerciseId: string): Promise<void> {
  */
 export async function calculateUserStats(userId: string): Promise<UserStats> {
   try {
-    const sessions = await getUserSessions(userId, 1000); // Récupérer beaucoup de sessions pour les stats
+    const [sessions, gymSessions] = await Promise.all([
+      getUserSessions(userId, 1000), // Récupérer beaucoup de sessions pour les stats
+      getUserGymSessions(userId, 1000),
+    ]);
 
     const totalReps = sessions.reduce((sum, session) => sum + session.totalReps, 0);
     const totalDuration = sessions.reduce((sum, session) => sum + session.duration, 0);
@@ -460,61 +465,11 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
     const averageDuration = totalSessions > 0 ? totalDuration / totalSessions : 0;
     const averageExercises = totalSessions > 0 ? totalExercises / totalSessions : 0;
 
-    // Calculer les streaks (jours consécutifs)
-    let currentStreak = 0;
-    let longestStreak = 0;
-    let tempStreak = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Trier les sessions par date (plus récentes en premier)
-    const sortedSessions = [...sessions].sort((a, b) => {
-      const dateA = a.date.toDate();
-      const dateB = b.date.toDate();
-      return dateB.getTime() - dateA.getTime();
-    });
-
-    if (sortedSessions.length > 0) {
-      const firstSession = sortedSessions[0];
-      if (firstSession) {
-        const lastSessionDate = firstSession.date.toDate();
-        lastSessionDate.setHours(0, 0, 0, 0);
-
-        // Vérifier si la dernière session est aujourd'hui ou hier (pour le streak actuel)
-        const daysDiff = Math.floor((today.getTime() - lastSessionDate.getTime()) / (1000 * 60 * 60 * 24));
-        if (daysDiff <= 1) {
-          currentStreak = 1;
-          tempStreak = 1;
-
-          // Continuer le streak
-          for (let i = 1; i < sortedSessions.length; i++) {
-            const session = sortedSessions[i];
-            const prevSession = sortedSessions[i - 1];
-            if (session && prevSession) {
-              const sessionDate = session.date.toDate();
-              sessionDate.setHours(0, 0, 0, 0);
-              const prevSessionDate = prevSession.date.toDate();
-              prevSessionDate.setHours(0, 0, 0, 0);
-
-              const daysBetween = Math.floor(
-                (prevSessionDate.getTime() - sessionDate.getTime()) / (1000 * 60 * 60 * 24)
-              );
-
-              if (daysBetween === 1) {
-                tempStreak++;
-                if (i === currentStreak) {
-                  currentStreak = tempStreak;
-                }
-                longestStreak = Math.max(longestStreak, tempStreak);
-              } else {
-                longestStreak = Math.max(longestStreak, tempStreak);
-                tempStreak = 1;
-              }
-            }
-          }
-        }
-      }
-    }
+    // Séries : jours distincts avec une séance, renfo + muscu
+    const trainingDates = [...sessions, ...gymSessions].map((sess) => sess.date).filter(Boolean);
+    const { current: currentStreak, longest: longestStreak } = trainingStreaks(trainingDates.map((d) => d.toDate()));
+    const lastTrainingDate = trainingDates.reduce<Timestamp | undefined>(
+      (latest, d) => (!latest || d.toDate() > latest.toDate() ? d : latest), undefined);
 
     // Caluler les sessions par créneau horaire et par exercice
     let morningSessions = 0;
@@ -580,6 +535,7 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
       lastSessionReps: firstSession ? firstSession.totalReps : undefined,
       currentStreak,
       longestStreak,
+      lastTrainingDate,
       morningSessions,
       lunchSessions,
       nightSessions,
@@ -602,6 +558,11 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
     }
 
     const stats = await calculateUserStats(userId);
+    const streakFields = {
+      currentStreak: stats.currentStreak,
+      longestStreak: stats.longestStreak,
+      lastTrainingDate: stats.lastTrainingDate ?? null,
+    };
 
     // Vérifier les nouveaux badges
     const currentBadges = user.badges || [];
@@ -620,6 +581,7 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
         totalReps: stats.totalReps,
         totalSessions: stats.totalSessions,
         totalCalories: stats.totalCalories || 0,
+        ...streakFields,
         badges: updatedBadges,
         updatedAt: serverTimestamp(),
         morningSessions: stats.morningSessions,
@@ -650,6 +612,7 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
         totalReps: stats.totalReps,
         totalSessions: stats.totalSessions,
         totalCalories: stats.totalCalories || 0,
+        ...streakFields,
         morningSessions: stats.morningSessions,
         lunchSessions: stats.lunchSessions,
         nightSessions: stats.nightSessions,

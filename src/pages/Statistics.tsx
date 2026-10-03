@@ -586,17 +586,17 @@ export default function Statistics() {
                      <span className="text-xs text-muted-foreground uppercase font-semibold">Série actuelle</span>
                      <div className="mt-2">
                         <span className="text-3xl font-bold">{stats.currentStreak}</span>
-                        <span className="text-sm text-muted-foreground ml-1">jours</span>
+                        <span className="text-sm text-muted-foreground ml-1">{stats.currentStreak > 1 ? 'jours' : 'jour'}</span>
                      </div>
                 </div>
                 <div className="bg-card border rounded-2xl p-4 flex flex-col justify-between overflow-hidden relative">
                     <div className="absolute top-2 right-2 opacity-10">
                         <Trophy className="w-12 h-12" />
                     </div>
-                     <span className="text-xs text-muted-foreground uppercase font-semibold">Record</span>
+                     <span className="text-xs text-muted-foreground uppercase font-semibold">Meilleure série</span>
                      <div className="mt-2">
                         <span className="text-3xl font-bold">{stats.longestStreak}</span>
-                        <span className="text-sm text-muted-foreground ml-1">jours</span>
+                        <span className="text-sm text-muted-foreground ml-1">{stats.longestStreak > 1 ? 'jours' : 'jour'}</span>
                      </div>
                 </div>
             </div>
