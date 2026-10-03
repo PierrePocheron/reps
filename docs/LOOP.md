@@ -65,3 +65,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | passe UI/UX + légal | Politique de confidentialité alignée (RPE, notes, notifications locales sans token, préférences locales, Replay déclaré) ; astuce types de séries dans le tutoriel ; succès / classement / défi validé vérifiés | `228a49b` |
 | 2026-10-03 | #26 | Suggestion de surcharge progressive (+2,5 / +1,25 kg si tout réussi), appliquée en un tap, désactivable | `5be44db` |
 | 2026-10-03 | #32 | Séries d'échauffement en un tap (40/60/80 %, arrondies aux disques, marquées É) | `0572023` |
+| 2026-10-03 | passe UI/UX contraste | Audit WCAG AA automatique (yarn a11y) : ~45 textes corrigés en clair et en sombre (jeton muted, destructive, accents, color-mix en sombre) | `4a40c35` |
