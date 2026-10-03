@@ -37,10 +37,12 @@ Reps, c'est ton carnet d'entraînement : gratuit, en français, pour la muscu co
 
 • Musculation : prépare ta séance (séries, répétitions, charges), puis valide chaque série d'un geste. Tes charges de la dernière fois sont pré-remplies.
 • Renforcement au poids du corps : pompes, squats, tractions, gainage… compte tes répétitions en direct.
-• Minuteur de repos avec notification, même écran verrouillé.
+• Minuteur de repos lancé automatiquement après chaque série, avec notification même écran verrouillé.
+• Calculateur de disques : les disques à charger de chaque côté de la barre.
+• Note par exercice (réglage machine, sensation), rappelée à la séance suivante.
 • Ta séance est sauvegardée en continu : même si l'appli se ferme, tu reprends où tu en étais.
 • 1 324 exercices illustrés, avec les muscles ciblés et les consignes pas à pas.
-• Modèles de séance pour relancer tes routines préférées.
+• Modèles de séance, ou refais une séance passée en un geste depuis l'historique.
 
 ━━━ VOIS TA PROGRESSION ━━━
 
@@ -48,6 +50,7 @@ Reps, c'est ton carnet d'entraînement : gratuit, en français, pour la muscu co
 • Une courbe par exercice : 1RM estimé, charge max ou volume, sur 3 mois, 1 an ou depuis le début.
 • Historique complet de tes séances et de tes records.
 • Statistiques : calendrier d'activité, progression semaine par semaine, créneaux où tu t'entraînes le plus.
+• Muscles travaillés : tes séries par groupe musculaire sur 7 ou 30 jours.
 • Série de jours d'entraînement d'affilée, renfo et muscu confondus.
 
 ━━━ RESTE MOTIVÉ ━━━
@@ -71,7 +74,7 @@ Tes séances sont synchronisées de façon sécurisée et ne sont jamais revendu
 Débutant ou confirmé, lance ta première séance : chaque rep compte.
 ```
 
-*(~2 400 caractères. À ne pas promettre tant que ce n'est pas tranché : « sans pub », niveaux — il n'y a pas de système de niveaux dans l'appli.)*
+*(~2 750 caractères. À ne pas promettre tant que ce n'est pas tranché : « sans pub », niveaux — il n'y a pas de système de niveaux dans l'appli.)*
 
 ---
 
