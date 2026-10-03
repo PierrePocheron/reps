@@ -185,7 +185,7 @@ function GymSession() {
     const name = exercises.find((ex) => ex.exerciseId === exerciseId)?.name ?? 'Exercice';
     toast({
       title: 'Nouveau record ! 🏆',
-      description: `${name} : ${weight} kg × ${reps} — 1RM estimé ${Math.round(e1rm)} kg`,
+      description: `${name} : ${weight.toLocaleString('fr-FR')} kg × ${reps} — 1RM estimé ${Math.round(e1rm)} kg`,
     });
   };
 

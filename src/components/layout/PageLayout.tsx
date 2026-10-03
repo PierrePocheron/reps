@@ -111,9 +111,9 @@ export function PageLayout({ children, title, isHome, headerAction, backButton, 
             )}
 
             {/* Content */}
-            <main className={`flex-1 px-5 py-4 ${className}`}>
+            <div className={`flex-1 px-5 py-4 ${className}`}>
                 {children}
-            </main>
+            </div>
         </div>
     );
 }

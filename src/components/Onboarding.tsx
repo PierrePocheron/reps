@@ -61,7 +61,7 @@ function VisualExercises() {
               {set.done && <Check className="h-2.5 w-2.5" />}
             </span>
             <span className="font-medium">{set.reps} reps</span>
-            <span className="text-muted-foreground">× {set.weight} kg</span>
+            <span className="text-muted-foreground">× {set.weight.toLocaleString('fr-FR')} kg</span>
           </div>
         ))}
       </div>

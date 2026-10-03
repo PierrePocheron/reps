@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { formatDurationLong } from '@/utils/formatters';
+import { formatDurationLong, formatNumber } from '@/utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -160,7 +160,7 @@ function MuscuCard({ session, imageMap, onRedo }: { session: GymSession; imageMa
               const firstSet = completedSetsList[0];
               const w = firstSet ? (firstSet.actualWeight ?? firstSet.weight) : 0;
               const setsSummary = completedSetsList.length > 0
-                ? `${completedSetsList.length} × ${w > 0 ? `${w} kg` : 'poids du corps'}`
+                ? `${completedSetsList.length} × ${w > 0 ? `${formatNumber(w)} kg` : 'poids du corps'}`
                 : `${ex.sets.length} série${ex.sets.length > 1 ? 's' : ''}`;
 
               return (
@@ -237,7 +237,7 @@ function PRCard({ pr, onOpen }: { pr: PersonalRecord; onOpen: () => void }) {
                 <div className="flex items-center gap-1 bg-yellow-500/10 px-2.5 py-1 rounded-lg">
                   <Trophy className="h-3.5 w-3.5 text-yellow-500" />
                   <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400">
-                    {pr.bestWeight > 0 ? `${pr.bestWeight} kg` : `${pr.bestReps} reps`}
+                    {pr.bestWeight > 0 ? `${formatNumber(pr.bestWeight)} kg` : `${pr.bestReps} reps`}
                   </span>
                 </div>
                 {pr.bestWeight > 0 && (
@@ -251,7 +251,7 @@ function PRCard({ pr, onOpen }: { pr: PersonalRecord; onOpen: () => void }) {
           {oneRepMax !== null && oneRepMax > pr.bestWeight && (
             <div className="mt-3 pt-3 border-t flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Max estimé sur 1 rep</p>
-              <p className="text-xs font-semibold">~{oneRepMax} kg</p>
+              <p className="text-xs font-semibold">~{formatNumber(oneRepMax)} kg</p>
             </div>
           )}
         </div>

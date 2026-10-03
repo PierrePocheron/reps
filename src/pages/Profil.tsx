@@ -156,7 +156,7 @@ function Profil() {
               </div>
               <div className="text-center border-l border-r">
                 <p className="text-sm text-muted-foreground">Poids</p>
-                <p className="font-semibold">{user.weight ? `${user.weight} kg` : '-'}</p>
+                <p className="font-semibold">{user.weight ? `${user.weight.toLocaleString('fr-FR')} kg` : '-'}</p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Taille</p>
