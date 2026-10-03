@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { suggestNextWeight, incrementFor } from '../progression';
+import { suggestNextWeight, incrementFor, lastWorkSets } from '../progression';
 import type { GymSession, PlannedSet } from '@/firebase/types';
 
 const session = (exerciseId: string, sets: PlannedSet[]) =>
@@ -27,5 +27,13 @@ describe('suggestNextWeight', () => {
     expect(incrementFor('barbell_curl')).toBe(1.25);
     expect(incrementFor('barbell_squat')).toBe(2.5);
     expect(suggestNextWeight([session('pullups', [done(0, 10)])], 'pullups')).toBeNull();
+  });
+});
+
+describe('lastWorkSets', () => {
+  it('recopie les séries validées de la dernière séance, sans échauffement', () => {
+    const h = [session('bench_press', [{ ...done(40, 10), type: 'warmup' }, done(80, 8, 9), done(80, 8), { weight: 80, reps: 8, completed: false }])];
+    expect(lastWorkSets(h, 'bench_press')).toEqual([{ reps: 9, weight: 80 }, { reps: 8, weight: 80 }]);
+    expect(lastWorkSets(h, 'deadlift')).toEqual([]);
   });
 });

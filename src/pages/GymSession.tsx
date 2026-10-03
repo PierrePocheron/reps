@@ -35,7 +35,7 @@ import confetti from 'canvas-confetti';
 import { ToastAction } from '@/components/ui/toast';
 import { exactAlarmDenied, openExactAlarmSettings } from '@/utils/restNotification';
 import { gymCard, shareSessionCard } from '@/utils/shareCard';
-import { suggestNextWeight, type LoadSuggestion } from '@/utils/progression';
+import { lastWorkSets, suggestNextWeight, type LoadSuggestion } from '@/utils/progression';
 import { loadPlatePrefs, warmupSets } from '@/utils/plates';
 import { cn } from '@/utils/cn';
 
@@ -544,9 +544,10 @@ function GymSession() {
         onOpenChange={setShowExerciseDialog}
         onAdd={(exercise) => {
           addExercise(exercise);
-          // Ajoute une première série depuis l'historique (ou default)
-          const def = historyDefaults[exercise.id] ?? { reps: 10, weight: 0 };
-          addSet(exercise.id, { reps: def.reps, weight: def.weight });
+          // Comme Hevy : les séries de la dernière fois, sinon une série par défaut
+          const last = lastWorkSets(gymHistory, exercise.id);
+          if (last.length) last.forEach((set) => addSet(exercise.id, set));
+          else addSet(exercise.id, historyDefaults[exercise.id] ?? { reps: 10, weight: 0 });
         }}
         hasExercise={(id) => exercises.some((ex) => ex.exerciseId === id)}
         enrichedExercises={MUSCULATION_EXERCISES.map((ex) => ({ ...ex, imageUrl: imageMap[ex.id] }))}

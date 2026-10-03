@@ -37,3 +37,15 @@ export function suggestNextWeight(history: GymSession[], exerciseId: string): Lo
   }
   return null;
 }
+
+/** Séries de travail de la dernière séance de l'exercice (Hevy les recopie à l'ajout) ; [] s'il n'a jamais été fait. */
+export function lastWorkSets(history: GymSession[], exerciseId: string): { reps: number; weight: number }[] {
+  for (const session of history) {
+    const ex = session.exercises.find((e) => e.exerciseId === exerciseId);
+    if (!ex) continue;
+    const work = ex.sets.filter((s) => s.type !== 'warmup');
+    const done = work.filter((s) => s.completed);
+    return (done.length ? done : work).map((s) => ({ reps: s.actualReps ?? s.reps, weight: s.actualWeight ?? s.weight }));
+  }
+  return [];
+}
