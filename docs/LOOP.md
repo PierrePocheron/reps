@@ -53,3 +53,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | #10 | Muscles travaillés : séries par groupe musculaire sur 7/30 jours (principal 1, secondaire ½, renfo converti) | `f8408db` |
 | 2026-10-03 | #11 | Calculateur de disques (exercices à la barre, barre et disques réglables, arrondi au réalisable) | `d08d401` |
 | 2026-10-03 | passe UI/UX séance muscu | Bug P0 trouvé : barre minuteur + Terminer pas fixée (transform résiduel de PageTransition) → fondu seul + assertion E2E | `e67cfec` |
+| 2026-10-03 | #16 | Export CSV (format Strong, importable Hevy) ; exports JSON/CSV via feuille de partage native (cassés sur Android) ; fichier vide si export pendant le chargement | `dca2ba8` |
