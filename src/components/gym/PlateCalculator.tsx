@@ -2,21 +2,12 @@ import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/utils/cn';
-import { DEFAULT_PLATES, platesPerSide } from '@/utils/plates';
+import { DEFAULT_PLATES, loadPlatePrefs, platesPerSide, savePlatePrefs } from '@/utils/plates';
 
 const BARS = [20, 15, 10];
-const STORAGE_KEY = 'reps_plates'; // barre et disques disponibles : préférence locale à l'appareil
 // Couleurs olympiques usuelles, pour reconnaître les disques d'un coup d'œil
 const PLATE_COLOR: Record<number, string> = { 25: 'bg-red-500', 20: 'bg-blue-500', 15: 'bg-yellow-400', 10: 'bg-green-500', 5: 'bg-slate-100', 2.5: 'bg-zinc-800', 1.25: 'bg-slate-400' };
 const fmt = (n: number) => n.toLocaleString('fr-FR');
-
-function loadPrefs(): { bar: number; plates: number[] } {
-  try {
-    const p = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '');
-    if (typeof p.bar === 'number' && Array.isArray(p.plates)) return p;
-  } catch { /* préférences absentes ou illisibles */ }
-  return { bar: 20, plates: DEFAULT_PLATES };
-}
 
 /** Calculateur de disques : quels disques mettre de chaque côté de la barre pour la charge visée. */
 export function PlateCalculator({ open, onOpenChange, weight, exerciseName }: {
@@ -26,12 +17,12 @@ export function PlateCalculator({ open, onOpenChange, weight, exerciseName }: {
   exerciseName: string;
 }) {
   const [target, setTarget] = useState(String(weight));
-  const [prefs, setPrefs] = useState(loadPrefs);
+  const [prefs, setPrefs] = useState(loadPlatePrefs);
 
   useEffect(() => { if (open) setTarget(String(weight)); }, [open, weight]);
   const save = (next: typeof prefs) => {
     setPrefs(next);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* stockage indisponible */ }
+    savePlatePrefs(next);
   };
 
   const { plates, total } = platesPerSide(Number(target) || 0, prefs.bar, prefs.plates);

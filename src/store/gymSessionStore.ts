@@ -35,6 +35,7 @@ interface GymSessionState {
   updateSet: (exerciseId: string, setIndex: number, partial: Partial<Omit<PlannedSet, 'completed'>>) => void;
   removeSet: (exerciseId: string, setIndex: number) => void;
   duplicateLastSet: (exerciseId: string) => void;
+  prependWarmup: (exerciseId: string, sets: { weight: number; reps: number }[]) => void;
   setExerciseNote: (exerciseId: string, note: string) => void;
 
   // Actions — Exécution
@@ -133,6 +134,13 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
           ? { ...ex, sets: ex.sets.filter((_, i) => i !== setIndex) }
           : ex
       ),
+    }));
+  },
+
+  prependWarmup: (exerciseId: string, sets: { weight: number; reps: number }[]) => {
+    const warmup: PlannedSet[] = sets.map((s) => ({ ...s, completed: false, type: 'warmup' }));
+    set((state) => ({
+      exercises: state.exercises.map((ex) => (ex.exerciseId === exerciseId ? { ...ex, sets: [...warmup, ...ex.sets] } : ex)),
     }));
   },
 

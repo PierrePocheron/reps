@@ -29,3 +29,30 @@ export function platesPerSide(target: number, bar: number, available: number[]):
   plates.sort((a, b) => b - a);
   return { plates, total: bar + 2 * best * UNIT };
 }
+
+const PREFS_KEY = 'reps_plates'; // barre et disques disponibles : préférence locale à l'appareil
+
+export function loadPlatePrefs(): { bar: number; plates: number[] } {
+  try {
+    const p = JSON.parse(localStorage.getItem(PREFS_KEY) ?? '');
+    if (typeof p.bar === 'number' && Array.isArray(p.plates)) return p;
+  } catch { /* préférences absentes ou illisibles */ }
+  return { bar: 20, plates: DEFAULT_PLATES };
+}
+
+export function savePlatePrefs(prefs: { bar: number; plates: number[] }) {
+  try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch { /* stockage indisponible */ }
+}
+
+/**
+ * Séries d'échauffement avant la charge de travail : ~40 % × 8, 60 % × 5, 80 % × 3, arrondies au réalisable
+ * (disques disponibles pour une barre, 2,5 kg sinon) ; doublons et charges inutiles écartés.
+ */
+export function warmupSets(work: number, barbell: { bar: number; plates: number[] } | null): { weight: number; reps: number }[] {
+  const out: { weight: number; reps: number }[] = [];
+  for (const [pct, reps] of [[0.4, 8], [0.6, 5], [0.8, 3]] as const) {
+    const weight = barbell ? platesPerSide(work * pct, barbell.bar, barbell.plates).total : Math.round((work * pct) / 2.5) * 2.5;
+    if (weight > 0 && weight < work && !out.some((s) => s.weight === weight)) out.push({ weight, reps });
+  }
+  return out;
+}

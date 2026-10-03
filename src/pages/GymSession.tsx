@@ -36,6 +36,7 @@ import { ToastAction } from '@/components/ui/toast';
 import { exactAlarmDenied, openExactAlarmSettings } from '@/utils/restNotification';
 import { gymCard, shareSessionCard } from '@/utils/shareCard';
 import { suggestNextWeight, type LoadSuggestion } from '@/utils/progression';
+import { loadPlatePrefs, warmupSets } from '@/utils/plates';
 import { cn } from '@/utils/cn';
 
 const NUM_CLS = 'text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
@@ -65,6 +66,7 @@ function GymSession() {
     updateSet,
     removeSet,
     setExerciseNote,
+    prependWarmup,
     startExecution,
     dismissRestTimer,
     setRestDuration,
@@ -424,6 +426,7 @@ function GymSession() {
             onShowDetail={(id) => setDetailExerciseId(id)}
             lastNote={lastNotes[exercise.exerciseId]}
             isBarbell={infoMap[exercise.exerciseId]?.equipment === 'barbell'}
+            onAddWarmup={(sets) => prependWarmup(exercise.exerciseId, sets)}
             suggestion={suggestLoad ? suggestNextWeight(gymHistory, exercise.exerciseId) : null}
             onApplySuggestion={(s) => exercise.sets.forEach((set, i) => {
               if (!set.completed && set.type !== 'warmup' && (set.actualWeight ?? set.weight) < s.to) updateSet(exercise.exerciseId, i, { weight: s.to, actualWeight: s.to });
@@ -693,6 +696,7 @@ function ExecuteExerciseCard({
   onType,
   suggestion,
   onApplySuggestion,
+  onAddWarmup,
 }: {
   exercise: GymSessionExercise;
   onCompleteSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
@@ -706,11 +710,15 @@ function ExecuteExerciseCard({
   onType: (exerciseId: string, setIndex: number, type: SetType | undefined) => void;
   suggestion: LoadSuggestion | null;
   onApplySuggestion: (s: LoadSuggestion) => void;
+  onAddWarmup: (sets: { weight: number; reps: number }[]) => void;
 }) {
   const completedCount = exercise.sets.filter((s) => s.completed).length;
   const [showPlates, setShowPlates] = useState(false);
   const nextSet = exercise.sets.find((s) => !s.completed) ?? exercise.sets[exercise.sets.length - 1];
   const nextWeight = nextSet ? (nextSet.actualWeight ?? nextSet.weight) : 0;
+  // Échauffement proposé avant la première série, s'il n'y en a pas déjà
+  const warmups = completedCount === 0 && !exercise.sets.some((st) => st.type === 'warmup')
+    ? warmupSets(nextWeight, isBarbell ? loadPlatePrefs() : null) : [];
 
   return (
     <div className="rounded-2xl border-2 border-border bg-card overflow-hidden">
@@ -802,13 +810,25 @@ function ExecuteExerciseCard({
           />
         ))}
 
-        <button
-          onClick={() => onAddSet(exercise.exerciseId)}
-          className="w-full min-h-11 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all text-xs font-medium"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Série {exercise.sets.length + 1}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => onAddSet(exercise.exerciseId)}
+            className="flex-1 min-h-11 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all text-xs font-medium"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Série {exercise.sets.filter((st) => st.type !== 'warmup').length + 1}
+          </button>
+          {warmups.length > 0 && (
+            <button
+              onClick={() => onAddWarmup(warmups)}
+              aria-label={`Ajouter l'échauffement : ${warmups.map((w) => `${w.reps} × ${w.weight.toLocaleString('fr-FR')} kg`).join(', ')}`}
+              className="flex-1 min-h-11 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-amber-500/40 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-all text-xs font-medium"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Échauffement ({warmups.length})
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
