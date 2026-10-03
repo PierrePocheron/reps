@@ -23,9 +23,10 @@ import {
   type LibraryExercise,
 } from '@/utils/exerciseLibrary';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
+import { estimate1RM, bestE1RMByExercise } from '@/utils/records';
 import {
   Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
-  Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2,
+  Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2, Trophy,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { cn } from '@/utils/cn';
@@ -88,10 +89,14 @@ function GymSession() {
     if (!isAuthenticated) navigate('/');
   }, [isAuthenticated, navigate]);
 
-  // Charger les defaults depuis la dernière séance muscu de l'utilisateur
+  // Records de référence (meilleur 1RM estimé par exercice) — ref : lecture synchrone au tap
+  const bestsRef = useRef<Record<string, number>>({});
+
+  // Charger les defaults (dernière séance) et les records depuis l'historique muscu
   useEffect(() => {
     if (!user || phase === 'idle') return;
-    getUserGymSessions(user.uid, 5).then((sessions) => {
+    getUserGymSessions(user.uid, 200).then((sessions) => {
+      bestsRef.current = bestE1RMByExercise(sessions);
       const defaults: Record<string, { reps: number; weight: number }> = {};
       // Parcourir les sessions du plus récent au plus ancien
       for (const session of sessions) {
@@ -145,7 +150,25 @@ function GymSession() {
   // ─── Handlers Exécution ────────────────────────────────────────────────
 
 
+  const handleCompleteSet = (exerciseId: string, setIndex: number, reps: number, weight: number) => {
+    completeSetAt(exerciseId, setIndex, reps, weight);
+    const best = bestsRef.current[exerciseId];
+    const e1rm = estimate1RM(weight, reps);
+    // Pas d'historique sur l'exercice = pas de « record » (évite le faux positif de la 1re séance)
+    if (best === undefined || e1rm <= best) return;
+    bestsRef.current[exerciseId] = e1rm;
+    updateSet(exerciseId, setIndex, { isRecord: true });
+    haptics.notification();
+    confetti({ particleCount: 50, spread: 55, origin: { y: 0.7 } });
+    const name = exercises.find((ex) => ex.exerciseId === exerciseId)?.name ?? 'Exercice';
+    toast({
+      title: 'Nouveau record ! 🏆',
+      description: `${name} : ${weight} kg × ${reps} — 1RM estimé ${Math.round(e1rm)} kg`,
+    });
+  };
+
   const handleEndSession = async () => {
+    const recordCount = exercises.reduce((n, ex) => n + ex.sets.filter((st) => st.isRecord).length, 0);
     if (ending) return;
     setEnding(true);
     try {
@@ -154,7 +177,7 @@ function GymSession() {
         title: 'Séance terminée !',
         description: `${completedSets} séries · ${Math.round(
           exercises.reduce((v, ex) => v + ex.sets.filter(s => s.completed).reduce((s2, s) => s2 + (s.actualWeight ?? s.weight) * (s.actualReps ?? s.reps), 0), 0)
-        )} kg soulevés`,
+        )} kg soulevés${recordCount > 0 ? ` · 🏆 ${recordCount} record${recordCount > 1 ? 's' : ''}` : ''}`,
       });
       haptics.notification();
       play('complete');
@@ -355,7 +378,7 @@ function GymSession() {
           <ExecuteExerciseCard
             key={exercise.exerciseId}
             exercise={exercise}
-            onCompleteSet={completeSetAt}
+            onCompleteSet={handleCompleteSet}
             onUpdateSet={(exerciseId, setIndex, reps, weight) =>
               updateSet(exerciseId, setIndex, { actualReps: reps, actualWeight: weight })
             }
@@ -530,7 +553,9 @@ function SetExecuteRow({
       set.completed ? 'bg-green-500/10' : 'bg-muted/30'
     )}>
       <span className={cn('text-xs font-bold w-6 flex-shrink-0', set.completed ? 'text-green-500' : 'text-muted-foreground')}>
-        S{setIndex + 1}
+        {set.isRecord
+          ? <Trophy className="h-4 w-4 text-amber-500" aria-label={`Série ${setIndex + 1} : record personnel`} />
+          : `S${setIndex + 1}`}
       </span>
 
       <div className="flex items-center gap-1 flex-1">

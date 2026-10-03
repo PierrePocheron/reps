@@ -77,6 +77,7 @@ export interface PlannedSet {
   actualWeight?: number;  // poids réel si différent
   completed: boolean;
   restDuration?: number;  // durée de repos effectuée (secondes)
+  isRecord?: boolean;     // record personnel battu sur cette série (1RM estimé)
 }
 
 // Exercice dans une séance musculation
