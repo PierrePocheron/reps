@@ -18,3 +18,31 @@ export function bestE1RMByExercise(sessions: GymSession[]): Record<string, numbe
   }
   return best;
 }
+
+export interface ExercisePoint {
+  date: Date;
+  e1rm: number;        // meilleur 1RM estimé de la séance
+  bestWeight: number;  // charge max soulevée
+  volume: number;      // Σ poids × reps des séries validées
+}
+
+/** Une entrée par séance où l'exercice a des séries validées, triée chronologiquement. */
+export function exerciseHistory(sessions: GymSession[], exerciseId: string): ExercisePoint[] {
+  const points: ExercisePoint[] = [];
+  for (const session of sessions) {
+    const sets = session.exercises
+      .filter((ex) => ex.exerciseId === exerciseId)
+      .flatMap((ex) => ex.sets.filter((s) => s.completed));
+    if (sets.length === 0) continue;
+    let e1rm = 0, bestWeight = 0, volume = 0;
+    for (const s of sets) {
+      const w = s.actualWeight ?? s.weight;
+      const r = s.actualReps ?? s.reps;
+      e1rm = Math.max(e1rm, estimate1RM(w, r));
+      bestWeight = Math.max(bestWeight, w);
+      volume += w * r;
+    }
+    points.push({ date: session.date.toDate(), e1rm, bestWeight, volume });
+  }
+  return points.sort((a, b) => a.date.getTime() - b.date.getTime());
+}

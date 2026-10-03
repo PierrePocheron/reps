@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 import { MEDIA_ATTRIBUTION } from '@/hooks/useExerciseImages';
 import { useLanguage } from '@/hooks/useLanguage';
 import { targetLabel } from '@/utils/exerciseLabels';
+import { ExerciseProgressChart } from '@/components/gym/ExerciseProgressChart';
+import type { ExercisePoint } from '@/utils/records';
 
 const T = {
   fr: { howTo: 'Comment faire', noDesc: 'Pas de description disponible.', illustration: 'Illustration' },
@@ -18,6 +20,8 @@ interface Props {
   steps?: string[];
   target?: string | null;
   secondaryMuscles?: string[];
+  /** Historique de l'utilisateur sur l'exercice (muscu) : affiche la courbe de progression */
+  history?: ExercisePoint[];
   onClose: () => void;
 }
 
@@ -29,6 +33,7 @@ export function ExerciseDetailSheet({
   steps,
   target,
   secondaryMuscles,
+  history,
   onClose,
 }: Props) {
   const lang = useLanguage();
@@ -107,6 +112,8 @@ export function ExerciseDetailSheet({
               ))}
             </div>
           )}
+
+          {history && <ExerciseProgressChart points={history} />}
 
           {/* Instructions */}
           {hasSteps ? (

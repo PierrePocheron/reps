@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useSound } from '@/hooks/useSound';
 import { getUserGymSessions } from '@/firebase/gymSessions';
-import type { GymSessionExercise, PlannedSet } from '@/firebase/types';
+import type { GymSession as GymSessionData, GymSessionExercise, PlannedSet } from '@/firebase/types';
 import { useExerciseImages } from '@/hooks/useExerciseImages';
 import { useLanguage } from '@/hooks/useLanguage';
 import {
@@ -23,7 +23,7 @@ import {
   type LibraryExercise,
 } from '@/utils/exerciseLibrary';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
-import { estimate1RM, bestE1RMByExercise } from '@/utils/records';
+import { estimate1RM, bestE1RMByExercise, exerciseHistory } from '@/utils/records';
 import {
   Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
   Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2, Trophy,
@@ -91,12 +91,14 @@ function GymSession() {
 
   // Records de référence (meilleur 1RM estimé par exercice) — ref : lecture synchrone au tap
   const bestsRef = useRef<Record<string, number>>({});
+  const [gymHistory, setGymHistory] = useState<GymSessionData[]>([]);
 
   // Charger les defaults (dernière séance) et les records depuis l'historique muscu
   useEffect(() => {
     if (!user || phase === 'idle') return;
     getUserGymSessions(user.uid, 200).then((sessions) => {
       bestsRef.current = bestE1RMByExercise(sessions);
+      setGymHistory(sessions);
       const defaults: Record<string, { reps: number; weight: number }> = {};
       // Parcourir les sessions du plus récent au plus ancien
       for (const session of sessions) {
@@ -519,6 +521,7 @@ function GymSession() {
             steps={infoMap[ex.exerciseId]?.steps ?? libDetail?.steps}
             target={infoMap[ex.exerciseId]?.target ?? libDetail?.target}
             secondaryMuscles={infoMap[ex.exerciseId]?.secondaryMuscles ?? libDetail?.secondaryMuscles}
+            history={exerciseHistory(gymHistory, ex.exerciseId)}
             onClose={() => setDetailExerciseId(null)}
           />
         );
