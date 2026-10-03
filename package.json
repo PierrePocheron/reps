@@ -18,7 +18,8 @@
     "cap:open:ios": "cap open ios",
     "cap:open:android": "cap open android",
     "deploy": "yarn build && firebase deploy",
-    "test:rules": "firebase emulators:exec --only firestore \"node scripts/test-firestore-rules.mjs\""
+    "test:rules": "firebase emulators:exec --config firebase.rules-test.json --only firestore --project reps-rules-test \"node scripts/test-firestore-rules.mjs\"",
+    "dev:demo": "firebase emulators:exec --only auth,firestore --project demo-reps \"node scripts/seed-emulator.mjs && vite --mode demo --port 5199 --strictPort\""
   },
   "dependencies": {
     "@capacitor-community/admob": "8",

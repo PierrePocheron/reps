@@ -15,7 +15,7 @@ Backlog : GitHub Project « REPS — Roadmap » (#9), issues labellisées `P0` �
 4. **Implémenter** le plus petit diff qui fonctionne, selon les règles du projet : `logger` (jamais
    `console`), tutoiement, tokens clair/sombre, cibles ≥ 44 px, `noUncheckedIndexedAccess`.
 5. **Vérifier** : `yarn type-check`, `yarn lint` (0 erreur), `yarn vitest run`, `yarn test:rules` si les
-   règles Firestore changent ; contrôle visuel quand l'écran est accessible (émulateurs dès #5).
+   règles Firestore changent ; contrôle visuel sur `yarn dev:demo` (émulateurs + données de démo, compte dans `scripts/seed-emulator.mjs`).
 6. **Livrer** : commit (numéroté `[i/N]` si multi-commits, sans `Co-Authored-By`, **aucune donnée
    personnelle** — repo public), push `dev`, commentaire de bilan sur l'issue, fermeture si terminée.
 7. **Journaliser** : une ligne ci-dessous.

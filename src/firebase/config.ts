@@ -1,6 +1,6 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { Auth } from 'firebase/auth';
-import { Firestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
+import { Auth, connectAuthEmulator } from 'firebase/auth';
+import { Firestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, connectFirestoreEmulator } from 'firebase/firestore';
 import { getMessaging, Messaging } from 'firebase/messaging';
 import { logger } from '@/utils/logger';
 
@@ -86,9 +86,18 @@ try {
 }
 export const db = dbInstance;
 
+// Mode démo : Auth + Firestore sur les émulateurs locaux (yarn dev:demo), jamais la prod
+export const USE_EMULATORS = import.meta.env.VITE_USE_EMULATORS === 'true';
+if (USE_EMULATORS) {
+  try {
+    connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+    connectFirestoreEmulator(db, '127.0.0.1', 8085);
+  } catch { /* déjà connecté (HMR) */ }
+}
+
 // Initialisation de Firebase Cloud Messaging (uniquement côté client)
 export const messaging: Messaging | null = (() => {
-  if (typeof window !== 'undefined' && 'serviceWorker' in navigator && !Capacitor.isNativePlatform()) {
+  if (typeof window !== 'undefined' && 'serviceWorker' in navigator && !Capacitor.isNativePlatform() && !USE_EMULATORS) {
     try {
       return getMessaging(app);
     } catch (err) {
@@ -108,7 +117,7 @@ import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
 // Play Integrity n'est pas en place pour Android.
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
-if (typeof window !== 'undefined' && RECAPTCHA_SITE_KEY && !Capacitor.isNativePlatform()) {
+if (typeof window !== 'undefined' && RECAPTCHA_SITE_KEY && !Capacitor.isNativePlatform() && !USE_EMULATORS) {
   try {
     initializeAppCheck(app, {
       provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),
