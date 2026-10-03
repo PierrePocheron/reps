@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, Check, Flame, Trophy, Dumbbell, Users } from 'lucide-react';
+import { StartQuestionnaire } from '@/components/StartQuestionnaire';
+import { QUESTIONNAIRE_KEY } from '@/utils/questionnaire';
 
 const STORAGE_KEY = 'reps_onboarding_v2';
 
@@ -247,19 +249,19 @@ export function OnboardingSlides({ onFinish }: OnboardingSlidesProps) {
 
 /** Tutoriel affiché une seule fois, à la première connexion */
 export function Onboarding() {
-  const [visible, setVisible] = useState(false);
+  const [step, setStep] = useState<'slides' | 'questions' | null>(null);
 
   useEffect(() => {
-    const done = localStorage.getItem(STORAGE_KEY);
-    if (!done) setVisible(true);
+    if (!localStorage.getItem(STORAGE_KEY)) setStep('slides');
   }, []);
 
+  // Après le tutoriel : questionnaire de départ (#22), une seule fois lui aussi
   const finish = () => {
     localStorage.setItem(STORAGE_KEY, '1');
-    setVisible(false);
+    setStep(localStorage.getItem(QUESTIONNAIRE_KEY) ? null : 'questions');
   };
 
-  if (!visible) return null;
-
-  return <OnboardingSlides onFinish={finish} />;
+  if (step === 'slides') return <OnboardingSlides onFinish={finish} />;
+  if (step === 'questions') return <StartQuestionnaire onDone={() => setStep(null)} />;
+  return null;
 }

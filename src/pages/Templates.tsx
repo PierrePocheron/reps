@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import {
   DEFAULT_RENFORCEMENT_TEMPLATES,
@@ -33,10 +33,12 @@ function TemplateCard({
   template,
   onStart,
   onDelete,
+  suggested = false,
 }: {
   template: WorkoutTemplate;
   onStart: () => void;
   onDelete?: () => void;
+  suggested?: boolean;
 }) {
   const exerciseCount = template.exerciseIds?.length ?? template.muscuExercises?.length ?? 0;
 
@@ -53,8 +55,11 @@ function TemplateCard({
     <div className="flex items-stretch gap-2">
       <button
         onClick={onStart}
-        className="flex-1 flex items-center gap-4 p-4 rounded-2xl bg-card border border-border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all text-left"
+        className={`relative flex-1 flex items-center gap-4 p-4 rounded-2xl bg-card border hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98] transition-all text-left ${suggested ? 'border-primary ring-2 ring-primary/30' : 'border-border'}`}
       >
+        {suggested && (
+          <span className="absolute -top-2.5 left-4 rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-primary-foreground">Conseillé pour toi</span>
+        )}
         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted flex-shrink-0 text-2xl">
           {template.emoji}
         </div>
@@ -95,7 +100,8 @@ function Templates() {
   const navigate = useNavigate();
   const haptics = useHaptic();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<Tab>('renforcement');
+  const suggested = new URLSearchParams(useLocation().search).get('suggest'); // modèle conseillé par le questionnaire
+  const [activeTab, setActiveTab] = useState<Tab>(suggested?.startsWith('muscu_') ? 'musculation' : 'renforcement');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<WorkoutTemplate | null>(null);
   const [templateToDelete, setTemplateToDelete] = useState<WorkoutTemplate | null>(null);
@@ -245,6 +251,7 @@ function Templates() {
             <TemplateCard
               key={template.id}
               template={template}
+              suggested={template.id === suggested}
               onStart={() => handleStartTemplate(template)}
             />
           ))}

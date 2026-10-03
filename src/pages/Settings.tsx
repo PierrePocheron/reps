@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
 import { saveFile } from '@/utils/saveFile';
 import { useGymSessionStore } from '@/store/gymSessionStore';
+import { StartQuestionnaire } from '@/components/StartQuestionnaire';
 import { sessionsToCsv } from '@/utils/exportCsv';
 
 import { useNotifications } from '@/hooks/useNotifications';
@@ -39,6 +40,7 @@ function Settings() {
   const { sessions, gymSessions, loading: historyLoading } = useSessionHistory(500);
   const [exporting, setExporting] = useState(false);
   const { autoRest, setAutoRest, showRpe, setShowRpe } = useGymSessionStore();
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [togglingNotif, setTogglingNotif] = useState(false);
 
   const handleExportData = async (format: 'json' | 'csv') => {
@@ -268,6 +270,13 @@ function Settings() {
                 </Button>
               ))}
             </div>
+            <button
+              type="button"
+              onClick={() => setShowQuestionnaire(true)}
+              className="mt-3 min-h-11 text-sm font-medium text-primary underline-offset-2 hover:underline"
+            >
+              Refaire le questionnaire de départ
+            </button>
           </CardContent>
         </Card>
 
@@ -455,6 +464,7 @@ function Settings() {
         </p>
 
       </div>
+      {showQuestionnaire && <StartQuestionnaire onDone={() => setShowQuestionnaire(false)} />}
     </PageLayout>
   );
 }
