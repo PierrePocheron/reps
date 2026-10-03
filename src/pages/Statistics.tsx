@@ -401,7 +401,8 @@ function PeriodRecap({ sessions, gymSessions }: { sessions: Session[]; gymSessio
     { label: recap.sessions > 1 ? 'Séances' : 'Séance', value: fmt(recap.sessions) },
     { label: "Jours d'entraînement", value: fmt(recap.trainingDays) },
     { label: 'Volume', value: `${fmt(recap.volume)} kg` },
-    { label: 'Records', value: fmt(recap.records) },
+    // Pas de « 0 record » : la 4e tuile montre alors les répétitions
+    recap.records > 0 ? { label: recap.records > 1 ? 'Records' : 'Record', value: fmt(recap.records) } : { label: 'Répétitions', value: fmt(recap.reps) },
   ];
 
   return (

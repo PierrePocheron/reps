@@ -58,7 +58,15 @@ const SHOTS = [
   },
   { file: '06-defis', title: 'Des défis pour progresser', sub: 'Un objectif chaque jour', go: (p) => p.goto(`${BASE}/challenges`) },
   { file: '07-amis', title: 'Motive-toi avec tes amis', sub: 'Classement et fil d\'activité', go: (p) => p.goto(`${BASE}/leaderboard`) },
-  { file: '08-badges', title: 'Débloque des badges', sub: 'Chaque rep compte', go: (p) => p.goto(`${BASE}/achievements`) },
+  {
+    file: '08-recap', title: 'Ton mois en un coup d\'œil', sub: 'Un récap à partager',
+    go: async (p) => {
+      await p.goto(`${BASE}/statistics`);
+      const recap = p.locator('div.bg-card', { has: p.getByRole('heading', { name: 'Récap' }) });
+      await recap.getByRole('button', { name: 'Période précédente' }).click(); // mois complet
+      await recap.evaluate((el) => { el.scrollIntoView({ block: 'start' }); window.scrollBy(0, -90); });
+    },
+  },
 ];
 
 const frame = (png, { title, sub }) => `<!doctype html><html><head><meta charset="utf-8">
