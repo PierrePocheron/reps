@@ -81,6 +81,9 @@ const steps = [
     await page.getByRole('button', { name: /voir ta progression/ }).first().click();
     await page.getByText('Ta progression').waitFor();
     await page.locator('svg[role=img]').last().waitFor();
+    // la feuille passe au-dessus de la navigation (un contexte d'empilement parasite la mettait dessous)
+    const coveredByNav = await page.evaluate(() => !!document.elementFromPoint(innerWidth / 2, innerHeight - 20)?.closest('nav'));
+    assert.ok(!coveredByNav, 'la navigation recouvre la feuille ouverte');
     await assertAlive('records');
   }],
 ];

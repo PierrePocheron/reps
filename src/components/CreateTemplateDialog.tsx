@@ -153,7 +153,7 @@ export function CreateTemplateDialog({ open, onClose, onSave }: Props) {
       : muscuExercises.map((m) => m.exerciseId);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
 
@@ -168,38 +168,37 @@ export function CreateTemplateDialog({ open, onClose, onSave }: Props) {
         </div>
 
         <div className="overflow-y-auto flex-1 px-5 py-4 space-y-5">
-          {/* Nom + Emoji */}
-          <div className="flex gap-3 items-start">
-            {/* Emoji picker */}
-            <div className="space-y-1.5 shrink-0">
-              <p className="text-xs text-muted-foreground font-medium">Icône</p>
-              <div className="text-2xl w-12 h-10 flex items-center justify-center rounded-xl bg-muted border">
-                {emoji}
-              </div>
-              <div className="grid grid-cols-3 gap-1 w-[52px]">
-                {EMOJI_OPTIONS.slice(0, 9).map((e) => (
-                  <button
-                    key={e}
-                    onClick={() => setEmoji(e)}
-                    className={`text-base rounded-lg w-full aspect-square flex items-center justify-center transition-colors ${
-                      emoji === e ? 'bg-primary/20 ring-1 ring-primary' : 'hover:bg-muted'
-                    }`}
-                  >
-                    {e}
-                  </button>
-                ))}
-              </div>
-            </div>
+          {/* Nom */}
+          <div className="space-y-1.5">
+            <p className="text-xs text-muted-foreground font-medium">Nom</p>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Mon programme..."
+              aria-label="Nom du modèle"
+              maxLength={40}
+              autoFocus
+            />
+          </div>
 
-            <div className="flex-1 space-y-1.5">
-              <p className="text-xs text-muted-foreground font-medium">Nom</p>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Mon programme..."
-                maxLength={40}
-                autoFocus
-              />
+          {/* Icône : cibles de 44 px (elles faisaient ~24 px en grille serrée) */}
+          <div className="space-y-1.5">
+            <p className="text-xs text-muted-foreground font-medium">Icône</p>
+            <div className="flex flex-wrap gap-1" role="group" aria-label="Icône du modèle">
+              {EMOJI_OPTIONS.slice(0, 9).map((e) => (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => setEmoji(e)}
+                  aria-pressed={emoji === e}
+                  aria-label={`Icône ${e}`}
+                  className={`text-xl h-11 w-11 rounded-xl flex items-center justify-center transition-colors ${
+                    emoji === e ? 'bg-primary/20 ring-2 ring-primary' : 'hover:bg-muted'
+                  }`}
+                >
+                  {e}
+                </button>
+              ))}
             </div>
           </div>
 

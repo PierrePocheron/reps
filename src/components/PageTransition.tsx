@@ -1,36 +1,16 @@
-import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
+import { cn } from '@/utils/cn';
 
 interface PageTransitionProps {
   children: ReactNode;
   className?: string;
 }
 
-// Fondu seul, sans transform : un parent transformé devient le repère des `position: fixed` de la page
-// (le translateY résiduel renvoyait la barre « minuteur + Terminer » de la séance tout en bas du contenu)
-const pageVariants = {
-  initial: { opacity: 0 },
-  in: { opacity: 1 },
-  out: { opacity: 0 },
-};
-
-const pageTransition = {
-  type: 'tween',
-  ease: 'anticipate',
-  duration: 0.3,
-};
-
+/**
+ * Fondu d'entrée en CSS. Pas de framer-motion ici : il laissait des valeurs résiduelles
+ * (translateY 0,0097 px puis opacité 0,9995) qui créaient un contexte d'empilement ;
+ * la barre de séance (position: fixed) et les feuilles finissaient sous la navigation (#44).
+ */
 export function PageTransition({ children, className }: PageTransitionProps) {
-  return (
-    <motion.div
-      initial="initial"
-      animate="in"
-      exit="out"
-      variants={pageVariants}
-      transition={pageTransition}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={cn('animate-fade-in', className)}>{children}</div>;
 }

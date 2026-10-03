@@ -68,7 +68,7 @@ export function SessionTypePicker({ open, onClose }: SessionTypePickerProps) {
               <div className="min-w-0">
                 <p className="font-bold text-base">Renforcement</p>
                 <p className="text-sm text-muted-foreground">
-                  Bodyweight · Calisthenics · Max reps
+                  Poids du corps · Callisthénie · Max de reps
                 </p>
               </div>
             </button>

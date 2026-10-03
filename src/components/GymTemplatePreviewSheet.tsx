@@ -37,7 +37,7 @@ export function GymTemplatePreviewSheet({ template, onClose, onStart }: Props) {
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
@@ -77,7 +77,7 @@ export function GymTemplatePreviewSheet({ template, onClose, onStart }: Props) {
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {ex.sets.length} série{ex.sets.length > 1 ? 's' : ''}
                   {ex.sets[0] && (
-                    <span> · {ex.sets[0].reps} reps{ex.sets[0].weight > 0 ? ` @ ${ex.sets[0].weight} kg` : ''}</span>
+                    <span> · {ex.sets[0].reps} reps{ex.sets[0].weight > 0 ? ` à ${ex.sets[0].weight.toLocaleString('fr-FR')} kg` : ''}</span>
                   )}
                 </p>
               </div>
@@ -86,7 +86,7 @@ export function GymTemplatePreviewSheet({ template, onClose, onStart }: Props) {
               <div className="flex flex-wrap gap-1 justify-end max-w-[96px]">
                 {ex.sets.slice(0, 4).map((s, i) => (
                   <span key={i} className="text-xs bg-muted px-1.5 py-0.5 rounded-md font-mono text-muted-foreground">
-                    {s.reps}×{s.weight > 0 ? `${s.weight}` : 'PDC'}
+                    {s.reps}×{s.weight > 0 ? s.weight.toLocaleString('fr-FR') : 'PDC'}
                   </span>
                 ))}
                 {ex.sets.length > 4 && (

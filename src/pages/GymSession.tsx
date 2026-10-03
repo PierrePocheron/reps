@@ -319,7 +319,7 @@ function GymSession() {
 
         {/* Modale confirmation abandon planification */}
         {showCancelConfirm && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCancelConfirm(false)} />
             <div role="dialog" aria-modal="true" aria-labelledby="cancel-plan-title" className="relative z-10 w-full sm:max-w-sm bg-background rounded-t-3xl sm:rounded-2xl shadow-xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 space-y-4">
               <div className="text-center space-y-2">
@@ -505,7 +505,7 @@ function GymSession() {
 
       {/* Modale confirmation annulation */}
       {showCancelConfirm && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCancelConfirm(false)} />
           <div role="dialog" aria-modal="true" aria-labelledby="cancel-session-title" className="relative z-10 w-full sm:max-w-sm bg-background rounded-t-3xl sm:rounded-2xl shadow-xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 space-y-4">
             <div className="text-center space-y-2">
