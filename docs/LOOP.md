@@ -67,3 +67,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | #32 | Séries d'échauffement en un tap (40/60/80 %, arrondies aux disques, marquées É) | `0572023` |
 | 2026-10-03 | passe UI/UX contraste | Audit WCAG AA automatique (yarn a11y) : ~45 textes corrigés en clair et en sombre (jeton muted, destructive, accents, color-mix en sombre) | `4a40c35` |
 | 2026-10-03 | #29 | Récap mensuel / annuel dans Statistiques, partageable en image ; noms de fichiers en date locale | `679ee9f` |
+| 2026-10-03 | #28 | Poids et mensurations datés sur le profil (courbe, évolution, poids du profil synchronisé), stockés en privé sans changer les règles | `2983821` |
