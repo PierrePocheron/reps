@@ -59,7 +59,8 @@ export function BodyMetrics() {
   if (!user) return null;
   const list = entries ?? [];
   const meta = BODY_FIELDS.find((f) => f.key === field)!;
-  const latest = (key: BodyField) => [...list].reverse().find((e) => e[key])?.[key];
+  // Sans mesure saisie, le poids du profil fait foi (évite « – » à côté de « Poids 64 kg »)
+  const latest = (key: BodyField) => [...list].reverse().find((e) => e[key])?.[key] ?? (key === 'weight' ? user.weight : undefined);
 
   const save = async () => {
     const entry: BodyEntry = { date: form.date || localDay(new Date()) };

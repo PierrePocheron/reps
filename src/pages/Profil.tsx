@@ -179,14 +179,15 @@ function Profil() {
                  <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
               )}
             </CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/achievements')}>
-              Voir tout
+            <Button variant="ghost" size="sm" className="min-h-11" onClick={() => navigate('/achievements')}>
+              Voir tout{unlockedBadges.length > 4 ? ` (${unlockedBadges.length})` : ''}
             </Button>
           </CardHeader>
           <CardContent>
             {unlockedBadges.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
-                {unlockedBadges.map((badge) => (
+                {/* Aperçu : les 4 derniers débloqués, le reste dans « Voir tout » (la liste complète rallongeait le profil) */}
+                {unlockedBadges.slice(-4).reverse().map((badge) => (
                   <div
                     key={badge.id}
                     className="p-4 rounded-lg bg-muted/50 flex flex-col items-center gap-2"
