@@ -44,3 +44,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | #41 | Repos lancé automatiquement après chaque série (interrupteur dans le minuteur) ; invitation unique aux alarmes exactes sur Android 14+ | `12ad435` |
 | 2026-10-03 | passe UI/UX Modèles, Social, Réglages, Historique | « Modèles » au lieu de « templates », onglets 44 px partout, durées « 1h 7min », coquilles | `ddf0780` |
 | 2026-10-03 | #15 | « Refaire cette séance » depuis l'historique (muscu : charges réalisées pré-remplies ; renfo : mêmes exercices) | `c51a062` |
+| 2026-10-03 | #23 | Pages à la demande (React.lazy) : bundle initial −15 % (gzip 476 → 417 Ko) ; suite (Sentry Replay, framer-motion) dans une issue à arbitrer | `21e3858` |
