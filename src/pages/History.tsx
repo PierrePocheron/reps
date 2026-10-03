@@ -9,7 +9,8 @@ import { useGymSessionStore } from '@/store/gymSessionStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy, RotateCcw } from 'lucide-react';
+import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy, RotateCcw, Share2 } from 'lucide-react';
+import { gymCard, renfoCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
 import type { Session, GymSession } from '@/firebase/types';
 import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
 import { estimate1RM, exerciseHistory } from '@/utils/records';
@@ -46,15 +47,20 @@ interface PersonalRecord {
 
 // ─── Renforcement Card ────────────────────────────────────────────────────────
 
-function RedoButton({ onClick }: { onClick: () => void }) {
+function CardActions({ onRedo, onShare }: { onRedo: () => void; onShare: () => void }) {
   return (
-    <Button variant="outline" className="w-full min-h-11" onClick={onClick}>
-      <RotateCcw className="h-4 w-4 mr-2" /> Refaire cette séance
-    </Button>
+    <div className="flex gap-2">
+      <Button variant="outline" className="flex-1 min-h-11" onClick={onRedo}>
+        <RotateCcw className="h-4 w-4 mr-2" /> Refaire cette séance
+      </Button>
+      <Button variant="outline" className="min-h-11" onClick={onShare}>
+        <Share2 className="h-4 w-4 mr-2" /> Partager
+      </Button>
+    </div>
   );
 }
 
-function RenforcementCard({ session, onRedo }: { session: Session; onRedo: () => void }) {
+function RenforcementCard({ session, onRedo, onShare }: { session: Session; onRedo: () => void; onShare: () => void }) {
   const date = session.date.toDate();
   return (
     <div className="rounded-2xl border bg-card overflow-hidden shadow-sm">
@@ -103,7 +109,7 @@ function RenforcementCard({ session, onRedo }: { session: Session; onRedo: () =>
               </div>
             ))}
           </div>
-          <RedoButton onClick={onRedo} />
+          <CardActions onRedo={onRedo} onShare={onShare} />
         </div>
       </div>
     </div>
@@ -112,7 +118,7 @@ function RenforcementCard({ session, onRedo }: { session: Session; onRedo: () =>
 
 // ─── Musculation Card ─────────────────────────────────────────────────────────
 
-function MuscuCard({ session, imageMap, onRedo }: { session: GymSession; imageMap: Record<string, string>; onRedo: () => void }) {
+function MuscuCard({ session, imageMap, onRedo, onShare }: { session: GymSession; imageMap: Record<string, string>; onRedo: () => void; onShare: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const date = session.date.toDate();
   const completedSets = session.exercises.reduce(
@@ -195,7 +201,7 @@ function MuscuCard({ session, imageMap, onRedo }: { session: GymSession; imageMa
               </div>
             )}
           </div>
-          <RedoButton onClick={onRedo} />
+          <CardActions onRedo={onRedo} onShare={onShare} />
         </div>
       </div>
     </div>
@@ -289,6 +295,9 @@ function History() {
     })));
     startExecution();
     navigate('/gym');
+  };
+  const share = (card: SessionCard) => {
+    shareSessionCard(card).catch(() => toast({ title: 'Partage impossible', description: "L'image n'a pas pu être créée.", variant: 'destructive' }));
   };
   const redoRenfo = (s: Session) => {
     if (sessionInProgress()) return;
@@ -432,7 +441,8 @@ function History() {
           ) : (
             <div className="space-y-3">
               {gymSessions.map((s) => (
-                <MuscuCard key={s.sessionId} session={s} imageMap={imageMap} onRedo={() => redoGym(s)} />
+                <MuscuCard key={s.sessionId} session={s} imageMap={imageMap} onRedo={() => redoGym(s)}
+                  onShare={() => share(gymCard({ date: s.date.toDate(), duration: s.duration, exercises: s.exercises }))} />
               ))}
             </div>
           )
@@ -449,7 +459,8 @@ function History() {
           ) : (
             <div className="space-y-3">
               {sessions.map((s) => (
-                <RenforcementCard key={s.sessionId} session={s} onRedo={() => redoRenfo(s)} />
+                <RenforcementCard key={s.sessionId} session={s} onRedo={() => redoRenfo(s)}
+                  onShare={() => share(renfoCard({ ...s, date: s.date.toDate() }))} />
               ))}
             </div>
           )

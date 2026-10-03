@@ -33,6 +33,7 @@ import {
 import confetti from 'canvas-confetti';
 import { ToastAction } from '@/components/ui/toast';
 import { exactAlarmDenied, openExactAlarmSettings } from '@/utils/restNotification';
+import { gymCard, shareSessionCard } from '@/utils/shareCard';
 import { cn } from '@/utils/cn';
 
 const NUM_CLS = 'text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
@@ -204,9 +205,12 @@ function GymSession() {
     const recordCount = exercises.reduce((n, ex) => n + ex.sets.filter((st) => st.isRecord).length, 0);
     if (ending) return;
     setEnding(true);
+    // Carte de partage figée avant que endSession ne vide le store
+    const card = gymCard({ date: new Date(), duration: startTime ? Math.floor((Date.now() - startTime) / 1000) : 0, exercises });
     try {
       await endSession();
       toast({
+        action: <ToastAction altText="Partager ma séance en image" onClick={() => void shareSessionCard(card).catch(() => {})}>Partager</ToastAction>,
         title: 'Séance terminée !',
         description: `${completedSets} séries · ${Math.round(
           exercises.reduce((v, ex) => v + ex.sets.filter(s => s.completed).reduce((s2, s) => s2 + (s.actualWeight ?? s.weight) * (s.actualReps ?? s.reps), 0), 0)

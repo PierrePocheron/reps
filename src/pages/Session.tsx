@@ -18,6 +18,8 @@ import { calculateDynamicCalories } from '@/utils/calories';
 import { DEFAULT_EXERCISES } from '@/utils/constants';
 import type { Exercise } from '@/firebase/types';
 import { logger } from '@/utils/logger';
+import { ToastAction } from '@/components/ui/toast';
+import { renfoCard, shareSessionCard } from '@/utils/shareCard';
 
 function Session() {
   const navigate = useNavigate();
@@ -71,9 +73,12 @@ function Session() {
     }
 
     setIsEnding(true);
+    // Carte de partage figée avant que endSession ne vide le store
+    const card = renfoCard({ date: new Date(), duration: startTime ? Math.floor((Date.now() - startTime) / 1000) : 0, exercises, totalReps, totalCalories: currentCalories });
     try {
       await endSession();
       toast({
+        action: <ToastAction altText="Partager ma séance en image" onClick={() => void shareSessionCard(card).catch(() => {})}>Partager</ToastAction>,
         title: 'Séance terminée',
         description: `Bravo ! ${totalReps} reps • ${Math.round(currentCalories)} kcal 🔥`,
       });
