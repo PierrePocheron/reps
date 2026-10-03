@@ -32,3 +32,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 |---|---|---|---|
 | 2026-10-03 | — | Mise en place : branches `dev`/`main`/`prod`, script de release, CI, analyse concurrentielle, 36 issues, planche mascotte, réflexion site web | `1fd1cdf` |
 | 2026-10-03 | #5 | Environnement de démo sur émulateurs (`yarn dev:demo`) ; bugs trouvés : #38 (séries), #39 (carte défi) | `c61d0b9` |
+| 2026-10-03 | #2 | Records détectés et célébrés pendant la séance (1RM estimé, trophée sur la série, rappel en fin de séance) | `27a60b4` |
