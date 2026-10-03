@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useHaptic } from '@/hooks/useHaptic';
 import { useSound } from '@/hooks/useSound';
 import { getUserGymSessions } from '@/firebase/gymSessions';
-import type { GymSession as GymSessionData, GymSessionExercise, PlannedSet } from '@/firebase/types';
+import type { GymSession as GymSessionData, GymSessionExercise, PlannedSet, SetType } from '@/firebase/types';
 import { useExerciseImages } from '@/hooks/useExerciseImages';
 import { useLanguage } from '@/hooks/useLanguage';
 import {
@@ -24,7 +24,7 @@ import {
   type LibraryExercise,
 } from '@/utils/exerciseLibrary';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
-import { estimate1RM, bestE1RMByExercise, exerciseHistory } from '@/utils/records';
+import { estimate1RM, bestE1RMByExercise, exerciseHistory, isWorkSet } from '@/utils/records';
 import {
   Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
   Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2, Trophy,
@@ -189,8 +189,9 @@ function GymSession() {
     if (autoRest && completedSets + 1 < totalSets) startRestTimer(); // comme Strong : repos lancé à chaque série
     const best = bestsRef.current[exerciseId];
     const e1rm = estimate1RM(weight, reps);
-    // Pas d'historique sur l'exercice = pas de « record » (évite le faux positif de la 1re séance)
-    if (best === undefined || e1rm <= best) return;
+    const warmup = exercises.find((ex) => ex.exerciseId === exerciseId)?.sets[setIndex]?.type === 'warmup';
+    // Pas d'historique sur l'exercice = pas de « record » (évite le faux positif de la 1re séance) ; jamais sur un échauffement
+    if (warmup || best === undefined || e1rm <= best) return;
     bestsRef.current[exerciseId] = e1rm;
     updateSet(exerciseId, setIndex, { isRecord: true });
     haptics.notification();
@@ -214,7 +215,7 @@ function GymSession() {
         action: <ToastAction altText="Partager ma séance en image" onClick={() => void shareSessionCard(card).catch(() => {})}>Partager</ToastAction>,
         title: 'Séance terminée !',
         description: `${completedSets} séries · ${Math.round(
-          exercises.reduce((v, ex) => v + ex.sets.filter(s => s.completed).reduce((s2, s) => s2 + (s.actualWeight ?? s.weight) * (s.actualReps ?? s.reps), 0), 0)
+          exercises.reduce((v, ex) => v + ex.sets.filter(isWorkSet).reduce((s2, s) => s2 + (s.actualWeight ?? s.weight) * (s.actualReps ?? s.reps), 0), 0)
         )} kg soulevés${recordCount > 0 ? ` · 🏆 ${recordCount} record${recordCount > 1 ? 's' : ''}` : ''}`,
       });
       haptics.notification();
@@ -413,6 +414,7 @@ function GymSession() {
             exercise={exercise}
             onCompleteSet={handleCompleteSet}
             onRpe={showRpe ? (exerciseId, setIndex, rpe) => updateSet(exerciseId, setIndex, { rpe }) : undefined}
+            onType={(exerciseId, setIndex, type) => updateSet(exerciseId, setIndex, { type, ...(type === 'warmup' ? { isRecord: false } : {}) })}
             onUpdateSet={(exerciseId, setIndex, reps, weight) =>
               updateSet(exerciseId, setIndex, { actualReps: reps, actualWeight: weight })
             }
@@ -577,6 +579,8 @@ function SetExecuteRow({
   onComplete,
   onUpdate,
   onRpe,
+  onType,
+  number,
 }: {
   set: PlannedSet;
   setIndex: number;
@@ -584,6 +588,8 @@ function SetExecuteRow({
   onComplete: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
   onUpdate: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
   onRpe?: (rpe: number | undefined) => void; // présent seulement si le réglage « RPE par série » est actif
+  onType: (type: SetType | undefined) => void;
+  number: number; // numéro hors échauffements
 }) {
   const [reps, setReps] = useState(String(set.actualReps ?? set.reps));
   const [weight, setWeight] = useState(String(set.actualWeight ?? set.weight));
@@ -595,11 +601,17 @@ function SetExecuteRow({
       'flex items-center gap-2 px-3 py-2 rounded-xl transition-colors',
       set.completed ? 'bg-green-500/10' : 'bg-muted/30'
     )}>
-      <span className={cn('text-xs font-bold w-6 flex-shrink-0', set.completed ? 'text-green-500' : 'text-muted-foreground')}>
+      <button
+        type="button"
+        onClick={() => onType(nextSetType(set.type))}
+        aria-label={`Série ${setIndex + 1} : ${set.type ? SET_TYPE_META[set.type].label : 'normale'}${set.isRecord ? ', record personnel' : ''} — changer le type`}
+        className={cn('h-11 w-8 -my-1.5 -ml-1.5 flex-shrink-0 flex items-center justify-center rounded-lg text-xs font-bold active:scale-95',
+          set.type ? SET_TYPE_META[set.type].cls : set.completed ? 'text-green-500' : 'text-muted-foreground')}
+      >
         {set.isRecord
-          ? <Trophy className="h-4 w-4 text-amber-500" aria-label={`Série ${setIndex + 1} : record personnel`} />
-          : `S${setIndex + 1}`}
-      </span>
+          ? <Trophy className="h-4 w-4 text-amber-500" aria-hidden />
+          : set.type ? SET_TYPE_META[set.type].short : `S${number}`}
+      </button>
 
       <div className="flex items-center gap-1 flex-1">
         <Input
@@ -671,6 +683,7 @@ function ExecuteExerciseCard({
   onNoteChange,
   isBarbell,
   onRpe,
+  onType,
 }: {
   exercise: GymSessionExercise;
   onCompleteSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
@@ -681,6 +694,7 @@ function ExecuteExerciseCard({
   onNoteChange: (note: string) => void;
   isBarbell: boolean;
   onRpe?: (exerciseId: string, setIndex: number, rpe: number | undefined) => void;
+  onType: (exerciseId: string, setIndex: number, type: SetType | undefined) => void;
 }) {
   const completedCount = exercise.sets.filter((s) => s.completed).length;
   const [showPlates, setShowPlates] = useState(false);
@@ -755,6 +769,8 @@ function ExecuteExerciseCard({
             onComplete={onCompleteSet}
             onUpdate={onUpdateSet}
             onRpe={onRpe && ((rpe) => onRpe(exercise.exerciseId, i, rpe))}
+            onType={(type) => onType(exercise.exerciseId, i, type)}
+            number={exercise.sets.slice(0, i + 1).filter((st) => st.type !== 'warmup').length}
           />
         ))}
 
@@ -772,6 +788,14 @@ function ExecuteExerciseCard({
 
 const EXACT_ALARM_ASKED = 'reps_exact_alarm_asked';
 const RPE_VALUES = [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
+// Types de série (Hevy : W / D / F) ; toucher l'étiquette fait défiler normale → échauffement → dégressive → échec
+const SET_TYPE_META: Record<SetType, { short: string; label: string; cls: string }> = {
+  warmup: { short: 'É', label: 'échauffement', cls: 'text-amber-500' },
+  drop: { short: 'D', label: 'dégressive', cls: 'text-sky-500' },
+  failure: { short: '!', label: "jusqu'à l'échec", cls: 'text-red-500' },
+};
+const SET_TYPE_CYCLE: (SetType | undefined)[] = [undefined, 'warmup', 'drop', 'failure'];
+const nextSetType = (t: SetType | undefined) => SET_TYPE_CYCLE[(SET_TYPE_CYCLE.indexOf(t) + 1) % SET_TYPE_CYCLE.length];
 
 const REST_PRESETS = [
   { label: '30s', value: 30 },

@@ -20,6 +20,7 @@ import { ChallengeCard } from '@/components/challenges/ChallengeCard';
 import { useChallenges } from '@/hooks/useChallenges';
 import { DEFAULT_MOTIVATIONAL_PHRASES } from '@/utils/constants';
 import { logger } from '@/utils/logger';
+import { isWorkSet } from '@/utils/records';
 
 function Home() {
   const navigate = useNavigate();
@@ -97,7 +98,7 @@ function Home() {
           { icon: Dumbbell, className: 'text-primary', value: String(lastGymSession.totalSets), unit: lastGymSession.totalSets > 1 ? 'séries' : 'série' },
         ],
         items: lastGymSession.exercises.map((ex) => {
-          const done = ex.sets.filter((st) => st.completed).length;
+          const done = ex.sets.filter(isWorkSet).length;
           return { key: ex.exerciseId, emoji: ex.emoji, name: ex.name, detail: `${done} série${done > 1 ? 's' : ''}` };
         }),
       }

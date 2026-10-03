@@ -13,7 +13,7 @@ import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy, RotateCcw, Share
 import { gymCard, renfoCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
 import type { Session, GymSession } from '@/firebase/types';
 import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
-import { estimate1RM, exerciseHistory } from '@/utils/records';
+import { estimate1RM, exerciseHistory, isWorkSet } from '@/utils/records';
 
 type Tab = 'musculation' | 'renforcement' | 'records';
 
@@ -122,7 +122,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare }: { session: GymSession
   const [expanded, setExpanded] = useState(false);
   const date = session.date.toDate();
   const completedSets = session.exercises.reduce(
-    (sum, ex) => sum + ex.sets.filter((s) => s.completed).length, 0
+    (sum, ex) => sum + ex.sets.filter(isWorkSet).length, 0
   );
 
   return (
@@ -161,15 +161,17 @@ function MuscuCard({ session, imageMap, onRedo, onShare }: { session: GymSession
           {/* Exercises summary */}
           <div className="space-y-1.5">
             {(expanded ? session.exercises : session.exercises.slice(0, 3)).map((ex, i) => {
-              const completedSetsList = ex.sets.filter((s) => s.completed);
+              const completedSetsList = ex.sets.filter(isWorkSet);
               const imgUrl = imageMap[ex.exerciseId];
               const firstSet = completedSetsList[0];
               const w = firstSet ? (firstSet.actualWeight ?? firstSet.weight) : 0;
               const rpes = completedSetsList.map((st) => st.rpe ?? 0).filter(Boolean);
+              const warmups = ex.sets.filter((st) => st.completed && st.type === 'warmup').length;
               const setsSummary = (completedSetsList.length > 0
                 ? `${completedSetsList.length} × ${w > 0 ? `${formatNumber(w)} kg` : 'poids du corps'}`
                 : `${ex.sets.length} série${ex.sets.length > 1 ? 's' : ''}`)
-                + (rpes.length ? ` · RPE ${formatNumber(Math.max(...rpes))}` : '');
+                + (rpes.length ? ` · RPE ${formatNumber(Math.max(...rpes))}` : '')
+                + (warmups ? ` · ${warmups} échauff.` : '');
 
               return (
                 <div key={i} className="flex items-center gap-3">
@@ -330,7 +332,7 @@ function History() {
         };
 
         for (const set of ex.sets) {
-          if (!set.completed) continue;
+          if (!isWorkSet(set)) continue;
           const w = set.actualWeight ?? set.weight;
           const r = set.actualReps ?? set.reps;
           const vol = w * r;

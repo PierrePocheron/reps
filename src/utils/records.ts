@@ -1,4 +1,7 @@
-import type { GymSession } from '@/firebase/types';
+import type { GymSession, PlannedSet } from '@/firebase/types';
+
+/** Série de travail validée : l'échauffement ne compte ni dans le volume, ni dans les records, ni dans les stats. */
+export const isWorkSet = (s: Pick<PlannedSet, 'completed' | 'type'>) => s.completed && s.type !== 'warmup';
 
 /** 1RM estimé (formule d'Epley) — 0 pour une série sans charge. */
 export const estimate1RM = (weight: number, reps: number): number =>
@@ -10,7 +13,7 @@ export function bestE1RMByExercise(sessions: GymSession[]): Record<string, numbe
   for (const session of sessions) {
     for (const ex of session.exercises) {
       for (const set of ex.sets) {
-        if (!set.completed) continue;
+        if (!isWorkSet(set)) continue;
         const e = estimate1RM(set.actualWeight ?? set.weight, set.actualReps ?? set.reps);
         best[ex.exerciseId] = Math.max(best[ex.exerciseId] ?? 0, e);
       }
@@ -32,7 +35,7 @@ export function exerciseHistory(sessions: GymSession[], exerciseId: string): Exe
   for (const session of sessions) {
     const sets = session.exercises
       .filter((ex) => ex.exerciseId === exerciseId)
-      .flatMap((ex) => ex.sets.filter((s) => s.completed));
+      .flatMap((ex) => ex.sets.filter(isWorkSet));
     if (sets.length === 0) continue;
     let e1rm = 0, bestWeight = 0, volume = 0;
     for (const s of sets) {

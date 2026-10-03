@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { estimate1RM, bestE1RMByExercise, exerciseHistory } from '../records';
+import { estimate1RM, bestE1RMByExercise, exerciseHistory, isWorkSet } from '../records';
 import type { GymSession } from '@/firebase/types';
 
 const session = (sets: { weight: number; reps: number; completed: boolean }[]) =>
@@ -28,5 +28,20 @@ describe('records', () => {
     expect(h.map((p) => p.date.toISOString().slice(0, 10))).toEqual(['2026-09-10', '2026-09-20']);
     expect(h[1]).toMatchObject({ bestWeight: 70, volume: 950 });
     expect(h[1]!.e1rm).toBeCloseTo(81.67, 1); // 70×5 (81,7) > 60×10 (80)
+  });
+});
+
+describe('séries d\'échauffement', () => {
+  it('ne comptent ni dans les records ni dans la courbe', () => {
+    const s = [{
+      date: { toDate: () => new Date(2026, 9, 1) },
+      exercises: [{ exerciseId: 'bench_press', name: 'DC', emoji: '🏋️', sets: [
+        { weight: 100, reps: 10, completed: true, type: 'warmup' as const },
+        { weight: 60, reps: 8, completed: true },
+      ] }],
+    }] as unknown as Parameters<typeof bestE1RMByExercise>[0];
+    expect(bestE1RMByExercise(s).bench_press).toBe(76);
+    expect(exerciseHistory(s, 'bench_press')[0]).toMatchObject({ bestWeight: 60, volume: 480 });
+    expect(isWorkSet({ completed: true, type: 'drop' })).toBe(true);
   });
 });

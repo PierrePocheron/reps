@@ -10,6 +10,7 @@ import {
 import { db } from './config';
 import type { GymSession, GymSessionExercise } from './types';
 import { logger } from '@/utils/logger';
+import { isWorkSet } from '@/utils/records';
 
 /**
  * CRUD Firestore pour les séances de musculation
@@ -88,7 +89,7 @@ export async function getUserGymSessions(
 export function calculateTotalVolume(exercises: GymSessionExercise[]): number {
   return exercises.reduce((total, ex) => {
     const exerciseVolume = ex.sets
-      .filter((s) => s.completed)
+      .filter(isWorkSet)
       .reduce((sum, s) => {
         const reps = s.actualReps ?? s.reps;
         const weight = s.actualWeight ?? s.weight;

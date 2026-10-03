@@ -1,6 +1,7 @@
 import exerciseDetails from '@/data/exerciseDetails.json';
 import { DEFAULT_EXERCISES, MUSCULATION_EXERCISES } from '@/utils/constants';
 import type { ExerciseCategory, GymSession, Session } from '@/firebase/types';
+import { isWorkSet } from '@/utils/records';
 
 export const MUSCLE_GROUPS = ['Pectoraux', 'Dos', 'Épaules', 'Bras', 'Abdos', 'Jambes'] as const;
 export type MuscleGroup = (typeof MUSCLE_GROUPS)[number];
@@ -45,7 +46,7 @@ export function setsByMuscle(gymSessions: GymSession[], sessions: Session[], sin
   };
   for (const s of gymSessions) {
     if (s.date.toDate() < since) continue;
-    for (const ex of s.exercises) add(ex.exerciseId, ex.sets.filter((set) => set.completed).length);
+    for (const ex of s.exercises) add(ex.exerciseId, ex.sets.filter(isWorkSet).length);
   }
   for (const s of sessions) {
     if (s.date.toDate() < since) continue;

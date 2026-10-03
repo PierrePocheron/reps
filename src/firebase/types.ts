@@ -72,6 +72,9 @@ export interface Exercise {
 // ─── Types Musculation ─────────────────────────────────────────────────────
 
 // Un set planifié (poids + reps)
+// Type de série (Hevy / Strong) : absent = série normale
+export type SetType = 'warmup' | 'drop' | 'failure';
+
 export interface PlannedSet {
   weight: number;         // kg
   reps: number;           // reps cibles
@@ -81,6 +84,7 @@ export interface PlannedSet {
   restDuration?: number;  // durée de repos effectuée (secondes)
   isRecord?: boolean;     // record personnel battu sur cette série (1RM estimé)
   rpe?: number;           // effort ressenti 6-10 (optionnel, réglage « RPE par série »)
+  type?: SetType;         // échauffement : exclu du volume, des records et des stats
 }
 
 // Exercice dans une séance musculation

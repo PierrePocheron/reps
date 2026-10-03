@@ -4,6 +4,7 @@ import type { Exercise, GymSessionExercise, PlannedSet } from '@/firebase/types'
 import { Timestamp } from 'firebase/firestore';
 import { createGymSession, calculateTotalVolume } from '@/firebase/gymSessions';
 import { updateUserStatsAfterSession } from '@/firebase/firestore';
+import { isWorkSet } from '@/utils/records';
 import { logger } from '@/utils/logger';
 import { scheduleRestEnd, cancelRestEnd } from '@/utils/restNotification';
 import { useUserStore } from './userStore';
@@ -215,7 +216,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
 
       const duration = Math.floor((Date.now() - startTime) / 1000);
       const totalVolume = calculateTotalVolume(exercises);
-      const totalSets = exercises.reduce((sum, ex) => sum + ex.sets.filter((s) => s.completed).length, 0);
+      const totalSets = exercises.reduce((sum, ex) => sum + ex.sets.filter(isWorkSet).length, 0);
 
       // Firestore rejette les valeurs `undefined` — on les retire
       const sanitizedExercises = exercises.map((ex) => ({
@@ -232,6 +233,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
           ...(s.actualWeight !== undefined ? { actualWeight: s.actualWeight } : {}),
           ...(s.isRecord ? { isRecord: true } : {}), // trophée et records sur la carte partagée depuis l'historique
           ...(s.rpe ? { rpe: s.rpe } : {}),
+          ...(s.type ? { type: s.type } : {}),
         })),
       }));
 

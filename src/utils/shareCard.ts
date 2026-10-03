@@ -1,6 +1,7 @@
 import type { GymSessionExercise, SessionExercise } from '@/firebase/types';
 import { formatDurationLong } from '@/utils/formatters';
 import { saveFile } from '@/utils/saveFile';
+import { isWorkSet } from '@/utils/records';
 
 export interface SessionCard {
   title: string;
@@ -17,7 +18,7 @@ const num = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 1 
 export function gymCard(s: { date: Date; duration: number; exercises: GymSessionExercise[] }): SessionCard {
   let volume = 0, sets = 0, records = 0;
   const lines = s.exercises.flatMap((ex) => {
-    const done = ex.sets.filter((set) => set.completed);
+    const done = ex.sets.filter(isWorkSet);
     if (done.length === 0) return [];
     let best = done[0]!;
     for (const set of done) {
