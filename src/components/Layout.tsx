@@ -1,7 +1,6 @@
 import { ReactNode } from 'react';
 import { useOffline } from '@/hooks/useOffline';
 import { BottomNav } from '@/components/BottomNav';
-import { Onboarding } from '@/components/Onboarding';
 import { AlertCircle } from 'lucide-react';
 import { useAdStore } from '@/store/adStore';
 
@@ -13,7 +12,11 @@ interface LayoutProps {
  * Layout principal de l'application avec gestion du mode offline
  */
 import { useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
+
+// Tutoriel chargé à la demande : il est vu une fois, et embarque framer-motion (hors du bundle initial)
+const Onboarding = lazy(() => import('@/components/Onboarding').then((m) => ({ default: m.Onboarding })));
+const onboardingDone = () => { try { return !!localStorage.getItem('reps_onboarding_v2'); } catch { return false; } };
 
 // ... (imports)
 
@@ -32,7 +35,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <>
-      <Onboarding />
+      {!onboardingDone() && <Suspense fallback={null}><Onboarding /></Suspense>}
 
       {/* Bannière offline */}
       {isOffline && (

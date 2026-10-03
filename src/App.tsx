@@ -1,11 +1,9 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
 import { PageTransition } from '@/components/PageTransition';
 import { Toaster } from '@/components/ui/toaster';
 import { AppInitializer } from '@/components/AppInitializer';
 import { Layout } from '@/components/Layout';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { OnboardingSlides } from '@/components/Onboarding';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -27,6 +25,7 @@ const Challenges = lazy(() => import('./pages/Challenges'));
 const History = lazy(() => import('./pages/History'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const SentryTest = lazy(() => import('./pages/SentryTest'));
+const OnboardingSlides = lazy(() => import('@/components/Onboarding').then((m) => ({ default: m.OnboardingSlides })));
 
 function PageFallback() {
   return (
@@ -77,7 +76,7 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <Suspense fallback={<PageFallback />}>
-                <AnimatePresence mode="wait">
+                <>
                   <Routes location={location} key={location.pathname}>
                     <Route
                       path="/"
@@ -181,7 +180,7 @@ function App() {
                         }
                       />
                   </Routes>
-                </AnimatePresence>
+                </>
                 </Suspense>
               </Layout>
             </ProtectedRoute>
