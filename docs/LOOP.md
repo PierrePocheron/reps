@@ -78,3 +78,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | #27 | Supersets : liaison entre exercices, repos après le dernier du groupe, historique et « Refaire » | `0c974f1` |
 | 2026-10-04 | #42 (partie autonome) | framer-motion hors du bundle initial (AnimatePresence retiré, tutoriel à la demande) : gzip 417 → 392 Ko | `6167f2f` |
 | 2026-10-04 | passe UI/UX nouvel utilisateur | Parcours compte neuf → 1re séance → stats : fluide, aucune erreur ; #34 (i18n) mis en attente de décision | — |
+| 2026-10-04 | tests E2E | yarn e2e : 7 parcours (+ échauffement, superset et repos, annulation, mensurations, récap) | `a02c532` |
