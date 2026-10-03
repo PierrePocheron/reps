@@ -76,3 +76,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | #47 | Modifier un modèle perso (formulaire prérempli, mise à jour en place) | `61abccd` |
 | 2026-10-04 | passe UI/UX séance libre | Ajout d'exercice : toutes les séries de la dernière fois recopiées (au lieu d'une seule) ; parcours libre vérifié | `25c4f1e` |
 | 2026-10-04 | #27 | Supersets : liaison entre exercices, repos après le dernier du groupe, historique et « Refaire » | `0c974f1` |
+| 2026-10-04 | #42 (partie autonome) | framer-motion hors du bundle initial (AnimatePresence retiré, tutoriel à la demande) : gzip 417 → 392 Ko | `6167f2f` |
