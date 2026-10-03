@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { GymExerciseCard } from '@/components/gym/GymExerciseCard';
 import { AddGymExerciseDialog } from '@/components/AddGymExerciseDialog';
 import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
+import { PlateCalculator } from '@/components/gym/PlateCalculator';
 import { Timer } from '@/components/Timer';
 import { useGymSessionStore, NOTE_MAX } from '@/store/gymSessionStore';
 import { useUserStore } from '@/store/userStore';
@@ -411,6 +412,7 @@ function GymSession() {
             }
             onShowDetail={(id) => setDetailExerciseId(id)}
             lastNote={lastNotes[exercise.exerciseId]}
+            isBarbell={infoMap[exercise.exerciseId]?.equipment === 'barbell'}
             onNoteChange={(note) => setExerciseNote(exercise.exerciseId, note)}
             onAddSet={(exerciseId) => {
               const ex = exercises.find((e) => e.exerciseId === exerciseId);
@@ -646,6 +648,7 @@ function ExecuteExerciseCard({
   onShowDetail,
   lastNote,
   onNoteChange,
+  isBarbell,
 }: {
   exercise: GymSessionExercise;
   onCompleteSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
@@ -654,8 +657,12 @@ function ExecuteExerciseCard({
   onShowDetail: (exerciseId: string) => void;
   lastNote?: string;
   onNoteChange: (note: string) => void;
+  isBarbell: boolean;
 }) {
   const completedCount = exercise.sets.filter((s) => s.completed).length;
+  const [showPlates, setShowPlates] = useState(false);
+  const nextSet = exercise.sets.find((s) => !s.completed) ?? exercise.sets[exercise.sets.length - 1];
+  const nextWeight = nextSet ? (nextSet.actualWeight ?? nextSet.weight) : 0;
 
   return (
     <div className="rounded-2xl border-2 border-border bg-card overflow-hidden">
@@ -680,10 +687,23 @@ function ExecuteExerciseCard({
             {completedCount}/{exercise.sets.length} série{exercise.sets.length !== 1 ? 's' : ''} complétée{completedCount !== 1 ? 's' : ''}
           </p>
         </button>
+        {isBarbell && (
+          <button
+            type="button"
+            onClick={() => setShowPlates(true)}
+            aria-label={`Disques à charger pour ${exercise.name}`}
+            className="min-h-11 px-3 rounded-xl border border-border text-xs font-medium text-muted-foreground hover:text-primary hover:border-primary/40 flex-shrink-0"
+          >
+            Disques
+          </button>
+        )}
         {completedCount === exercise.sets.length && exercise.sets.length > 0 && (
           <CheckCircle2 className="h-5 w-5 text-green-500 fill-green-500/20 flex-shrink-0" />
         )}
       </div>
+      {isBarbell && (
+        <PlateCalculator open={showPlates} onOpenChange={setShowPlates} weight={nextWeight} exerciseName={exercise.name} />
+      )}
 
       <div className="p-3 space-y-2">
         {/* Note (Hevy) : la dernière est rappelée, la nouvelle part avec la séance */}
