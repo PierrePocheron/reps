@@ -71,3 +71,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | passe UI/UX store | Captures Play régénérées (8, dont le récap mensuel) ; récap sans tuile « 0 record » | `0cdac8a` |
 | 2026-10-04 | #45 | Série hebdomadaire en option (semaines à l'objectif) : réglage, en-tête, stats, recalculs | `ccf0f32` |
 | 2026-10-04 | #30 | Kudos 👏 sur les séances des amis + bandeau « X a encouragé ta séance » ; règles + 7 tests (déploiement par Pierre) | `ce84d11` |
+| 2026-10-04 | passe UI/UX profil / réglages | Profil raccourci (aperçu de 4 badges, « Voir tout (N) »), puce Poids alignée sur le profil ; réglages vérifiés en clair | `28e2c9e` |
