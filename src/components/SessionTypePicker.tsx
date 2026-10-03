@@ -98,7 +98,7 @@ export function SessionTypePicker({ open, onClose }: SessionTypePickerProps) {
                 <LayoutTemplate className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <p className="font-medium text-sm">Utiliser un template</p>
+                <p className="font-medium text-sm">Partir d'un modèle</p>
                 <p className="text-xs">Programmes préétablis</p>
               </div>
             </button>

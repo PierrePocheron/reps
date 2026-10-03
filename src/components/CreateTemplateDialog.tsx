@@ -161,7 +161,7 @@ export function CreateTemplateDialog({ open, onClose, onSave }: Props) {
       <div className="relative z-10 w-full sm:max-w-md bg-background rounded-t-3xl sm:rounded-2xl shadow-xl flex flex-col max-h-[90dvh]">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b shrink-0">
-          <h2 className="font-semibold text-base">Nouveau template</h2>
+          <h2 className="font-semibold text-base">Nouveau modèle</h2>
           <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">
             <X className="w-5 h-5" />
           </button>
@@ -377,7 +377,7 @@ export function CreateTemplateDialog({ open, onClose, onSave }: Props) {
             disabled={!canSave || saving}
             onClick={handleSave}
           >
-            {saving ? 'Sauvegarde...' : 'Sauvegarder le template'}
+            {saving ? 'Enregistrement…' : 'Enregistrer le modèle'}
           </Button>
         </div>
       </div>

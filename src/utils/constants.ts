@@ -253,7 +253,7 @@ export const BADGES: Badge[] = [
   },
   {
     id: 'jaguar',
-    name: "C'est pas facil hein",
+    name: "C'est pas facile hein",
     description: '4000 reps accomplies',
     emoji: '🐆',
     threshold: 4000,

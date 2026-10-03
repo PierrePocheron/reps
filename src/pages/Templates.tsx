@@ -153,7 +153,7 @@ function Templates() {
     setTemplateToDelete(null);
     try {
       await remove(templateId);
-      toast({ title: 'Template supprimé' });
+      toast({ title: 'Modèle supprimé' });
     } catch {
       toast({ title: 'Erreur', description: 'Impossible de supprimer le template.', variant: 'destructive' });
     }
@@ -169,8 +169,8 @@ function Templates() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Templates</h1>
-            <p className="text-sm text-muted-foreground mt-1">Démarre une séance depuis un template préétabli.</p>
+            <h2 className="text-2xl font-bold">Modèles de séance</h2>
+            <p className="text-sm text-muted-foreground mt-1">Lance une séance en un geste depuis un modèle.</p>
           </div>
           <button
             onClick={() => setShowCreateDialog(true)}
@@ -214,7 +214,7 @@ function Templates() {
         {/* Mes templates */}
         <div className="space-y-3">
           <h2 className="text-xs text-muted-foreground uppercase tracking-wider font-medium px-1">
-            Mes templates
+            Mes modèles
           </h2>
           {templatesLoading && <div className="h-20 rounded-2xl bg-muted animate-pulse" />}
           {!templatesLoading && userTemplatesForTab.length === 0 && (
@@ -223,7 +223,7 @@ function Templates() {
               className="w-full flex items-center justify-center gap-2 min-h-[44px] py-3 rounded-2xl border-2 border-dashed border-border hover:border-primary/40 hover:bg-muted transition-all text-sm text-muted-foreground hover:text-foreground"
             >
               <Plus className="h-4 w-4" />
-              Crée ton premier template
+              Crée ton premier modèle
             </button>
           )}
           {userTemplatesForTab.map((template) => (
@@ -239,7 +239,7 @@ function Templates() {
         {/* Templates par défaut */}
         <div className="space-y-3">
           <h2 className="text-xs text-muted-foreground uppercase tracking-wider font-medium px-1">
-            Templates par défaut
+            Modèles proposés
           </h2>
           {defaultTemplates.map((template) => (
             <TemplateCard
@@ -252,7 +252,7 @@ function Templates() {
 
         {/* CTA — séance libre */}
         <div className="pt-2">
-          <p className="text-xs text-muted-foreground text-center mb-3">ou commence une séance sans template</p>
+          <p className="text-xs text-muted-foreground text-center mb-3">ou commence une séance sans modèle</p>
           <button
             onClick={() => {
               if (guardSession()) return;
@@ -275,7 +275,7 @@ function Templates() {
       <Dialog open={templateToDelete !== null} onOpenChange={(open) => { if (!open) setTemplateToDelete(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Supprimer ce template ?</DialogTitle>
+            <DialogTitle>Supprimer ce modèle ?</DialogTitle>
             <DialogDescription>
               {templateToDelete?.name} sera supprimé. Cette action est définitive.
             </DialogDescription>
@@ -300,7 +300,7 @@ function Templates() {
         onClose={() => setShowCreateDialog(false)}
         onSave={async (data) => {
           await create(data);
-          toast({ title: 'Template créé !', description: data.name });
+          toast({ title: 'Modèle créé !', description: data.name });
         }}
       />
     </PageLayout>

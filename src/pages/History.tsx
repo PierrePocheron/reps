@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { formatDurationLong } from '@/utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -26,13 +27,6 @@ function formatTime(date: Date): string {
   return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  if (m === 0) return `${s}s`;
-  if (s === 0) return `${m}min`;
-  return `${m}min ${s}s`;
-}
 
 // ─── Types Records ─────────────────────────────────────────────────────────────
 
@@ -66,7 +60,7 @@ function RenforcementCard({ session }: { session: Session }) {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded-lg">
                 <Clock className="h-3 w-3 text-muted-foreground" />
-                <span className="text-xs font-medium">{formatDuration(session.duration)}</span>
+                <span className="text-xs font-medium">{formatDurationLong(session.duration)}</span>
               </div>
             </div>
           </div>
@@ -128,7 +122,7 @@ function MuscuCard({ session, imageMap }: { session: GymSession; imageMap: Recor
             <div className="flex items-center gap-1.5">
               <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded-lg">
                 <Clock className="h-3 w-3 text-muted-foreground" />
-                <span className="text-xs font-medium">{formatDuration(session.duration)}</span>
+                <span className="text-xs font-medium">{formatDurationLong(session.duration)}</span>
               </div>
             </div>
           </div>
