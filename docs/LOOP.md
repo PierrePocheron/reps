@@ -45,3 +45,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | passe UI/UX Modèles, Social, Réglages, Historique | « Modèles » au lieu de « templates », onglets 44 px partout, durées « 1h 7min », coquilles | `ddf0780` |
 | 2026-10-03 | #15 | « Refaire cette séance » depuis l'historique (muscu : charges réalisées pré-remplies ; renfo : mêmes exercices) | `c51a062` |
 | 2026-10-03 | #23 | Pages à la demande (React.lazy) : bundle initial −15 % (gzip 476 → 417 Ko) ; suite (Sentry Replay, framer-motion) dans une issue à arbitrer | `21e3858` |
+| 2026-10-03 | passe UI/UX mode clair + repères | Un seul <main> par écran (imbriqué avant), poids « 57,5 kg » partout ; mode clair vérifié sur 4 écrans | `430d89f` |
