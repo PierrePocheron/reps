@@ -35,12 +35,6 @@ jobs:
     - name: Run Tests
       run: yarn test:coverage
 
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarqube-scan-action@v4
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
     - name: Type Check
       run: yarn type-check
 
@@ -57,6 +51,14 @@ jobs:
         VITE_RECAPTCHA_SITE_KEY: ${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
         VITE_LEGAL_NAME: ${{ secrets.VITE_LEGAL_NAME }}
         VITE_CONTACT_EMAIL: ${{ secrets.VITE_CONTACT_EMAIL }}
+
+    # Qualité : non bloquant (un token Sonar expiré ne doit pas casser la CI)
+    - name: SonarCloud Scan
+      continue-on-error: true
+      uses: SonarSource/sonarqube-scan-action@v4
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     # Déploiement web uniquement depuis prod (= ce qui est publié)
     - name: Deploy to Firebase Hosting
