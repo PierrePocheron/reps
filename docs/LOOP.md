@@ -72,3 +72,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | #45 | Série hebdomadaire en option (semaines à l'objectif) : réglage, en-tête, stats, recalculs | `ccf0f32` |
 | 2026-10-04 | #30 | Kudos 👏 sur les séances des amis + bandeau « X a encouragé ta séance » ; règles + 7 tests (déploiement par Pierre) | `ce84d11` |
 | 2026-10-04 | passe UI/UX profil / réglages | Profil raccourci (aperçu de 4 badges, « Voir tout (N) »), puce Poids alignée sur le profil ; réglages vérifiés en clair | `28e2c9e` |
+| 2026-10-04 | #31 | Copier les modèles d'un ami (menu Amis), règles + 3 tests (déploiement par Pierre, avec #30) | `15d0745` |
