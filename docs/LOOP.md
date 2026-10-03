@@ -74,3 +74,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | passe UI/UX profil / réglages | Profil raccourci (aperçu de 4 badges, « Voir tout (N) »), puce Poids alignée sur le profil ; réglages vérifiés en clair | `28e2c9e` |
 | 2026-10-04 | #31 | Copier les modèles d'un ami (menu Amis), règles + 3 tests (déploiement par Pierre, avec #30) | `15d0745` |
 | 2026-10-04 | #47 | Modifier un modèle perso (formulaire prérempli, mise à jour en place) | `61abccd` |
+| 2026-10-04 | passe UI/UX séance libre | Ajout d'exercice : toutes les séries de la dernière fois recopiées (au lieu d'une seule) ; parcours libre vérifié | `25c4f1e` |
