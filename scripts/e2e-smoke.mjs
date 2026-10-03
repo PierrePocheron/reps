@@ -75,6 +75,45 @@ const steps = [
     await assertAlive('fin de séance renfo');
   }],
 
+  ['séance muscu : échauffement, superset et repos, annulation', async () => {
+    await page.goto(`${BASE}/history`);
+    await page.getByRole('tab', { name: /Muscu/ }).click();
+    await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+    await page.waitForURL(`${BASE}/gym`);
+    const cards = page.locator('div.rounded-2xl.border-2');
+    // échauffement (séries É en tête)
+    await cards.nth(0).getByRole('button', { name: /^Ajouter l'échauffement/ }).click();
+    await cards.nth(0).getByRole('button', { name: /: échauffement/ }).first().waitFor();
+    // superset entre les deux premiers exercices
+    await page.getByRole('button', { name: /^Faire un superset avec/ }).first().click();
+    assert.equal(await page.getByText(/^Superset A/).count(), 2, 'deux cartes « Superset A »');
+    // pas de repos au milieu du tour, repos à la fin du tour
+    await cards.nth(0).getByRole('button', { name: /^Valider la série 1/ }).click();
+    assert.equal(await page.getByRole('switch', { name: /Repos auto/ }).count(), 0, 'pas de repos après A1');
+    await cards.nth(1).getByRole('button', { name: /^Valider la série 1/ }).click();
+    await page.getByRole('switch', { name: /Repos auto/ }).waitFor();
+    // annuler : rien n'est enregistré, retour à l'accueil
+    await page.getByRole('button', { name: 'Annuler la séance' }).first().click();
+    await page.getByRole('dialog').or(page.locator('[aria-labelledby=cancel-session-title]')).getByRole('button', { name: 'Annuler la séance' }).click();
+    await page.waitForURL(`${BASE}/`);
+    await assertAlive('séance muscu annulée');
+  }],
+
+  ['mensurations et récap', async () => {
+    await page.goto(`${BASE}/profil`);
+    await page.getByRole('button', { name: /Mesure$/ }).click();
+    const d = page.getByRole('dialog');
+    await d.getByLabel(/^Tour de bras/).fill('36.5');
+    await d.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: /Tour de bras 36,5 cm/ }).waitFor();
+    await page.goto(`${BASE}/statistics`);
+    const recap = page.locator('div.bg-card', { has: page.getByRole('heading', { name: 'Récap' }) });
+    await recap.getByRole('button', { name: 'Période précédente' }).click();
+    await recap.getByText(/Séances?$/).first().waitFor();
+    await page.getByRole('heading', { name: 'Muscles travaillés' }).waitFor();
+    await assertAlive('mensurations et récap');
+  }],
+
   ['records : courbe de progression', async () => {
     await page.goto(`${BASE}/history`);
     await page.getByRole('tab', { name: /Records/ }).click();

@@ -30,7 +30,9 @@ Ce projet utilise des **tests unitaires**, des **tests d'intégration légère**
 ### Test de fumée E2E (`yarn e2e`)
 
 `scripts/e2e-smoke.mjs` pilote un vrai navigateur (Playwright) sur la démo : connexion, navigation, séance muscu
-complète (refaire, note, repos auto, terminer), séance renfo, courbe de progression. Il échoue si une page lève une
+complète (refaire, note, repos auto, terminer, barre fixée à l'écran), séance renfo, échauffement + superset (pas de
+repos au milieu du tour) + annulation, mensurations, récap et muscles travaillés, courbe de progression (fenêtre
+au-dessus de la navigation). Il échoue si une page lève une
 erreur JS ou se fige (boucle de rendu).
 
 ```bash
