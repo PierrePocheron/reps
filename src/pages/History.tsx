@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
 import { useExerciseImages } from '@/hooks/useExerciseImages';
 import { useGymSessionStore } from '@/store/gymSessionStore';
+import { useSessionStore } from '@/store/sessionStore';
+import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy } from 'lucide-react';
+import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy, RotateCcw } from 'lucide-react';
 import type { Session, GymSession } from '@/firebase/types';
 import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
 import { estimate1RM, exerciseHistory } from '@/utils/records';
@@ -44,7 +46,15 @@ interface PersonalRecord {
 
 // ─── Renforcement Card ────────────────────────────────────────────────────────
 
-function RenforcementCard({ session }: { session: Session }) {
+function RedoButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button variant="outline" className="w-full min-h-11" onClick={onClick}>
+      <RotateCcw className="h-4 w-4 mr-2" /> Refaire cette séance
+    </Button>
+  );
+}
+
+function RenforcementCard({ session, onRedo }: { session: Session; onRedo: () => void }) {
   const date = session.date.toDate();
   return (
     <div className="rounded-2xl border bg-card overflow-hidden shadow-sm">
@@ -93,6 +103,7 @@ function RenforcementCard({ session }: { session: Session }) {
               </div>
             ))}
           </div>
+          <RedoButton onClick={onRedo} />
         </div>
       </div>
     </div>
@@ -101,7 +112,7 @@ function RenforcementCard({ session }: { session: Session }) {
 
 // ─── Musculation Card ─────────────────────────────────────────────────────────
 
-function MuscuCard({ session, imageMap }: { session: GymSession; imageMap: Record<string, string> }) {
+function MuscuCard({ session, imageMap, onRedo }: { session: GymSession; imageMap: Record<string, string>; onRedo: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const date = session.date.toDate();
   const completedSets = session.exercises.reduce(
@@ -181,6 +192,7 @@ function MuscuCard({ session, imageMap }: { session: GymSession; imageMap: Recor
               </div>
             )}
           </div>
+          <RedoButton onClick={onRedo} />
         </div>
       </div>
     </div>
@@ -256,7 +268,30 @@ function History() {
   const { imageMap, infoMap } = useExerciseImages();
   const navigate = useNavigate();
   const [detailPr, setDetailPr] = useState<PersonalRecord | null>(null);
-  const { startFreeSession } = useGymSessionStore();
+  const { phase: gymPhase, startFreeSession, loadGymTemplate, startExecution } = useGymSessionStore();
+  const { isActive: renfoActive, loadExercises } = useSessionStore();
+  const { toast } = useToast();
+
+  // « Refaire » (Hevy / Strong) : mêmes exercices, séries et charges réalisées, prêtes à valider
+  const sessionInProgress = () => {
+    if (!renfoActive && gymPhase === 'idle') return false;
+    toast({ title: 'Séance en cours', description: "Termine ta séance en cours avant d'en démarrer une nouvelle.", variant: 'destructive' });
+    return true;
+  };
+  const redoGym = (s: GymSession) => {
+    if (sessionInProgress()) return;
+    loadGymTemplate(s.exercises.map((ex) => ({
+      exerciseId: ex.exerciseId, name: ex.name, emoji: ex.emoji, imageUrl: ex.imageUrl,
+      sets: ex.sets.map((set) => ({ reps: set.actualReps ?? set.reps, weight: set.actualWeight ?? set.weight, completed: false })),
+    })));
+    startExecution();
+    navigate('/gym');
+  };
+  const redoRenfo = (s: Session) => {
+    if (sessionInProgress()) return;
+    loadExercises(s.exercises);
+    navigate('/session');
+  };
 
   // Calcul des records personnels depuis l'historique muscu
   const personalRecords = useMemo<PersonalRecord[]>(() => {
@@ -394,7 +429,7 @@ function History() {
           ) : (
             <div className="space-y-3">
               {gymSessions.map((s) => (
-                <MuscuCard key={s.sessionId} session={s} imageMap={imageMap} />
+                <MuscuCard key={s.sessionId} session={s} imageMap={imageMap} onRedo={() => redoGym(s)} />
               ))}
             </div>
           )
@@ -411,7 +446,7 @@ function History() {
           ) : (
             <div className="space-y-3">
               {sessions.map((s) => (
-                <RenforcementCard key={s.sessionId} session={s} />
+                <RenforcementCard key={s.sessionId} session={s} onRedo={() => redoRenfo(s)} />
               ))}
             </div>
           )

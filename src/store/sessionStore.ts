@@ -30,6 +30,7 @@ interface SessionState {
   addReps: (exerciseName: string, reps: number) => void;
   resetSession: () => void;
   loadExercisesFromTemplate: (exerciseIds: string[]) => void;
+  loadExercises: (exercises: { name: string; emoji: string }[]) => void;
   loadSessionFromLocal: () => void;
   saveSessionToLocal: () => void;
   getExerciseReps: (exerciseName: string) => number;
@@ -215,9 +216,13 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   loadExercisesFromTemplate: (exerciseIds: string[]) => {
     const exercises = exerciseIds
       .map((id) => DEFAULT_EXERCISES.find((ex) => ex.id === id))
-      .filter((ex): ex is Exercise => ex !== undefined)
-      .map((ex) => ({ name: ex.name, emoji: ex.emoji, reps: 0 }));
-    set({ exercises, isActive: false, startTime: null, duration: 0, totalReps: 0 });
+      .filter((ex): ex is Exercise => ex !== undefined);
+    get().loadExercises(exercises);
+  },
+
+  /** Prépare une séance avec ces exercices, compteurs à zéro (modèle ou séance refaite) */
+  loadExercises: (exercises) => {
+    set({ exercises: exercises.map(({ name, emoji }) => ({ name, emoji, reps: 0 })), isActive: false, startTime: null, duration: 0, totalReps: 0 });
   },
 
   /**
