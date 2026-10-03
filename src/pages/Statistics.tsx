@@ -10,6 +10,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ADS_CONFIG } from '@/config/ads';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
 import type { Session, GymSession } from '@/firebase/types';
+import { setsByMuscle, MUSCLE_GROUPS, REPS_PER_SET } from '@/utils/muscles';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -323,6 +324,66 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
         </p>
       )}
     </motion.div>
+  );
+}
+
+// ─── Muscles travaillés (Hevy Pro, ici gratuit) ──────────────────────────────
+
+const MUSCLE_PERIODS = [{ days: 7, label: '7 jours' }, { days: 30, label: '30 jours' }] as const;
+
+function MuscleDistribution({ sessions, gymSessions }: { sessions: Session[]; gymSessions: GymSession[] }) {
+  const [days, setDays] = useState<number>(7);
+  const since = new Date();
+  since.setHours(0, 0, 0, 0);
+  since.setDate(since.getDate() - (days - 1));
+  const byGroup = setsByMuscle(gymSessions, sessions, since);
+  const rows = MUSCLE_GROUPS.map((g) => ({ group: g, sets: byGroup[g] })).sort((a, b) => b.sets - a.sets);
+  const max = Math.max(...rows.map((r) => r.sets));
+  const fmtSets = (n: number) => `${n.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} série${n >= 2 ? 's' : ''}`;
+
+  return (
+    <div className="bg-card border rounded-2xl p-4">
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Target className="w-4 h-4 text-primary" />
+          Muscles travaillés
+        </h3>
+        <div className="flex gap-1 p-0.5 bg-muted rounded-lg" role="group" aria-label="Période">
+          {MUSCLE_PERIODS.map((p) => (
+            <button
+              key={p.days}
+              onClick={() => setDays(p.days)}
+              aria-pressed={days === p.days}
+              className={`px-3 min-h-11 rounded-md text-xs font-medium transition-all active:scale-95 ${
+                days === p.days ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {max === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-4">Aucune séance sur cette période.</p>
+      ) : (
+        <ul className="space-y-3">
+          {rows.map(({ group, sets }) => (
+            <li key={group}>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="font-medium">{group}</span>
+                <span className="text-muted-foreground tabular-nums">{fmtSets(sets)}</span>
+              </div>
+              <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full" style={{ width: `${(sets / max) * 100}%` }} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-[11px] text-muted-foreground mt-4">
+        Muscle principal : 1 série, secondaire : ½. Renfo : 1 série ≈ {REPS_PER_SET} reps.
+      </p>
+    </div>
   );
 }
 
@@ -678,6 +739,7 @@ export default function Statistics() {
           <>
             <ActivityCalendar sessions={sessions} gymSessions={gymSessions} />
             <WeeklyChart sessions={sessions} gymSessions={gymSessions} />
+            <MuscleDistribution sessions={sessions} gymSessions={gymSessions} />
           </>
         )}
 
