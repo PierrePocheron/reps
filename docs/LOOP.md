@@ -52,3 +52,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | passe UI/UX premier lancement | Compte neuf dans la démo ; tutoriel sans toast parasite, « Série » partout, état vide des Statistiques avec appel à l'action | `d219a6f` |
 | 2026-10-03 | #10 | Muscles travaillés : séries par groupe musculaire sur 7/30 jours (principal 1, secondaire ½, renfo converti) | `f8408db` |
 | 2026-10-03 | #11 | Calculateur de disques (exercices à la barre, barre et disques réglables, arrondi au réalisable) | `d08d401` |
+| 2026-10-03 | passe UI/UX séance muscu | Bug P0 trouvé : barre minuteur + Terminer pas fixée (transform résiduel de PageTransition) → fondu seul + assertion E2E | `e67cfec` |
