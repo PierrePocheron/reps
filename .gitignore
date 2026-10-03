@@ -60,3 +60,7 @@ build/
 .vercel
 .env*.local
 scripts/.cache/
+
+# Local / généré
+.claude/
+coverage/

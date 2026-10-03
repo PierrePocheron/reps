@@ -1,6 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
+// Identité de l'éditeur : injectée au build (.env), jamais versionnée (repo public)
+const LEGAL_NAME = import.meta.env.VITE_LEGAL_NAME ?? "L'éditeur de l'application";
+const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL ?? '';
+
 export default function PrivacyPolicy() {
   const navigate = useNavigate();
 
@@ -27,7 +31,7 @@ export default function PrivacyPolicy() {
           <h2 className="text-base font-semibold">1. Présentation</h2>
           <p>
             L'application <strong>Reps</strong> (<em>com.pierre.reps.app</em>) est développée et maintenue par
-            L'éditeur. Elle permet de suivre vos séances d'entraînement (renforcement musculaire et
+            {LEGAL_NAME}. Elle permet de suivre vos séances d'entraînement (renforcement musculaire et
             musculation), de consulter vos statistiques et de vous mesurer à vos amis.
           </p>
           <p>
@@ -175,7 +179,7 @@ export default function PrivacyPolicy() {
             </li>
             <li>
               <strong className="text-foreground">Par e-mail</strong> — envoyez une demande à{' '}
-              <strong className="text-foreground">contact@example.com</strong> depuis l'adresse
+              <strong className="text-foreground">{CONTACT_EMAIL}</strong> depuis l'adresse
               associée à votre compte. Traitement sous 30 jours.
             </li>
           </ul>
@@ -197,7 +201,7 @@ export default function PrivacyPolicy() {
             <li><strong className="text-foreground">Opposition</strong> — vous opposer au traitement basé sur l'intérêt légitime</li>
             <li><strong className="text-foreground">Retrait du consentement</strong> — pour les traitements basés sur le consentement</li>
           </ul>
-          <p>Pour exercer ces droits, contactez : <strong>contact@example.com</strong></p>
+          <p>Pour exercer ces droits, contactez : <strong>{CONTACT_EMAIL}</strong></p>
         </section>
 
         <section className="space-y-3">
@@ -232,8 +236,8 @@ export default function PrivacyPolicy() {
             Pour toute question concernant cette politique ou vos données personnelles :
           </p>
           <div className="rounded-xl bg-muted/50 p-4">
-            <p className="font-medium">L'éditeur</p>
-            <p className="text-muted-foreground">contact@example.com</p>
+            <p className="font-medium">{LEGAL_NAME}</p>
+            <p className="text-muted-foreground">{CONTACT_EMAIL}</p>
             <p className="text-muted-foreground">Développeur indépendant — France</p>
           </div>
         </section>

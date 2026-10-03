@@ -163,7 +163,7 @@ describe('updateUserDocument', () => {
   });
 
   it('should route private fields to users/{uid}/private/profile', async () => {
-    await updateUserDocument('uid123', { weight: 72, displayName: 'Pierre' });
+    await updateUserDocument('uid123', { weight: 72, displayName: 'Demo' });
     expect(setDoc).toHaveBeenCalledTimes(1);
     expect(vi.mocked(setDoc).mock.calls[0]![1]).toMatchObject({ weight: 72 });
     expect(updateDoc).toHaveBeenCalledTimes(1);
@@ -346,7 +346,7 @@ describe('searchUsers', () => {
   });
 
   it('should return users when search finds matches', async () => {
-    const users = [makeDoc({ displayName: 'Pierre' }), makeDoc({ displayName: 'Pierrot' })];
+    const users = [makeDoc({ displayName: 'Demo' }), makeDoc({ displayName: 'Pierrot' })];
     vi.mocked(getDocs).mockResolvedValue(makeSnapshot(users) as any);
     const results = await searchUsers('Pierre');
     expect(results.length).toBeGreaterThan(0);

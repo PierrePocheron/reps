@@ -48,10 +48,8 @@ read -rp "Mot de passe de la keystore (store password) : " STORE_PASSWORD
 echo ""
 read -rp "Mot de passe de la clé (key password, peut être identique) : " KEY_PASSWORD
 echo ""
-read -rp "Votre prénom et nom [L'éditeur] : " FULL_NAME
-FULL_NAME="${FULL_NAME:-L'éditeur}"
+read -rp "Votre prénom et nom : " FULL_NAME
 read -rp "Ville : " CITY
-CITY="${CITY:-}"
 read -rp "Pays (code 2 lettres) [FR] : " COUNTRY
 COUNTRY="${COUNTRY:-FR}"
 
