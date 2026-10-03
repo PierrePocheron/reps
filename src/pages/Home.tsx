@@ -21,6 +21,7 @@ import { useChallenges } from '@/hooks/useChallenges';
 import { DEFAULT_MOTIVATIONAL_PHRASES } from '@/utils/constants';
 import { logger } from '@/utils/logger';
 import { isWorkSet } from '@/utils/records';
+import { KudosBanner } from '@/components/Kudos';
 
 function Home() {
   const navigate = useNavigate();
@@ -187,6 +188,8 @@ function Home() {
                 <p className="text-sm text-muted-foreground">{motivationalPhrase.text} {motivationalPhrase.emoji}</p>
             )}
         </div>
+
+        <KudosBanner />
 
         {/* CTA nouvelle séance */}
         {!hasActiveSession && (

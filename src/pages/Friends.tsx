@@ -35,6 +35,7 @@ import { UserAvatar } from '@/components/UserAvatar';
 import type { User, FriendRequest, Session } from '@/firebase/types';
 import { UserPlus, Search, Check, X, Users, Activity, Calendar, Award, MoreVertical, UserMinus, Flame } from 'lucide-react';
 import { logger } from '@/utils/logger';
+import { KudosButton } from '@/components/Kudos';
 
 export default function Friends() {
   const { user, friendRequests } = useUserStore();
@@ -358,6 +359,7 @@ export default function Friends() {
                                 </p>
                               )}
                             </div>
+                            <KudosButton ownerId={item.userId} sessionId={item.sessionId} ownerName={friend.displayName} />
                           </div>
                         </div>
                       </CardContent>

@@ -147,7 +147,9 @@ export interface Notification {
   userId: string;
   title: string;
   message: string;
-  type: 'reminder' | 'friend_activity' | 'achievement';
+  type: 'reminder' | 'friend_activity' | 'achievement' | 'kudos';
+  fromUserId?: string;
+  fromName?: string; // nom affiché de l'expéditeur (encouragements)
   read: boolean;
   createdAt: Timestamp;
 }

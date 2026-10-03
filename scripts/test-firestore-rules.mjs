@@ -14,7 +14,7 @@ import {
   assertSucceeds,
   assertFails,
 } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, collectionGroup } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, collectionGroup, serverTimestamp } from 'firebase/firestore';
 
 const PROJECT = 'reps-rules-test';
 let passed = 0, failed = 0;
@@ -137,6 +137,20 @@ await test('autrui ne lit pas mes notifications', async () => {
     await setDoc(doc(ctx.firestore(), 'notifications/n1'), { userId: 'alice', fromUserId: 'bob', title: 'x', message: 'x', type: 'friend_activity', read: false });
   });
   return assertFails(getDoc(doc(mallory, 'notifications/n1')));
+});
+
+console.log('\n─ Encouragements (kudos) ─');
+// (bob s'est retiré des amis d'alice plus haut ; bob a toujours alice en ami)
+const kudo = (ctx, from) => doc(ctx, `sessions/bob/userSessions/b1/kudos/${from}`);
+await test('un ami encourage une séance', () => assertSucceeds(setDoc(kudo(alice, 'alice'), { createdAt: serverTimestamp() })));
+await test('une seule réaction par personne (pas de réécriture)', () => assertFails(setDoc(kudo(alice, 'alice'), { createdAt: serverTimestamp() })));
+await test('pas de réaction au nom d\'un autre', () => assertFails(setDoc(kudo(alice, 'mallory'), { createdAt: serverTimestamp() })));
+await test('un inconnu ne peut pas encourager', () => assertFails(setDoc(kudo(mallory, 'mallory'), { createdAt: serverTimestamp() })));
+await test('pas de réaction à sa propre séance', () => assertFails(setDoc(kudo(bob, 'bob'), { createdAt: serverTimestamp() })));
+await test('pas de champ en plus', () => assertFails(setDoc(doc(alice, 'sessions/bob/userSessions/b2/kudos/alice'), { createdAt: serverTimestamp(), msg: 'spam' })));
+await test('on retire seulement sa propre réaction', async () => {
+  await assertFails(deleteDoc(kudo(mallory, 'alice')));
+  await assertSucceeds(deleteDoc(kudo(alice, 'alice')));
 });
 
 console.log('\n─ Divers ─');
