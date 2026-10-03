@@ -1,6 +1,6 @@
-import { forwardRef } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Undo2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -36,6 +36,13 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
 }, ref) => {
   const { play } = useSound();
   const haptics = useHaptic();
+  // Dernier ajout annulable 5 s (un +20 par erreur se corrigeait impossible)
+  const [lastAdded, setLastAdded] = useState<number | null>(null);
+  useEffect(() => {
+    if (lastAdded === null) return;
+    const t = setTimeout(() => setLastAdded(null), 5000);
+    return () => clearTimeout(t);
+  }, [lastAdded, exercise.reps]);
   let longPressTimer: NodeJS.Timeout | null = null;
 
   const handleTouchStart = () => {
@@ -87,16 +94,30 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
               </div>
               <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                 <p className="text-3xl font-bold text-primary tabular-nums">{exercise.reps}</p>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label={`Supprimer ${exercise.name}`}
-                  onClick={onLongPress}
-                  onTouchStart={(e) => e.stopPropagation()}
-                  onMouseDown={(e) => e.stopPropagation()}
-                >
-                  <Trash2 className="h-4 w-4 text-muted-foreground" />
-                </Button>
+                {lastAdded !== null ? (
+                  <Button
+                    variant="ghost"
+                    className="h-11 min-w-11 px-2 gap-0.5 text-xs font-semibold text-muted-foreground"
+                    aria-label={`Annuler l'ajout de ${lastAdded} répétitions`}
+                    onClick={() => { onAddReps(-lastAdded); setLastAdded(null); }}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                  >
+                    <Undo2 className="h-4 w-4" />+{lastAdded}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-11 w-11"
+                    aria-label={`Supprimer ${exercise.name}`}
+                    onClick={onLongPress}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                  >
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -114,6 +135,7 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
                       haptics.impact();
                       play('success');
                     onAddReps(value);
+                    setLastAdded(value);
                   }}
                   className={cn(
                     "rounded-2xl flex flex-col items-center justify-center transition-colors relative flex-1 min-w-[3.5rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",

@@ -175,7 +175,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const { exercises } = get();
     const updatedExercises = exercises.map((ex) => {
       if (ex.name === exerciseName) {
-        return { ...ex, reps: ex.reps + reps };
+        return { ...ex, reps: Math.max(0, ex.reps + reps) }; // reps < 0 : annulation d'un ajout
       }
       return ex;
     });
