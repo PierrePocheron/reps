@@ -226,7 +226,7 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
             <button
               onClick={() => setMode('reps')}
               aria-pressed={activeMode === 'reps'}
-              className={`flex items-center gap-1 px-3 py-1.5 min-h-9 rounded-md text-xs font-medium transition-all active:scale-95 ${
+              className={`flex items-center gap-1 px-3 py-1.5 min-h-11 rounded-md text-xs font-medium transition-all active:scale-95 ${
                 activeMode === 'reps' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'
               }`}
             >
@@ -236,7 +236,7 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
             <button
               onClick={() => setMode('volume')}
               aria-pressed={activeMode === 'volume'}
-              className={`flex items-center gap-1 px-3 py-1.5 min-h-9 rounded-md text-xs font-medium transition-all active:scale-95 ${
+              className={`flex items-center gap-1 px-3 py-1.5 min-h-11 rounded-md text-xs font-medium transition-all active:scale-95 ${
                 activeMode === 'volume' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'
               }`}
             >
@@ -323,6 +323,51 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
         </p>
       )}
     </motion.div>
+  );
+}
+
+// ─── Habitudes : créneau horaire des séances (renfo + muscu) ─────────────────
+
+const SLOTS = [
+  { label: 'Matin', hours: 'avant 12 h', icon: Sunrise, match: (h: number) => h >= 5 && h < 12 },
+  { label: 'Après-midi', hours: '12 h – 18 h', icon: Sun, match: (h: number) => h >= 12 && h < 18 },
+  { label: 'Soir', hours: 'après 18 h', icon: Moon, match: (h: number) => h >= 18 || h < 5 },
+];
+
+function TrainingHabits({ sessions, gymSessions }: { sessions: Session[]; gymSessions: GymSession[] }) {
+  const hours = [...sessions, ...gymSessions].map((s) => s.date.toDate().getHours());
+  if (hours.length === 0) return null;
+  const counts = SLOTS.map((slot) => hours.filter(slot.match).length);
+  const top = counts.indexOf(Math.max(...counts));
+
+  return (
+    <div className="bg-card border rounded-2xl p-4">
+      <h3 className="text-sm font-semibold mb-1 flex items-center gap-2">
+        <Calendar className="w-4 h-4 text-primary" />
+        Habitudes d'entraînement
+      </h3>
+      <p className="text-xs text-muted-foreground mb-4">
+        Tu t'entraînes surtout {top === 0 ? 'le matin' : top === 1 ? "l'après-midi" : 'le soir'}.
+      </p>
+      <div className="space-y-4">
+        {SLOTS.map(({ label, hours: range, icon: Icon }, i) => (
+          <div key={label} className="flex items-center gap-3">
+            <div className="bg-primary/10 p-2 rounded-full">
+              <Icon className="w-4 h-4 text-primary" />
+            </div>
+            <div className="flex-1">
+              <div className="flex justify-between text-sm mb-1.5">
+                <span className="font-medium">{label} <span className="text-xs font-normal text-muted-foreground">· {range}</span></span>
+                <span className="text-muted-foreground">{counts[i]} séance{counts[i]! > 1 ? 's' : ''}</span>
+              </div>
+              <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full" style={{ width: `${(counts[i]! / hours.length) * 100}%` }} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -481,7 +526,7 @@ export default function Statistics() {
               </div>
               <div className="space-y-0.5">
                 <span className="text-2xl font-bold block">{user.totalSessions}</span>
-                <span className="text-xs text-muted-foreground uppercase">Séances</span>
+                <span className="text-xs text-muted-foreground uppercase">Séances renfo</span>
               </div>
             </motion.div>
         </div>
@@ -623,68 +668,7 @@ export default function Statistics() {
           slotId={ADS_CONFIG.ADSENSE.SLOTS.STATISTICS_BOTTOM}
         />
 
-        <div className="bg-card border rounded-2xl p-4">
-            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-primary" />
-                Habitudes d'entraînement
-            </h3>
-            <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                        <Sunrise className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                        <div className="flex justify-between text-sm mb-1.5">
-                            <span className="font-medium">Matin</span>
-                            <span className="text-muted-foreground">{user.morningSessions || 0} séances</span>
-                        </div>
-                        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-primary rounded-full"
-                                style={{ width: `${Math.min(100, ((user.morningSessions || 0) / ((user.morningSessions || 0) + (user.lunchSessions || 0) + (user.nightSessions || 0) || 1)) * 100)}%` }}
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                        <Sun className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                        <div className="flex justify-between text-sm mb-1.5">
-                            <span className="font-medium">Midi</span>
-                            <span className="text-muted-foreground">{user.lunchSessions || 0} séances</span>
-                        </div>
-                         <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-primary rounded-full"
-                                style={{ width: `${Math.min(100, ((user.lunchSessions || 0) / ((user.morningSessions || 0) + (user.lunchSessions || 0) + (user.nightSessions || 0) || 1)) * 100)}%` }}
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                        <Moon className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                        <div className="flex justify-between text-sm mb-1.5">
-                            <span className="font-medium">Soir</span>
-                            <span className="text-muted-foreground">{user.nightSessions || 0} séances</span>
-                        </div>
-                         <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-primary rounded-full"
-                                style={{ width: `${Math.min(100, ((user.nightSessions || 0) / ((user.morningSessions || 0) + (user.lunchSessions || 0) + (user.nightSessions || 0) || 1)) * 100)}%` }}
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        <TrainingHabits sessions={sessions} gymSessions={gymSessions} />
 
         {/* Note informative */}
         <details className="bg-muted/50 p-4 rounded-2xl text-xs text-muted-foreground">
