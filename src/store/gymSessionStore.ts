@@ -226,6 +226,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
           completed: s.completed,
           ...(s.actualReps !== undefined ? { actualReps: s.actualReps } : {}),
           ...(s.actualWeight !== undefined ? { actualWeight: s.actualWeight } : {}),
+          ...(s.isRecord ? { isRecord: true } : {}), // trophée et records sur la carte partagée depuis l'historique
         })),
       }));
 
