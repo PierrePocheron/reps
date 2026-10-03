@@ -47,6 +47,7 @@ function GymSession() {
     startTime,
     restDuration,
     showRestTimer,
+    restEndsAt,
     addExercise,
     removeExercise,
     addSet,
@@ -422,8 +423,9 @@ function GymSession() {
         style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
       >
         <div className="max-w-2xl mx-auto space-y-3">
-          {showRestTimer && (
+          {showRestTimer && restEndsAt && (
             <InlineRestTimer
+              endsAt={restEndsAt}
               durationSeconds={restDuration}
               onDismiss={dismissRestTimer}
               onChangeDuration={setRestDuration}
@@ -684,23 +686,34 @@ const REST_PRESETS = [
 ];
 
 function InlineRestTimer({
+  endsAt,
   durationSeconds,
   onDismiss,
   onChangeDuration,
 }: {
+  endsAt: number;
   durationSeconds: number;
   onDismiss: () => void;
   onChangeDuration: (v: number) => void;
 }) {
-  const [remaining, setRemaining] = useState(durationSeconds);
+  const haptics = useHaptic();
+  const secondsLeft = () => Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
+  const [remaining, setRemaining] = useState(secondsLeft);
 
-  useEffect(() => { setRemaining(durationSeconds); }, [durationSeconds]);
-
+  // Décompte calé sur l'heure de fin : juste au retour d'arrière-plan (les timers JS y sont gelés)
   useEffect(() => {
-    if (remaining <= 0) { onDismiss(); return; }
-    const id = setTimeout(() => setRemaining((r) => r - 1), 1000);
-    return () => clearTimeout(id);
-  }, [remaining, onDismiss]);
+    const tick = () => {
+      const left = secondsLeft();
+      setRemaining(left);
+      if (left > 0) return;
+      if (Date.now() - endsAt < 2000) haptics.notification(); // sinon la notification a déjà prévenu
+      onDismiss();
+    };
+    tick();
+    const id = setInterval(tick, 250);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- secondsLeft ne dépend que de endsAt
+  }, [endsAt, onDismiss, haptics]);
 
   const pct = durationSeconds > 0 ? (remaining / durationSeconds) * 100 : 0;
 

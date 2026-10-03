@@ -4,6 +4,7 @@ import type { Exercise, GymSessionExercise, PlannedSet } from '@/firebase/types'
 import { Timestamp } from 'firebase/firestore';
 import { createGymSession, calculateTotalVolume } from '@/firebase/gymSessions';
 import { logger } from '@/utils/logger';
+import { scheduleRestEnd, cancelRestEnd } from '@/utils/restNotification';
 import { useUserStore } from './userStore';
 
 export type GymPhase = 'idle' | 'plan' | 'execute';
@@ -18,6 +19,7 @@ interface GymSessionState {
   duration: number; // secondes, mis à jour pendant l'exécution
   restDuration: number; // durée repos entre sets (secondes)
   showRestTimer: boolean;
+  restEndsAt: number | null; // horodatage de fin du repos (le décompte en dérive)
 
   // Actions — Planning
   startPlanning: () => void;
@@ -60,6 +62,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   duration: 0,
   restDuration: 90, // 90 secondes par défaut
   showRestTimer: false,
+  restEndsAt: null,
 
   // ─── Planning ─────────────────────────────────────────────────────────
 
@@ -168,15 +171,19 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   },
 
   startRestTimer: () => {
-    set({ showRestTimer: true });
+    const restEndsAt = Date.now() + get().restDuration * 1000;
+    set({ showRestTimer: true, restEndsAt });
+    void scheduleRestEnd(restEndsAt);
   },
 
   dismissRestTimer: () => {
-    set({ showRestTimer: false });
+    set({ showRestTimer: false, restEndsAt: null });
+    cancelRestEnd();
   },
 
   setRestDuration: (seconds: number) => {
     set({ restDuration: seconds });
+    if (get().showRestTimer) get().startRestTimer(); // changer la durée relance le repos
   },
 
   endSession: async () => {
@@ -221,6 +228,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   },
 
   cancelSession: () => {
+    cancelRestEnd();
     set({
       phase: 'idle',
       exercises: [],
@@ -229,6 +237,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
       startTime: null,
       duration: 0,
       showRestTimer: false,
+      restEndsAt: null,
     });
   },
 

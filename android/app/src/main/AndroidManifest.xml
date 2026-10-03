@@ -9,6 +9,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- Permet de reprogrammer les notifs après un reboot -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- Fin de repos à l'heure (sinon alarme inexacte, jusqu'à +75 % de retard). Accordée d'office
+         sur Android 12-13, à activer par l'utilisateur sur 14+. Pas de déclaration Play (≠ USE_EXACT_ALARM). -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
 
     <application
         android:allowBackup="false"
