@@ -75,3 +75,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | #31 | Copier les modèles d'un ami (menu Amis), règles + 3 tests (déploiement par Pierre, avec #30) | `15d0745` |
 | 2026-10-04 | #47 | Modifier un modèle perso (formulaire prérempli, mise à jour en place) | `61abccd` |
 | 2026-10-04 | passe UI/UX séance libre | Ajout d'exercice : toutes les séries de la dernière fois recopiées (au lieu d'une seule) ; parcours libre vérifié | `25c4f1e` |
+| 2026-10-04 | #27 | Supersets : liaison entre exercices, repos après le dernier du groupe, historique et « Refaire » | `0c974f1` |
