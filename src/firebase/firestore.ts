@@ -468,7 +468,7 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
 
     // Séries : jours distincts avec une séance, renfo + muscu
     const trainingDates = [...sessions, ...gymSessions].map((sess) => sess.date).filter(Boolean);
-    const { current: currentStreak, longest: longestStreak } = trainingStreaks(trainingDates.map((d) => d.toDate()));
+    const { current: currentStreak, longest: longestStreak, pendingJoker, lastJokerDay } = trainingStreaks(trainingDates.map((d) => d.toDate()));
     const lastTrainingDate = trainingDates.reduce<Timestamp | undefined>(
       (latest, d) => (!latest || d.toDate() > latest.toDate() ? d : latest), undefined);
 
@@ -537,6 +537,8 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
       currentStreak,
       longestStreak,
       lastTrainingDate,
+      jokerPending: pendingJoker !== null,
+      lastJokerDay,
       morningSessions,
       lunchSessions,
       nightSessions,
@@ -563,6 +565,7 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
       currentStreak: stats.currentStreak,
       longestStreak: stats.longestStreak,
       lastTrainingDate: stats.lastTrainingDate ?? null,
+      lastJokerDay: stats.lastJokerDay ?? null,
     };
 
     // Vérifier les nouveaux badges

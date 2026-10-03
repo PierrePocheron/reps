@@ -713,6 +713,11 @@ export default function Statistics() {
                         <span className="text-3xl font-bold">{stats.currentStreak}</span>
                         <span className="text-sm text-muted-foreground ml-1">{stats.currentStreak > 1 ? 'jours' : 'jour'}</span>
                      </div>
+                     <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
+                        {stats.jokerPending
+                          ? "Joker utilisé hier : une séance aujourd'hui et ta série continue."
+                          : '1 jour de repos par semaine ne casse pas ta série.'}
+                     </p>
                 </div>
                 <div className="bg-card border rounded-2xl p-4 flex flex-col justify-between overflow-hidden relative">
                     <div className="absolute top-2 right-2 opacity-10">

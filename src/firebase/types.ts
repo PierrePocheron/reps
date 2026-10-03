@@ -33,6 +33,7 @@ export interface User {
   longestStreak: number;
   lastConnection: Timestamp | null;
   lastTrainingDate?: Timestamp | null; // dernière séance (renfo ou muscu) : la série affichée en dépend
+  lastJokerDay?: number | null; // jour (minuit local, ms) couvert par le dernier joker de repos de la série
 
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -165,6 +166,8 @@ export interface UserStats {
   lastSessionReps?: number;
   currentStreak: number; // jours consécutifs
   lastTrainingDate?: Timestamp;
+  jokerPending?: boolean; // hier sans séance, couvert par le joker : s'entraîner aujourd'hui garde la série
+  lastJokerDay?: number | null;
   longestStreak: number;
   morningSessions: number; // 7h-9h
   lunchSessions: number; // 12h-14h

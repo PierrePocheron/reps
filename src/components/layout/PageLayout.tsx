@@ -22,7 +22,7 @@ export function PageLayout({ children, title, isHome, headerAction, backButton, 
 
     // Initialize Streak Logic
     useStreak();
-    const streak = user ? liveStreak(user.currentStreak || 0, user.lastTrainingDate?.toDate()) : 0;
+    const streak = user ? liveStreak(user.currentStreak || 0, user.lastTrainingDate?.toDate(), user.lastJokerDay) : 0;
 
     return (
         <div className="flex flex-col min-h-screen pb-24 bg-background">

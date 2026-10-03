@@ -5,27 +5,61 @@ const nextDayKey = (key: number) => {
   d.setDate(d.getDate() + 1);
   return dayKey(d);
 };
+/** Lundi de la semaine du jour `key`. */
+const weekKey = (key: number) => {
+  const d = new Date(key);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  return dayKey(d);
+};
 
-/**
- * Série = jours consécutifs avec au moins une séance (renfo ou muscu).
- * Elle reste « en cours » tant que la dernière séance date d'aujourd'hui ou d'hier.
- */
-export function trainingStreaks(dates: Date[], today = new Date()): { current: number; longest: number } {
-  const days = [...new Set(dates.map(dayKey))].sort((a, b) => a - b);
-  let run = 0, longest = 0, prev: number | undefined;
-  for (const day of days) {
-    run = prev !== undefined && nextDayKey(prev) === day ? run + 1 : 1;
-    longest = Math.max(longest, run);
-    prev = day;
-  }
-  const t = dayKey(today);
-  const alive = prev !== undefined && (prev === t || nextDayKey(prev) === t);
-  return { current: alive ? run : 0, longest };
+export interface Streaks {
+  current: number;
+  longest: number;
+  /** Jour de repos couvert par le joker en attente (hier) : la série continue si on s'entraîne aujourd'hui. */
+  pendingJoker: number | null;
+  /** Dernier jour couvert par un joker dans la série en cours (en attente ou déjà comblé). */
+  lastJokerDay: number | null;
 }
 
-/** Série enregistrée sur le profil, remise à 0 si plus d'un jour sans séance depuis. */
-export function liveStreak(streak: number, lastTraining: Date | null | undefined, today = new Date()): number {
+/**
+ * Série = jours consécutifs avec au moins une séance (renfo ou muscu), avec un joker de repos par
+ * semaine (Duolingo, Gentler Streak) : un jour manqué isolé ne casse pas la série et compte dès que
+ * la séance suivante le comble. Aujourd'hui, pas encore d'entraînement ne casse rien.
+ */
+export function trainingStreaks(dates: Date[], today = new Date()): Streaks {
+  const trained = new Set(dates.map(dayKey));
+  const t = dayKey(today);
+  let run = 0, longest = 0;
+  let pending: number | null = null, lastJoker: number | null = null;
+  const usedWeeks = new Set<number>();
+  if (trained.size === 0) return { current: 0, longest: 0, pendingJoker: null, lastJokerDay: null };
+
+  for (let k = Math.min(...trained); k <= t; k = nextDayKey(k)) {
+    if (trained.has(k)) {
+      if (pending !== null) { run++; pending = null; } // le joker fait le pont
+      run++;
+    } else if (k === t) {
+      // journée en cours
+    } else if (run > 0 && pending === null && !usedWeeks.has(weekKey(k))) {
+      pending = lastJoker = k;
+      usedWeeks.add(weekKey(k));
+    } else {
+      run = 0; pending = lastJoker = null; usedWeeks.clear();
+    }
+    longest = Math.max(longest, run);
+  }
+  return { current: run, longest, pendingJoker: pending, lastJokerDay: lastJoker };
+}
+
+/**
+ * Série enregistrée sur le profil (calculée en fin de séance), remise à 0 si elle a cassé depuis :
+ * un seul jour manqué est couvert par le joker s'il n'a pas déjà servi cette semaine-là.
+ */
+export function liveStreak(streak: number, lastTraining: Date | null | undefined, lastJokerDay?: number | null, today = new Date()): number {
   if (!lastTraining) return 0;
   const last = dayKey(lastTraining), t = dayKey(today);
-  return last === t || nextDayKey(last) === t ? streak : 0;
+  if (last === t || nextDayKey(last) === t) return streak;
+  const missed = nextDayKey(last);
+  const jokerFree = !lastJokerDay || weekKey(lastJokerDay) !== weekKey(missed);
+  return nextDayKey(missed) === t && jokerFree ? streak : 0;
 }
