@@ -42,3 +42,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | passe UI/UX Statistiques | Habitudes calculées sur les vraies séances (renfo + muscu, créneau favori) ; libellés et cibles corrigés | `8d3902d` |
 | 2026-10-03 | #6 | Fiche Play Store FR (titre, descriptions, nouveautés) + 8 captures légendées générées depuis la démo (`yarn store:screenshots`) ; fix carte défi écrasée | `cce9048` |
 | 2026-10-03 | #41 | Repos lancé automatiquement après chaque série (interrupteur dans le minuteur) ; invitation unique aux alarmes exactes sur Android 14+ | `12ad435` |
+| 2026-10-03 | passe UI/UX Modèles, Social, Réglages, Historique | « Modèles » au lieu de « templates », onglets 44 px partout, durées « 1h 7min », coquilles | `ddf0780` |
