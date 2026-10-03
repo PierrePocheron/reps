@@ -8,11 +8,12 @@ import { useUserStore } from '@/store/userStore';
 import { useSession } from '@/hooks/useSession';
 import { useGymSessionStore } from '@/store/gymSessionStore';
 import { SessionTypePicker } from '@/components/SessionTypePicker';
-import { Plus, Calendar, Activity, Flame, Trophy, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { Plus, Calendar, Activity, Flame, Trophy, ChevronDown, CheckCircle2, Dumbbell, Weight } from 'lucide-react';
 
 import { getLastSession } from '@/firebase/firestore';
+import { getUserGymSessions } from '@/firebase/gymSessions';
 import { getDayIndex } from '@/firebase/challenges';
-import type { Session } from '@/firebase/types';
+import type { Session, GymSession } from '@/firebase/types';
 import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ChallengeCard } from '@/components/challenges/ChallengeCard';
@@ -52,9 +53,12 @@ function Home() {
   // The count should show "How many are DONE for today".
   // If I am late, I am NOT done.
   // So > getDayIndex is correct.
-  const dailyDoneCount = activeChallenges.filter(c =>
-    c.history.length > getDayIndex(c.startDate, new Date())
-  ).length;
+  const todayIndex = (c: (typeof activeChallenges)[number]) => getDayIndex(c.startDate, new Date());
+  const todoChallenges = activeChallenges.filter((c) => c.history.length <= todayIndex(c));
+  const doneChallenges = activeChallenges.filter((c) => c.history.length > todayIndex(c));
+  const dailyDoneCount = doneChallenges.length;
+
+
 
   const [motivationalPhrase] = useState(() => DEFAULT_MOTIVATIONAL_PHRASES[Math.floor(Math.random() * DEFAULT_MOTIVATIONAL_PHRASES.length)]);
 
@@ -62,14 +66,20 @@ function Home() {
 
 
   // Fetch Last Session Details
+  // Dernière séance de chaque mode : on affiche la plus récente des deux
   const [lastSessionDetail, setLastSessionDetail] = useState<Session | null>(null);
+  const [lastGymSession, setLastGymSession] = useState<GymSession | null>(null);
 
   useEffect(() => {
     async function fetchLastSession() {
       if (user?.uid) {
         try {
-          const session = await getLastSession(user.uid);
+          const [session, gym] = await Promise.all([
+            getLastSession(user.uid),
+            getUserGymSessions(user.uid, 1).catch(() => [] as GymSession[]),
+          ]);
           setLastSessionDetail(session);
+          setLastGymSession(gym[0] ?? null);
         } catch (err) {
             logger.error('Fetch last session failed', err as Error);
         }
@@ -77,6 +87,28 @@ function Home() {
     }
     fetchLastSession();
   }, [user?.uid, stats?.totalSessions, sessionRefreshTrigger]); // Re-fetch on signal
+
+  const showGym = !!lastGymSession && (!lastSessionDetail || lastGymSession.date.toMillis() > lastSessionDetail.date.toMillis());
+  const lastActivity = showGym && lastGymSession
+    ? {
+        date: lastGymSession.date,
+        chips: [
+          { icon: Weight, className: 'text-muted-foreground', value: Math.round(lastGymSession.totalVolume).toLocaleString('fr-FR'), unit: 'kg' },
+          { icon: Dumbbell, className: 'text-primary', value: String(lastGymSession.totalSets), unit: 'séries' },
+        ],
+        items: lastGymSession.exercises.map((ex) => {
+          const done = ex.sets.filter((st) => st.completed).length;
+          return { key: ex.exerciseId, emoji: ex.emoji, name: ex.name, detail: `${done} série${done > 1 ? 's' : ''}` };
+        }),
+      }
+    : lastSessionDetail && {
+        date: lastSessionDetail.date,
+        chips: [
+          { icon: Activity, className: 'text-muted-foreground', value: String(lastSessionDetail.totalReps), unit: 'reps' },
+          { icon: Flame, className: 'text-orange-500', value: String(lastSessionDetail.totalCalories || 0), unit: 'kcal' },
+        ],
+        items: lastSessionDetail.exercises.map((ex) => ({ key: ex.name, emoji: ex.emoji, name: ex.name, detail: `${ex.reps} reps` })),
+      };
 
   if (isLoading) {
     return (
@@ -194,9 +226,8 @@ function Home() {
                     </div>
 
                     {/* Todo Challenges */}
-                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                        {activeChallenges
-                            .filter(c => c.history.length <= getDayIndex(c.startDate, new Date()))
+                    <div className={`grid gap-3 sm:gap-4 ${todoChallenges.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                        {todoChallenges
                             .slice(0, 6)
                             .map(challenge => (
                             <ChallengeCard
@@ -209,16 +240,15 @@ function Home() {
                     </div>
 
                     {/* Collapsible Done Challenges */}
-                    {activeChallenges.some(c => c.history.length > getDayIndex(c.startDate, new Date())) && (
+                    {doneChallenges.length > 0 && (
                         <details className="group">
                             <summary className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors py-2 select-none">
                                 <CheckCircle2 className="w-4 h-4" />
                                 <span>Défis validés aujourd'hui</span>
                                 <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
                             </summary>
-                            <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-3 animate-in slide-in-from-top-2 fade-in duration-200">
-                                {activeChallenges
-                                    .filter(c => c.history.length > getDayIndex(c.startDate, new Date()))
+                            <div className={`grid gap-3 sm:gap-4 mt-3 animate-in slide-in-from-top-2 fade-in duration-200 ${doneChallenges.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                                {doneChallenges
                                     .map(challenge => (
                                     <ChallengeCard
                                         key={challenge.id}
@@ -237,7 +267,7 @@ function Home() {
         </div>
 
         {/* Last Session Card */}
-        {lastSessionDetail && (
+        {lastActivity && (
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Dernière activité</h2>
             <Card className="overflow-hidden border-none shadow-md bg-card/50 backdrop-blur-sm">
@@ -250,15 +280,15 @@ function Home() {
                       <div className="flex items-center gap-2 text-foreground">
                         <Calendar className="h-4 w-4 text-primary" />
                         <span className="inline-block text-sm font-semibold first-letter:uppercase">
-                          {lastSessionDetail.date ? (
+                          {lastActivity.date ? (
                             <>
-                              {new Date(lastSessionDetail.date.toDate()).toLocaleDateString('fr-FR', {
+                              {new Date(lastActivity.date.toDate()).toLocaleDateString('fr-FR', {
                                 weekday: 'long',
                                 day: 'numeric',
                                 month: 'long',
                               })}
                               <span className="text-muted-foreground ml-2 font-normal">
-                                {new Date(lastSessionDetail.date.toDate()).toLocaleTimeString('fr-FR', {
+                                {new Date(lastActivity.date.toDate()).toLocaleTimeString('fr-FR', {
                                   hour: '2-digit',
                                   minute: '2-digit',
                                 })}
@@ -270,27 +300,24 @@ function Home() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <div className="flex items-center gap-1.5 bg-background/50 px-2 py-1 rounded-md border border-border/50">
-                          <Activity className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-sm font-mono font-bold">{lastSessionDetail.totalReps}</span>
-                          <span className="text-xs uppercase text-muted-foreground font-medium">reps</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 bg-background/50 px-2 py-1 rounded-md border border-border/50">
-                          <Flame className="h-3.5 w-3.5 text-orange-500" />
-                          <span className="text-sm font-mono font-bold">{lastSessionDetail.totalCalories || 0}</span>
-                          <span className="text-xs uppercase text-muted-foreground font-medium">kcal</span>
-                        </div>
+                        {lastActivity.chips.map(({ icon: Icon, className, value, unit }) => (
+                          <div key={unit} className="flex items-center gap-1.5 bg-background/50 px-2 py-1 rounded-md border border-border/50">
+                            <Icon className={`h-3.5 w-3.5 ${className}`} />
+                            <span className="text-sm font-mono font-bold">{value}</span>
+                            <span className="text-xs uppercase text-muted-foreground font-medium">{unit}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
 
                     {/* Exercises Grid */}
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        {lastSessionDetail.exercises.map((exo, idx) => (
-                             <div key={idx} className="flex items-center gap-2 bg-background/40 p-2 rounded-lg border border-border/30">
-                                <span className="text-xl">{exo.emoji}</span>
-                                <div className="flex flex-col">
-                                    <span className="text-xs font-medium line-clamp-1">{exo.name}</span>
-                                    <span className="text-xs text-muted-foreground">{exo.reps} reps</span>
+                        {lastActivity.items.map((item) => (
+                             <div key={item.key} className="flex items-center gap-2 bg-background/40 p-2 rounded-lg border border-border/30 min-w-0">
+                                <span className="text-xl">{item.emoji}</span>
+                                <div className="flex flex-col min-w-0">
+                                    <span className="text-xs font-medium line-clamp-1">{item.name}</span>
+                                    <span className="text-xs text-muted-foreground">{item.detail}</span>
                                 </div>
                              </div>
                         ))}

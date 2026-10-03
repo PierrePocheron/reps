@@ -360,7 +360,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
         )}
 
         {/* ACTION AREA */}
-        <div className={`flex items-center justify-between gap-3 ${detailed ? 'mt-0' : 'mt-4'}`}>
+        <div className={`flex flex-wrap items-center justify-between gap-3 ${detailed ? 'mt-0' : 'mt-4'}`}>
             {isActive ? (
                 <>
                     <div className={`flex flex-col ${isDoneToday ? 'opacity-50' : ''}`}>
@@ -376,12 +376,12 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                     </div>
 
                     {isDoneToday ? (
-                        <Button variant="outline" className="flex-1 bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400 hover:bg-green-500/20 px-2" disabled>
+                        <Button variant="outline" className="flex-1 min-w-[7.5rem] bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400 hover:bg-green-500/20 px-2" disabled>
                             <CheckCircle2 className="w-4 h-4 mr-1.5" />
                             Validé
                         </Button>
                     ) : (
-                        <Button onClick={handleValidate} disabled={isValidating} className={`flex-1 px-2 ${isLate ? 'bg-orange-500 hover:bg-orange-600' : ''}`}>
+                        <Button onClick={handleValidate} disabled={isValidating} className={`flex-1 min-w-[7.5rem] px-2 ${isLate ? 'bg-orange-500 hover:bg-orange-600' : ''}`}>
                             {isValidating ? <LoadingSpinner size="sm"/> : (isLate ? `Rattraper J${dayIndex + 1}` : "Valider")}
                         </Button>
                     )}
