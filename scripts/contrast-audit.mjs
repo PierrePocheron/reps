@@ -5,6 +5,8 @@
 import { chromium } from 'playwright';
 
 const DEMO = { email: 'demo@reps.test', password: 'reps-demo-2026' }; // compte fictif des émulateurs
+// Garde-fou : jamais de script bloqué indéfiniment (boucle d'amélioration, CI)
+setTimeout(() => { console.error('✗ délai dépassé (4 min)'); process.exit(2); }, 240_000).unref();
 const b = await chromium.launch();
 let failures = 0;
 for (const scheme of ['light', 'dark']) {

@@ -10,6 +10,8 @@ import { chromium } from 'playwright';
 const BASE = 'http://localhost:5199';
 const DEMO = { email: 'demo@reps.test', password: 'reps-demo-2026' }; // compte fictif des émulateurs
 
+// Garde-fou : jamais de script bloqué indéfiniment (boucle d'amélioration, CI)
+setTimeout(() => { console.error('✗ délai dépassé (4 min)'); process.exit(2); }, 240_000).unref();
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'fr-FR' });
 await ctx.addInitScript(() => localStorage.setItem('reps_onboarding_v2', '1'));
