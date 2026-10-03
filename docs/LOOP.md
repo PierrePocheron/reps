@@ -62,3 +62,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | passe UI/UX feuilles, modèles, sélecteur | Bug trouvé : opacité résiduelle de PageTransition → feuilles sous la navigation (CTA cachés) ; fondu CSS + z-[70] + assertion E2E ; libellés FR, icônes 44 px | `ac81918` |
 | 2026-10-03 | #12 | Types de séries (É / D / !) : échauffement exclu du volume, des records et des stats ; historique et CSV | `9763d48` |
 | 2026-10-03 | #22 | Questionnaire de départ (4 questions passables) : objectif hebdo + modèle conseillé mis en avant ; refaisable dans Réglages | `59be853` |
+| 2026-10-03 | passe UI/UX + légal | Politique de confidentialité alignée (RPE, notes, notifications locales sans token, préférences locales, Replay déclaré) ; astuce types de séries dans le tutoriel ; succès / classement / défi validé vérifiés | `228a49b` |
