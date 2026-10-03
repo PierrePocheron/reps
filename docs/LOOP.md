@@ -56,3 +56,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | #16 | Export CSV (format Strong, importable Hevy) ; exports JSON/CSV via feuille de partage native (cassés sur Android) ; fichier vide si export pendant le chargement | `dca2ba8` |
 | 2026-10-03 | test natif Android | Émulateur API 33 piloté par Playwright : partage CSV OK ; bug trouvé et corrigé : la notification de fin de repos s'effaçait 140 ms après son affichage ; icône de notification ajoutée | `722bb1b` |
 | 2026-10-03 | #9 | Partager sa séance en image (carte 1080×1350, historique + toast de fin de séance, feuille de partage native) | `6224c68` |
+| 2026-10-03 | passe UI/UX renfo, profil, amis, défis | Annuler le dernier ajout de reps en séance renfo (manque relevé) ; autres écrans conformes à 360 px | `117d0eb` |
