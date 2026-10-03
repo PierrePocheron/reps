@@ -37,3 +37,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | #40 | La séance muscu en cours survit à la fermeture / au rechargement (persist Zustand + test) | `1ed034e` |
 | 2026-10-03 | #4 | Graphique de progression par exercice (1RM estimé, charge max, volume ; 3 mois / 1 an / tout) | `411794a` |
 | 2026-10-03 | passe UI/UX séance muscu + Records | Séance muscu accessible (cibles 44 px, champs nommés) ; les cartes Records ouvrent la courbe de progression | `02f03be` |
+| 2026-10-03 | #3 | Notification de fin de repos écran verrouillé ; décompte calé sur l'heure de fin (ne se fige plus en arrière-plan) | `cf43f9f` |
