@@ -82,7 +82,7 @@ function Challenges() {
 
                 <div className="space-y-4">
                      {/* Todo Challenges */}
-                     <div className="grid grid-cols-2 gap-3">
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {activeChallenges
                             .filter(c => c.history.length <= getDayIndex(c.startDate, new Date()))
                             .map(ac => (
@@ -104,7 +104,7 @@ function Challenges() {
                                 <span>Défis validés aujourd'hui</span>
                                 <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
                             </summary>
-                            <div className="grid grid-cols-2 gap-3 mt-3 animate-in slide-in-from-top-2 fade-in duration-200">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 animate-in slide-in-from-top-2 fade-in duration-200">
                                 {activeChallenges
                                     .filter(c => c.history.length > getDayIndex(c.startDate, new Date()))
                                     .map(ac => (

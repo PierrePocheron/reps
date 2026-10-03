@@ -8,7 +8,7 @@
 
 | Champ | Valeur |
 |-------|--------|
-| Nom de l'application | `Reps` |
+| Nom de l'application (≤ 30) | `Reps – Carnet muscu & renfo` *(27 caractères)* |
 | ID de l'application | `com.pierre.reps.app` |
 | Langue principale | Français (fr-FR) |
 | Catégorie | Santé & Fitness |
@@ -21,61 +21,71 @@
 ## Description courte (≤ 80 caractères)
 
 ```
-Suivez vos séances, défiez vos amis et progressez chaque jour.
+Note tes séances de muscu et de renfo, bats tes records, motive-toi entre amis.
 ```
 
-*(63 caractères)*
+*(79 caractères — les trois piliers des leaders : noter, progresser, rester motivé)*
 
 ---
 
 ## Description longue (≤ 4 000 caractères)
 
 ```
-💪 Reps — Votre compagnon d'entraînement ultime
+Reps, c'est ton carnet d'entraînement : gratuit, en français, pour la muscu comme pour le renfo au poids du corps. Tu notes ta séance en deux taps, tu vois tes charges grimper et tu restes motivé avec tes amis.
 
-Que vous fassiez du renforcement musculaire au poids du corps ou de la musculation avec haltères, Reps s'adapte à votre style d'entraînement et vous aide à progresser avec méthode.
+━━━ NOTE TES SÉANCES EN DEUX TAPS ━━━
 
-━━━ SUIVI D'ENTRAÎNEMENT ━━━
+• Musculation : prépare ta séance (séries, répétitions, charges), puis valide chaque série d'un geste. Tes charges de la dernière fois sont pré-remplies.
+• Renforcement au poids du corps : pompes, squats, tractions, gainage… compte tes répétitions en direct.
+• Minuteur de repos avec notification, même écran verrouillé.
+• Ta séance est sauvegardée en continu : même si l'appli se ferme, tu reprends où tu en étais.
+• 1 324 exercices illustrés, avec les muscles ciblés et les consignes pas à pas.
+• Modèles de séance pour relancer tes routines préférées.
 
-• Renforcement musculaire : créez vos séances personnalisées, ajoutez vos exercices et comptez vos répétitions en temps réel.
-• Musculation : planifiez vos programmes avec poids, séries et temps de repos, puis cochez vos séries au fil de la séance.
-• Bibliothèque de 1 324 exercices illustrés : animation, muscles ciblés et instructions étape par étape, en français ou en anglais (suit la langue de votre téléphone).
-• Historique complet : retrouvez toutes vos séances passées avec le détail des exercices, le volume soulevé et la durée.
+━━━ VOIS TA PROGRESSION ━━━
 
-━━━ STATISTIQUES & PROGRESSION ━━━
+• Records détectés en direct : bats ton meilleur 1RM estimé et Reps te le fête.
+• Une courbe par exercice : 1RM estimé, charge max ou volume, sur 3 mois, 1 an ou depuis le début.
+• Historique complet de tes séances et de tes records.
+• Statistiques : calendrier d'activité, progression semaine par semaine, créneaux où tu t'entraînes le plus.
+• Série de jours d'entraînement d'affilée, renfo et muscu confondus.
 
-• Tableau de bord avec calories brûlées, nombre de répétitions et séances hebdomadaires.
-• Graphiques de progression du volume d'entraînement semaine par semaine.
-• Heatmap d'activité pour visualiser votre régularité sur l'année.
-• Analyse des habitudes (matin, après-midi, soir) et de votre streak de régularité.
+━━━ RESTE MOTIVÉ ━━━
 
-━━━ GAMIFICATION ━━━
+• Défis progressifs (pompes, squats, gainage…), ou crée le tien.
+• 22 badges à débloquer.
+• Ajoute tes amis : classement du jour, de la semaine, du mois ou depuis le début, et fil d'activité.
+• Rappel d'entraînement à l'heure de ton choix.
 
-• Système de niveaux algorithmique — progressez et débloquez de nouveaux rangs.
-• 15+ badges à débloquer selon vos performances et votre régularité.
-• Défis hebdomadaires pour repousser vos limites.
+━━━ PENSÉ POUR TOI ━━━
 
-━━━ SOCIAL ━━━
+• Tutoriel en quelques écrans au premier lancement.
+• Mode sombre ou clair, 8 couleurs d'accent.
+• Fonctionne hors connexion : tout se synchronise au retour du réseau.
+• Exercices en français ou en anglais selon la langue de ton téléphone.
 
-• Ajoutez vos amis et comparez vos performances sur le classement.
-• Fil d'activité pour rester motivé par la progression de votre entourage.
+━━━ TES DONNÉES T'APPARTIENNENT ━━━
 
-━━━ EXPÉRIENCE NATIVE ━━━
+Tes séances sont synchronisées de façon sécurisée et ne sont jamais revendues. Tu peux supprimer ton compte et toutes tes données depuis l'appli.
 
-• Tutoriel de prise en main au premier lancement.
-• Rappels d'entraînement personnalisables pour ne jamais manquer une séance.
-• Retours haptiques et effets sonores pour une expérience immersive.
-• Mode sombre, clair ou automatique selon votre préférence.
-• Fonctionne en mode hors-ligne — vos données se synchronisent à la reconnexion.
-
-━━━ CONFIDENTIALITÉ ━━━
-
-Vos données d'entraînement vous appartiennent. Reps utilise Firebase pour la synchronisation sécurisée et ne revend aucune donnée à des tiers.
-
-Débutant ou athlète confirmé, Reps est fait pour vous. Commencez dès aujourd'hui — chaque répétition compte.
+Débutant ou confirmé, lance ta première séance : chaque rep compte.
 ```
 
-*(~1 950 caractères)*
+*(~2 400 caractères. À ne pas promettre tant que ce n'est pas tranché : « sans pub », niveaux — il n'y a pas de système de niveaux dans l'appli.)*
+
+---
+
+## Captures d'écran (téléphone, 1080 × 1920)
+
+Générées depuis la démo, légendées par bénéfice : `store/fr-FR/screenshots/` (8 PNG, ordre = ordre d'affichage).
+
+```bash
+yarn dev:demo          # terminal 1 : émulateurs + données de démo
+yarn store:screenshots # terminal 2 : régénère les 8 captures
+```
+
+Les légendes et les écrans se règlent dans `scripts/store-screenshots.mjs`. À régénérer quand la mascotte sera
+choisie (#8) ou après un changement visuel notable.
 
 ---
 
@@ -84,14 +94,12 @@ Débutant ou athlète confirmé, Reps est fait pour vous. Commencez dès aujourd
 ```
 Première version de Reps !
 
-• Suivi renforcement musculaire et musculation
-• Bibliothèque de 1 324 exercices illustrés (FR/EN)
-• Templates de séances personnalisables
-• Statistiques, heatmap et graphiques de progression
-• Système de badges et de niveaux
-• Classement et défis avec vos amis
-• Rappels d'entraînement
-• Mode sombre et thèmes de couleurs
+• Muscu et renfo dans un seul carnet
+• Records détectés en direct et courbe de progression par exercice
+• Minuteur de repos avec notification
+• 1 324 exercices illustrés (FR/EN)
+• Statistiques, séries, défis progressifs et 22 badges
+• Classement et fil d'activité avec tes amis
 ```
 
 ---
@@ -123,19 +131,7 @@ Première version de Reps !
 
 ---
 
-## Captures d'écran requises
-
-Format recommandé : **1080 × 1920 px** (9:16) ou **1080 × 2400 px** (9:20)
-
-| # | Contenu suggéré | Page |
-|---|----------------|------|
-| 1 | Accueil — bandeau de bienvenue + dernière séance | `/` |
-| 2 | Session en cours — exercices + reps en temps réel | `/session` |
-| 3 | Session musculation — exécution avec poids/séries | `/gym` |
-| 4 | Statistiques — graphiques hebdo + heatmap | `/statistics` |
-| 5 | Profil — badges débloqués + classement | `/profil` |
-| 6 | Templates — liste des programmes | `/templates` |
-| 7 | Amis — classement social | `/leaderboard` |
+## Feature graphic
 
 **Feature Graphic** : 1 024 × 500 px (fond sombre, logo Reps + slogan)
 

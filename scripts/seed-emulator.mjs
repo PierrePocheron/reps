@@ -53,7 +53,7 @@ const GYM = [
 ];
 const round = (kg) => Math.round(kg / 2.5) * 2.5;
 
-async function seedPerson(p, { renfoEvery, gymEvery, activityScale }) {
+async function seedPerson(p, { renfoEvery, gymEvery, activityScale, dailySince = -1 }) {
   await auth.createUser({ uid: p.uid, email: p.email, password: p.password, displayName: p.displayName, emailVerified: true });
 
   const batch = db.batch();
@@ -61,7 +61,8 @@ async function seedPerson(p, { renfoEvery, gymEvery, activityScale }) {
   const slots = { morningSessions: 0, lunchSessions: 0, nightSessions: 0 };
   const slot = (ts) => { const h = ts.toDate().getHours(); slots[h < 11 ? 'morningSessions' : h < 15 ? 'lunchSessions' : 'nightSessions']++; return ts; };
 
-  for (let d = 88; d >= 0; d -= renfoEvery + Math.floor(rand() * 2)) {
+  // dailySince : une séance par jour sur les derniers jours (série en cours visible)
+  for (let d = 88; d >= 0; d -= d <= dailySince ? 1 : renfoEvery + Math.floor(rand() * 2)) {
     const exs = [...RENFO].sort(() => rand() - 0.5).slice(0, 3 + Math.floor(rand() * 2))
       .map(([name, emoji, [lo, hi]]) => ({ name, emoji, reps: Math.round((lo + rand() * (hi - lo)) * activityScale) * 2 }));
     const reps = exs.reduce((s, e) => s + e.reps, 0);
@@ -103,7 +104,7 @@ async function seedPerson(p, { renfoEvery, gymEvery, activityScale }) {
 }
 
 const counts = [];
-counts.push(await seedPerson(PEOPLE[0], { renfoEvery: 4, gymEvery: 3, activityScale: 1 }));
+counts.push(await seedPerson(PEOPLE[0], { renfoEvery: 4, gymEvery: 3, activityScale: 1, dailySince: 7 }));
 counts.push(await seedPerson(PEOPLE[1], { renfoEvery: 3, gymEvery: 6, activityScale: 0.9 }));
 counts.push(await seedPerson(PEOPLE[2], { renfoEvery: 6, gymEvery: 3, activityScale: 1.15 }));
 counts.push(await seedPerson(PEOPLE[3], { renfoEvery: 9, gymEvery: 12, activityScale: 0.6 }));
@@ -115,10 +116,10 @@ for (const [from, to] of [['lea', 'demo'], ['demo', 'sam'], ['sam', 'lea']]) {
 }
 fr.set(db.doc('friend_requests/noa_demo'), { fromUserId: 'noa', toUserId: 'demo', fromDisplayName: 'noa', fromAvatarEmoji: '🐼', status: 'pending', createdAt: at(1, 9) });
 
-// Défi en cours : pompes, démarré il y a 6 jours, 5 jours validés
+// Défi en cours : pompes, démarré il y a 6 jours, à jour (J7 à faire aujourd'hui)
 const def = { id: 'c_pushups_medium', exerciseId: 'pushups', title: 'Pompes Intermédiaire', description: '21 jours pour progresser aux pompes.', difficulty: 'medium', logic: 'progressive', durationDays: 21, baseAmount: 15, increment: 2 };
-const history = Array.from({ length: 5 }, (_, i) => ({ date: new Date(now - (6 - i) * DAY).toISOString().slice(0, 10), amount: 15 + 2 * i, completed: true }));
-fr.set(db.doc('user_challenges/demo_pushups'), { id: 'demo_pushups', userId: 'demo', challengeId: def.id, definitionSnapshot: def, startDate: at(6, 8), lastLogDate: at(1, 19), totalProgress: 5, status: 'active', history });
+const history = Array.from({ length: 6 }, (_, i) => ({ date: new Date(now - (6 - i) * DAY).toISOString().slice(0, 10), amount: 15 + 2 * i, completed: true }));
+fr.set(db.doc('user_challenges/demo_pushups'), { id: 'demo_pushups', userId: 'demo', challengeId: def.id, definitionSnapshot: def, startDate: at(6, 8), lastLogDate: at(1, 19), totalProgress: 6, status: 'active', history });
 
 // Événement de badge dans le fil d'activité
 fr.set(db.collection('users').doc('lea').collection('userEvents').doc(), { type: 'badge_unlocked', userId: 'lea', badgeName: 'Série de 7 jours', badgeEmoji: '🔥', createdAt: at(2, 18) });
