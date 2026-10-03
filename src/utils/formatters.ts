@@ -90,3 +90,9 @@ export function formatRelativeDate(date: Date | string): string {
   }
 }
 
+
+/** Date locale AAAA-MM-JJ (toISOString donne la date UTC : la veille après minuit en France). */
+export function localDay(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}

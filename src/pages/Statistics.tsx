@@ -4,13 +4,15 @@ import { motion } from 'framer-motion';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useUserStore } from '@/store/userStore';
 import { useSettingsStore } from '@/store/settingsStore';
-import { Flame, Dumbbell, Calendar, Zap, AlertTriangle, Trophy, Sunrise, Sun, Moon, TrendingUp, ChevronRight, Target } from 'lucide-react';
+import { Flame, Dumbbell, Calendar, Zap, AlertTriangle, Trophy, Sunrise, Sun, Moon, TrendingUp, ChevronRight, Target, Share2 } from 'lucide-react';
 import { AdSpace } from '@/components/AdSpace';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ADS_CONFIG } from '@/config/ads';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
 import type { Session, GymSession } from '@/firebase/types';
 import { setsByMuscle, MUSCLE_GROUPS, REPS_PER_SET } from '@/utils/muscles';
+import { periodRecap, recapCard, recapRange, type RecapKind } from '@/utils/recap';
+import { shareSessionCard } from '@/utils/shareCard';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -387,6 +389,77 @@ function MuscleDistribution({ sessions, gymSessions }: { sessions: Session[]; gy
   );
 }
 
+// ─── Récap du mois / de l'année (Hevy, Strava) ───────────────────────────────
+
+function PeriodRecap({ sessions, gymSessions }: { sessions: Session[]; gymSessions: GymSession[] }) {
+  const [kind, setKind] = useState<RecapKind>('month');
+  const [offset, setOffset] = useState(0);
+  const { from, to, label } = recapRange(kind, offset);
+  const recap = periodRecap(gymSessions, sessions, from, to);
+  const fmt = (n: number) => n.toLocaleString('fr-FR');
+  const tiles = [
+    { label: recap.sessions > 1 ? 'Séances' : 'Séance', value: fmt(recap.sessions) },
+    { label: "Jours d'entraînement", value: fmt(recap.trainingDays) },
+    { label: 'Volume', value: `${fmt(recap.volume)} kg` },
+    { label: 'Records', value: fmt(recap.records) },
+  ];
+
+  return (
+    <div className="bg-card border rounded-2xl p-4 space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold flex items-center gap-2">
+          <Trophy className="w-4 h-4 text-primary" />
+          Récap
+        </h3>
+        <div className="flex gap-1 p-0.5 bg-muted rounded-lg" role="group" aria-label="Période du récap">
+          {(['month', 'year'] as const).map((k) => (
+            <button key={k} onClick={() => { setKind(k); setOffset(0); }} aria-pressed={kind === k}
+              className={`px-3 min-h-11 rounded-md text-xs font-medium ${kind === k ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'}`}>
+              {k === 'month' ? 'Mois' : 'Année'}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center justify-between">
+        <button onClick={() => setOffset(offset - 1)} aria-label="Période précédente" className="h-11 w-11 flex items-center justify-center rounded-full hover:bg-muted">
+          <ChevronRight className="w-4 h-4 rotate-180" />
+        </button>
+        <p className="font-semibold" aria-live="polite">{label}</p>
+        <button onClick={() => setOffset(offset + 1)} disabled={offset >= 0} aria-label="Période suivante"
+          className="h-11 w-11 flex items-center justify-center rounded-full hover:bg-muted disabled:opacity-30">
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+      {recap.sessions === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-2">Aucune séance sur cette période.</p>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            {tiles.map((t) => (
+              <div key={t.label} className="rounded-xl bg-muted/50 p-3">
+                <p className="text-xl font-bold">{t.value}</p>
+                <p className="text-xs text-muted-foreground">{t.label}</p>
+              </div>
+            ))}
+          </div>
+          {recap.topMuscles[0] && (
+            <p className="text-sm">
+              Muscle le plus travaillé : <span className="font-semibold">{recap.topMuscles[0].group}</span>
+              <span className="text-muted-foreground"> ({recap.topMuscles[0].sets.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} séries)</span>
+            </p>
+          )}
+          <button
+            onClick={() => void shareSessionCard(recapCard(recap, label, from)).catch(() => {})}
+            className="w-full min-h-11 flex items-center justify-center gap-2 rounded-xl border text-sm font-medium hover:bg-muted"
+          >
+            <Share2 className="w-4 h-4" /> Partager mon récap
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── Habitudes : créneau horaire des séances (renfo + muscu) ─────────────────
 
 const SLOTS = [
@@ -745,6 +818,7 @@ export default function Statistics() {
             <ActivityCalendar sessions={sessions} gymSessions={gymSessions} />
             <WeeklyChart sessions={sessions} gymSessions={gymSessions} />
             <MuscleDistribution sessions={sessions} gymSessions={gymSessions} />
+            <PeriodRecap sessions={sessions} gymSessions={gymSessions} />
           </>
         )}
 

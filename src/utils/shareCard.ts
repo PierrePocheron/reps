@@ -1,5 +1,5 @@
 import type { GymSessionExercise, SessionExercise } from '@/firebase/types';
-import { formatDurationLong } from '@/utils/formatters';
+import { formatDurationLong, localDay } from '@/utils/formatters';
 import { saveFile } from '@/utils/saveFile';
 import { isWorkSet } from '@/utils/records';
 
@@ -9,6 +9,7 @@ export interface SessionCard {
   stats: { label: string; value: string }[];
   lines: { name: string; detail: string }[];
   more: number; // exercices non affichés
+  subtitle?: string; // remplace la date (récap mensuel / annuel)
 }
 
 const MAX_LINES = 6;
@@ -63,7 +64,7 @@ export async function renderCard(card: SessionCard): Promise<string> {
   const font = (weight: number, size: number) => `${weight} ${size}px Outfit, Inter, system-ui, sans-serif`;
   g.fillStyle = '#FFFFFF'; g.textBaseline = 'alphabetic';
   g.font = font(600, 40); g.globalAlpha = 0.8;
-  g.fillText(card.date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }), P, 150);
+  g.fillText(card.subtitle ?? card.date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }), P, 150);
   g.globalAlpha = 1; g.font = font(800, 96); g.fillText(card.title, P, 260);
 
   // Statistiques en tuiles
@@ -98,6 +99,6 @@ export async function renderCard(card: SessionCard): Promise<string> {
 /** Génère la carte et ouvre le partage (feuille native, partage web de fichiers, sinon téléchargement). */
 export async function shareSessionCard(card: SessionCard): Promise<boolean> {
   const dataUrl = await renderCard(card);
-  const name = `reps-seance-${card.date.toISOString().slice(0, 10)}.png`;
+  const name = `reps-${card.subtitle ? 'recap' : 'seance'}-${localDay(card.date)}.png`;
   return saveFile(name, dataUrl.split(',')[1]!, 'image/png', { base64: true });
 }

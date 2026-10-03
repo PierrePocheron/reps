@@ -37,7 +37,7 @@ function musclesOf(exerciseId: string): { primary?: MuscleGroup; secondary: Musc
 export const REPS_PER_SET = 12;
 
 /** Séries par groupe musculaire depuis `since` : muscle principal 1, secondaire ½ (comme Hevy). */
-export function setsByMuscle(gymSessions: GymSession[], sessions: Session[], since: Date): Record<MuscleGroup, number> {
+export function setsByMuscle(gymSessions: GymSession[], sessions: Session[], since: Date, until = new Date(8.64e15)): Record<MuscleGroup, number> {
   const out = Object.fromEntries(MUSCLE_GROUPS.map((g) => [g, 0])) as Record<MuscleGroup, number>;
   const add = (exerciseId: string, sets: number) => {
     const { primary, secondary } = musclesOf(exerciseId);
@@ -45,11 +45,11 @@ export function setsByMuscle(gymSessions: GymSession[], sessions: Session[], sin
     for (const g of secondary) out[g] += sets / 2;
   };
   for (const s of gymSessions) {
-    if (s.date.toDate() < since) continue;
+    if (s.date.toDate() < since || s.date.toDate() >= until) continue;
     for (const ex of s.exercises) add(ex.exerciseId, ex.sets.filter(isWorkSet).length);
   }
   for (const s of sessions) {
-    if (s.date.toDate() < since) continue;
+    if (s.date.toDate() < since || s.date.toDate() >= until) continue;
     for (const ex of s.exercises) {
       const id = ID_BY_NAME.get(ex.name);
       if (id && ex.reps > 0) add(id, Math.max(1, Math.round(ex.reps / REPS_PER_SET)));

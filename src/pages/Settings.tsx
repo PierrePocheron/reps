@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
 import { saveFile } from '@/utils/saveFile';
+import { localDay } from '@/utils/formatters';
 import { useGymSessionStore } from '@/store/gymSessionStore';
 import { StartQuestionnaire } from '@/components/StartQuestionnaire';
 import { sessionsToCsv } from '@/utils/exportCsv';
@@ -46,7 +47,7 @@ function Settings() {
   const handleExportData = async (format: 'json' | 'csv') => {
     setExporting(true);
     try {
-      const day = new Date().toISOString().slice(0, 10);
+      const day = localDay(new Date());
       if (format === 'csv') {
         // BOM : Excel lit alors les accents correctement
         const done = await saveFile(`reps-export-${day}.csv`, '\uFEFF' + sessionsToCsv(gymSessions, sessions), 'text/csv');
