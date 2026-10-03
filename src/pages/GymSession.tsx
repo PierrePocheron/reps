@@ -215,7 +215,7 @@ function GymSession() {
             <button
             onClick={() => (exercises.length > 0 ? setShowCancelConfirm(true) : handleCancel())}
             aria-label="Quitter la planification"
-            className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            className="h-11 w-11 -ml-2 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -331,7 +331,7 @@ function GymSession() {
           <button
             onClick={() => navigate('/')}
             aria-label="Retour à l'accueil"
-            className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            className="h-11 w-11 -ml-2 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -567,6 +567,7 @@ function SetExecuteRow({
           value={reps}
           onChange={(e) => { setReps(e.target.value); onUpdate(exerciseId, setIndex, Number(e.target.value) || 0, Number(weight) || 0); }}
           onFocus={onFocusSel}
+          aria-label={`Répétitions, série ${setIndex + 1}`}
           className={`h-8 w-14 text-sm p-1 ${NUM_CLS}`}
           min={0}
         />
@@ -579,6 +580,7 @@ function SetExecuteRow({
           value={weight}
           onChange={(e) => { setWeight(e.target.value); onUpdate(exerciseId, setIndex, Number(reps) || 0, Number(e.target.value) || 0); }}
           onFocus={onFocusSel}
+          aria-label={`Charge en kg, série ${setIndex + 1}`}
           className={`h-8 w-16 text-sm p-1 ${NUM_CLS}`}
           min={0}
         />
@@ -634,12 +636,12 @@ function ExecuteExerciseCard({
         <button
           className="flex-1 min-w-0 text-left"
           onClick={() => onShowDetail(exercise.exerciseId)}
+          aria-label={`${exercise.name} : voir la fiche et ta progression`}
         >
-          <h3 className="font-bold text-base flex items-center gap-1.5 min-w-0">
+          <span className="font-bold text-base flex items-center gap-1.5 min-w-0">
             <span className="truncate min-w-0">{exercise.name}</span>
             <Info className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" aria-hidden />
-            <span className="sr-only">, voir la fiche</span>
-          </h3>
+          </span>
           <p className="text-xs text-muted-foreground">
             {completedCount}/{exercise.sets.length} série{exercise.sets.length !== 1 ? 's' : ''} complétée{completedCount !== 1 ? 's' : ''}
           </p>
@@ -663,7 +665,7 @@ function ExecuteExerciseCard({
 
         <button
           onClick={() => onAddSet(exercise.exerciseId)}
-          className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all text-xs font-medium"
+          className="w-full min-h-11 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all text-xs font-medium"
         >
           <Plus className="h-3.5 w-3.5" />
           Série {exercise.sets.length + 1}

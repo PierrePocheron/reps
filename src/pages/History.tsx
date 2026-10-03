@@ -8,6 +8,8 @@ import { useGymSessionStore } from '@/store/gymSessionStore';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy } from 'lucide-react';
 import type { Session, GymSession } from '@/firebase/types';
+import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
+import { estimate1RM, exerciseHistory } from '@/utils/records';
 
 type Tab = 'musculation' | 'renforcement' | 'records';
 
@@ -193,13 +195,16 @@ function MuscuCard({ session, imageMap }: { session: GymSession; imageMap: Recor
 
 // ─── PR Card ──────────────────────────────────────────────────────────────────
 
-function PRCard({ pr }: { pr: PersonalRecord }) {
-  const oneRepMax = pr.bestWeight > 0
-    ? Math.round(pr.bestWeight * (1 + pr.bestReps / 30))
-    : null;
+function PRCard({ pr, onOpen }: { pr: PersonalRecord; onOpen: () => void }) {
+  const oneRepMax = pr.bestWeight > 0 ? Math.round(estimate1RM(pr.bestWeight, pr.bestReps)) : null;
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden shadow-sm">
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`${pr.name} : voir ta progression`}
+      className="w-full text-left rounded-2xl border bg-card overflow-hidden shadow-sm transition-colors hover:bg-muted/40 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
       <div className="flex items-stretch">
         <div className="w-1.5 bg-yellow-500/70" />
         <div className="flex-1 p-4">
@@ -245,7 +250,7 @@ function PRCard({ pr }: { pr: PersonalRecord }) {
           )}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -254,8 +259,9 @@ function PRCard({ pr }: { pr: PersonalRecord }) {
 function History() {
   const [activeTab, setActiveTab] = useState<Tab>('musculation');
   const { sessions, gymSessions, loading, error, refetch } = useSessionHistory(100);
-  const { imageMap } = useExerciseImages();
+  const { imageMap, infoMap } = useExerciseImages();
   const navigate = useNavigate();
+  const [detailPr, setDetailPr] = useState<PersonalRecord | null>(null);
   const { startFreeSession } = useGymSessionStore();
 
   // Calcul des records personnels depuis l'historique muscu
@@ -429,15 +435,29 @@ function History() {
           ) : (
             <div className="space-y-3">
               <p className="text-xs text-muted-foreground px-1">
-                Meilleure série (poids × reps) par exercice sur l'ensemble de tes séances.
+                Meilleure série (poids × reps) par exercice sur l'ensemble de tes séances. Touche un exercice pour voir ta courbe.
               </p>
               {personalRecords.map((pr) => (
-                <PRCard key={pr.exerciseId} pr={pr} />
+                <PRCard key={pr.exerciseId} pr={pr} onOpen={() => setDetailPr(pr)} />
               ))}
             </div>
           )
         )}
       </div>
+      {detailPr && (
+        <ExerciseDetailSheet
+          exerciseId={detailPr.exerciseId}
+          name={detailPr.name}
+          emoji={detailPr.emoji}
+          imageUrl={infoMap[detailPr.exerciseId]?.gifUrl ?? detailPr.imageUrl ?? null}
+          description={infoMap[detailPr.exerciseId]?.description ?? null}
+          steps={infoMap[detailPr.exerciseId]?.steps}
+          target={infoMap[detailPr.exerciseId]?.target}
+          secondaryMuscles={infoMap[detailPr.exerciseId]?.secondaryMuscles}
+          history={exerciseHistory(gymSessions, detailPr.exerciseId)}
+          onClose={() => setDetailPr(null)}
+        />
+      )}
     </PageLayout>
   );
 }

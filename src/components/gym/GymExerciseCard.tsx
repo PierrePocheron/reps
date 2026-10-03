@@ -69,6 +69,7 @@ export function GymExerciseCard({
                 value={set.reps}
                 onChange={(e) => onUpdateSet(i, { reps: parseInt(e.target.value, 10) || 0 })}
                 onFocus={onFocusSelect}
+                aria-label={`Répétitions visées, série ${i + 1}`}
                 className={`h-8 w-14 ${NUM_INPUT}`}
                 min={1}
               />
@@ -81,6 +82,7 @@ export function GymExerciseCard({
                 value={set.weight}
                 onChange={(e) => onUpdateSet(i, { weight: parseFloat(e.target.value) || 0 })}
                 onFocus={onFocusSelect}
+                aria-label={`Charge en kg, série ${i + 1}`}
                 className={`h-8 w-16 ${NUM_INPUT}`}
                 min={0}
               />
