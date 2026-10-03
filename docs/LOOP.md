@@ -46,3 +46,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-03 | #15 | « Refaire cette séance » depuis l'historique (muscu : charges réalisées pré-remplies ; renfo : mêmes exercices) | `c51a062` |
 | 2026-10-03 | #23 | Pages à la demande (React.lazy) : bundle initial −15 % (gzip 476 → 417 Ko) ; suite (Sentry Replay, framer-motion) dans une issue à arbitrer | `21e3858` |
 | 2026-10-03 | passe UI/UX mode clair + repères | Un seul <main> par écran (imbriqué avant), poids « 57,5 kg » partout ; mode clair vérifié sur 4 écrans | `430d89f` |
+| 2026-10-03 | #14 + #43 | Notes par exercice (rappel de la dernière, visibles dans l'historique) ; bug P0 trouvé en E2E et corrigé : gel de l'appli en fin de séance muscu (navigate pendant le rendu) | `d87e3dd` |
