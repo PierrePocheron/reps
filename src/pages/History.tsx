@@ -55,10 +55,10 @@ interface PersonalRecord {
 function CardActions({ onRedo, onShare }: { onRedo: () => void; onShare: () => void }) {
   return (
     <div className="flex gap-2">
-      <Button variant="outline" className="flex-1 min-h-11" onClick={onRedo}>
-        <RotateCcw className="h-4 w-4 mr-2" /> Refaire cette séance
+      <Button variant="outline" className="flex-1 min-h-11" onClick={onRedo} aria-label="Refaire cette séance">
+        <RotateCcw className="h-4 w-4 mr-2" /> Refaire
       </Button>
-      <Button variant="outline" className="min-h-11" onClick={onShare}>
+      <Button variant="outline" className="flex-1 min-h-11" onClick={onShare}>
         <Share2 className="h-4 w-4 mr-2" /> Partager
       </Button>
     </div>
@@ -71,7 +71,7 @@ function RenforcementCard({ session, onRedo, onShare }: { session: Session; onRe
     <div className="rounded-2xl border bg-card overflow-hidden shadow-sm">
       <div className="flex items-stretch">
         <div className="w-1.5 bg-orange-500/70" />
-        <div className="flex-1 p-4 space-y-3">
+        <div className="flex-1 min-w-0 p-4 space-y-3">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -134,7 +134,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate }: { ses
     <div className="rounded-2xl border bg-card overflow-hidden shadow-sm">
       <div className="flex items-stretch">
         <div className="w-1.5 bg-blue-500/70" />
-        <div className="flex-1 p-4 space-y-3">
+        <div className="flex-1 min-w-0 p-4 space-y-3">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -168,7 +168,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate }: { ses
             <div className="flex items-center gap-1.5 bg-muted px-2.5 py-1 rounded-lg">
               <Dumbbell className="h-3.5 w-3.5 text-muted-foreground" />
               <span className="text-sm font-bold">{completedSets}</span>
-              <span className="text-xs text-muted-foreground">séries</span>
+              <span className="text-xs text-muted-foreground">série{completedSets > 1 ? 's' : ''}</span>
             </div>
           </div>
 
