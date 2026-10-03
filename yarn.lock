@@ -1040,6 +1040,13 @@
   dependencies:
     tslib "^2.1.0"
 
+"@capacitor/filesystem@8.1.4":
+  version "8.1.4"
+  resolved "https://registry.yarnpkg.com/@capacitor/filesystem/-/filesystem-8.1.4.tgz#58f640e65263735d8a5ff0c2ddb74fa470442b01"
+  integrity sha512-8MXmt10cb+dGWoh8jUeO8on0U6iETQCX5k+fmdB278PZ3MYDEVGQo08+hroaOtUbK3+5stiRk4/K6QBHKepv0A==
+  dependencies:
+    "@capacitor/synapse" "^1.0.4"
+
 "@capacitor/haptics@8":
   version "8.0.0"
   resolved "https://registry.npmjs.org/@capacitor/haptics/-/haptics-8.0.0.tgz"
@@ -1055,10 +1062,20 @@
   resolved "https://registry.npmjs.org/@capacitor/local-notifications/-/local-notifications-8.0.0.tgz"
   integrity sha512-Jn2IJs13vhRyOUtYni7PIPdMDYMILb4uI/rRAi7PmGg2lnaKbM5aWBmHZWt0laTYyVApYIbCWmdgBqWx/IH4dQ==
 
+"@capacitor/share@8.0.3":
+  version "8.0.3"
+  resolved "https://registry.yarnpkg.com/@capacitor/share/-/share-8.0.3.tgz#5a104f5b9a82be3e0717341c65fe0068d243b7d1"
+  integrity sha512-gnvZBV1NPu2B8vd1UKncR56G15ueHd0aZLqgDov++t3SmTBG9Q0VrAZ1VnHn5stxlmglVaTb4RwopMgbpLzroA==
+
 "@capacitor/status-bar@8":
   version "8.0.0"
   resolved "https://registry.npmjs.org/@capacitor/status-bar/-/status-bar-8.0.0.tgz"
   integrity sha512-aIj3bc7z8lfPgOen8HlrBrkfnxpFnh21OCx6jCUx4Mvv+B6eEkUQ49b32DOddgVfr+igRHLX2SYi7duqIsNDXg==
+
+"@capacitor/synapse@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@capacitor/synapse/-/synapse-1.0.4.tgz#c6beb33119d9656b1f04cb7783989fb78933ef6d"
+  integrity sha512-/C1FUo8/OkKuAT4nCIu/34ny9siNHr9qtFezu4kxm6GY1wNFxrCFWjfYx5C1tUhVGz3fxBABegupkpjXvjCHrw==
 
 "@capgo/capacitor-social-login@^8.2.22":
   version "8.2.22"

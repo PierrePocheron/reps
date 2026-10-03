@@ -14,6 +14,8 @@ import { cn } from '@/utils/cn';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
+import { saveFile } from '@/utils/saveFile';
+import { sessionsToCsv } from '@/utils/exportCsv';
 
 import { useNotifications } from '@/hooks/useNotifications';
 import { version as APP_VERSION } from '../../package.json';
@@ -33,13 +35,20 @@ function Settings() {
   const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, weeklyGoal, language, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled, setWeeklyGoal, setLanguage } = useSettingsStore();
   const deviceLanguage = detectDeviceLanguage();
   const { scheduleDailyReminder, cancelReminder } = useNotifications();
-  const { sessions, gymSessions } = useSessionHistory(500);
+  const { sessions, gymSessions, loading: historyLoading } = useSessionHistory(500);
   const [exporting, setExporting] = useState(false);
   const [togglingNotif, setTogglingNotif] = useState(false);
 
-  const handleExportData = async () => {
+  const handleExportData = async (format: 'json' | 'csv') => {
     setExporting(true);
     try {
+      const day = new Date().toISOString().slice(0, 10);
+      if (format === 'csv') {
+        // BOM : Excel lit alors les accents correctement
+        const done = await saveFile(`reps-export-${day}.csv`, '\uFEFF' + sessionsToCsv(gymSessions, sessions), 'text/csv');
+        if (done) toast({ title: 'Export CSV prêt', description: 'Une ligne par série, compatible Strong / Hevy.' });
+        return;
+      }
       const exportData = {
         exportedAt: new Date().toISOString(),
         user: {
@@ -77,14 +86,8 @@ function Settings() {
         })),
       };
 
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `reps-export-${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast({ title: 'Export réussi', description: 'Tes données ont été téléchargées.' });
+      const done = await saveFile(`reps-export-${day}.json`, JSON.stringify(exportData, null, 2), 'application/json');
+      if (done) toast({ title: 'Export prêt', description: 'Toutes tes données au format JSON.' });
     } catch {
       toast({ title: 'Erreur', description: "Impossible d'exporter les données.", variant: 'destructive' });
     } finally {
@@ -380,8 +383,8 @@ function Settings() {
           </CardHeader>
           <CardContent className="p-0 divide-y">
             <button
-              onClick={handleExportData}
-              disabled={exporting}
+              onClick={() => handleExportData('json')}
+              disabled={exporting || historyLoading} // exporter avant la fin du chargement donnait un fichier vide
               className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 active:bg-muted transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
               <div className="flex items-center gap-3">
@@ -391,8 +394,26 @@ function Settings() {
                   <Download className="h-5 w-5 text-muted-foreground" />
                 )}
                 <div className="text-left">
-                  <p className="font-medium text-sm">{exporting ? 'Export en cours…' : 'Exporter mes données'}</p>
-                  <p className="text-xs text-muted-foreground">Télécharge toutes tes séances en JSON</p>
+                  <p className="font-medium text-sm">Exporter mes données (JSON)</p>
+                  <p className="text-xs text-muted-foreground">Sauvegarde complète : profil, séances, badges</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </button>
+            <button
+              onClick={() => handleExportData('csv')}
+              disabled={exporting || historyLoading} // exporter avant la fin du chargement donnait un fichier vide
+              className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 active:bg-muted transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+            >
+              <div className="flex items-center gap-3">
+                {exporting ? (
+                  <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+                ) : (
+                  <Download className="h-5 w-5 text-muted-foreground" />
+                )}
+                <div className="text-left">
+                  <p className="font-medium text-sm">Exporter mes séances (CSV)</p>
+                  <p className="text-xs text-muted-foreground">Une ligne par série, pour Excel, Sheets, Strong ou Hevy</p>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
