@@ -7,24 +7,34 @@ import { Layout } from '@/components/Layout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { OnboardingSlides } from '@/components/Onboarding';
 import Home from './pages/Home';
-import Session from './pages/Session';
-import GymSession from './pages/GymSession';
-import Templates from './pages/Templates';
-import Profil from './pages/Profil';
-import Settings from './pages/Settings';
-import Achievements from './pages/Achievements';
-import Statistics from './pages/Statistics';
-import Friends from './pages/Friends';
-import Leaderboard from './pages/Leaderboard';
 import Login from './pages/Login';
-import Challenges from './pages/Challenges';
-import History from './pages/History';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import SentryTest from './pages/SentryTest';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { initializeAdMob } from '@/utils/admob';
+
+// Accueil et connexion chargés d'emblée, le reste à la demande (bundle initial plus léger)
+const Session = lazy(() => import('./pages/Session'));
+const GymSession = lazy(() => import('./pages/GymSession'));
+const Templates = lazy(() => import('./pages/Templates'));
+const Profil = lazy(() => import('./pages/Profil'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Achievements = lazy(() => import('./pages/Achievements'));
+const Statistics = lazy(() => import('./pages/Statistics'));
+const Friends = lazy(() => import('./pages/Friends'));
+const Leaderboard = lazy(() => import('./pages/Leaderboard'));
+const Challenges = lazy(() => import('./pages/Challenges'));
+const History = lazy(() => import('./pages/History'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const SentryTest = lazy(() => import('./pages/SentryTest'));
+
+function PageFallback() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center" role="status" aria-label="Chargement">
+      <LoadingSpinner size="lg" />
+    </div>
+  );
+}
 
 function App() {
   const location = useLocation();
@@ -36,6 +46,7 @@ function App() {
   return (
     <ErrorBoundary>
       <AppInitializer />
+      <Suspense fallback={<PageFallback />}>
       <Routes>
         <Route path="/login" element={
           <PageTransition>
@@ -65,6 +76,7 @@ function App() {
           element={
             <ProtectedRoute>
               <Layout>
+                <Suspense fallback={<PageFallback />}>
                 <AnimatePresence mode="wait">
                   <Routes location={location} key={location.pathname}>
                     <Route
@@ -170,11 +182,13 @@ function App() {
                       />
                   </Routes>
                 </AnimatePresence>
+                </Suspense>
               </Layout>
             </ProtectedRoute>
           }
         />
       </Routes>
+      </Suspense>
       <Toaster />
     </ErrorBoundary>
   );
