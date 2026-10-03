@@ -23,6 +23,7 @@ interface GymSessionState {
   showRestTimer: boolean;
   restEndsAt: number | null; // horodatage de fin du repos (le décompte en dérive)
   autoRest: boolean; // lancer le repos quand une série est validée (préférence, persistée)
+  showRpe: boolean; // saisir le RPE des séries validées (préférence, persistée)
 
   // Actions — Planning
   startPlanning: () => void;
@@ -41,6 +42,7 @@ interface GymSessionState {
   dismissRestTimer: () => void;
   setRestDuration: (seconds: number) => void;
   setAutoRest: (on: boolean) => void;
+  setShowRpe: (on: boolean) => void;
   endSession: () => Promise<void>;
   cancelSession: () => void;
 
@@ -69,6 +71,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   showRestTimer: false,
   restEndsAt: null,
   autoRest: true,
+  showRpe: false,
 
   // ─── Planning ─────────────────────────────────────────────────────────
 
@@ -202,6 +205,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   },
 
   setAutoRest: (on: boolean) => set({ autoRest: on }),
+  setShowRpe: (on: boolean) => set({ showRpe: on }),
 
   endSession: async () => {
     try {
@@ -227,6 +231,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
           ...(s.actualReps !== undefined ? { actualReps: s.actualReps } : {}),
           ...(s.actualWeight !== undefined ? { actualWeight: s.actualWeight } : {}),
           ...(s.isRecord ? { isRecord: true } : {}), // trophée et records sur la carte partagée depuis l'historique
+          ...(s.rpe ? { rpe: s.rpe } : {}),
         })),
       }));
 
@@ -313,5 +318,6 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     startTime: s.startTime,
     restDuration: s.restDuration,
     autoRest: s.autoRest,
+    showRpe: s.showRpe,
   }),
 }));

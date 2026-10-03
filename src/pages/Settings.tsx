@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
 import { saveFile } from '@/utils/saveFile';
+import { useGymSessionStore } from '@/store/gymSessionStore';
 import { sessionsToCsv } from '@/utils/exportCsv';
 
 import { useNotifications } from '@/hooks/useNotifications';
@@ -37,6 +38,7 @@ function Settings() {
   const { scheduleDailyReminder, cancelReminder } = useNotifications();
   const { sessions, gymSessions, loading: historyLoading } = useSessionHistory(500);
   const [exporting, setExporting] = useState(false);
+  const { autoRest, setAutoRest, showRpe, setShowRpe } = useGymSessionStore();
   const [togglingNotif, setTogglingNotif] = useState(false);
 
   const handleExportData = async (format: 'json' | 'csv') => {
@@ -224,6 +226,20 @@ function Settings() {
                 })}
               </div>
             </div>
+            {[
+              { label: 'Repos automatique', hint: 'Lance le minuteur à chaque série validée (muscu)', on: autoRest, toggle: () => setAutoRest(!autoRest) },
+              { label: 'RPE par série', hint: "Note l'effort ressenti (6 à 10) des séries validées", on: showRpe, toggle: () => setShowRpe(!showRpe) },
+            ].map((row) => (
+              <div key={row.label} className="flex items-center justify-between gap-3 pt-4 border-t">
+                <div>
+                  <p className="text-sm font-medium">{row.label}</p>
+                  <p className="text-xs text-muted-foreground">{row.hint}</p>
+                </div>
+                <Button variant={row.on ? 'default' : 'outline'} className="min-w-[6.5rem] shrink-0" role="switch" aria-checked={row.on} aria-label={row.label} onClick={row.toggle}>
+                  {row.on ? 'Activé' : 'Désactivé'}
+                </Button>
+              </div>
+            ))}
           </CardContent>
         </Card>
 

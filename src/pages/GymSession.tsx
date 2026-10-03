@@ -55,6 +55,7 @@ function GymSession() {
     restEndsAt,
     autoRest,
     setAutoRest,
+    showRpe,
     addExercise,
     removeExercise,
     addSet,
@@ -411,6 +412,7 @@ function GymSession() {
             key={exercise.exerciseId}
             exercise={exercise}
             onCompleteSet={handleCompleteSet}
+            onRpe={showRpe ? (exerciseId, setIndex, rpe) => updateSet(exerciseId, setIndex, { rpe }) : undefined}
             onUpdateSet={(exerciseId, setIndex, reps, weight) =>
               updateSet(exerciseId, setIndex, { actualReps: reps, actualWeight: weight })
             }
@@ -574,12 +576,14 @@ function SetExecuteRow({
   exerciseId,
   onComplete,
   onUpdate,
+  onRpe,
 }: {
   set: PlannedSet;
   setIndex: number;
   exerciseId: string;
   onComplete: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
   onUpdate: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
+  onRpe?: (rpe: number | undefined) => void; // présent seulement si le réglage « RPE par série » est actif
 }) {
   const [reps, setReps] = useState(String(set.actualReps ?? set.reps));
   const [weight, setWeight] = useState(String(set.actualWeight ?? set.weight));
@@ -623,23 +627,36 @@ function SetExecuteRow({
         <span className="text-xs text-muted-foreground">kg</span>
       </div>
 
-      <button
-        onClick={() => {
-          if (set.completed) return;
-          haptics.impact();
-          play('success');
-          onComplete(exerciseId, setIndex, Number(reps) || 0, Number(weight) || 0);
-        }}
-        aria-label={set.completed ? `Série ${setIndex + 1} validée` : `Valider la série ${setIndex + 1}`}
-        className={cn(
-          'h-11 w-11 -my-1.5 -mr-1.5 flex items-center justify-center rounded-lg transition-all active:scale-95 flex-shrink-0',
-          set.completed
-            ? 'text-green-500'
-            : 'text-muted-foreground hover:text-green-500 hover:bg-green-500/10'
-        )}
-      >
-        <CheckCircle2 className={cn('h-5 w-5', set.completed && 'fill-green-500/20')} />
-      </button>
+      {onRpe && set.completed ? (
+        // Série validée : le RPE remplace la coche (la ligne verte indique déjà la validation)
+        <select
+          value={set.rpe ?? ''}
+          onChange={(e) => onRpe(e.target.value ? Number(e.target.value) : undefined)}
+          aria-label={`RPE (effort ressenti), série ${setIndex + 1}`}
+          className="h-11 w-11 -my-1.5 -mr-1.5 flex-shrink-0 appearance-none rounded-lg bg-transparent text-center text-xs font-semibold text-green-600 dark:text-green-400 border border-green-500/30"
+        >
+          <option value="">RPE</option>
+          {RPE_VALUES.map((v) => <option key={v} value={v}>{v.toLocaleString('fr-FR')}</option>)}
+        </select>
+      ) : (
+        <button
+          onClick={() => {
+            if (set.completed) return;
+            haptics.impact();
+            play('success');
+            onComplete(exerciseId, setIndex, Number(reps) || 0, Number(weight) || 0);
+          }}
+          aria-label={set.completed ? `Série ${setIndex + 1} validée` : `Valider la série ${setIndex + 1}`}
+          className={cn(
+            'h-11 w-11 -my-1.5 -mr-1.5 flex items-center justify-center rounded-lg transition-all active:scale-95 flex-shrink-0',
+            set.completed
+              ? 'text-green-500'
+              : 'text-muted-foreground hover:text-green-500 hover:bg-green-500/10'
+          )}
+        >
+          <CheckCircle2 className={cn('h-5 w-5', set.completed && 'fill-green-500/20')} />
+        </button>
+      )}
     </div>
   );
 }
@@ -653,6 +670,7 @@ function ExecuteExerciseCard({
   lastNote,
   onNoteChange,
   isBarbell,
+  onRpe,
 }: {
   exercise: GymSessionExercise;
   onCompleteSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
@@ -662,6 +680,7 @@ function ExecuteExerciseCard({
   lastNote?: string;
   onNoteChange: (note: string) => void;
   isBarbell: boolean;
+  onRpe?: (exerciseId: string, setIndex: number, rpe: number | undefined) => void;
 }) {
   const completedCount = exercise.sets.filter((s) => s.completed).length;
   const [showPlates, setShowPlates] = useState(false);
@@ -735,6 +754,7 @@ function ExecuteExerciseCard({
             exerciseId={exercise.exerciseId}
             onComplete={onCompleteSet}
             onUpdate={onUpdateSet}
+            onRpe={onRpe && ((rpe) => onRpe(exercise.exerciseId, i, rpe))}
           />
         ))}
 
@@ -751,6 +771,7 @@ function ExecuteExerciseCard({
 }
 
 const EXACT_ALARM_ASKED = 'reps_exact_alarm_asked';
+const RPE_VALUES = [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
 
 const REST_PRESETS = [
   { label: '30s', value: 30 },

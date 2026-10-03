@@ -165,9 +165,11 @@ function MuscuCard({ session, imageMap, onRedo, onShare }: { session: GymSession
               const imgUrl = imageMap[ex.exerciseId];
               const firstSet = completedSetsList[0];
               const w = firstSet ? (firstSet.actualWeight ?? firstSet.weight) : 0;
-              const setsSummary = completedSetsList.length > 0
+              const rpes = completedSetsList.map((st) => st.rpe ?? 0).filter(Boolean);
+              const setsSummary = (completedSetsList.length > 0
                 ? `${completedSetsList.length} × ${w > 0 ? `${formatNumber(w)} kg` : 'poids du corps'}`
-                : `${ex.sets.length} série${ex.sets.length > 1 ? 's' : ''}`;
+                : `${ex.sets.length} série${ex.sets.length > 1 ? 's' : ''}`)
+                + (rpes.length ? ` · RPE ${formatNumber(Math.max(...rpes))}` : '');
 
               return (
                 <div key={i} className="flex items-center gap-3">

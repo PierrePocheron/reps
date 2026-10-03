@@ -18,7 +18,7 @@ export function sessionsToCsv(gymSessions: GymSession[], sessions: Session[]): s
     const at = s.date.toDate();
     for (const ex of s.exercises) {
       ex.sets.filter((set) => set.completed).forEach((set, i) => rows.push({
-        at, cells: [stamp(at), 'Musculation', duration(s.duration), ex.name, i + 1, set.actualWeight ?? set.weight, set.actualReps ?? set.reps, '', '', i === 0 ? ex.note ?? '' : '', '', ''],
+        at, cells: [stamp(at), 'Musculation', duration(s.duration), ex.name, i + 1, set.actualWeight ?? set.weight, set.actualReps ?? set.reps, '', '', i === 0 ? ex.note ?? '' : '', '', set.rpe ?? ''],
       }));
     }
   }

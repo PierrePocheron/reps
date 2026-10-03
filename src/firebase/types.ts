@@ -79,6 +79,7 @@ export interface PlannedSet {
   completed: boolean;
   restDuration?: number;  // durée de repos effectuée (secondes)
   isRecord?: boolean;     // record personnel battu sur cette série (1RM estimé)
+  rpe?: number;           // effort ressenti 6-10 (optionnel, réglage « RPE par série »)
 }
 
 // Exercice dans une séance musculation
