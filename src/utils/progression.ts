@@ -49,3 +49,21 @@ export function lastWorkSets(history: GymSession[], exerciseId: string): { reps:
   }
   return [];
 }
+
+/** Séance muscu → modèle perso (« Save as routine ») : séries de travail réalisées, échauffements exclus. */
+export function templateFromSession(session: Pick<GymSession, 'exercises'>, name: string) {
+  const muscuExercises = session.exercises
+    .map((ex) => {
+      const work = ex.sets.filter((s) => s.type !== 'warmup');
+      const done = work.filter((s) => s.completed);
+      return { exerciseId: ex.exerciseId, sets: (done.length ? done : work).map((s) => ({ reps: s.actualReps ?? s.reps, weight: s.actualWeight ?? s.weight })) };
+    })
+    .filter((ex) => ex.sets.length > 0);
+  return {
+    name: name.trim().slice(0, 40),
+    emoji: '🏋️',
+    workoutType: 'musculation' as const,
+    description: session.exercises.slice(0, 3).map((ex) => ex.name).join(' · '),
+    muscuExercises,
+  };
+}

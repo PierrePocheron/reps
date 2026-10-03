@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { suggestNextWeight, incrementFor, lastWorkSets } from '../progression';
+import { suggestNextWeight, incrementFor, lastWorkSets, templateFromSession } from '../progression';
 import type { GymSession, PlannedSet } from '@/firebase/types';
 
 const session = (exerciseId: string, sets: PlannedSet[]) =>
@@ -35,5 +35,18 @@ describe('lastWorkSets', () => {
     const h = [session('bench_press', [{ ...done(40, 10), type: 'warmup' }, done(80, 8, 9), done(80, 8), { weight: 80, reps: 8, completed: false }])];
     expect(lastWorkSets(h, 'bench_press')).toEqual([{ reps: 9, weight: 80 }, { reps: 8, weight: 80 }]);
     expect(lastWorkSets(h, 'deadlift')).toEqual([]);
+  });
+});
+
+describe('templateFromSession', () => {
+  it('reprend les séries de travail réalisées, sans échauffement ni exercice vide', () => {
+    const s = { exercises: [
+      { exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [{ ...done(40, 10), type: 'warmup' as const }, done(80, 8, 9), done(80, 8)] },
+      { exerciseId: 'dips', name: 'Dips', emoji: '♣️', sets: [] },
+    ] };
+    expect(templateFromSession(s, '  Ma séance  ')).toEqual({
+      name: 'Ma séance', emoji: '🏋️', workoutType: 'musculation', description: 'Développé couché · Dips',
+      muscuExercises: [{ exerciseId: 'bench_press', sets: [{ reps: 9, weight: 80 }, { reps: 8, weight: 80 }] }],
+    });
   });
 });

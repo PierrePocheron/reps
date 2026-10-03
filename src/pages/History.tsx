@@ -9,11 +9,16 @@ import { useGymSessionStore } from '@/store/gymSessionStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy, RotateCcw, Share2 } from 'lucide-react';
+import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy, RotateCcw, Share2, BookmarkPlus } from 'lucide-react';
 import { gymCard, renfoCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
 import type { Session, GymSession } from '@/firebase/types';
 import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
 import { estimate1RM, exerciseHistory, isWorkSet } from '@/utils/records';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useUserStore } from '@/store/userStore';
+import { createUserTemplate } from '@/firebase/templates';
+import { templateFromSession } from '@/utils/progression';
 
 type Tab = 'musculation' | 'renforcement' | 'records';
 
@@ -118,7 +123,7 @@ function RenforcementCard({ session, onRedo, onShare }: { session: Session; onRe
 
 // ─── Musculation Card ─────────────────────────────────────────────────────────
 
-function MuscuCard({ session, imageMap, onRedo, onShare }: { session: GymSession; imageMap: Record<string, string>; onRedo: () => void; onShare: () => void }) {
+function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate }: { session: GymSession; imageMap: Record<string, string>; onRedo: () => void; onShare: () => void; onSaveTemplate: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const date = session.date.toDate();
   const completedSets = session.exercises.reduce(
@@ -141,6 +146,15 @@ function MuscuCard({ session, imageMap, onRedo, onShare }: { session: GymSession
                 <Clock className="h-3 w-3 text-muted-foreground" />
                 <span className="text-xs font-medium">{formatDurationLong(session.duration)}</span>
               </div>
+              <button
+                type="button"
+                onClick={onSaveTemplate}
+                aria-label="Enregistrer cette séance comme modèle"
+                title="Enregistrer comme modèle"
+                className="h-11 w-11 -my-2 -mr-2 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
+              >
+                <BookmarkPlus className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
@@ -284,6 +298,19 @@ function History() {
   const { phase: gymPhase, startFreeSession, loadGymTemplate, startExecution } = useGymSessionStore();
   const { isActive: renfoActive, loadExercises } = useSessionStore();
   const { toast } = useToast();
+  const user = useUserStore((st) => st.user);
+  const [saveAsTemplate, setSaveAsTemplate] = useState<GymSession | null>(null);
+  const [templateName, setTemplateName] = useState('');
+  const saveTemplate = async () => {
+    if (!user || !saveAsTemplate || !templateName.trim()) return;
+    try {
+      await createUserTemplate(user.uid, templateFromSession(saveAsTemplate, templateName));
+      toast({ title: 'Modèle enregistré', description: `« ${templateName.trim()} » est dans tes modèles.` });
+      setSaveAsTemplate(null);
+    } catch {
+      toast({ title: 'Erreur', description: "Le modèle n'a pas pu être enregistré.", variant: 'destructive' });
+    }
+  };
 
   // « Refaire » (Hevy / Strong) : mêmes exercices, séries et charges réalisées, prêtes à valider
   const sessionInProgress = () => {
@@ -446,6 +473,7 @@ function History() {
             <div className="space-y-3">
               {gymSessions.map((s) => (
                 <MuscuCard key={s.sessionId} session={s} imageMap={imageMap} onRedo={() => redoGym(s)}
+                  onSaveTemplate={() => { setSaveAsTemplate(s); setTemplateName(`Séance du ${s.date.toDate().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`); }}
                   onShare={() => share(gymCard({ date: s.date.toDate(), duration: s.duration, exercises: s.exercises }))} />
               ))}
             </div>
@@ -505,6 +533,16 @@ function History() {
           onClose={() => setDetailPr(null)}
         />
       )}
+      <Dialog open={!!saveAsTemplate} onOpenChange={(open) => !open && setSaveAsTemplate(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Enregistrer comme modèle</DialogTitle>
+            <DialogDescription>Les séries réalisées (hors échauffement) deviennent un modèle réutilisable.</DialogDescription>
+          </DialogHeader>
+          <Input value={templateName} onChange={(e) => setTemplateName(e.target.value)} maxLength={40} aria-label="Nom du modèle" />
+          <Button className="w-full min-h-11" onClick={saveTemplate} disabled={!templateName.trim()}>Enregistrer</Button>
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 }
