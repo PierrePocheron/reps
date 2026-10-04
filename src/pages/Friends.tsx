@@ -109,11 +109,8 @@ export default function Friends() {
       setIsSearching(true);
       try {
         const results = await searchUsers(searchTerm);
-        // Filter out self and existing friends
-        const filteredResults = results.filter(u =>
-          u.uid !== user?.uid &&
-          !user?.friends.includes(u.uid)
-        );
+        // Self only: friends stay, shown as « Ami » (filtering them made the search answer « aucun utilisateur »)
+        const filteredResults = results.filter(u => u.uid !== user?.uid);
         setSearchResults(filteredResults);
       } catch (error) {
         logger.error('Search error:', error);

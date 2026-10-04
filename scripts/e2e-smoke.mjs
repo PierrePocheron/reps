@@ -54,6 +54,18 @@ const steps = [
     await assertAlive('navigation');
   }],
 
+  ['recherche d\'amis : un ami apparaît comme tel', async () => {
+    // existing friends were filtered out: searching one of them answered « aucun utilisateur ne correspond »
+    await page.goto(`${BASE}/friends`);
+    await page.getByRole('tab', { name: /Amis/ }).click();
+    await page.getByRole('textbox', { name: /Rechercher un utilisateur/ }).fill('le');
+    const result = page.locator('text=lea').first();
+    await result.waitFor({ timeout: 10_000 });
+    await page.getByText('Ami', { exact: true }).first().waitFor();
+    await page.getByRole('textbox', { name: /Rechercher un utilisateur/ }).fill('');
+    await assertAlive('recherche d\'amis');
+  }],
+
   ['nouvelle séance depuis le bouton central (muscu puis renfo)', async () => {
     const center = () => page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('button', { name: 'Nouvelle séance' });
     const finish = async () => {
