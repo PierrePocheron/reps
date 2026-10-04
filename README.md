@@ -36,7 +36,7 @@ badges, défis, amis, fil d'activité, classement, widget Android.
 **Hors ligne** : séance terminée, modifiée ou supprimée, modèles, mensurations et réglages enregistrés sans réseau
 (salle en sous-sol), envoyés au retour de la connexion.
 
-**Accessibilité** : contraste AA en clair et en sombre avec le thème violet (autres couleurs de thème à corriger, #67), écrans dès 320 px, lecteurs d'écran.
+**Accessibilité** : contraste AA en clair et en sombre (textes de tous les thèmes ; boutons colorés : violet seulement, #67), écrans dès 320 px, lecteurs d'écran.
 
 ---
 

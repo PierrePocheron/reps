@@ -42,12 +42,12 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 ### Interface et accessibilité
 - Barre de navigation flottante en pilule, réduite au défilement
 - Bibliothèque de 1 324 exercices illustrés en français et en anglais
-- Contraste AA en clair et en sombre (thème violet), écrans dès 320 px, lecteurs d'écran (dialogues nommés, cibles de 44 px)
+- Contraste AA en clair et en sombre (texte d'accent lisible pour tous les thèmes), écrans dès 320 px, lecteurs d'écran (dialogues nommés, cibles de 44 px)
 - Tutoiement partout, accords au singulier, « Réglages », « Badges », « Modèles » ; interrupteurs dans les réglages
 
 ### Fiabilité et confidentialité
 - Fin de séance sans réseau qui ne bloque plus et ne perd rien (cache persistant Firestore enfin actif)
-- Rien ne passe au compte suivant sur un appareil partagé ; suppression de compte complète (données, compte, copie locale)
+- Reconnexion fiable juste après une déconnexion (le formulaire n'est plus vidé) ; rien ne passe au compte suivant sur un appareil partagé ; suppression de compte complète (données, compte, copie locale)
 - Récap toujours comparé, même en terminant tout de suite ; onglet ouvert pendant un déploiement rechargé tout seul
 - Démarrage plus léger : pages chargées à la demande, framer-motion hors du démarrage
 
