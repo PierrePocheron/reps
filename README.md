@@ -88,6 +88,7 @@ Avec un vrai projet Firebase : `cp .env.example .env`, remplir les clés ([ENV.m
 
 | Document | Contenu |
 |---|---|
+| [CHANGELOG.md](CHANGELOG.md) | Changements par version, et ceux en attente de release (« Non publié ») |
 | [ENV.md](ENV.md) | Variables d'environnement, fichiers natifs, secrets CI |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Procédures de déploiement, checklists Play Store / App Store |
 | [docs/RELEASE.md](docs/RELEASE.md) | Branches, versionnage, publication d'une version |

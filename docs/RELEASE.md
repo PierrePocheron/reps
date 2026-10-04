@@ -11,10 +11,11 @@ Versions **X.Y.Z** (semver) : `X` rupture, `Y` fonctionnalité, `Z` correctif.
 ## Publier une version
 
 ```bash
+# CHANGELOG.md : renommer « Non publié » en « 1.0.0 — JJ/MM/AAAA » et rouvrir une section « Non publié » vide
 scripts/release.sh prepare 1.0.0      # sur dev : bump package.json + versionCode/versionName Android
 gh pr create --base main --head dev   # PR dev → main (labels + assignee PierrePocheron)
 gh pr create --base prod --head main  # PR main → prod
-scripts/release.sh publish            # sur prod : tag v1.0.0 + release GitHub (notes auto)
+scripts/release.sh publish            # sur prod : tag v1.0.0 + release GitHub (notes auto ; y coller la section du CHANGELOG)
 bash scripts/build-android-release.sh # AAB signé à uploader dans la Play Console
 ```
 
