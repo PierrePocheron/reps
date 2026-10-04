@@ -48,6 +48,8 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 ### Fiabilité et confidentialité
 - Fin de séance sans réseau qui ne bloque plus et ne perd rien (cache persistant Firestore enfin actif)
 - Reconnexion fiable juste après une déconnexion (le formulaire n'est plus vidé) ; rien ne passe au compte suivant sur un appareil partagé ; suppression de compte complète (données, kudos, listes d'amis, compte, copie locale)
+- Défis : terminés seulement quand toutes les étapes sont faites (rattrapage possible jusqu'au bout), jour juste au
+  changement d'heure et après minuit
 - Récap toujours comparé, même en terminant tout de suite ; onglet ouvert pendant un déploiement rechargé tout seul
 - Démarrage plus léger : pages chargées à la demande, framer-motion hors du démarrage
 

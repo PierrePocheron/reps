@@ -10,6 +10,7 @@ import {
   runTransaction
 } from 'firebase/firestore';
 import { db } from './config';
+import { localDay } from '@/utils/formatters';
 import { calculateDynamicCalories } from '@/utils/calories';
 import { User, SessionExercise } from './types';
 import { DEFAULT_EXERCISES, MAX_ACTIVE_CHALLENGES } from '@/utils/constants';
@@ -361,7 +362,7 @@ export const validateChallengeDay = async (
 
             // B. Calculate Day Index & Target
             const now = Timestamp.now();
-            const dateStr = validationDate.toISOString().split('T')[0];
+            const dateStr = localDay(validationDate); // local calendar day (toISOString gave the day before after midnight)
 
             // Check Pace (Allow catch-up, prevent future)
             const currentStepIndex = userChallenge.history.length;
@@ -429,9 +430,9 @@ export const validateChallengeDay = async (
                 { date: dateStr, amount: reps, completed: true, catchUp: getDayIndex(userChallenge.startDate, validationDate) < getDayIndex(userChallenge.startDate, new Date()) }
             ];
 
-            // Check completion
-            const dayIndex = getDayIndex(userChallenge.startDate, validationDate);
-            const isFinished = dayIndex >= def.durationDays - 1;
+            // Finished when every step is done (catch-up model), not when the calendar reaches the last day:
+            // a late user was marked « terminé » halfway, and could no longer catch up
+            const isFinished = newHistory.length >= def.durationDays;
 
             transaction.update(challengeRef, {
                 lastLogDate: now,
