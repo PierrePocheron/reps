@@ -1,5 +1,6 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from './config';
+import { queuedIfOffline } from './offline';
 import type { BodyEntry } from '@/utils/body';
 
 // Document privé (règles : propriétaire uniquement), supprimé avec le compte comme tout users/{uid}/private
@@ -11,5 +12,5 @@ export async function getBodyEntries(uid: string): Promise<BodyEntry[]> {
 }
 
 export async function saveBodyEntries(uid: string, entries: BodyEntry[]): Promise<void> {
-  await setDoc(bodyDoc(uid), { entries });
+  await queuedIfOffline(setDoc(bodyDoc(uid), { entries }));
 }

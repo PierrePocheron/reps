@@ -124,7 +124,7 @@ export async function updateGymSession(userId: string, sessionId: string, exerci
     totalVolume: Math.round(calculateTotalVolume(clean)),
     totalSets: clean.reduce((n, ex) => n + ex.sets.filter(isWorkSet).length, 0),
   };
-  await updateDoc(doc(db, 'gym_sessions', userId, 'userGymSessions', sessionId), fields);
+  await queuedIfOffline(updateDoc(doc(db, 'gym_sessions', userId, 'userGymSessions', sessionId), fields));
   return fields;
 }
 
@@ -153,7 +153,7 @@ export async function importGymSessions(userId: string, sessions: { date: Date; 
 
 /** Supprimer une séance muscu (#56) : le classement et le fil lisent les séances en direct ; stats à recalculer. */
 export async function deleteGymSession(userId: string, sessionId: string): Promise<void> {
-  await deleteDoc(doc(db, 'gym_sessions', userId, 'userGymSessions', sessionId));
+  await queuedIfOffline(deleteDoc(doc(db, 'gym_sessions', userId, 'userGymSessions', sessionId)));
 }
 
 export function calculateTotalVolume(exercises: GymSessionExercise[]): number {

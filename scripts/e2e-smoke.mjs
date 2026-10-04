@@ -154,10 +154,20 @@ const steps = [
     // au retour du réseau : séance dans l'historique, puis supprimée (ne pas servir de modèle aux parcours suivants)
     await page.goto(`${BASE}/history`);
     await page.getByText('Hors ligne e2e').first().waitFor();
-    await page.getByRole('button', { name: 'Actions de la séance' }).first().click();
-    await page.getByRole('menuitem', { name: 'Supprimer' }).click();
-    await page.getByRole('dialog').getByRole('button', { name: 'Supprimer', exact: true }).click();
-    await page.getByText('Séance supprimée').first().waitFor();
+    // deletion offline too: must not spin forever, and must stick once back online
+    await ctx.setOffline(true);
+    try {
+      await page.getByRole('button', { name: 'Actions de la séance' }).first().click();
+      await page.getByRole('menuitem', { name: 'Supprimer' }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Supprimer', exact: true }).click();
+      await page.getByText('Séance supprimée').first().waitFor({ timeout: 10_000 });
+    } finally {
+      await ctx.setOffline(false);
+    }
+    await page.waitForTimeout(2000); // queued delete reaches the emulator
+    await page.goto(`${BASE}/history`);
+    await page.getByRole('button', { name: 'Refaire cette séance' }).first().waitFor();
+    assert.equal(await page.getByText('Hors ligne e2e').count(), 0, 'séance supprimée hors ligne revenue');
     await assertAlive('séance hors ligne');
   }],
 

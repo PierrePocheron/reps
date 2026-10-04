@@ -1,6 +1,6 @@
 import {
   collection,
-  addDoc,
+  setDoc,
   getDocs,
   deleteDoc,
   updateDoc,
@@ -10,6 +10,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './config';
+import { queuedIfOffline } from './offline';
 import type { WorkoutTemplate } from './types';
 import { logger } from '@/utils/logger';
 
@@ -38,12 +39,12 @@ export async function createUserTemplate(
   data: CreateTemplateData
 ): Promise<WorkoutTemplate> {
   try {
-    const ref = collection(db, 'userTemplates', userId, 'templates');
-    const docRef = await addDoc(ref, {
+    const docRef = doc(collection(db, 'userTemplates', userId, 'templates')); // id known even while offline
+    await queuedIfOffline(setDoc(docRef, {
       ...data,
       userId,
       createdAt: Timestamp.now(),
-    });
+    }));
     return { id: docRef.id, userId, ...data, createdAt: Timestamp.now() };
   } catch (error) {
     logger.error('Erreur lors de la création du template:', error as Error);
@@ -57,7 +58,7 @@ export async function createUserTemplate(
 export async function deleteUserTemplate(userId: string, templateId: string): Promise<void> {
   try {
     const ref = doc(db, 'userTemplates', userId, 'templates', templateId);
-    await deleteDoc(ref);
+    await queuedIfOffline(deleteDoc(ref));
   } catch (error) {
     logger.error('Erreur lors de la suppression du template:', error as Error);
     throw error;
@@ -69,7 +70,7 @@ export async function deleteUserTemplate(userId: string, templateId: string): Pr
  */
 export async function updateUserTemplate(userId: string, templateId: string, data: CreateTemplateData): Promise<void> {
   try {
-    await updateDoc(doc(db, 'userTemplates', userId, 'templates', templateId), { ...data });
+    await queuedIfOffline(updateDoc(doc(db, 'userTemplates', userId, 'templates', templateId), { ...data }));
   } catch (error) {
     logger.error('Erreur lors de la mise à jour du template:', error as Error);
     throw error;

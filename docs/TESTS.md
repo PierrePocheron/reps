@@ -37,7 +37,7 @@ Ce projet utilise des **tests unitaires**, des **tests d'intégration légère**
 | Nouvelle séance (bouton central) | Muscu : séance libre, exercice ajouté, série validée, récap ; renfo : séance de base, récap ; séances supprimées ensuite |
 | Séance muscu complète | Refaire, titre et note, rappel « Précédent », repos auto, barre fixée, écran de récap, carte titrée dans l'historique |
 | Séance renfo | Refaire, compter, récap avec comparaison |
-| Fin de séance hors ligne | Réseau coupé avant « Terminer » : récap et retour à l'accueil sans attendre le réseau, séance dans l'historique à la reconnexion |
+| Hors ligne | Réseau coupé avant « Terminer » : récap et retour à l'accueil sans attendre le réseau, séance dans l'historique à la reconnexion ; suppression hors ligne qui tient au retour du réseau |
 | Échauffement, superset, repos | Échauffement en tête, échanger deux exercices, pas de repos au milieu d'un tour, ±15 s, durée retenue, exercice en secondes + chrono, remplacer un exercice, annulation |
 | Mensurations et récap | Saisie, récap mensuel et muscles travaillés |
 | Records | Courbe de progression au-dessus de la navigation |

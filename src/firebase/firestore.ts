@@ -223,17 +223,17 @@ export async function updateUserDocument(uid: string, updates: Partial<User>): P
     }
 
     if (Object.keys(privateData).length > 0) {
-      await setDoc(privateProfileRef(uid), privateData, { merge: true });
+      await queuedIfOffline(setDoc(privateProfileRef(uid), privateData, { merge: true }));
       if (typeof privateData.email === 'string' && privateData.email) {
         (publicData as Record<string, unknown>).emailHash = await hashEmail(privateData.email);
       }
     }
 
     if (Object.keys(publicData).length > 0) {
-      await updateDoc(userRef, {
+      await queuedIfOffline(updateDoc(userRef, {
         ...publicData,
         updatedAt: serverTimestamp(),
-      });
+      }));
     }
   } catch (error) {
     logger.error('Erreur lors de la mise à jour du document utilisateur:', error);
@@ -344,13 +344,13 @@ export async function updateSession(userId: string, sessionId: string, exercises
     totalReps: exercises.reduce((n, ex) => n + ex.reps, 0),
     totalCalories: Math.round(totalCalories),
   };
-  await updateDoc(doc(db, 'sessions', userId, 'userSessions', sessionId), fields);
+  await queuedIfOffline(updateDoc(doc(db, 'sessions', userId, 'userSessions', sessionId), fields));
   return fields;
 }
 
 /** Supprimer une séance renfo (#56) : le classement et le fil lisent les séances en direct ; stats à recalculer. */
 export async function deleteSession(userId: string, sessionId: string): Promise<void> {
-  await deleteDoc(doc(db, 'sessions', userId, 'userSessions', sessionId));
+  await queuedIfOffline(deleteDoc(doc(db, 'sessions', userId, 'userSessions', sessionId)));
 }
 
 export async function getUserSessions(userId: string, limitCount = 50): Promise<Session[]> {

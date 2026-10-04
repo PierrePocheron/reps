@@ -60,7 +60,7 @@ musculaires inclus).
 - Calculateurs de **disques** et de **séries d'échauffement** ; mensurations et poids de corps (payant chez Hevy)
 - Motivation : série quotidienne avec joker ou série hebdomadaire, objectif hebdo, questionnaire de départ, widget Android
 - Social : amis, fil, **classement** jour/semaine/mois, **défis quotidiens**, badges, kudos
-- Hors ligne (cache persistant : séance terminée sans réseau, envoyée à la reconnexion), PWA + Android ; accessibilité AA vérifiée (contraste, 320 px, lecteurs d'écran)
+- Hors ligne (cache persistant : séances, modèles, mensurations enregistrés sans réseau, envoyés à la reconnexion), PWA + Android ; accessibilité AA vérifiée (contraste, 320 px, lecteurs d'écran)
 
 ### Écarts restants
 **En attente de Pierre** (label `bloqué-pierre`) :
