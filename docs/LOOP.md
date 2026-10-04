@@ -108,3 +108,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | passe UI/UX fiche exercice + contraste | « Dernières séances » à 320 px clair/sombre : rien ne déborde ; yarn a11y : AA respecté avec menu ⋯, unité reps ⇄ s, chrono ; RAS | — |
 | 2026-10-04 | #61 | Import CSV Strong / Hevy / export REPS : aperçu, exercices reconnus FR/EN, doublons écartés, stats recalculées ; 12 parcours e2e verts | `972a15e` |
 | 2026-10-04 | #62 | Remplacer un exercice en séance (depuis sa fiche ; séries, superset et place conservés) | `2d37c06` |
+| 2026-10-04 | passe UI/UX nouvel arrivant | Import Strong/Hevy proposé depuis l'historique muscu vide (ancre vers le bouton) ; section Réglages « À propos » → « Tes données » | `079aa73` |
