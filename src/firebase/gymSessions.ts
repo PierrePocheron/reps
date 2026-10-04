@@ -6,6 +6,8 @@ import {
   orderBy,
   limit,
   Timestamp,
+  deleteDoc,
+  doc,
 } from 'firebase/firestore';
 import { db } from './config';
 import type { GymSession, GymSessionExercise } from './types';
@@ -86,6 +88,11 @@ export async function getUserGymSessions(
 /**
  * Calcule le volume total d'une séance (kg soulevés)
  */
+/** Supprimer une séance muscu (#56) : le classement et le fil lisent les séances en direct ; stats à recalculer. */
+export async function deleteGymSession(userId: string, sessionId: string): Promise<void> {
+  await deleteDoc(doc(db, 'gym_sessions', userId, 'userGymSessions', sessionId));
+}
+
 export function calculateTotalVolume(exercises: GymSessionExercise[]): number {
   return exercises.reduce((total, ex) => {
     const exerciseVolume = ex.sets

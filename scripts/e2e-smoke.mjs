@@ -12,7 +12,7 @@ const BASE = 'http://localhost:5199';
 const DEMO = { email: 'demo@reps.test', password: 'reps-demo-2026' }; // compte fictif des émulateurs
 
 // Garde-fou : jamais de script bloqué indéfiniment (boucle d'amélioration, CI)
-setTimeout(() => { console.error('✗ délai dépassé (4 min)'); process.exit(2); }, 240_000).unref();
+setTimeout(() => { console.error('✗ délai dépassé (6 min)'); process.exit(2); }, 360_000).unref();
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'fr-FR' });
 await ctx.addInitScript(() => localStorage.setItem('reps_onboarding_v2', '1'));
@@ -150,6 +150,20 @@ const steps = [
     const coveredByNav = await page.evaluate(() => !!document.elementFromPoint(innerWidth / 2, innerHeight - 20)?.closest('nav'));
     assert.ok(!coveredByNav, 'la navigation recouvre la feuille ouverte');
     await assertAlive('records');
+  }],
+
+  ['supprimer une séance (confirmation, liste mise à jour)', async () => {
+    await page.goto(`${BASE}/history`);
+    await page.getByRole('tab', { name: /Muscu/ }).click();
+    const trash = page.getByRole('button', { name: 'Supprimer cette séance' });
+    await trash.first().waitFor();
+    const before = await trash.count();
+    await trash.first().click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Supprimer', exact: true }).click();
+    await page.getByText('Séance supprimée').first().waitFor();
+    for (let i = 0; i < 30 && (await trash.count()) >= before; i++) await page.waitForTimeout(100);
+    assert.equal(await trash.count(), before - 1, 'une séance de moins dans l\'historique');
+    await assertAlive('suppression de séance');
   }],
 
   ['petit écran (320 px) : rien ne déborde', async () => {

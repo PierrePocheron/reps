@@ -9,7 +9,10 @@ import { useGymSessionStore } from '@/store/gymSessionStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy, RotateCcw, Share2, BookmarkPlus } from 'lucide-react';
+import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy, RotateCcw, Share2, BookmarkPlus, Trash2, Loader2 } from 'lucide-react';
+import { deleteSession, updateUserStatsAfterSession } from '@/firebase/firestore';
+import { deleteGymSession } from '@/firebase/gymSessions';
+import { logger } from '@/utils/logger';
 import { gymCard, renfoCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
 import type { Session, GymSession } from '@/firebase/types';
 import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
@@ -52,6 +55,21 @@ interface PersonalRecord {
 
 // ─── Renforcement Card ────────────────────────────────────────────────────────
 
+/** Corbeille d'une carte de l'historique (#56) : ouvre la confirmation. */
+function DeleteButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Supprimer cette séance"
+      title="Supprimer"
+      className="h-11 w-11 -my-2 -mr-2 flex items-center justify-center rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+    >
+      <Trash2 className="h-4 w-4" />
+    </button>
+  );
+}
+
 function CardActions({ onRedo, onShare }: { onRedo: () => void; onShare: () => void }) {
   return (
     <div className="flex gap-2">
@@ -65,7 +83,7 @@ function CardActions({ onRedo, onShare }: { onRedo: () => void; onShare: () => v
   );
 }
 
-function RenforcementCard({ session, onRedo, onShare }: { session: Session; onRedo: () => void; onShare: () => void }) {
+function RenforcementCard({ session, onRedo, onShare, onDelete }: { session: Session; onRedo: () => void; onShare: () => void; onDelete: () => void }) {
   const date = session.date.toDate();
   return (
     <div className="rounded-2xl border bg-card overflow-hidden shadow-sm">
@@ -83,6 +101,7 @@ function RenforcementCard({ session, onRedo, onShare }: { session: Session; onRe
                 <Clock className="h-3 w-3 text-muted-foreground" />
                 <span className="text-xs font-medium">{formatDurationLong(session.duration)}</span>
               </div>
+              <DeleteButton onClick={onDelete} />
             </div>
           </div>
 
@@ -123,7 +142,7 @@ function RenforcementCard({ session, onRedo, onShare }: { session: Session; onRe
 
 // ─── Musculation Card ─────────────────────────────────────────────────────────
 
-function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate }: { session: GymSession; imageMap: Record<string, string>; onRedo: () => void; onShare: () => void; onSaveTemplate: () => void }) {
+function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelete }: { session: GymSession; imageMap: Record<string, string>; onRedo: () => void; onShare: () => void; onSaveTemplate: () => void; onDelete: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const date = session.date.toDate();
   const completedSets = session.exercises.reduce(
@@ -155,6 +174,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate }: { ses
               >
                 <BookmarkPlus className="h-4 w-4" />
               </button>
+              <DeleteButton onClick={onDelete} />
             </div>
           </div>
 
@@ -291,7 +311,12 @@ function PRCard({ pr, onOpen }: { pr: PersonalRecord; onOpen: () => void }) {
 
 function History() {
   const [activeTab, setActiveTab] = useState<Tab>('musculation');
-  const { sessions, gymSessions, loading, error, refetch } = useSessionHistory(100);
+  const history = useSessionHistory(100);
+  const { loading, error, refetch } = history;
+  // Séances supprimées (#56) : retirées tout de suite, sans recharger la liste (pas de clignotement)
+  const [deletedIds, setDeletedIds] = useState<string[]>([]);
+  const sessions = useMemo(() => history.sessions.filter((s) => !deletedIds.includes(s.sessionId)), [history.sessions, deletedIds]);
+  const gymSessions = useMemo(() => history.gymSessions.filter((s) => !deletedIds.includes(s.sessionId)), [history.gymSessions, deletedIds]);
   const { imageMap, infoMap } = useExerciseImages();
   const navigate = useNavigate();
   const [detailPr, setDetailPr] = useState<PersonalRecord | null>(null);
@@ -299,6 +324,27 @@ function History() {
   const { isActive: renfoActive, loadExercises } = useSessionStore();
   const { toast } = useToast();
   const user = useUserStore((st) => st.user);
+  const refreshStats = useUserStore((st) => st.refreshStats);
+  // Suppression d'une séance (#56) : confirmation, puis stats, série et totaux recalculés
+  const [toDelete, setToDelete] = useState<{ kind: 'gym' | 'renfo'; id: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const confirmDelete = async () => {
+    if (!toDelete || !user) return;
+    setDeleting(true);
+    try {
+      await (toDelete.kind === 'gym' ? deleteGymSession : deleteSession)(user.uid, toDelete.id);
+      setDeletedIds((ids) => [...ids, toDelete.id]);
+      setToDelete(null);
+      toast({ title: 'Séance supprimée' });
+      await updateUserStatsAfterSession(user.uid, 0);
+      await refreshStats();
+    } catch (err) {
+      logger.error('Suppression de séance :', err);
+      toast({ title: 'Erreur', description: 'Impossible de supprimer la séance', variant: 'destructive' });
+    } finally {
+      setDeleting(false);
+    }
+  };
   const [saveAsTemplate, setSaveAsTemplate] = useState<GymSession | null>(null);
   const [templateName, setTemplateName] = useState('');
   const saveTemplate = async () => {
@@ -474,7 +520,8 @@ function History() {
               {gymSessions.map((s) => (
                 <MuscuCard key={s.sessionId} session={s} imageMap={imageMap} onRedo={() => redoGym(s)}
                   onSaveTemplate={() => { setSaveAsTemplate(s); setTemplateName(`Séance du ${s.date.toDate().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`); }}
-                  onShare={() => share(gymCard({ date: s.date.toDate(), duration: s.duration, exercises: s.exercises }))} />
+                  onShare={() => share(gymCard({ date: s.date.toDate(), duration: s.duration, exercises: s.exercises }))}
+                  onDelete={() => setToDelete({ kind: 'gym', id: s.sessionId })} />
               ))}
             </div>
           )
@@ -492,7 +539,8 @@ function History() {
             <div className="space-y-3">
               {sessions.map((s) => (
                 <RenforcementCard key={s.sessionId} session={s} onRedo={() => redoRenfo(s)}
-                  onShare={() => share(renfoCard({ ...s, date: s.date.toDate() }))} />
+                  onShare={() => share(renfoCard({ ...s, date: s.date.toDate() }))}
+                  onDelete={() => setToDelete({ kind: 'renfo', id: s.sessionId })} />
               ))}
             </div>
           )
@@ -541,6 +589,20 @@ function History() {
           </DialogHeader>
           <Input value={templateName} onChange={(e) => setTemplateName(e.target.value)} maxLength={40} aria-label="Nom du modèle" />
           <Button className="w-full min-h-11" onClick={saveTemplate} disabled={!templateName.trim()}>Enregistrer</Button>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={!!toDelete} onOpenChange={(open) => !open && !deleting && setToDelete(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Supprimer cette séance ?</DialogTitle>
+            <DialogDescription>Elle disparaît de ton historique, de tes stats et du classement. C'est définitif.</DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1 min-h-11" onClick={() => setToDelete(null)} disabled={deleting}>Annuler</Button>
+            <Button variant="destructive" className="flex-1 min-h-11" onClick={() => void confirmDelete()} disabled={deleting}>
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Supprimer'}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </PageLayout>

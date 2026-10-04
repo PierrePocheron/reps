@@ -336,6 +336,11 @@ export async function getLastSession(userId: string): Promise<Session | null> {
 /**
  * Obtenir toutes les sessions d'un utilisateur
  */
+/** Supprimer une séance renfo (#56) : le classement et le fil lisent les séances en direct ; stats à recalculer. */
+export async function deleteSession(userId: string, sessionId: string): Promise<void> {
+  await deleteDoc(doc(db, 'sessions', userId, 'userSessions', sessionId));
+}
+
 export async function getUserSessions(userId: string, limitCount = 50): Promise<Session[]> {
   try {
     const sessionsRef = collection(db, 'sessions', userId, 'userSessions');
