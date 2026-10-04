@@ -42,6 +42,7 @@ import { gymCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
 import { gymSummary, comparisonText } from '@/utils/summary';
 import { formatDurationLong, plural } from '@/utils/formatters';
 import { SessionSummary, type SummaryStat } from '@/components/SessionSummary';
+import { BackdateDialog } from '@/components/BackdateDialog';
 import { lastWorkSets, suggestNextWeight, type LoadSuggestion } from '@/utils/progression';
 import { loadPlatePrefs, warmupSets } from '@/utils/plates';
 import { restAfterSet, supersetLetters } from '@/utils/superset';
@@ -79,6 +80,8 @@ function GymSession() {
     prependWarmup,
     toggleSuperset,
     swapExercises,
+    backdate,
+    setBackdate,
     startExecution,
     dismissRestTimer,
     setRestDuration,
@@ -121,6 +124,7 @@ function GymSession() {
   const bestsRef = useRef<Record<string, number>>({});
   const [gymHistory, setGymHistory] = useState<GymSessionData[]>([]);
   // Récap affiché après la fin de séance (#54) ; posé avant endSession pour devancer le retour à l'accueil
+  const [showBackdate, setShowBackdate] = useState(false);
   const [summary, setSummary] = useState<{ stats: SummaryStat[]; comparison: string | null; card: SessionCard } | null>(null);
 
   // Charger les defaults (dernière séance) et les records depuis l'historique muscu
@@ -240,10 +244,10 @@ function GymSession() {
     if (ending) return;
     setEnding(true);
     // Récap et carte de partage figés avant que endSession ne vide le store
-    const duration = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+    const duration = backdate ? backdate.duration : startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
     const sum = gymSummary(exercises, gymHistory);
     setSummary({
-      card: gymCard({ date: new Date(), duration, exercises }),
+      card: gymCard({ date: new Date(backdate?.at ?? Date.now()), duration, exercises }),
       comparison: comparisonText(sum.deltaPct),
       stats: [
         { label: 'Durée', value: formatDurationLong(duration) },
@@ -521,7 +525,16 @@ function GymSession() {
           <Plus className="h-4 w-4" />
           Ajouter un exercice
         </button>
+        {/* Séance oubliée (#58) : la saisir maintenant, l'enregistrer à sa vraie date */}
+        <button type="button" onClick={() => setShowBackdate(true)} className="mx-auto block min-h-11 px-3 text-xs font-medium text-muted-foreground hover:text-primary">
+          {backdate
+            ? `📅 Enregistrée le ${new Date(backdate.at).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })} · ${Math.round(backdate.duration / 60)} min — modifier`
+            : '📅 Séance faite plus tôt ? Changer la date'}
+        </button>
       </div>
+      {showBackdate && (
+        <BackdateDialog initial={backdate} onCancel={() => setShowBackdate(false)} onSave={(b) => { setBackdate(b); setShowBackdate(false); }} />
+      )}
 
       {/* Barre flottante du bas */}
       <div

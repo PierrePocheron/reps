@@ -29,6 +29,7 @@ interface GymSessionState {
   autoRest: boolean; // lancer le repos quand une série est validée (préférence, persistée)
   showRpe: boolean; // saisir le RPE des séries validées (préférence, persistée)
   suggestLoad: boolean; // proposer la charge suivante quand tout a été réussi (préférence, persistée)
+  backdate: { at: number; duration: number } | null; // séance oubliée (#58) : date passée et durée (s) saisies
 
   // Actions — Planning
   startPlanning: () => void;
@@ -53,6 +54,7 @@ interface GymSessionState {
   setAutoRest: (on: boolean) => void;
   setShowRpe: (on: boolean) => void;
   setSuggestLoad: (on: boolean) => void;
+  setBackdate: (backdate: { at: number; duration: number } | null) => void;
   endSession: () => Promise<void>;
   cancelSession: () => void;
 
@@ -89,6 +91,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   autoRest: true,
   showRpe: false,
   suggestLoad: true,
+  backdate: null,
 
   // ─── Planning ─────────────────────────────────────────────────────────
 
@@ -246,6 +249,8 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   setAutoRest: (on: boolean) => set({ autoRest: on }),
   setShowRpe: (on: boolean) => set({ showRpe: on }),
   setSuggestLoad: (on: boolean) => set({ suggestLoad: on }),
+  // Jamais dans le futur : la date est ramenée à maintenant au pire
+  setBackdate: (backdate) => set({ backdate: backdate && { at: Math.min(backdate.at, Date.now()), duration: Math.max(0, backdate.duration) } }),
 
   endSession: async () => {
     try {
@@ -253,7 +258,8 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
       const { currentUser } = useUserStore.getState();
       if (!currentUser || !startTime) return;
 
-      const duration = Math.floor((Date.now() - startTime) / 1000);
+      const { backdate } = get();
+      const duration = backdate ? backdate.duration : Math.floor((Date.now() - startTime) / 1000);
       const totalVolume = calculateTotalVolume(exercises);
       const totalSets = exercises.reduce((sum, ex) => sum + ex.sets.filter(isWorkSet).length, 0);
 
@@ -261,7 +267,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
 
       await createGymSession(currentUser.uid, {
         userId: currentUser.uid,
-        date: Timestamp.now(),
+        date: backdate ? Timestamp.fromDate(new Date(backdate.at)) : Timestamp.now(),
         duration,
         exercises: sanitizedExercises,
         totalVolume: Math.round(totalVolume),
@@ -289,6 +295,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
       duration: 0,
       showRestTimer: false,
       restEndsAt: null,
+      backdate: null,
     });
   },
 
@@ -345,5 +352,6 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     autoRest: s.autoRest,
     showRpe: s.showRpe,
     suggestLoad: s.suggestLoad,
+    backdate: s.backdate,
   }),
 }));
