@@ -8,6 +8,7 @@ import {
   isOffline,
   onNetworkChange,
   syncLocalDataWithFirestore,
+  queuedIfOffline,
 } from '../offline';
 
 // Mock localStorage
@@ -214,5 +215,23 @@ describe('firebase/offline', () => {
       await syncLocalDataWithFirestore('user123');
       expect(localStorageMock.getItem).toHaveBeenCalledTimes(1);
     });
+  });
+});
+
+describe('queuedIfOffline', () => {
+  it("rend la valeur de l'écriture acquittée à temps", async () => {
+    await expect(queuedIfOffline(Promise.resolve('id'), 50)).resolves.toBe('id');
+  });
+
+  it('propage un refus immédiat', async () => {
+    await expect(queuedIfOffline(Promise.reject(new Error('refus')), 50)).rejects.toThrow('refus');
+  });
+
+  it("rend la main hors ligne (pas d'acquittement) sans attendre le réseau", async () => {
+    vi.useFakeTimers();
+    const pending = queuedIfOffline(new Promise<string>(() => {}), 4000);
+    vi.advanceTimersByTime(4000);
+    await expect(pending).resolves.toBeUndefined();
+    vi.useRealTimers();
   });
 });

@@ -33,6 +33,8 @@ répartition musculaire, statistiques et habitudes, récap mensuel / annuel part
 **Motivation & social** : série quotidienne (avec joker) ou hebdomadaire, objectif hebdo, questionnaire de départ,
 badges, défis, amis, fil d'activité, classement, widget Android.
 
+**Hors ligne** : séance terminée sans réseau (salle en sous-sol), envoyée au retour de la connexion.
+
 **Accessibilité** : contraste AA (clair et sombre), écrans dès 320 px, lecteurs d'écran.
 
 ---

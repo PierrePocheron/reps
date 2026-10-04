@@ -60,7 +60,7 @@ musculaires inclus).
 - Calculateurs de **disques** et de **séries d'échauffement** ; mensurations et poids de corps (payant chez Hevy)
 - Motivation : série quotidienne avec joker ou série hebdomadaire, objectif hebdo, questionnaire de départ, widget Android
 - Social : amis, fil, **classement** jour/semaine/mois, **défis quotidiens**, badges, kudos
-- Hors ligne, PWA + Android ; accessibilité AA vérifiée (contraste, 320 px, lecteurs d'écran)
+- Hors ligne (cache persistant : séance terminée sans réseau, envoyée à la reconnexion), PWA + Android ; accessibilité AA vérifiée (contraste, 320 px, lecteurs d'écran)
 
 ### Écarts restants
 **En attente de Pierre** (label `bloqué-pierre`) :
@@ -71,8 +71,8 @@ musculaires inclus).
 5. Kudos et copie des modèles d'un ami — déploiement des règles Firestore
 
 **Faisables en autonomie** (backlog du projet #9) :
-- Titre et note de séance (Hevy, Strong)
-- Valeur de la séance précédente affichée à côté de chaque série (colonne « Précédent » de Hevy / Strong)
+- Backlog vide : titre / note de séance et colonne « Précédent » livrés (#64, #65) ; la loop alterne passes UI/UX et
+  fiabilité (perte de données, synchro — premiers motifs d'abandon cités par les pratiquants)
 - Plus tard, à cadrer avec Pierre : programmes sur plusieurs semaines (Boostcamp), photos de progression (JEFIT)
 
 ## Enseignements mascotte

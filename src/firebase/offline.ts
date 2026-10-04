@@ -88,6 +88,26 @@ export function getExercisesFromLocal(): Array<{ id: string; name: string; emoji
 }
 
 /**
+ * Hors ligne, une écriture Firestore ne se résout qu'au retour du réseau : sans limite, « Terminer » tournait
+ * indéfiniment en salle sans réseau. Au-delà de `ms`, on rend la main : le cache persistant garde l'écriture en
+ * file (même appli fermée) et l'envoie à la reconnexion ; un refus du serveur à ce moment-là est journalisé.
+ */
+export function queuedIfOffline<T>(write: Promise<T>, ms = 2500): Promise<T | undefined> {
+  return new Promise((resolve, reject) => {
+    let queued = false;
+    const timer = setTimeout(() => { queued = true; resolve(undefined); }, ms);
+    write.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (error) => {
+        clearTimeout(timer);
+        if (queued) logger.error('Écriture refusée à la resynchronisation :', error);
+        reject(error);
+      },
+    );
+  });
+}
+
+/**
  * Vérifier si l'application est en mode offline
  */
 export function isOffline(): boolean {

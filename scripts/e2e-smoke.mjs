@@ -2,7 +2,7 @@
  * Test de fumée de bout en bout sur la démo (émulateurs + données fictives).
  * Prérequis : `yarn dev:demo` lancé. Usage : `yarn e2e` (code de sortie ≠ 0 au premier échec).
  * Couvre les parcours où une régression bloque l'utilisateur : connexion, navigation,
- * séance muscu de bout en bout (note, repos auto, fin de séance et récap), séance renfo, courbe de progression,
+ * séance muscu de bout en bout (note, repos auto, fin de séance et récap, fin hors ligne), séance renfo, courbe de progression,
  * mise en page sans débordement sur petit écran.
  */
 import assert from 'node:assert/strict';
@@ -133,6 +133,32 @@ const steps = [
     await page.getByRole('button', { name: 'Terminer', exact: true }).click();
     await page.waitForURL(`${BASE}/`);
     await assertAlive('fin de séance renfo');
+  }],
+
+  ['séance terminée hors ligne (salle sans réseau)', async () => {
+    // hors ligne, l'écriture Firestore n'est acquittée qu'au retour du réseau : « Terminer » restait bloqué
+    await page.goto(`${BASE}/history`);
+    await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+    await page.waitForURL(`${BASE}/gym`);
+    await page.getByRole('textbox', { name: 'Titre de la séance' }).fill('Hors ligne e2e');
+    await page.getByRole('button', { name: 'Valider la série 1' }).first().click();
+    await ctx.setOffline(true);
+    try {
+      await page.getByRole('button', { name: /^Terminer/ }).click();
+      await page.getByRole('heading', { name: 'Séance terminée !' }).waitFor();
+      await page.getByRole('button', { name: 'Terminer', exact: true }).click();
+      await page.waitForURL(`${BASE}/`, { timeout: 15_000 });
+    } finally {
+      await ctx.setOffline(false);
+    }
+    // au retour du réseau : séance dans l'historique, puis supprimée (ne pas servir de modèle aux parcours suivants)
+    await page.goto(`${BASE}/history`);
+    await page.getByText('Hors ligne e2e').first().waitFor();
+    await page.getByRole('button', { name: 'Actions de la séance' }).first().click();
+    await page.getByRole('menuitem', { name: 'Supprimer' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Supprimer', exact: true }).click();
+    await page.getByText('Séance supprimée').first().waitFor();
+    await assertAlive('séance hors ligne');
   }],
 
   ['séance muscu : échauffement, superset et repos, annulation', async () => {

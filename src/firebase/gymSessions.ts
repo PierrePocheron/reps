@@ -12,6 +12,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { db } from './config';
+import { queuedIfOffline } from './offline';
 import type { GymSession, GymSessionExercise } from './types';
 import { logger } from '@/utils/logger';
 import { isWorkSet, isTimed } from '@/utils/records';
@@ -29,15 +30,15 @@ type CreateGymSessionData = Omit<GymSession, 'sessionId' | 'createdAt'>;
 export async function createGymSession(
   userId: string,
   data: CreateGymSessionData
-): Promise<string> {
+): Promise<string | undefined> {
   try {
     const sessionsRef = collection(db, 'gym_sessions', userId, 'userGymSessions');
-    const docRef = await addDoc(sessionsRef, {
+    const docRef = await queuedIfOffline(addDoc(sessionsRef, {
       ...data,
       userId,
       createdAt: Timestamp.now(),
-    });
-    return docRef.id;
+    }));
+    return docRef?.id; // undefined hors ligne : écriture en file
   } catch (error) {
     logger.error('Erreur lors de la création de la séance muscu:', error as Error);
     throw error;

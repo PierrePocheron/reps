@@ -74,15 +74,17 @@ export const auth = authInstance;
 
 // Configuration de Firestore avec cache local persistant (nouvelle API)
 import { getFirestore } from 'firebase/firestore';
+// initializeFirestore d'abord : getFirestore ne lève jamais (il crée une instance en cache mémoire), l'ordre inverse
+// laissait le cache persistant inactif → écritures hors ligne perdues à la fermeture de l'appli
 let dbInstance: Firestore;
 try {
-  dbInstance = getFirestore(app);
-} catch {
   dbInstance = initializeFirestore(app, {
     localCache: persistentLocalCache({
       tabManager: persistentMultipleTabManager()
     })
   });
+} catch {
+  dbInstance = getFirestore(app); // déjà initialisé (HMR)
 }
 export const db = dbInstance;
 

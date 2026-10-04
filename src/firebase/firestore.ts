@@ -29,6 +29,7 @@ import { trainingStreaks, weeklyStreaks } from '@/utils/streak';
 import { useSettingsStore } from '@/store/settingsStore';
 import { updateWidget, widgetData } from '@/utils/widget';
 import { getUserGymSessions } from './gymSessions';
+import { queuedIfOffline } from './offline';
 
 /**
  * Helpers Firestore pour les opérations CRUD
@@ -293,7 +294,7 @@ export function subscribeToUser(
 /**
  * Créer une session d'entraînement
  */
-export async function createSession(userId: string, sessionData: Omit<Session, 'sessionId' | 'userId' | 'createdAt'>): Promise<string> {
+export async function createSession(userId: string, sessionData: Omit<Session, 'sessionId' | 'userId' | 'createdAt'>): Promise<string | undefined> {
   try {
     const sessionsRef = collection(db, 'sessions', userId, 'userSessions');
     const sessionDoc = {
@@ -302,8 +303,8 @@ export async function createSession(userId: string, sessionData: Omit<Session, '
       createdAt: serverTimestamp(),
     };
 
-    const docRef = await addDoc(sessionsRef, sessionDoc);
-    return docRef.id;
+    const docRef = await queuedIfOffline(addDoc(sessionsRef, sessionDoc));
+    return docRef?.id; // undefined hors ligne : écriture en file
   } catch (error) {
     logger.error('Erreur lors de la création de la session:', error);
     throw error;
@@ -644,10 +645,10 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
         });
       });
 
-      await batch.commit();
+      await queuedIfOffline(batch.commit());
     } else {
       // Juste mettre à jour les stats
-      await updateUserDocument(userId, {
+      await queuedIfOffline(updateUserDocument(userId, {
         totalReps: stats.totalReps,
         totalSessions: stats.totalSessions,
         totalCalories: stats.totalCalories || 0,
@@ -656,7 +657,7 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
         lunchSessions: stats.lunchSessions,
         nightSessions: stats.nightSessions,
         exercisesDistribution: stats.exercisesDistribution,
-      });
+      }));
     }
   } catch (error) {
     logger.error('Erreur lors de la mise à jour des stats:', error);
