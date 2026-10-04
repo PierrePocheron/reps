@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Path-aware Firestore fake: each query answers with the documents stored under its path
 const deleted: string[] = [];
+const updated: { path: string; data: unknown }[] = [];
 const data: Record<string, string[]> = {};
 vi.mock('firebase/firestore', () => {
   const ref = (path: string) => ({ path });
@@ -17,6 +18,9 @@ vi.mock('firebase/firestore', () => {
       return { docs, forEach: (fn: (d: { id?: string; ref: { path: string } }) => void) => docs.forEach(fn) };
     },
     writeBatch: () => ({ delete: (r: { path: string }) => deleted.push(r.path), commit: async () => {} }),
+    getDoc: async (r: { path: string }) => ({ exists: () => r.path === 'users/u1', data: () => ({ friends: ['f1', 'f2'] }) }),
+    updateDoc: async (r: { path: string }, d: unknown) => { updated.push({ path: r.path, data: d }); },
+    arrayRemove: (v: string) => ({ arrayRemove: v }),
     terminate: vi.fn(async () => {}),
     clearIndexedDbPersistence: vi.fn(async () => {}),
   };
@@ -38,6 +42,7 @@ import { deleteUserAccount } from '../deleteAccount';
 describe('deleteUserAccount', () => {
   beforeEach(() => {
     deleted.length = 0;
+    updated.length = 0;
     for (const k of Object.keys(data)) delete data[k];
     data['sessions/u1/userSessions'] = ['sessions/u1/userSessions/s1'];
     data['sessions/u1/userSessions/s1/kudos'] = ['sessions/u1/userSessions/s1/kudos/friendA'];
@@ -54,5 +59,13 @@ describe('deleteUserAccount', () => {
   it('still removes the account data itself', async () => {
     await deleteUserAccount('u1', 'pw');
     expect(deleted).toEqual(expect.arrayContaining(['sessions/u1/userSessions/s1', 'users/u1/private/body', 'users/u1']));
+  });
+
+  it('takes itself out of its friends\' lists (no ghost friend left behind)', async () => {
+    await deleteUserAccount('u1', 'pw');
+    expect(updated).toEqual([
+      { path: 'users/f1', data: { friends: { arrayRemove: 'u1' } } },
+      { path: 'users/f2', data: { friends: { arrayRemove: 'u1' } } },
+    ]);
   });
 });

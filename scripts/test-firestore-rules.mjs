@@ -14,7 +14,7 @@ import {
   assertSucceeds,
   assertFails,
 } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp, arrayRemove } from 'firebase/firestore';
 
 const PROJECT = 'reps-rules-test';
 let passed = 0, failed = 0;
@@ -116,6 +116,12 @@ await test('l\'écriture croisée ne peut PAS ajouter quelqu\'un d\'autre que so
   assertFails(updateDoc(doc(carol, 'users/dave'), { friends: ['carol', 'mallory'] })));
 await test('retrait croisé : un ami peut se retirer lui-même (suppression d\'ami)', () =>
   assertSucceeds(updateDoc(doc(bob, 'users/alice'), { friends: [] })));
+
+await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'users/erin'), { displayName: 'erin', friends: ['frank', 'gus', 'hal'] }));
+await test('suppression du compte : on se retire des amis d\'un ami (arrayRemove)', () =>
+  assertSucceeds(updateDoc(doc(env.authenticatedContext('frank').firestore(), 'users/erin'), { friends: arrayRemove('frank') })));
+await test('on ne retire pas un autre que soi', () =>
+  assertFails(updateDoc(doc(env.authenticatedContext('gus').firestore(), 'users/erin'), { friends: arrayRemove('hal') })));
 
 console.log('\n─ Séances / défis / templates ─');
 await test('séances renfo lisibles par un authentifié (feed social)', () => assertSucceeds(getDoc(doc(bob, 'sessions/alice/userSessions/s1'))));

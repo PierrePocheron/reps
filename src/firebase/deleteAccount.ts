@@ -1,12 +1,15 @@
 import {
+  arrayRemove,
   clearIndexedDbPersistence,
   collection,
   collectionGroup,
   doc,
+  getDoc,
   getDocs,
   query,
   where,
   terminate,
+  updateDoc,
   writeBatch,
   type DocumentReference,
 } from 'firebase/firestore';
@@ -94,6 +97,14 @@ async function deleteUserFirestoreData(userId: string): Promise<void> {
   collect(await getDocs(query(collection(db, 'exercises'), where('userId', '==', userId))));
   collect(await getDocs(query(collection(db, 'friend_requests'), where('fromUserId', '==', userId))));
   collect(await getDocs(query(collection(db, 'friend_requests'), where('toUserId', '==', userId))));
+
+  // Out of each friend's list (the rules let anyone remove themselves), or they kept a ghost friend.
+  // Best effort: a friend's doc that is gone or unwritable must not block the deletion.
+  const me = await getDoc(doc(db, 'users', userId));
+  const friends: string[] = me.exists() ? (me.data()?.friends ?? []) : [];
+  await Promise.all(friends.map((friendId) =>
+    updateDoc(doc(db, 'users', friendId), { friends: arrayRemove(userId) })
+      .catch((error) => logger.warn('Retrait de la liste d\'un ami impossible', { error, friendId }))));
 
   // Le doc utilisateur en dernier
   refs.push(doc(db, 'users', userId));
