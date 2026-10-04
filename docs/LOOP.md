@@ -109,3 +109,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | #61 | Import CSV Strong / Hevy / export REPS : aperçu, exercices reconnus FR/EN, doublons écartés, stats recalculées ; 12 parcours e2e verts | `972a15e` |
 | 2026-10-04 | #62 | Remplacer un exercice en séance (depuis sa fiche ; séries, superset et place conservés) | `2d37c06` |
 | 2026-10-04 | passe UI/UX nouvel arrivant | Import Strong/Hevy proposé depuis l'historique muscu vide (ancre vers le bouton) ; section Réglages « À propos » → « Tes données » | `079aa73` |
+| 2026-10-04 | #63 (+ fix #61) | Filtrer l'historique muscu par exercice (liste native, triée par fréquence) ; import : anti-doublon immédiat après import ; 13 parcours e2e verts | `5b3cd38` |
