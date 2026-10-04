@@ -36,6 +36,10 @@ interface SettingsState {
 
 const STORAGE_KEY = 'reps_settings';
 
+// OS dark-mode listener for the « Système » theme (one at a time)
+let systemQuery: MediaQueryList | null = null;
+let systemListener: ((e: MediaQueryListEvent) => void) | null = null;
+
 /**
  * Store Zustand pour la gestion des paramètres de l'application
  */
@@ -171,42 +175,18 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     applyTheme: () => {
       const { theme } = get();
       const root = document.documentElement;
+      // matchMedia() returns a new object on each call: the listener must be kept, and removed, on one object.
+      // The old code never found it again — listeners piled up and « Clair » still followed the OS at sunset.
+      if (systemListener) systemQuery?.removeEventListener('change', systemListener);
+      systemListener = null;
 
       if (theme === 'system') {
-        // Utiliser les préférences système
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (prefersDark) {
-          root.classList.add('dark');
-        } else {
-          root.classList.remove('dark');
-        }
-
-        // Écouter les changements de préférences système
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleChange = (e: MediaQueryListEvent) => {
-          if (e.matches) {
-            root.classList.add('dark');
-          } else {
-            root.classList.remove('dark');
-          }
-        };
-
-        // Supprimer l'ancien listener s'il existe
-        interface MediaQueryWithListener extends MediaQueryList {
-          __listener?: (e: MediaQueryListEvent) => void;
-        }
-        const mediaQueryWithListener = mediaQuery as MediaQueryWithListener;
-        if (mediaQueryWithListener.__listener) {
-          mediaQuery.removeEventListener('change', mediaQueryWithListener.__listener);
-        }
-
-        // Ajouter le nouveau listener
-        mediaQuery.addEventListener('change', handleChange);
-        mediaQueryWithListener.__listener = handleChange;
-      } else if (theme === 'dark') {
-        root.classList.add('dark');
+        systemQuery ??= window.matchMedia('(prefers-color-scheme: dark)');
+        root.classList.toggle('dark', systemQuery.matches);
+        systemListener = (e: MediaQueryListEvent) => root.classList.toggle('dark', e.matches);
+        systemQuery.addEventListener('change', systemListener);
       } else {
-        root.classList.remove('dark');
+        root.classList.toggle('dark', theme === 'dark');
       }
     },
   };
