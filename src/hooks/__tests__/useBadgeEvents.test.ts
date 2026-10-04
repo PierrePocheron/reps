@@ -87,7 +87,7 @@ describe('useBadgeEvents Hook', () => {
         expect(mockPlay).toHaveBeenCalledWith('success');
         expect(mockHaptic).toHaveBeenCalled();
         expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({
-            title: "Succès débloqué ! 🏆",
+            title: "Badge débloqué ! 🏆",
             description: "🏆 Test Badge"
         }));
 

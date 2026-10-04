@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ColorPicker } from '@/components/ui/color-picker';
 import { Input } from '@/components/ui/input';
@@ -8,7 +9,7 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { useTheme } from '@/hooks/useTheme';
 import { useSettingsStore, type LanguageSetting } from '@/store/settingsStore';
 import { detectDeviceLanguage } from '@/hooks/useLanguage';
-import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2, Shield, ChevronRight, Target, Download, Upload, Languages, Loader2 } from 'lucide-react';
+import { Moon, Sun, Monitor, Bell, Dumbbell, Shield, ChevronRight, Target, Download, Upload, Languages, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { parseWorkoutsCsv, newSessionsOnly, exerciseResolver, type ImportedSession } from '@/utils/importCsv';
 import { importGymSessions } from '@/firebase/gymSessions';
@@ -183,7 +184,7 @@ function Settings() {
   };
 
   return (
-    <PageLayout title="PARAMÈTRES" variant="secondary">
+    <PageLayout title="RÉGLAGES" variant="secondary">
       <div className="max-w-2xl mx-auto space-y-6">
 
         {/* Thème */}
@@ -299,9 +300,7 @@ function Settings() {
                   <p className="text-sm font-medium">{row.label}</p>
                   <p className="text-xs text-muted-foreground">{row.hint}</p>
                 </div>
-                <Button variant={row.on ? 'default' : 'outline'} className="min-w-[6.5rem] shrink-0" role="switch" aria-checked={row.on} aria-label={row.label} onClick={row.toggle}>
-                  {row.on ? 'Activé' : 'Désactivé'}
-                </Button>
+                <Switch checked={row.on} label={row.label} onCheckedChange={row.toggle} />
               </div>
             ))}
           </CardContent>
@@ -394,23 +393,12 @@ function Settings() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="font-medium">Rappels d'entraînement</p>
-                <p className="text-sm text-muted-foreground">
-                  Reçois un rappel quotidien pour tes séances
-                </p>
+                <p className="text-sm font-medium">Rappels d'entraînement</p>
+                <p className="text-xs text-muted-foreground">Reçois un rappel quotidien pour tes séances</p>
               </div>
-              <Button
-                variant={notificationsEnabled ? 'default' : 'outline'}
-                className="min-w-[6.5rem] shrink-0"
-                role="switch"
-                aria-checked={notificationsEnabled}
-                disabled={togglingNotif}
-                onClick={handleNotificationToggle}
-              >
-                {notificationsEnabled ? 'Activé' : 'Désactivé'}
-              </Button>
+              <Switch checked={notificationsEnabled} label="Rappels d'entraînement" disabled={togglingNotif} onCheckedChange={handleNotificationToggle} />
             </div>
 
             {notificationsEnabled && (
@@ -434,46 +422,20 @@ function Settings() {
             <CardTitle className="text-lg font-bold">Autres</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Vibrate className="h-5 w-5" />
-                <div>
-                  <p className="font-medium">Feedback haptique</p>
-                  <p className="text-sm text-muted-foreground">
-                    Vibrations lors des interactions
-                  </p>
-                </div>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium">Feedback haptique</p>
+                <p className="text-xs text-muted-foreground">Vibrations lors des interactions</p>
               </div>
-              <Button
-                variant={hapticFeedback ? 'default' : 'outline'}
-                className="min-w-[6.5rem] shrink-0"
-                role="switch"
-                aria-checked={hapticFeedback}
-                onClick={() => setHapticFeedback(!hapticFeedback)}
-              >
-                {hapticFeedback ? 'Activé' : 'Désactivé'}
-              </Button>
+              <Switch checked={hapticFeedback} label="Feedback haptique" onCheckedChange={setHapticFeedback} />
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t mt-4">
-              <div className="flex items-center gap-2">
-                <Volume2 className="h-5 w-5" />
-                <div>
-                  <p className="font-medium">Effets sonores</p>
-                  <p className="text-sm text-muted-foreground">
-                    Sons de l'interface
-                  </p>
-                </div>
+            <div className="flex items-center justify-between gap-3 pt-4 border-t mt-4">
+              <div>
+                <p className="text-sm font-medium">Effets sonores</p>
+                <p className="text-xs text-muted-foreground">Sons de l'interface</p>
               </div>
-              <Button
-                variant={soundEnabled ? 'default' : 'outline'}
-                className="min-w-[6.5rem] shrink-0"
-                role="switch"
-                aria-checked={soundEnabled}
-                onClick={() => setSoundEnabled(!soundEnabled)}
-              >
-                {soundEnabled ? 'Activé' : 'Désactivé'}
-              </Button>
+              <Switch checked={soundEnabled} label="Effets sonores" onCheckedChange={setSoundEnabled} />
             </div>
           </CardContent>
         </Card>

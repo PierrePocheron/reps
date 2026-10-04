@@ -78,7 +78,7 @@ export default function Achievements() {
   };
 
   return (
-    <PageLayout title="SUCCÈS" variant="secondary">
+    <PageLayout title="BADGES" variant="secondary">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Global Progress */}
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">

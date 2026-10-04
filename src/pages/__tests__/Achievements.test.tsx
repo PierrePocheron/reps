@@ -42,7 +42,7 @@ describe('Achievements Page', () => {
 
     it('should render page title and progress', () => {
         renderPage();
-        expect(screen.getByRole('heading', { level: 1, name: /succès/i })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { level: 1, name: /badges/i })).toBeInTheDocument();
         // expect(screen.getByText(/Badges débloqués/)).toBeInTheDocument(); // Can be flaky depending on UI
         // Match 0 / 12
         expect(screen.getByRole('heading', { level: 2, name: /\d+\s*\/\s*\d+/ })).toBeInTheDocument();

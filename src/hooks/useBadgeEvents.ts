@@ -53,7 +53,7 @@ export function useBadgeEvents() {
 
                         // 2. Afficher le Toast
                         toast({
-                            title: "Succès débloqué ! 🏆",
+                            title: "Badge débloqué ! 🏆",
                             description: `${eventData.badgeEmoji} ${eventData.badgeName}`,
                             className: "bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-orange-200",
                             duration: 6000, // Un peu plus long pour être sûr d'être vu
