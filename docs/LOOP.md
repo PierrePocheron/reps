@@ -81,3 +81,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | tests E2E | yarn e2e : 7 parcours (+ échauffement, superset et repos, annulation, mensurations, récap) | `a02c532` |
 | 2026-10-04 | #48 | Enregistrer une séance de l'historique comme modèle (séries réalisées, sans échauffement) | `2237c9d` |
 | 2026-10-04 | passe UI/UX historique 360 px | Cartes coupées à droite (Refaire/Partager trop larges, nowrap) → libellé court + min-w-0 ; « 1 série » ; dette lint repérée → #50 | `20084c0` |
+| 2026-10-04 | #49 | Durée de repos retenue par exercice (changée pendant son repos), défaut global sinon | `988a9a8` |
