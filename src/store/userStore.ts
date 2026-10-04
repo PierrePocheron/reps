@@ -38,6 +38,9 @@ interface UserState {
   reset: () => void;
 }
 
+// Auth state listener: replaced, never stacked, if initializeAuth runs again
+let stopAuthListener: (() => void) | null = null;
+
 // Live user document listener: one at a time, stopped on reset (sign-out / deletion), or it hit permission-denied
 let stopUserListener: (() => void) | null = null;
 function listenToUser(uid: string, setUser: (user: User) => void) {
@@ -89,7 +92,8 @@ export const useUserStore = create<UserState>((set, get) => ({
     }, 5000);
 
     // Observer les changements d'authentification
-    onAuthChange(async (firebaseUser: FirebaseUser | null) => {
+    stopAuthListener?.();
+    stopAuthListener = onAuthChange(async (firebaseUser: FirebaseUser | null) => {
       clearTimeout(timeout);
 
       const { setCurrentUser, loadUserProfile } = get();

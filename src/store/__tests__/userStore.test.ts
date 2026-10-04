@@ -97,6 +97,17 @@ describe('userStore', () => {
         });
     });
 
+    describe('initializeAuth', () => {
+        it('replaces its auth listener instead of stacking one per call', async () => {
+            // AppInitializer used to re-run it on every theme change, login and logout: one more listener each time
+            const unsubscribe = vi.fn();
+            (firebase.onAuthChange as any).mockReturnValue(unsubscribe);
+            await useUserStore.getState().initializeAuth();
+            await useUserStore.getState().initializeAuth();
+            expect(unsubscribe).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe('user document listener', () => {
         it('is stopped on reset and never stacked across loads', async () => {
             const unsubscribe = vi.fn();

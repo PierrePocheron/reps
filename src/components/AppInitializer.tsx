@@ -18,26 +18,23 @@ export function AppInitializer() {
   // Souscrire aux événements de badges (Gamification)
   useBadgeEvents();
 
+  // Once per app start. It used to share the theme effect below and re-ran on every sign-in, sign-out and theme
+  // change: another auth listener each time, and the loading flag remounted the login form (typed credentials lost)
   useEffect(() => {
-    // Initialiser l'authentification
     initializeAuth();
+    initializeAdMob(); // mobile
+    initializeSocialLogin(); // mobile Google sign-in
+    loadSettings(); // localStorage
+  }, [initializeAuth, loadSettings]);
 
-    // Initialiser AdMob (Mobile)
-    initializeAdMob();
-
-    // Initialiser SocialLogin (Mobile - Google Auth)
-    initializeSocialLogin();
-
-    // Charger les paramètres depuis localStorage
-    loadSettings();
-
-    // Appliquer le thème (priorité au profil utilisateur si connecté, sinon localStorage)
+  // Theme: the profile's colour when signed in, otherwise the local setting
+  useEffect(() => {
     if (user?.colorTheme) {
       applyThemeColor(user.colorTheme);
     } else {
       applyTheme();
     }
-  }, [initializeAuth, loadSettings, applyTheme, user?.colorTheme]);
+  }, [applyTheme, user?.colorTheme]);
 
   // Souscription aux demandes d'amis
   useEffect(() => {
