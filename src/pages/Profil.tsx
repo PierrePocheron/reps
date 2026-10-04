@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { getUnlockedBadges, getNextBadge } from '@/utils/constants';
 import { formatNumber, plural } from '@/utils/formatters';
-import { Settings, LogOut, Award, Target, Users, Trash2 } from 'lucide-react';
+import { Settings, LogOut, Award, Target, Users, Trash2, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/UserAvatar';
 import type { User } from '@/firebase/types';
@@ -24,7 +24,10 @@ function ProfilEditDialog({ user }: { user: User }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">Modifier</Button>
+        <Button variant="outline" size="sm" aria-label="Modifier le profil" className="max-[359px]:px-2.5">
+          <Pencil className="h-4 w-4 min-[360px]:hidden" aria-hidden />
+          <span className="max-[359px]:sr-only">Modifier</span>
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto">
         <DialogHeader>
@@ -116,8 +119,8 @@ function Profil() {
 
         {/* Profil utilisateur */}
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4 mb-6">
+          <CardContent className="p-6 max-[359px]:p-4">
+            <div className="flex items-center gap-4 max-[359px]:gap-3 mb-6">
               <UserAvatar user={user} size="xl" />
               <div className="flex-1 min-w-0">
                 <h2 className="text-xl font-bold truncate">
@@ -278,7 +281,7 @@ function Profil() {
               <DialogDescription className="space-y-2 pt-1">
                 <span className="block">
                   Cette action est <strong>irréversible</strong>. Toutes tes données seront effacées :
-                  séances, statistiques, badges, amis, templates.
+                  séances, statistiques, badges, amis, modèles.
                 </span>
                 <span className="block">
                   Tape <strong>SUPPRIMER</strong> pour confirmer.
@@ -308,18 +311,18 @@ function Profil() {
                   className="border-destructive/40 focus-visible:ring-destructive"
                 />
               )}
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <Button
                   variant="outline"
                   onClick={() => setShowDeleteDialog(false)}
-                  className="flex-1"
+                  className="flex-auto"
                   disabled={isDeleting}
                 >
                   Annuler
                 </Button>
                 <Button
                   variant="destructive"
-                  className="flex-1"
+                  className="flex-auto"
                   disabled={deleteConfirmText !== 'SUPPRIMER' || (isPasswordAccount && !deletePassword) || isDeleting}
                   onClick={handleDeleteAccount}
                 >

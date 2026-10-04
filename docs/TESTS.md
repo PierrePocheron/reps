@@ -45,7 +45,7 @@ Ce projet utilise des **tests unitaires**, des **tests d'intégration légère**
 | Modifier / supprimer | Charge corrigée (muscu), reps corrigées (renfo), suppression confirmée |
 | Filtrer l'historique | Filtre par exercice ; « Refaire » depuis une carte basse ouvre la séance en haut |
 | Import CSV Strong | Aperçu, import, réimport sans doublon |
-| Petit écran (320 px) | Rien ne déborde sur les pages principales ni en séance (repos ouvert) |
+| Petit écran (320 px) | Rien ne déborde sur les pages principales, dans le dialogue de suppression du compte, ni en séance (repos ouvert) |
 
 Il échoue si une page lève une erreur JS ou se fige (boucle de rendu), avec un garde-fou global de 6 minutes.
 Les parcours ajoutent des séances à la démo : relancer `yarn dev:demo` repart de données propres.

@@ -392,6 +392,12 @@ const steps = [
       await page.waitForTimeout(800);
       assert.deepEqual(await overflowing(), [], `débordement sur ${path}`);
     }
+    // dialogs: a nowrap button used to widen the DialogContent grid past the screen edge
+    await page.goto(`${BASE}/profil`);
+    await page.getByRole('button', { name: 'Supprimer mon compte' }).click();
+    const dialogOverflow = await page.getByRole('dialog').evaluate((d) => [...d.querySelectorAll('*')].some((e) => e.getBoundingClientRect().right > innerWidth + 1));
+    assert.equal(dialogOverflow, false, 'débordement dans le dialogue de suppression du compte');
+    await page.keyboard.press('Escape');
     // séance muscu, repos ouvert : lignes de série dans leur carte, bas de liste encore atteignable
     await page.goto(`${BASE}/history`);
     await page.getByRole('tab', { name: /Muscu/ }).click();
