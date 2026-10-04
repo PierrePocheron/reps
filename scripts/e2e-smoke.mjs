@@ -266,6 +266,16 @@ const steps = [
     assert.ok(some > 0 && some < all, `filtre : ${some} séance(s) sur ${all}`);
     await filter.selectOption('');
     assert.equal(await cards.count(), all, 'filtre effacé');
+    // « Refaire » sur une carte basse : la séance s'ouvre en haut, pas au milieu
+    const low = page.getByRole('button', { name: 'Refaire cette séance' }).nth(3);
+    await low.scrollIntoViewIfNeeded();
+    await low.click();
+    await page.waitForURL(`${BASE}/gym`);
+    for (let i = 0; i < 20 && await page.evaluate(() => scrollY) > 0; i++) await page.waitForTimeout(100);
+    assert.equal(await page.evaluate(() => Math.round(scrollY)), 0, 'séance ouverte en haut de page');
+    await page.getByRole('button', { name: 'Annuler la séance' }).first().click();
+    await page.locator('[aria-labelledby=cancel-session-title]').getByRole('button', { name: 'Annuler la séance' }).click();
+    await page.waitForURL(`${BASE}/`);
   }],
 
   ['importer un CSV Strong (aperçu, import, pas de doublon)', async () => {

@@ -11,7 +11,7 @@ interface LayoutProps {
 /**
  * Layout principal de l'application avec gestion du mode offline
  */
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { lazy, Suspense, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
@@ -27,6 +27,13 @@ export function Layout({ children }: LayoutProps) {
   const { bannerHeight, reset } = useAdStore();
   const location = useLocation();
   const navigate = useNavigate();
+  const navigationType = useNavigationType();
+
+  // Nouvelle page = en haut (sinon « Refaire » sur une carte basse de l'historique ouvrait la séance au milieu) ;
+  // pas au retour arrière, pour ne pas gêner une éventuelle restauration de position
+  useEffect(() => {
+    if (navigationType !== 'POP') window.scrollTo(0, 0);
+  }, [location.pathname, navigationType]);
 
   // Widget d'écran d'accueil (#36) : un tap ouvre l'appli sur l'accueil
   useEffect(() => {
