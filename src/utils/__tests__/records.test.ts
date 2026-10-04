@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { estimate1RM, bestE1RMByExercise, exerciseHistory, isWorkSet, markRecords, isTimed } from '../records';
+import { estimate1RM, bestE1RMByExercise, bestSecondsByExercise, exerciseHistory, isWorkSet, markRecords, isTimed } from '../records';
 import { calculateTotalVolume } from '@/firebase/gymSessions';
 import type { GymSession } from '@/firebase/types';
 
@@ -78,5 +78,16 @@ describe('exerciseHistory en durée (#55)', () => {
     const s = { date: { toDate: () => new Date(2026, 9, 1) }, exercises: [{ exerciseId: 'plank', name: 'Gainage', emoji: '🧱', timed: true,
       sets: [{ weight: 10, reps: 45, completed: true }, { weight: 10, reps: 70, completed: true }] }] } as unknown as GymSession;
     expect(exerciseHistory([s], 'plank')).toEqual([{ date: new Date(2026, 9, 1), e1rm: 0, bestWeight: 0, volume: 0, bestSeconds: 70 }]);
+  });
+});
+
+describe('record de durée (#59)', () => {
+  const plank = (secs: number[]) => ({ exercises: [{ exerciseId: 'plank', name: 'Gainage', emoji: '🧱', timed: true,
+    sets: secs.map((reps) => ({ weight: 0, reps, completed: true })) }] }) as unknown as GymSession;
+
+  it('meilleure durée des séances précédentes ; trophée quand on la dépasse', () => {
+    expect(bestSecondsByExercise([plank([45, 60]), plank([50])])).toEqual({ plank: 60 });
+    const [ex] = markRecords(plank([55, 65, 65, 80]).exercises, [plank([60])]);
+    expect(ex!.sets.map((s) => s.isRecord)).toEqual([false, true, false, true]);
   });
 });

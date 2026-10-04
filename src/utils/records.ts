@@ -27,6 +27,18 @@ export function bestE1RMByExercise(sessions: GymSession[]): Record<string, numbe
   return best;
 }
 
+/** Meilleure durée (s) par exercice en durée, sur les séries validées (#59). */
+export function bestSecondsByExercise(sessions: GymSession[]): Record<string, number> {
+  const best: Record<string, number> = {};
+  for (const session of sessions) {
+    for (const ex of session.exercises) {
+      if (!isTimed(ex)) continue;
+      for (const set of ex.sets) if (isWorkSet(set)) best[ex.exerciseId] = Math.max(best[ex.exerciseId] ?? 0, set.actualReps ?? set.reps);
+    }
+  }
+  return best;
+}
+
 export interface ExercisePoint {
   date: Date;
   e1rm: number;        // meilleur 1RM estimé de la séance
@@ -62,15 +74,16 @@ export function exerciseHistory(sessions: GymSession[], exerciseId: string): Exe
  * le meilleur 1RM estimé des séances précédentes (puis des séries d'avant dans la séance) ; pas d'historique = pas de record.
  */
 export function markRecords(exercises: GymSessionExercise[], older: GymSession[]): GymSessionExercise[] {
-  const best = bestE1RMByExercise(older);
+  const best = bestE1RMByExercise(older), bestSecs = bestSecondsByExercise(older);
   return exercises.map((ex) => {
-    let top = best[ex.exerciseId];
+    const timed = isTimed(ex); // en durée : record = meilleure durée (#59)
+    let top = timed ? bestSecs[ex.exerciseId] : best[ex.exerciseId];
     return {
       ...ex,
       sets: ex.sets.map((s) => {
-        const e = estimate1RM(s.actualWeight ?? s.weight, s.actualReps ?? s.reps);
-        const isRecord = !isTimed(ex) && isWorkSet(s) && top !== undefined && e > top;
-        if (isRecord) top = e;
+        const score = timed ? s.actualReps ?? s.reps : estimate1RM(s.actualWeight ?? s.weight, s.actualReps ?? s.reps);
+        const isRecord = isWorkSet(s) && top !== undefined && score > top;
+        if (isRecord) top = score;
         return { ...s, isRecord };
       }),
     };

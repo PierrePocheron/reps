@@ -121,6 +121,13 @@ const steps = [
     // exercice en durée (#55) : l'unité « reps » bascule en secondes pour tout l'exercice
     await cards.nth(0).getByRole('button', { name: /^Unité : répétitions/ }).first().click();
     await cards.nth(0).getByRole('spinbutton', { name: /^Durée en secondes, série/ }).first().waitFor();
+    // chrono (#59) : l'arrêter remplit et valide la prochaine série
+    const validated = () => cards.nth(0).getByRole('button', { name: /validée$/ }).count();
+    const validatedBefore = await validated();
+    await cards.nth(0).getByRole('button', { name: /^Lancer le chrono/ }).click();
+    await page.waitForTimeout(1200);
+    await cards.nth(0).getByRole('button', { name: /^Arrêter le chrono/ }).click();
+    assert.equal(await validated(), validatedBefore + 1, 'le chrono valide la série');
     // annuler : rien n'est enregistré, retour à l'accueil
     await page.getByRole('button', { name: 'Annuler la séance' }).first().click();
     await page.getByRole('dialog').or(page.locator('[aria-labelledby=cancel-session-title]')).getByRole('button', { name: 'Annuler la séance' }).click();

@@ -27,7 +27,7 @@ import {
   type LibraryExercise,
 } from '@/utils/exerciseLibrary';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
-import { estimate1RM, bestE1RMByExercise, exerciseHistory, isTimed } from '@/utils/records';
+import { estimate1RM, bestE1RMByExercise, bestSecondsByExercise, exerciseHistory, isTimed } from '@/utils/records';
 import {
   Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
   Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2, Trophy,
@@ -124,6 +124,7 @@ function GymSession() {
 
   // Records de référence (meilleur 1RM estimé par exercice) — ref : lecture synchrone au tap
   const bestsRef = useRef<Record<string, number>>({});
+  const bestSecsRef = useRef<Record<string, number>>({}); // meilleure durée, exercices en durée (#59)
   const [gymHistory, setGymHistory] = useState<GymSessionData[]>([]);
   // Récap affiché après la fin de séance (#54) ; posé avant endSession pour devancer le retour à l'accueil
   const [showBackdate, setShowBackdate] = useState(false);
@@ -135,6 +136,7 @@ function GymSession() {
     if (!uid || phase === 'idle') return;
     getUserGymSessions(uid, 200).then((sessions) => {
       bestsRef.current = bestE1RMByExercise(sessions);
+      bestSecsRef.current = bestSecondsByExercise(sessions);
       setGymHistory(sessions);
       const defaults: Record<string, { reps: number; weight: number }> = {};
       // Parcourir les sessions du plus récent au plus ancien
@@ -226,19 +228,23 @@ function GymSession() {
     completeSetAt(exerciseId, setIndex, reps, weight);
     // Comme Strong : repos à chaque série… sauf au milieu d'un tour de superset
     if (autoRest && completedSets + 1 < totalSets && restAfterSet(useGymSessionStore.getState().exercises, exerciseId)) startRestTimer(exerciseId);
-    const best = bestsRef.current[exerciseId];
+    const exercise = exercises.find((ex) => ex.exerciseId === exerciseId);
+    const timed = !!exercise && isTimed(exercise); // en durée : record = meilleure durée (#59)
+    const bests = timed ? bestSecsRef : bestsRef;
+    const best = bests.current[exerciseId];
     const e1rm = estimate1RM(weight, reps);
-    const warmup = exercises.find((ex) => ex.exerciseId === exerciseId)?.sets[setIndex]?.type === 'warmup';
+    const score = timed ? reps : e1rm;
+    const warmup = exercise?.sets[setIndex]?.type === 'warmup';
     // Pas d'historique sur l'exercice = pas de « record » (évite le faux positif de la 1re séance) ; jamais sur un échauffement
-    if (warmup || best === undefined || e1rm <= best) return;
-    bestsRef.current[exerciseId] = e1rm;
+    if (warmup || best === undefined || score <= best) return;
+    bests.current[exerciseId] = score;
     updateSet(exerciseId, setIndex, { isRecord: true });
     haptics.notification();
     confetti({ particleCount: 50, spread: 55, origin: { y: 0.7 } });
     const name = exercises.find((ex) => ex.exerciseId === exerciseId)?.name ?? 'Exercice';
     toast({
       title: 'Nouveau record ! 🏆',
-      description: `${name} : ${weight.toLocaleString('fr-FR')} kg × ${reps} — 1RM estimé ${Math.round(e1rm)} kg`,
+      description: timed ? `${name} : ${reps} s, ta meilleure durée` : `${name} : ${weight.toLocaleString('fr-FR')} kg × ${reps} — 1RM estimé ${Math.round(e1rm)} kg`,
     });
   };
 
@@ -686,6 +692,8 @@ function SetExecuteRow({
   onToggleTimed: () => void;
 }) {
   const [reps, setReps] = useState(String(set.actualReps ?? set.reps));
+  // Validée ailleurs (chrono d'un exercice en durée) : afficher la valeur réalisée
+  useEffect(() => { if (set.completed) setReps(String(set.actualReps ?? set.reps)); }, [set.completed, set.actualReps, set.reps]);
   const [weight, setWeight] = useState(String(set.actualWeight ?? set.weight));
   const { play } = useSound();
   const haptics = useHaptic();
@@ -802,6 +810,27 @@ function ExecuteExerciseCard({
 }) {
   const completedCount = exercise.sets.filter((s) => s.completed).length;
   const [showPlates, setShowPlates] = useState(false);
+  // Chrono d'un exercice en durée (#59) : mesure la prochaine série, l'arrêter la remplit et la valide
+  const [chronoStart, setChronoStart] = useState<number | null>(null);
+  const [now, setNow] = useState(Date.now());
+  const chronoHaptics = useHaptic();
+  const { play: chronoPlay } = useSound();
+  useEffect(() => {
+    if (chronoStart === null) return;
+    const id = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(id);
+  }, [chronoStart]);
+  const pendingIndex = exercise.sets.findIndex((s) => !s.completed);
+  const elapsed = chronoStart === null ? 0 : Math.max(0, Math.floor((now - chronoStart) / 1000));
+  const toggleChrono = () => {
+    if (chronoStart === null) { setNow(Date.now()); setChronoStart(Date.now()); return; }
+    const set = exercise.sets[pendingIndex];
+    setChronoStart(null);
+    if (!set) return;
+    chronoHaptics.impact();
+    chronoPlay('success');
+    onCompleteSet(exercise.exerciseId, pendingIndex, Math.max(1, Math.round((Date.now() - chronoStart) / 1000)), set.actualWeight ?? set.weight);
+  };
   const nextSet = exercise.sets.find((s) => !s.completed) ?? exercise.sets[exercise.sets.length - 1];
   const nextWeight = nextSet ? (nextSet.actualWeight ?? nextSet.weight) : 0;
   // Échauffement proposé avant la première série, s'il n'y en a pas déjà (pas pour un exercice en durée)
@@ -919,6 +948,19 @@ function ExecuteExerciseCard({
             >
               <Plus className="h-3.5 w-3.5" />
               Échauffement ({warmups.length})
+            </button>
+          )}
+          {isTimed(exercise) && pendingIndex >= 0 && (
+            <button
+              type="button"
+              onClick={toggleChrono}
+              aria-pressed={chronoStart !== null}
+              aria-label={chronoStart === null ? `Lancer le chrono de la série ${pendingIndex + 1}` : `Arrêter le chrono et valider la série ${pendingIndex + 1}`}
+              className={cn('flex-1 min-h-11 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-medium tabular-nums transition-all',
+                chronoStart === null ? 'border-dashed border-primary/40 text-primary hover:bg-primary/5' : 'border-primary bg-primary/10 text-primary')}
+            >
+              <TimerIcon className="h-3.5 w-3.5" aria-hidden />
+              {chronoStart === null ? 'Chrono' : `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, '0')} · Valider`}
             </button>
           )}
         </div>
