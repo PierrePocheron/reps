@@ -47,6 +47,10 @@ const steps = [
       await page.getByRole('link', { name: label }).or(page.getByRole('button', { name: label })).first().click();
       await page.getByText(heading, { exact: false }).first().waitFor({ timeout: 10_000 });
     }
+    // bouton central de la barre : le sélecteur de séance doit répondre (il était inerte, rendu sous un conteneur sans pointeur)
+    await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('button', { name: 'Nouvelle séance' }).click();
+    await page.getByRole('button', { name: /Partir d'un modèle/ }).click();
+    await page.waitForURL(`${BASE}/templates`);
     await assertAlive('navigation');
   }],
 

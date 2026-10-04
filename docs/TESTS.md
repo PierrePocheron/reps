@@ -33,7 +33,7 @@ Ce projet utilise des **tests unitaires**, des **tests d'intégration légère**
 
 | Parcours | Ce qui est vérifié |
 |---|---|
-| Connexion, navigation | Chaque onglet de la barre flottante ouvre sa page |
+| Connexion, navigation | Chaque onglet de la barre flottante ouvre sa page ; le bouton central ouvre un sélecteur de séance qui répond |
 | Séance muscu complète | Refaire, titre et note, rappel « Précédent », repos auto, barre fixée, écran de récap, carte titrée dans l'historique |
 | Séance renfo | Refaire, compter, récap avec comparaison |
 | Échauffement, superset, repos | Échauffement en tête, échanger deux exercices, pas de repos au milieu d'un tour, ±15 s, durée retenue, exercice en secondes + chrono, remplacer un exercice, annulation |

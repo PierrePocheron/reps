@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Dumbbell, Zap, X, LayoutTemplate } from 'lucide-react';
 import { useHaptic } from '@/hooks/useHaptic';
@@ -28,22 +29,24 @@ export function SessionTypePicker({ open, onClose }: SessionTypePickerProps) {
     navigate('/gym');
   };
 
-  return (
+  // Portail vers <body> : la barre flottante est dans un conteneur sans pointeur (pointer-events: none) qui
+  // rendait le sélecteur inerte ; même niveau que les autres fenêtres (z-[70]), au-dessus de la barre
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 z-40 animate-in fade-in"
+        className="fixed inset-0 bg-black/50 z-[70] animate-in fade-in"
         onClick={onClose}
       />
 
       {/* Bottom sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-2xl shadow-xl animate-in slide-in-from-bottom-4 duration-300">
+      <div className="fixed bottom-0 left-0 right-0 z-[70] bg-background rounded-t-2xl shadow-xl animate-in slide-in-from-bottom-4 duration-300">
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
         </div>
 
-        <div className="px-5 pt-2 pb-8">
+        <div className="px-5 pt-2 pb-[calc(2rem+env(safe-area-inset-bottom))]">
           {/* Header */}
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-lg font-bold">Choisir le type de séance</h2>
@@ -106,5 +109,5 @@ export function SessionTypePicker({ open, onClose }: SessionTypePickerProps) {
         </div>
       </div>
     </>
-  );
+  , document.body);
 }
