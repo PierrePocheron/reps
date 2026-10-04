@@ -3,10 +3,16 @@
  * Prérequis : `yarn dev:demo` lancé. Usage : `yarn a11y` (code de sortie ≠ 0 s'il reste des échecs).
  */
 import { chromium } from 'playwright';
+import { readFileSync } from 'node:fs';
 
 const DEMO = { email: 'demo@reps.test', password: 'reps-demo-2026' }; // compte fictif des émulateurs
 // Garde-fou : jamais de script bloqué indéfiniment (boucle d'amélioration, CI)
 setTimeout(() => { console.error('✗ délai dépassé (4 min)'); process.exit(2); }, 240_000).unref();
+// A11Y_THEME=blue yarn a11y : audits another accent colour (default: the demo account's violet; new accounts get blue)
+const THEME = process.env.A11Y_THEME;
+const themeHsl = THEME && readFileSync(new URL('../src/utils/theme-colors.ts', import.meta.url), 'utf8')
+  .match(new RegExp(`${THEME}: \\{[^}]*?hsl: '([^']+)'`))?.[1];
+if (THEME && !themeHsl) { console.error(`thème inconnu : ${THEME}`); process.exit(2); }
 const b = await chromium.launch();
 let failures = 0;
 for (const scheme of ['light', 'dark']) {
@@ -36,9 +42,13 @@ const audit = () => p.evaluate(() => {
   }
   return [...out.keys()].slice(0, 25);
 });
+const run = async () => {
+  if (themeHsl) await p.evaluate((h) => { const st = document.documentElement.style; st.setProperty('--primary', h); st.setProperty('--theme-color', h); }, themeHsl);
+  return audit();
+};
 for (const path of ['/', '/statistics', '/history', '/profil', '/settings', '/challenges', '/leaderboard']) {
   await p.goto('http://localhost:5199' + path); await p.waitForTimeout(2200);
-  const r = await audit(); failures += r.length; if (r.length) console.log(`\n== ${scheme} ${path}\n` + r.join('\n'));
+  const r = await run(); failures += r.length; if (r.length) console.log(`\n== ${scheme} ${path}\n` + r.join('\n'));
 }
 await p.goto('http://localhost:5199/history'); await p.getByRole('button', { name: 'Refaire cette séance' }).first().click(); await p.waitForURL(/gym$/);
 p.setDefaultTimeout(10_000); // une action introuvable échoue vite au lieu d'épuiser le délai global
@@ -48,10 +58,10 @@ const typeBtns = card.getByRole('button', { name: /^Série \d+ : / });
 while (await typeBtns.count() < 4) await card.getByRole('button', { name: /^Série \d+$/ }).click();
 for (let i = 1; i <= 3; i++) for (let k = 0; k < i; k++) await typeBtns.nth(i).click();
 await card.getByRole('button', { name: /^Valider la série 1/ }).click(); // minuteur de repos (±15 s, préréglages)
-await p.waitForTimeout(500); const g = await audit(); failures += g.length; if (g.length) console.log(`\n== ${scheme} /gym\n` + g.join('\n'));
+await p.waitForTimeout(500); const g = await run(); failures += g.length; if (g.length) console.log(`\n== ${scheme} /gym\n` + g.join('\n'));
 await p.goto('http://localhost:5199/settings'); await p.evaluate(() => localStorage.removeItem('reps_gym_session'));
 await ctx.close();
 }
 await b.close();
-console.log(failures ? `\n✗ ${failures} texte(s) sous le contraste AA` : '✓ contraste AA respecté (clair et sombre)');
+console.log(failures ? `\n✗ ${failures} texte(s) sous le contraste AA${THEME ? ` (thème ${THEME})` : ''}` : `✓ contraste AA respecté (clair et sombre${THEME ? `, thème ${THEME}` : ''})`);
 process.exit(failures ? 1 : 0);
