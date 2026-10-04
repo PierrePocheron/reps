@@ -57,6 +57,12 @@ const steps = [
     const note = `e2e ${Date.now()}`;
     await page.getByRole('textbox', { name: /^Note pour/ }).first().fill(note);
     await page.getByRole('textbox', { name: 'Titre de la séance' }).fill('Haut du corps e2e'); // titre (#64)
+    // valeur précédente (#65) : rappel dès qu'on s'écarte de la dernière fois, puis valeur remise
+    const kg = page.getByRole('spinbutton', { name: /^Charge en kg, série 1/ }).first();
+    const original = await kg.inputValue();
+    await kg.fill(String(Number(original) + 1));
+    await page.getByText(/^Précédent : /).first().waitFor();
+    await kg.fill(original);
     await page.getByRole('button', { name: 'Valider la série 1' }).first().click();
     await page.getByRole('switch', { name: /Repos auto/ }).waitFor(); // le repos s'est lancé tout seul
     // la barre « minuteur + Terminer » doit rester fixée à l'écran (un parent transformé la renvoyait en bas du contenu)

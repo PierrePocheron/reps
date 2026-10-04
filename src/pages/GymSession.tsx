@@ -497,6 +497,7 @@ function GymSession() {
             onAddWarmup={(sets) => prependWarmup(exercise.exerciseId, sets)}
             suggestion={suggestLoad && !isTimed(exercise) ? suggestNextWeight(gymHistory, exercise.exerciseId) : null}
             onToggleTimed={() => toggleTimed(exercise.exerciseId)}
+            previousSets={lastWorkSets(gymHistory, exercise.exerciseId)}
             onApplySuggestion={(s) => exercise.sets.forEach((set, i) => {
               if (!set.completed && set.type !== 'warmup' && (set.actualWeight ?? set.weight) < s.to) updateSet(exercise.exerciseId, i, { weight: s.to, actualWeight: s.to });
             })}
@@ -706,6 +707,7 @@ function SetExecuteRow({
   number,
   timed,
   onToggleTimed,
+  previous,
 }: {
   set: PlannedSet;
   setIndex: number;
@@ -717,6 +719,7 @@ function SetExecuteRow({
   number: number; // numéro hors échauffements
   timed: boolean; // « reps » = secondes (#55)
   onToggleTimed: () => void;
+  previous?: { reps: number; weight: number }; // série équivalente de la dernière séance (#65)
 }) {
   const [reps, setReps] = useState(String(set.actualReps ?? set.reps));
   // Validée ailleurs (chrono d'un exercice en durée) : afficher la valeur réalisée
@@ -725,7 +728,10 @@ function SetExecuteRow({
   const { play } = useSound();
   const haptics = useHaptic();
 
+  // Colonne « Précédent » de Hevy / Strong, sans colonne de plus : rappel seulement quand on s'écarte de la dernière fois
+  const changed = previous && (Number(reps) !== previous.reps || (!timed && Number(weight) !== previous.weight));
   return (
+    <div>
     <div className={cn(
       'flex items-center gap-2 px-3 py-2 rounded-xl transition-colors',
       set.completed ? 'bg-green-500/10' : 'bg-muted/30'
@@ -799,6 +805,12 @@ function SetExecuteRow({
         </button>
       )}
     </div>
+    {changed && (
+      <p className="px-3 pt-0.5 text-[11px] text-muted-foreground tabular-nums">
+        Précédent : {timed ? `${previous.reps} s` : `${previous.reps} × ${previous.weight.toLocaleString('fr-FR')} kg`}
+      </p>
+    )}
+    </div>
   );
 }
 
@@ -818,6 +830,7 @@ function ExecuteExerciseCard({
   onAddWarmup,
   supersetLabel,
   onToggleTimed,
+  previousSets,
 }: {
   exercise: GymSessionExercise;
   onCompleteSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
@@ -834,6 +847,7 @@ function ExecuteExerciseCard({
   onAddWarmup: (sets: { weight: number; reps: number }[]) => void;
   supersetLabel?: string;
   onToggleTimed: () => void;
+  previousSets: { reps: number; weight: number }[]; // séries de travail de la dernière séance (#65)
 }) {
   const completedCount = exercise.sets.filter((s) => s.completed).length;
   const [showPlates, setShowPlates] = useState(false);
@@ -956,6 +970,7 @@ function ExecuteExerciseCard({
             number={exercise.sets.slice(0, i + 1).filter((st) => st.type !== 'warmup').length}
             timed={isTimed(exercise)}
             onToggleTimed={onToggleTimed}
+            previous={set.type === 'warmup' ? undefined : previousSets[exercise.sets.slice(0, i).filter((st) => st.type !== 'warmup').length]}
           />
         ))}
 
