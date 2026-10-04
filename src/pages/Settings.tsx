@@ -50,6 +50,7 @@ function Settings() {
   const csvInput = useRef<HTMLInputElement>(null);
   const [importPreview, setImportPreview] = useState<{ sessions: ImportedSession[]; skipped: number; exercises: number; known: number } | null>(null);
   const [importing, setImporting] = useState(false);
+  const importedDates = useRef<Date[]>([]); // déjà importées, avant même le rechargement de l'historique : pas de doublon
   const refreshStats = useUserStore((st) => st.refreshStats);
   const onPickCsv = async (file: File) => {
     try {
@@ -60,7 +61,7 @@ function Settings() {
         toast({ title: 'Aucune séance trouvée', description: "Ce fichier n'est pas un export Strong ou Hevy.", variant: 'destructive' });
         return;
       }
-      const fresh = newSessionsOnly(all, gymSessions.map((s) => s.date.toDate()));
+      const fresh = newSessionsOnly(all, [...gymSessions.map((s) => s.date.toDate()), ...importedDates.current]);
       const ids = new Set(fresh.flatMap((s) => s.exercises.map((e) => e.exerciseId)));
       setImportPreview({ sessions: fresh, skipped: all.length - fresh.length, exercises: ids.size, known: [...ids].filter((id) => !id.startsWith('import_')).length });
     } catch (err) {
@@ -77,6 +78,7 @@ function Settings() {
     setImporting(true);
     try {
       await importGymSessions(user.uid, importPreview.sessions);
+      importedDates.current.push(...importPreview.sessions.map((s) => s.date));
       toast({ title: `${importPreview.sessions.length} séance${importPreview.sessions.length > 1 ? 's' : ''} importée${importPreview.sessions.length > 1 ? 's' : ''}` });
       setImportPreview(null);
       refetchHistory();
