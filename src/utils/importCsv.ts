@@ -63,12 +63,14 @@ const typeOf = (s: string): SetType | undefined => {
 
 /**
  * Séances d'un export Strong (et de l'export REPS, même format) ou Hevy, du plus ancien au plus récent.
- * Lignes « Renforcement » de l'export REPS ignorées (pas des séances muscu). Charges en kg (livres Hevy converties).
+ * Lignes « Renforcement » de l'export REPS ignorées (pas des séances muscu). Charges en kg (livres converties).
  */
 export function parseWorkoutsCsv(text: string, resolve: ResolveExercise): ImportedSession[] {
   const [header, ...rows] = parseCsv(text);
   if (!header) return [];
-  const col = (name: string) => header.findIndex((h) => h.trim().toLowerCase() === name.toLowerCase());
+  const head = header.map((h) => h.trim().toLowerCase());
+  // current Strong exports put the unit in the header: « Weight (kg) », « Duration (sec) »
+  const col = (name: string) => head.findIndex((h) => h === name.toLowerCase() || h.startsWith(`${name.toLowerCase()} (`));
   const hevy = col('exercise_title') >= 0;
   const c = hevy
     ? { start: col('start_time'), end: col('end_time'), workout: col('title'), exercise: col('exercise_title'), type: col('set_type'),
@@ -76,7 +78,7 @@ export function parseWorkoutsCsv(text: string, resolve: ResolveExercise): Import
     : { start: col('Date'), end: -1, workout: col('Workout Name'), exercise: col('Exercise Name'), type: col('Set Order'),
         weight: col('Weight'), reps: col('Reps'), seconds: col('Seconds'), note: col('Notes'), rpe: col('RPE'), duration: col('Duration'), workoutNote: col('Workout Notes') };
   if (c.start < 0 || c.exercise < 0) return [];
-  const lbs = hevy && col('weight_kg') < 0; // Hevy in imperial units exports weight_lbs
+  const lbs = /lb/.test(head[c.weight] ?? ''); // Hevy « weight_lbs », Strong « Weight (lbs) »
   const kg = (w: number) => (lbs ? Math.round(w * 0.45359237 * 10) / 10 : w);
 
   const sessions = new Map<string, ImportedSession>();

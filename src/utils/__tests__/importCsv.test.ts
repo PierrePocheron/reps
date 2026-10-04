@@ -31,6 +31,24 @@ describe('parseWorkoutsCsv', () => {
     expect(s!.exercises[1]).toMatchObject({ exerciseId: 'import_gainage', timed: true, sets: [{ reps: 60, weight: 0 }] });
   });
 
+  it('export Strong actuel : unités dans les en-têtes (« Weight (kg) », « Duration (sec) »)', () => {
+    const csv = [
+      '"Workout #";"Date";"Workout Name";"Duration (sec)";"Exercise Name";"Set Order";"Weight (kg)";"Reps";"RPE";"Distance (meters)";"Seconds";"Notes";"Workout Notes"',
+      '"1";"2026-10-02 18:00:00";"Push";"3600";"Barbell Bench Press";"1";"82.5";"8";"";"";"";"";""',
+      '"1";"2026-10-02 18:00:00";"Push";"3600";"Barbell Bench Press";"2";"82.5";"7";"9";"";"";"";""',
+    ].join('\n');
+    const [s] = parseWorkoutsCsv(csv, resolve);
+    expect(s).toMatchObject({ duration: 3600, exercises: [{ exerciseId: 'lib_0025', sets: [{ weight: 82.5, reps: 8 }, { weight: 82.5, reps: 7, rpe: 9 }] }] });
+  });
+
+  it('export Strong en livres : « Weight (lbs) » converti en kg', () => {
+    const csv = [
+      'Workout #,Date,Workout Name,Duration (sec),Exercise Name,Set Order,Weight (lbs),Reps,RPE,Distance (miles),Seconds,Notes,Workout Notes',
+      '1,2026-10-02 18:00:00,Push,3600,Barbell Bench Press,1,225,5,,,,,',
+    ].join('\n');
+    expect(parseWorkoutsCsv(csv, resolve)[0]!.exercises[0]!.sets[0]!.weight).toBe(102.1);
+  });
+
   it('export Hevy : début / fin, types, poids en kg', () => {
     const csv = [
       '"title","start_time","end_time","description","exercise_title","superset_id","exercise_notes","set_index","set_type","weight_kg","reps","distance_km","duration_seconds","rpe"',
