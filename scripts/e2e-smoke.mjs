@@ -124,12 +124,20 @@ const steps = [
 
   ['séance renfo : refaire, compter, terminer', async () => {
     await page.getByRole('tab', { name: /Renfo/ }).click();
-    await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
-    await page.waitForURL(`${BASE}/session`);
-    await page.getByText('+10', { exact: true }).first().click();
-    await page.getByRole('button', { name: /Terminer la séance/ }).click();
-    await page.getByRole('heading', { name: 'Séance terminée !' }).waitFor(); // récap renfo (#54)
-    await page.getByText(/de reps|reps que/).first().waitFor(); // comparaison avec la séance précédente
+    // slow network + ending right away: the recap still compares (previous session was loaded asynchronously)
+    const cdp = await ctx.newCDPSession(page);
+    await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 1500, downloadThroughput: -1, uploadThroughput: -1 });
+    try {
+      await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+      await page.waitForURL(`${BASE}/session`);
+      await page.getByText('+10', { exact: true }).first().click();
+      await page.getByRole('button', { name: /Terminer la séance/ }).click();
+      await page.getByRole('heading', { name: 'Séance terminée !' }).waitFor(); // récap renfo (#54)
+      await page.getByText(/de reps|reps que/).first().waitFor(); // comparaison avec la séance précédente
+    } finally {
+      await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+      await cdp.detach();
+    }
     await page.getByRole('button', { name: 'Terminer', exact: true }).click();
     await page.waitForURL(`${BASE}/`);
     await assertAlive('fin de séance renfo');

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -54,14 +54,14 @@ function Session() {
   const { user } = useUserStore();
   // Récap de fin de séance (#54) et reps de la séance renfo précédente, chargées dès l'ouverture
   const [summary, setSummary] = useState<{ stats: SummaryStat[]; comparison: string | null; card: SessionCard } | null>(null);
-  const [previousReps, setPreviousReps] = useState<number | null>(null);
+  const previousReps = useRef<Promise<number | null>>(Promise.resolve(null));
   const backdate = useSessionStore((st) => st.backdate);
   const setBackdate = useSessionStore((st) => st.setBackdate);
   const [showBackdate, setShowBackdate] = useState(false);
   const uid = user?.uid;
   useEffect(() => {
     if (!uid) return;
-    getUserSessions(uid, 1).then(([last]) => setPreviousReps(last?.totalReps ?? null)).catch(() => { /* comparaison facultative */ });
+    previousReps.current = getUserSessions(uid, 1).then(([last]) => last?.totalReps ?? null).catch(() => null); // comparison is optional
   }, [uid]);
   const { play } = useSound();
   const haptics = useHaptic();
@@ -91,11 +91,13 @@ function Session() {
     }
 
     setIsEnding(true);
+    // Ended right after opening: wait for the previous session (capped, never blocks offline) so the recap compares
+    const previous = await Promise.race([previousReps.current, new Promise<null>((r) => setTimeout(() => r(null), 3000))]);
     // Récap et carte de partage figés avant que endSession ne vide le store
     const duration = backdate ? backdate.duration : startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
     setSummary({
       card: renfoCard({ date: new Date(backdate?.at ?? Date.now()), duration, exercises, totalReps, totalCalories: currentCalories }),
-      comparison: comparisonText(deltaPct(totalReps, previousReps), 'reps'),
+      comparison: comparisonText(deltaPct(totalReps, previous), 'reps'),
       stats: [
         { label: 'Durée', value: formatDurationLong(duration) },
         { label: 'Reps', value: totalReps.toLocaleString('fr-FR') },
