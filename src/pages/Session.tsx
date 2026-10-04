@@ -109,7 +109,7 @@ function Session() {
       await endSession();
       play('complete');
       haptics.notification();
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, disableForReducedMotion: true });
     } catch (error) {
       setSummary(null);
       toast({

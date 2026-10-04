@@ -27,7 +27,8 @@ for (const pass of ['light', 'dark', 'large']) {
 const scheme = pass === 'dark' ? 'dark' : 'light';
 // Android « Très grande » police: the WebView scales the root font size (16 → 20.8 px, measured on API 33), so rem layouts grow too
 const large = pass === 'large';
-const ctx = await b.newContext({ viewport: large ? { width: 360, height: 780 } : { width: 390, height: 844 }, colorScheme: scheme, isMobile: true, hasTouch: true });
+// same pass with « Supprimer les animations »: accessibility settings tend to go together
+const ctx = await b.newContext({ viewport: large ? { width: 360, height: 780 } : { width: 390, height: 844 }, colorScheme: scheme, isMobile: true, hasTouch: true, reducedMotion: large ? 'reduce' : 'no-preference' });
 await ctx.addInitScript((large) => {
   localStorage.setItem('reps_onboarding_v2', '1');
   if (large) document.addEventListener('DOMContentLoaded', () => document.documentElement.style.setProperty('font-size', '130%', 'important'));
@@ -82,7 +83,10 @@ const cutOff = () => p.evaluate(() => [...document.querySelectorAll('main *, [ro
   }
   return r.right > limit + 1;
 }).map((el) => `coupé : <${el.tagName.toLowerCase()}> « ${(el.getAttribute('aria-label') || el.textContent || '').trim().slice(0, 40)} »`).slice(0, 10));
-const run = async () => [...await audit(), ...await unnamed(), ...await cutOff()];
+// with reduced motion, nothing may still be moving once the screen has settled (pulses, loops, confetti)
+const moving = () => (large ? p.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running')
+  .map((a) => `animation en cours malgré « animations réduites » : ${a.animationName ?? a.constructor.name} sur <${a.effect?.target?.tagName?.toLowerCase()}>`)) : []);
+const run = async () => [...await audit(), ...await unnamed(), ...await cutOff(), ...await moving()];
 for (const path of ['/', '/statistics', '/history', '/profil', '/settings', '/challenges', '/leaderboard']) {
   await p.goto('http://localhost:5199' + path); await p.waitForTimeout(2200);
   const r = await run(); failures += r.length; if (r.length) console.log(`\n== ${pass} ${path}\n` + r.join('\n'));
@@ -104,5 +108,5 @@ if (themeName) await pickTheme(p, 'Violet');
 await ctx.close();
 }
 await b.close();
-console.log(failures ? `\n✗ ${failures} problème(s) d'accessibilité (contraste AA, nom manquant ou texte coupé)${THEME ? ` (thème ${THEME})` : ''}` : `✓ contraste AA, noms accessibles et texte entier (clair, sombre et grande police${THEME ? `, thème ${THEME}` : ''})`);
+console.log(failures ? `\n✗ ${failures} problème(s) d'accessibilité (contraste AA, nom manquant, texte coupé ou animation)${THEME ? ` (thème ${THEME})` : ''}` : `✓ contraste AA, noms accessibles, texte entier et animations réduites (clair, sombre et grande police${THEME ? `, thème ${THEME}` : ''})`);
 process.exit(failures ? 1 : 0);

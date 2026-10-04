@@ -249,7 +249,7 @@ function GymSession() {
     bests.current[exerciseId] = score;
     updateSet(exerciseId, setIndex, { isRecord: true });
     haptics.notification();
-    confetti({ particleCount: 50, spread: 55, origin: { y: 0.7 } });
+    confetti({ particleCount: 50, spread: 55, origin: { y: 0.7 }, disableForReducedMotion: true });
     const name = exercises.find((ex) => ex.exerciseId === exerciseId)?.name ?? 'Exercice';
     toast({
       title: 'Nouveau record ! 🏆',
@@ -280,7 +280,7 @@ function GymSession() {
       await endSession();
       haptics.notification();
       play('complete');
-      confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 }, disableForReducedMotion: true });
     } catch {
       setSummary(null);
       toast({ title: 'Erreur', description: 'Impossible de sauvegarder', variant: 'destructive' });

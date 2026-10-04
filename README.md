@@ -69,7 +69,7 @@ Avec un vrai projet Firebase : `cp .env.example .env`, remplir les clés ([ENV.m
 | `yarn type-check` · `yarn lint` | Types · lint (0 avertissement exigé, aussi en CI) |
 | `yarn vitest run` | Tests unitaires et composants |
 | `yarn test:rules` | Règles Firestore sur l'émulateur |
-| `yarn e2e` · `yarn a11y` | Parcours de bout en bout · audit d'accessibilité : contraste, noms, texte coupé en grande police (démo lancée) |
+| `yarn e2e` · `yarn a11y` | Parcours de bout en bout · audit d'accessibilité : contraste, noms, texte coupé en grande police, animations réduites (démo lancée) |
 | `yarn store:screenshots` | Captures Play Store (`store/fr-FR/screenshots/`) |
 | `yarn cap:sync` · `yarn cap:open:android` | Synchroniser / ouvrir le projet natif |
 

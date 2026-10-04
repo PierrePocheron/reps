@@ -177,7 +177,8 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
             particleCount: Math.min(targetReps * 2, 200), // Scale with reps, cap at 200
             spread: 70,
             origin: { y: 0.6 },
-            colors: ['#22c55e', '#eab308', '#f97316'] // green, yellow, orange
+            colors: ['#22c55e', '#eab308', '#f97316'], // green, yellow, orange
+            disableForReducedMotion: true,
         });
 
         toast({

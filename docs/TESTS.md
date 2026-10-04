@@ -69,7 +69,8 @@ yarn e2e        # terminal 2
 sur 8 écrans, en clair et en sombre, avec les fonds réels (transparences comprises), et repère les contrôles sans nom
 accessible (bouton-icône sans `aria-label`, champ sans libellé). Une 3ᵉ passe « grande police » (360 px, police racine
 à 130 % : c'est ce que fait la WebView Android avec la plus grande taille de police, mesuré sur l'émulateur API 33)
-signale tout texte ou bouton coupé à droite, par l'écran ou par un parent `overflow-hidden`. Démo lancée, puis `yarn a11y`.
+signale tout texte ou bouton coupé à droite, par l'écran ou par un parent `overflow-hidden` ; elle simule aussi
+« Supprimer les animations » et signale toute animation encore en cours une fois l'écran posé. Démo lancée, puis `yarn a11y`.
 Par défaut il audite le violet du compte démo ; `A11Y_THEME=blue yarn a11y` (ou `red`, `green`…) choisit une autre
 couleur dans Réglages (puis remet le violet). Le texte d'accent passe pour tous les thèmes ; restent les **textes blancs
 sur fond de couleur** (boutons) des thèmes autres que violet, en attente d'une décision de palette (#67).

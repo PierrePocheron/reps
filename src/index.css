@@ -113,3 +113,14 @@
 .dark .text-destructive {
   color: hsl(0 91% 71%);
 }
+
+/* « Supprimer les animations » (Android) / reduced motion: everything settles at once, spinners included.
+   0.01ms rather than none: Radix still gets the animationend it waits for before unmounting */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
