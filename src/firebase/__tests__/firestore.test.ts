@@ -25,6 +25,7 @@ import {
   deleteExercise,
   calculateUserStats,
   updateUserStatsAfterSession,
+  onUserStatsComputed,
   createNotification,
   getUserNotifications,
   markBadgesAsSeen,
@@ -491,6 +492,22 @@ describe('updateUserStatsAfterSession', () => {
 
     await updateUserStatsAfterSession('uid123', 0);
     expect(updateDoc).toHaveBeenCalledTimes(1);
+  });
+
+  it("gives the fresh stats to the signed-in user's store (Statistics, badges were stale after a gym session)", async () => {
+    const seen = vi.fn();
+    onUserStatsComputed(seen);
+    const config = await import('../config');
+    (config.auth as { currentUser: unknown }).currentUser = { uid: 'uid123' };
+    try {
+      vi.mocked(getDoc).mockResolvedValueOnce(makeDoc({ badges: ['poussin'], totalReps: 0 }) as any);
+      vi.mocked(getDocs).mockResolvedValueOnce(makeSnapshot([]) as any);
+      await updateUserStatsAfterSession('uid123', 0);
+      expect(seen).toHaveBeenCalledWith(expect.objectContaining({ totalReps: 0, currentStreak: 0 }));
+    } finally {
+      (config.auth as { currentUser: unknown }).currentUser = null;
+      onUserStatsComputed(null);
+    }
   });
 
   it('should throw if user not found', async () => {

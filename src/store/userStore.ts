@@ -8,6 +8,7 @@ import {
   calculateUserStats,
   subscribeToUser,
   markBadgesAsSeen,
+  onUserStatsComputed,
 } from '@/firebase';
 import { deleteUserAccount } from '@/firebase/deleteAccount';
 import { applyThemeColor, type ThemeColor } from '@/utils/theme-colors';
@@ -300,3 +301,5 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 }));
 
+// Every stats recalculation (gym session, challenge day, goal change, edits) refreshes Statistics and badges
+onUserStatsComputed((stats) => useUserStore.getState().setStats(stats));

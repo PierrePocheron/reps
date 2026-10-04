@@ -24,7 +24,7 @@ vi.mock('@/hooks/useSession', () => ({
     useSession: vi.fn(),
 }));
 
-vi.mock('@/firebase/firestore', () => ({
+vi.mock('@/firebase/firestore', () => ({ onUserStatsComputed: vi.fn(),
     getLastSession: vi.fn(() => Promise.resolve(null)),
 }));
 

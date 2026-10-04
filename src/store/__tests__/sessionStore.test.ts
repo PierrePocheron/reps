@@ -10,6 +10,7 @@ vi.mock('@/firebase', () => ({
   saveCurrentSessionToLocal: vi.fn(),
   getCurrentSessionFromLocal: vi.fn().mockReturnValue(null),
   clearCurrentSessionFromLocal: vi.fn(),
+  onUserStatsComputed: vi.fn(),
 }));
 
 // Mock userStore

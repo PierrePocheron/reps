@@ -14,6 +14,7 @@ vi.mock('@/firebase', () => ({
   markBadgesAsSeen: vi.fn(),
   createUserDocument: vi.fn(),
   clearCurrentSessionFromLocal: vi.fn(),
+  onUserStatsComputed: vi.fn(),
 }));
 
 vi.mock('@/utils/theme-colors', () => ({

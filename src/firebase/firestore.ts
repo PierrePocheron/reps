@@ -598,6 +598,11 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
 /**
  * Mettre à jour les stats d'un utilisateur après une session
  */
+// The signed-in user's store takes the fresh stats (Statistics, badges stayed stale after a gym session) without a
+// second full read. Registered by userStore, which imports this module (no import back)
+let statsListener: ((stats: UserStats) => void) | null = null;
+export const onUserStatsComputed = (fn: ((stats: UserStats) => void) | null) => { statsListener = fn; };
+
 export async function updateUserStatsAfterSession(userId: string, _sessionTotalReps: number): Promise<void> {
   try {
     const user = await getUserDocument(userId);
@@ -670,6 +675,7 @@ export async function updateUserStatsAfterSession(userId: string, _sessionTotalR
         exercisesDistribution: stats.exercisesDistribution,
       }));
     }
+    if (userId === auth.currentUser?.uid) statsListener?.(stats);
   } catch (error) {
     logger.error('Erreur lors de la mise à jour des stats:', error);
     throw error;

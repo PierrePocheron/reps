@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 
-vi.mock('@/firebase/firestore', () => ({ getUserSessions: vi.fn(async () => []) }));
+vi.mock('@/firebase/firestore', () => ({ onUserStatsComputed: vi.fn(), getUserSessions: vi.fn(async () => []) }));
 vi.mock('@/firebase/gymSessions', () => ({ getUserGymSessions: vi.fn(async () => []) }));
 
 import { fetchWholeHistory } from '../useSessionHistory';

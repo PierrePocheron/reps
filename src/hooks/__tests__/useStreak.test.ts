@@ -5,7 +5,7 @@ import { useStreak } from '../useStreak';
 import { useUserStore } from '@/store/userStore';
 import type { User } from '@/firebase/types';
 
-vi.mock('@/firebase/firestore', () => ({ updateUserStatsAfterSession: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('@/firebase/firestore', () => ({ onUserStatsComputed: vi.fn(), updateUserStatsAfterSession: vi.fn().mockResolvedValue(undefined) }));
 import { updateUserStatsAfterSession } from '@/firebase/firestore';
 
 const setUser = (partial: Partial<User> | null) =>

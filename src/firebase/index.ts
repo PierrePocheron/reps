@@ -35,6 +35,7 @@ export {
   // Stats
   calculateUserStats,
   updateUserStatsAfterSession,
+  onUserStatsComputed,
   // Notifications
   createNotification,
   getUserNotifications,
