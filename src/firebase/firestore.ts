@@ -1139,37 +1139,24 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
   try {
     if (!friendIds || friendIds.length === 0) return [];
 
-    const friendsSubset = friendIds.slice(0, 10);
-
-    // 1. Récupérer les sessions
-    const sessionsQuery = query(
-      collectionGroup(db, 'userSessions'),
-      where('userId', 'in', friendsSubset),
-      orderBy('createdAt', 'desc'),
-      limit(limitCount)
-    );
-
-    // 2. Récupérer les événements (badges)
-    // Note: Il faut un index pour userEvents aussi
-    const eventsQuery = query(
-      collectionGroup(db, 'userEvents'),
-      where('userId', 'in', friendsSubset),
-      orderBy('createdAt', 'desc'),
-      limit(limitCount)
-    );
-
-    const [sessionsSnap, eventsSnap] = await Promise.all([
-      getDocs(sessionsQuery),
-      getDocs(eventsQuery)
+    // `in` takes 10 values at most: one pair of queries per 10 friends (friends #11+ were never read), like the
+    // leaderboard; each keeps the top `limitCount`, the global sort below keeps the overall top
+    const chunks: string[][] = [];
+    for (let i = 0; i < friendIds.length; i += 10) chunks.push(friendIds.slice(i, i + 10));
+    const recent = (group: string, ids: string[]) =>
+      getDocs(query(collectionGroup(db, group), where('userId', 'in', ids), orderBy('createdAt', 'desc'), limit(limitCount)));
+    const [sessionSnaps, eventSnaps] = await Promise.all([
+      Promise.all(chunks.map((ids) => recent('userSessions', ids))),
+      Promise.all(chunks.map((ids) => recent('userEvents', ids))), // badges
     ]);
 
-    const sessions = sessionsSnap.docs.map(doc => ({
+    const sessions = sessionSnaps.flatMap((snap) => snap.docs).map(doc => ({
       type: 'session',
       sessionId: doc.id,
       ...doc.data()
     }));
 
-    const events = eventsSnap.docs.map(doc => ({
+    const events = eventSnaps.flatMap((snap) => snap.docs).map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
