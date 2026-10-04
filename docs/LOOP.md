@@ -120,3 +120,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | demande Pierre : nav | Barre de navigation flottante en pilule façon Instagram, réduite au défilement, redéployée en remontant / au toucher ; pastilles accessibles ; e2e + AA verts | `1b1a5e2` |
 | 2026-10-04 | mesure bundle | Initial 1 361 Ko (382 Ko gzip, −8 % vs #42 malgré ~30 fonctionnalités) ; framer-motion déjà hors démarrage ; reste Sentry Replay (décision Pierre, #42) | — |
 | 2026-10-04 | demande Pierre : documentation | README réécrit, docs/DEPLOY.md (déploiements + prérequis Play Store / App Store), ENV, RELEASE, TESTS, TOOLS, PLAYSTORE à jour | `757236b` |
+| 2026-10-04 | passe UI/UX barre flottante | 10 pages : rien caché sous la pilule ; **régression de la refonte** : sélecteur du bouton central inerte (pointer-events hérité) → portail + z-[70] + e2e | `5355323` |
