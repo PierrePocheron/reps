@@ -94,6 +94,9 @@ export async function getUserGymSessions(
 export const NOTE_MAX = 300;
 
 /** Firestore rejette les valeurs `undefined` — on les retire (fin de séance et modification). */
+// min=0 on the inputs does not stop typing « -5 »: never persist a negative or NaN weight / rep count
+const nonNegative = (n: number) => (Number.isFinite(n) && n > 0 ? n : 0);
+
 export function sanitizeExercises(exercises: GymSessionExercise[]): GymSessionExercise[] {
   return exercises.map((ex) => ({
     exerciseId: ex.exerciseId,
@@ -104,11 +107,11 @@ export function sanitizeExercises(exercises: GymSessionExercise[]): GymSessionEx
     ...(ex.supersetId ? { supersetId: ex.supersetId } : {}),
     ...(ex.timed !== undefined ? { timed: ex.timed } : {}),
     sets: ex.sets.map((s) => ({
-      reps: s.reps,
-      weight: s.weight,
+      reps: nonNegative(s.reps),
+      weight: nonNegative(s.weight),
       completed: s.completed,
-      ...(s.actualReps !== undefined ? { actualReps: s.actualReps } : {}),
-      ...(s.actualWeight !== undefined ? { actualWeight: s.actualWeight } : {}),
+      ...(s.actualReps !== undefined ? { actualReps: nonNegative(s.actualReps) } : {}),
+      ...(s.actualWeight !== undefined ? { actualWeight: nonNegative(s.actualWeight) } : {}),
       ...(s.isRecord ? { isRecord: true } : {}), // trophée et records sur la carte partagée depuis l'historique
       ...(s.rpe ? { rpe: s.rpe } : {}),
       ...(s.type ? { type: s.type } : {}),

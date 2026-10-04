@@ -33,6 +33,7 @@ import {
   getFriendsDetails,
   searchUsers,
   getRandomMotivationalPhrase,
+  updateSession,
 } from '../firestore';
 
 vi.mock('../config', () => ({ db: {}, auth: { currentUser: null } }));
@@ -587,5 +588,13 @@ describe('getRandomMotivationalPhrase', () => {
     vi.mocked(getDocs).mockRejectedValueOnce(new Error('Read failed'));
     const phrase = await getRandomMotivationalPhrase();
     expect(phrase).toBeNull();
+  });
+});
+
+describe('updateSession (renfo edit)', () => {
+  it('never stores negative reps typed in the edit dialog', async () => {
+    const fields = await updateSession('uid', 's1', [{ name: 'Pompes', emoji: '💪', reps: -10 }, { name: 'Squats', emoji: '🦵', reps: 20 }] as never, 0);
+    expect(fields.exercises.map((e) => e.reps)).toEqual([0, 20]);
+    expect(fields.totalReps).toBe(20);
   });
 });
