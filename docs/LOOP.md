@@ -12,21 +12,23 @@ Backlog : GitHub Project « REPS — Roadmap » (#9), issues labellisées `P0` �
    sur un écran (textes, accessibilité, états vides, clair/sombre) au lieu d'une fonctionnalité.
 3. **Comparer** : comment Hevy / Strong / Boostcamp… le font (rapport + recherche rapide si besoin) ;
    2-3 lignes en commentaire de l'issue sur le comportement visé.
-4. **Implémenter** le plus petit diff qui fonctionne, selon les règles du projet : `logger` (jamais
-   `console`), tutoiement, tokens clair/sombre, cibles ≥ 44 px, `noUncheckedIndexedAccess`.
+4. **Implémenter** en TDD (test d'abord, puis le code) le plus petit diff qui fonctionne, selon les règles du projet : `logger` (jamais
+   `console`), tutoiement dans l'interface, tokens clair/sombre, cibles ≥ 44 px, `noUncheckedIndexedAccess`.
+   Code, noms et commentaires en anglais (le code existant reste tel quel) ; docs en français.
 5. **Vérifier** : `yarn type-check`, `yarn lint` (0 erreur), `yarn vitest run`, `yarn test:rules` si les
    règles Firestore changent ; contrôle visuel sur `yarn dev:demo` (émulateurs + données de démo, compte dans `scripts/seed-emulator.mjs`)
    et `yarn e2e` (parcours clés de bout en bout) dès qu'un parcours est touché ; `yarn a11y` (contraste) après un changement de couleurs.
 6. **Documenter** : mettre à jour le README et les docs touchés (fonctionnalité visible → README ; commande ou
    procédure → TOOLS / DEPLOY / RELEASE ; tests → TESTS ; fiche store → PLAYSTORE).
-7. **Livrer** : commit (numéroté `[i/N]` si multi-commits, sans `Co-Authored-By`, **aucune donnée
+7. **Livrer** : commit Conventional Commits **en anglais** (numéroté `[i/N]` si multi-commits, sans `Co-Authored-By`, **aucune donnée
    personnelle** — repo public), push `dev`, commentaire de bilan sur l'issue, fermeture si terminée.
 8. **Journaliser** : une ligne ci-dessous.
 
 ## Interdit sans Pierre
 
 Merger vers `main`/`prod`, publier une release, déployer (web, règles Firestore), toucher aux
-consoles Firebase / Play / AdMob, créer des comptes, envoyer quoi que ce soit à l'extérieur.
+consoles Firebase / Play / AdMob, créer des comptes, envoyer quoi que ce soit à l'extérieur,
+ajouter une dépendance.
 Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe à la suivante.
 
 ## Journal
