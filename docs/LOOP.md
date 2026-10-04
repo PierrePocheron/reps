@@ -101,3 +101,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | #58 (1/2) | Séance muscu oubliée : date/heure/durée saisies, enregistrée à sa date (série et stats à jour) ; e2e 11 parcours verts | `fa8a443` |
 | 2026-10-04 | passe UI/UX fenêtres | Menu ⋯, Modifier (muscu/renfo), Supprimer, Séance oubliée audités à 320 px clair/sombre (contraste AA OK) ; boutons d'édition coupés en bas → pied collant ; défilement latéral de 5 px supprimé | `bbb5c71` |
 | 2026-10-04 | #58 (2/2) | Séance renfo oubliée (date/durée saisies) → issue fermée ; 332 tests, 11 parcours e2e verts | `689f9ba` |
+| 2026-10-04 | #55 | Exercices en durée (reps ⇄ s par exercice, hors volume/1RM, historique, CSV, partage) ; suite chrono + record de durée en issue P3 | `74ff122` |
