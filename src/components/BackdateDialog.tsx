@@ -39,13 +39,13 @@ export function BackdateDialog({ initial, onCancel, onSave }: {
           </div>
           {!Number.isNaN(when) && when > Date.now() && <p className="text-xs text-destructive">La date ne peut pas être dans le futur.</p>}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {initial ? (
-            <Button variant="outline" className="flex-1 min-h-11" onClick={() => onSave(null)}>Maintenant</Button>
+            <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={() => onSave(null)}>Maintenant</Button>
           ) : (
-            <Button variant="outline" className="flex-1 min-h-11" onClick={onCancel}>Annuler</Button>
+            <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={onCancel}>Annuler</Button>
           )}
-          <Button className="flex-1 min-h-11" disabled={!valid} onClick={() => onSave({ at: when, duration: Math.round(Number(minutes) * 60) })}>Valider</Button>
+          <Button className="flex-1 basis-28 min-h-11" disabled={!valid} onClick={() => onSave({ at: when, duration: Math.round(Number(minutes) * 60) })}>Valider</Button>
         </div>
       </DialogContent>
     </Dialog>

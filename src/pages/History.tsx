@@ -699,9 +699,9 @@ function History() {
             <DialogTitle>Supprimer cette séance ?</DialogTitle>
             <DialogDescription>Elle disparaît de ton historique, de tes stats et du classement. C'est définitif.</DialogDescription>
           </DialogHeader>
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 min-h-11" onClick={() => setToDelete(null)} disabled={deleting}>Annuler</Button>
-            <Button variant="destructive" className="flex-1 min-h-11" onClick={() => void confirmDelete()} disabled={deleting}>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={() => setToDelete(null)} disabled={deleting}>Annuler</Button>
+            <Button variant="destructive" className="flex-1 basis-28 min-h-11" onClick={() => void confirmDelete()} disabled={deleting}>
               {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Supprimer'}
             </Button>
           </div>

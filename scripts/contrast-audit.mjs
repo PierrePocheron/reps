@@ -96,6 +96,9 @@ while (await typeBtns.count() < 4) await card.getByRole('button', { name: /^Sér
 for (let i = 1; i <= 3; i++) for (let k = 0; k < i; k++) await typeBtns.nth(i).click();
 await card.getByRole('button', { name: /^Valider la série 1/ }).click(); // minuteur de repos (±15 s, préréglages)
 await p.waitForTimeout(500); const g = await run(); failures += g.length; if (g.length) console.log(`\n== ${pass} /gym\n` + g.join('\n'));
+await p.getByRole('button', { name: 'Annuler la séance' }).click(); // confirmation sheet (long button label)
+await p.waitForTimeout(300); const c = await cutOff(); failures += c.length; if (c.length) console.log(`\n== ${pass} /gym (annulation)\n` + c.join('\n'));
+await p.locator('[aria-labelledby=cancel-session-title]').getByRole('button', { name: 'Continuer' }).click();
 await p.goto('http://localhost:5199/settings'); await p.evaluate(() => localStorage.removeItem('reps_gym_session'));
 if (themeName) await pickTheme(p, 'Violet');
 await ctx.close();

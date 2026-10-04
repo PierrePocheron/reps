@@ -398,11 +398,11 @@ function GymSession() {
                 <h3 id="cancel-plan-title" className="font-bold text-lg">Abandonner la planification ?</h3>
                 <p className="text-sm text-muted-foreground">Les exercices et séries que tu as planifiés seront perdus.</p>
               </div>
-              <div className="flex gap-3">
-                <Button variant="outline" className="flex-1" onClick={() => setShowCancelConfirm(false)}>
+              <div className="flex flex-wrap gap-3">
+                <Button variant="outline" className="flex-1 basis-28" onClick={() => setShowCancelConfirm(false)}>
                   Continuer
                 </Button>
-                <Button variant="destructive" className="flex-1" onClick={handleCancelConfirm}>
+                <Button variant="destructive" className="flex-1 basis-28" onClick={handleCancelConfirm}>
                   Abandonner
                 </Button>
               </div>
@@ -642,11 +642,11 @@ function GymSession() {
               <h3 id="cancel-session-title" className="font-bold text-lg">Annuler la séance ?</h3>
               <p className="text-sm text-muted-foreground">La séance en cours sera définitivement supprimée, sans sauvegarde.</p>
             </div>
-            <div className="flex gap-3">
-              <Button variant="outline" className="flex-1" onClick={() => setShowCancelConfirm(false)}>
+            <div className="flex flex-wrap gap-3">
+              <Button variant="outline" className="flex-1 basis-28" onClick={() => setShowCancelConfirm(false)}>
                 Continuer
               </Button>
-              <Button variant="destructive" className="flex-1" onClick={handleCancelConfirm}>
+              <Button variant="destructive" className="flex-1 basis-28" onClick={handleCancelConfirm}>
                 Annuler la séance
               </Button>
             </div>

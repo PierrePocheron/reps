@@ -85,9 +85,9 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
         </div>
         {kept.length === 0 && <p className="text-xs text-muted-foreground">Plus aucune série : supprime plutôt la séance depuis l'historique.</p>}
         {/* Boutons toujours visibles, même quand la liste défile (séance longue) */}
-        <div className="sticky -bottom-6 -mx-6 -mb-6 px-6 pt-3 pb-6 flex gap-2 bg-background border-t">
-          <Button variant="outline" className="flex-1 min-h-11" onClick={onCancel} disabled={saving}>Annuler</Button>
-          <Button className="flex-1 min-h-11" onClick={() => void save()} disabled={saving || kept.length === 0}>
+        <div className="sticky -bottom-6 -mx-6 -mb-6 px-6 pt-3 pb-6 flex flex-wrap gap-2 bg-background border-t">
+          <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={onCancel} disabled={saving}>Annuler</Button>
+          <Button className="flex-1 basis-28 min-h-11" onClick={() => void save()} disabled={saving || kept.length === 0}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enregistrer'}
           </Button>
         </div>

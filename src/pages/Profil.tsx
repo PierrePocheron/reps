@@ -253,11 +253,11 @@ function Profil() {
                 Tu es sûr de vouloir te déconnecter ?
               </DialogDescription>
             </DialogHeader>
-            <div className="flex gap-3 mt-4">
-              <Button variant="outline" onClick={() => setShowLogoutDialog(false)} className="flex-1">
+            <div className="flex flex-wrap gap-3 mt-4">
+              <Button variant="outline" onClick={() => setShowLogoutDialog(false)} className="flex-1 basis-28">
                 Annuler
               </Button>
-              <Button onClick={handleSignOut} variant="default" className="flex-1">
+              <Button onClick={handleSignOut} variant="default" className="flex-1 basis-28">
                 Me déconnecter
               </Button>
             </div>

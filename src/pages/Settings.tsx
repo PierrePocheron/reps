@@ -505,9 +505,9 @@ function Settings() {
               {importPreview && importPreview.skipped > 0 && ` ${importPreview.skipped} déjà présente${importPreview.skipped > 1 ? 's' : ''}, ignorée${importPreview.skipped > 1 ? 's' : ''}.`}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 min-h-11" onClick={() => setImportPreview(null)} disabled={importing}>Annuler</Button>
-            <Button className="flex-1 min-h-11" onClick={() => void confirmImport()} disabled={importing || !importPreview?.sessions.length}>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={() => setImportPreview(null)} disabled={importing}>Annuler</Button>
+            <Button className="flex-1 basis-28 min-h-11" onClick={() => void confirmImport()} disabled={importing || !importPreview?.sessions.length}>
               {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Importer'}
             </Button>
           </div>

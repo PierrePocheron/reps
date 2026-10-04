@@ -589,13 +589,13 @@ export default function Friends() {
               {friendToRemove?.displayName} ne verra plus ton activité et tu ne verras plus la sienne. Tu pourras le ré-ajouter plus tard.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex gap-3 mt-2">
-            <Button variant="outline" className="flex-1" onClick={() => setFriendToRemove(null)}>
+          <div className="flex flex-wrap gap-3 mt-2">
+            <Button variant="outline" className="flex-1 basis-28" onClick={() => setFriendToRemove(null)}>
               Annuler
             </Button>
             <Button
               variant="destructive"
-              className="flex-1"
+              className="flex-1 basis-28"
               onClick={() => friendToRemove && handleRemoveFriend(friendToRemove.uid)}
             >
               Supprimer
