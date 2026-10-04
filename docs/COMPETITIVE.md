@@ -44,24 +44,36 @@ musculaires inclus).
 ## REPS face au marché
 
 ### Déjà au niveau (ou mieux)
-- Gratuit, sans pub, **templates illimités** (Hevy 4 / Strong 3 en gratuit)
+> Mis à jour en octobre 2026 après les itérations de la loop (journal : `docs/LOOP.md`).
+
+- Gratuit, sans pub, **modèles illimités** (Hevy 4 / Strong 3 en gratuit), modèle depuis une séance, modèle modifiable
 - **Mode renforcement** avec compteur en direct — inexistant chez Hevy/Strong
 - Bibliothèque de **1 324 exercices illustrés FR/EN** (Hevy : 300+ en gratuit)
-- Valeurs pré-remplies depuis la dernière séance, minuteur de repos
-- Social : amis, fil, **classement** jour/semaine/mois, **défis quotidiens**, badges
-- Heatmap d'activité, objectif hebdo, streak, records + 1RM (onglet Records)
-- Hors ligne, PWA + Android
+- Saisie : valeurs de la dernière fois, **suggestion de surcharge progressive**, types de séries (échauffement, dégressive, échec),
+  **RPE**, notes par exercice, **supersets**, réordonner / remplacer un exercice, **exercices en durée** avec chrono
+- Repos : minuteur auto avec **notification écran verrouillé**, durée par exercice, −15 s / +15 s, écran maintenu allumé
+- Progrès : **records en direct** (charge et durée) avec célébration, **courbe par exercice** (1RM, charge, volume, durée),
+  dernières séances détaillées, **répartition musculaire** (payante chez Hevy), récap mensuel / annuel partageable
+- Après la séance : **écran de récap** avec comparaison bienveillante, **partage en image**
+- Historique : modifier, supprimer, saisir une séance oubliée, filtrer par exercice ; **export CSV (format Strong)**
+  et **import Strong / Hevy** (l'argument « je garde tout mon historique »)
+- Calculateurs de **disques** et de **séries d'échauffement** ; mensurations et poids de corps (payant chez Hevy)
+- Motivation : série quotidienne avec joker ou série hebdomadaire, objectif hebdo, questionnaire de départ, widget Android
+- Social : amis, fil, **classement** jour/semaine/mois, **défis quotidiens**, badges, kudos
+- Hors ligne, PWA + Android ; accessibilité AA vérifiée (contraste, 320 px, lecteurs d'écran)
 
-### Écarts à combler (par impact)
-1. **Graphique de progression par exercice** — le cœur de Strong/Hevy, absent de REPS
-2. **Record détecté pendant la séance** + célébration (Hevy « Live PR »)
-3. **Notification de fin de repos** app en arrière-plan
-4. **Partage de séance en image** — canal d'acquisition gratuit n°1 de Hevy
-5. **Répartition musculaire** (séries/muscle/semaine) — payant chez Hevy → différenciant gratuit
-6. Types de séries (échauffement, drop, échec), RPE, notes, supersets
-7. Calculateur de disques, export CSV
-8. Mascotte et moments de célébration (Duolingo/Gentler Streak)
-9. Fiche store optimisée + site vitrine
+### Écarts restants
+**En attente de Pierre** (label `bloqué-pierre`) :
+1. **Mascotte** et moments de célébration (Duolingo / Gentler Streak) — choix de la charte (#8 et suivantes)
+2. **Fiche Play Store** + **site vitrine** (pages support, suppression de compte) — publication
+3. **Wear OS**, **Health Connect** — consoles Play / Google Cloud
+4. **Interface en anglais** et unités en livres (i18n) — calendrier de sortie
+5. Kudos et copie des modèles d'un ami — déploiement des règles Firestore
+
+**Faisables en autonomie** (backlog du projet #9) :
+- Titre et note de séance (Hevy, Strong)
+- Valeur de la séance précédente affichée à côté de chaque série (colonne « Précédent » de Hevy / Strong)
+- Plus tard, à cadrer avec Pierre : programmes sur plusieurs semaines (Boostcamp), photos de progression (JEFIT)
 
 ## Enseignements mascotte
 
