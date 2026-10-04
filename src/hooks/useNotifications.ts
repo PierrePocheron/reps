@@ -20,7 +20,8 @@ export const useNotifications = () => {
       checkNativePermission();
       checkNativeScheduled();
     } else {
-      setHasPermission(Notification.permission === 'granted');
+      // no Notification API in a plain iOS Safari tab or in-app browsers: reading it threw and took Réglages down
+      setHasPermission(typeof Notification !== 'undefined' && Notification.permission === 'granted');
     }
   }, []);
 
