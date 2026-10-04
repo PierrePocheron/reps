@@ -140,26 +140,38 @@ const steps = [
   ['petit écran (320 px) : rien ne déborde', async () => {
     await page.keyboard.press('Escape');
     await page.setViewportSize({ width: 320, height: 640 });
+    // boutons shadcn en nowrap : une rangée trop large pousse la page ou se fait rogner par sa carte
+    const overflowing = () => page.evaluate(() => {
+      // décor en position absolue et rangées défilantes (overflow-x: auto) exclus : débordements voulus
+      const inFlow = (e, box) => {
+        for (let n = e; n && n !== box; n = n.parentElement) {
+          const cs = getComputedStyle(n);
+          if (['absolute', 'fixed'].includes(cs.position) || (n !== e && ['auto', 'scroll'].includes(cs.overflowX))) return false;
+        }
+        return true;
+      };
+      return [...document.querySelectorAll('[role=group], [role=tablist], .rounded-2xl.border, .rounded-lg.border, .rounded-xl')]
+        .filter((box) => getComputedStyle(box).overflowX !== 'auto')
+        .filter((box) => { const r = box.getBoundingClientRect().right; return [...box.querySelectorAll('*')].some((e) => inFlow(e, box) && e.getBoundingClientRect().width > 0 && e.getBoundingClientRect().right > r + 1); })
+        .map((box) => box.getAttribute('aria-label') || box.innerText.trim().split('\n')[0].slice(0, 30));
+    });
     for (const path of ['/', '/history', '/statistics', '/profil', '/settings', '/friends', '/challenges', '/leaderboard', '/templates']) {
       await page.goto(`${BASE}${path}`);
       await page.waitForTimeout(800);
-      // boutons shadcn en nowrap : une rangée trop large pousse la page ou se fait rogner par sa carte
-      const over = await page.evaluate(() => {
-        // décor en position absolue et rangées défilantes (overflow-x: auto) exclus : débordements voulus
-        const inFlow = (e, box) => {
-          for (let n = e; n && n !== box; n = n.parentElement) {
-            const cs = getComputedStyle(n);
-            if (['absolute', 'fixed'].includes(cs.position) || (n !== e && ['auto', 'scroll'].includes(cs.overflowX))) return false;
-          }
-          return true;
-        };
-        return [...document.querySelectorAll('[role=group], [role=tablist], .rounded-2xl.border, .rounded-lg.border')]
-          .filter((box) => getComputedStyle(box).overflowX !== 'auto')
-          .filter((box) => { const r = box.getBoundingClientRect().right; return [...box.querySelectorAll('*')].some((e) => inFlow(e, box) && e.getBoundingClientRect().width > 0 && e.getBoundingClientRect().right > r + 1); })
-          .map((box) => box.getAttribute('aria-label') || box.innerText.trim().split('\n')[0].slice(0, 30));
-      });
-      assert.deepEqual(over, [], `débordement sur ${path}`);
+      assert.deepEqual(await overflowing(), [], `débordement sur ${path}`);
     }
+    // séance muscu, repos ouvert : lignes de série dans leur carte, bas de liste encore atteignable
+    await page.goto(`${BASE}/history`);
+    await page.getByRole('tab', { name: /Muscu/ }).click();
+    await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+    await page.waitForURL(`${BASE}/gym`);
+    await page.locator('div.rounded-2xl.border-2').nth(0).getByRole('button', { name: /^Valider la série 1/ }).click();
+    await page.getByRole('switch', { name: /Repos auto/ }).waitFor();
+    assert.deepEqual(await overflowing(), [], 'débordement en séance muscu');
+    await page.getByRole('button', { name: /Ajouter un exercice/ }).first().click({ trial: true, timeout: 3000 }); // pas caché par la barre
+    await page.getByRole('button', { name: 'Annuler la séance' }).first().click();
+    await page.locator('[aria-labelledby=cancel-session-title]').getByRole('button', { name: 'Annuler la séance' }).click();
+    await page.waitForURL(`${BASE}/`);
     await page.setViewportSize({ width: 390, height: 844 });
   }],
 ];

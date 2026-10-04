@@ -409,7 +409,8 @@ function GymSession() {
       </div>
 
       {/* Liste complète des exercices */}
-      <div className="p-4 max-w-2xl mx-auto space-y-4 pb-48">
+      {/* Marge sous la barre flottante : plus haute avec le minuteur de repos ouvert, sinon il cache le bas de la liste */}
+      <div className={cn('p-4 max-w-2xl mx-auto space-y-4', showRestTimer ? 'pb-[22rem]' : 'pb-48')}>
         {exercises.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 space-y-4 text-center">
             <div className="bg-blue-500/10 p-4 rounded-full">
@@ -662,7 +663,7 @@ function SetExecuteRow({
           onChange={(e) => { setReps(e.target.value); onUpdate(exerciseId, setIndex, Number(e.target.value) || 0, Number(weight) || 0); }}
           onFocus={onFocusSel}
           aria-label={`Répétitions, série ${setIndex + 1}`}
-          className={`h-8 w-14 text-sm p-1 ${NUM_CLS}`}
+          className={`h-8 w-14 max-[359px]:w-12 text-sm p-1 ${NUM_CLS}`}
           min={0}
         />
         <span className="text-xs text-muted-foreground">reps</span>
@@ -675,7 +676,7 @@ function SetExecuteRow({
           onChange={(e) => { setWeight(e.target.value); onUpdate(exerciseId, setIndex, Number(reps) || 0, Number(e.target.value) || 0); }}
           onFocus={onFocusSel}
           aria-label={`Charge en kg, série ${setIndex + 1}`}
-          className={`h-8 w-16 text-sm p-1 ${NUM_CLS}`}
+          className={`h-8 w-16 max-[359px]:w-14 text-sm p-1 ${NUM_CLS}`}
           min={0}
         />
         <span className="text-xs text-muted-foreground">kg</span>
@@ -773,7 +774,7 @@ function ExecuteExerciseCard({
           aria-label={`${exercise.name} : voir la fiche et ta progression`}
         >
           <span className="font-bold text-base flex items-center gap-1.5 min-w-0">
-            <span className="truncate min-w-0">{exercise.name}</span>
+            <span className="line-clamp-2 min-w-0 break-words">{exercise.name}</span>
             <Info className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" aria-hidden />
           </span>
           <p className="text-xs text-muted-foreground">
