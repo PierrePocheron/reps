@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { parseCsv, parseWorkoutsCsv, newSessionsOnly, exerciseResolver } from '../importCsv';
 import { sessionsToCsv } from '../exportCsv';
 import type { GymSession } from '@/firebase/types';
+import { MUSCULATION_EXERCISES } from '@/utils/constants';
 
 const resolve = exerciseResolver([{ id: 'bench_press', name: 'Développé couché', emoji: '🏋️' }, { id: 'lib_0025', name: 'Barbell Bench Press', emoji: '💪' }]);
 
@@ -38,7 +39,7 @@ describe('parseWorkoutsCsv', () => {
       '"1";"2026-10-02 18:00:00";"Push";"3600";"Barbell Bench Press";"2";"82.5";"7";"9";"";"";"";""',
     ].join('\n');
     const [s] = parseWorkoutsCsv(csv, resolve);
-    expect(s).toMatchObject({ duration: 3600, exercises: [{ exerciseId: 'lib_0025', sets: [{ weight: 82.5, reps: 8 }, { weight: 82.5, reps: 7, rpe: 9 }] }] });
+    expect(s).toMatchObject({ duration: 3600, exercises: [{ exerciseId: 'bench_press', sets: [{ weight: 82.5, reps: 8 }, { weight: 82.5, reps: 7, rpe: 9 }] }] });
   });
 
   it('export Strong en livres : « Weight (lbs) » converti en kg', () => {
@@ -57,7 +58,7 @@ describe('parseWorkoutsCsv', () => {
     ].join('\n');
     const [s] = parseWorkoutsCsv(csv, resolve);
     expect(s).toMatchObject({ date: new Date(2026, 9, 3, 9, 0), duration: 4500,
-      exercises: [{ exerciseId: 'lib_0025', sets: [{ weight: 80, reps: 5 }, { weight: 81.25, reps: 4, type: 'failure', rpe: 9 }] }] });
+      exercises: [{ exerciseId: 'bench_press', sets: [{ weight: 80, reps: 5 }, { weight: 81.25, reps: 4, type: 'failure', rpe: 9 }] }] });
   });
 
   it('export Hevy en livres : charges converties en kg (pas lues comme 0)', () => {
@@ -93,5 +94,20 @@ describe('exerciseResolver', () => {
 
   it("garde l'exercice REPS quand la bibliothèque a le même nom (réimport sans historique coupé en deux)", () => {
     expect(lib('Tractions lestées').exerciseId).toBe('weighted_pullups');
+  });
+});
+
+describe('exerciseResolver : exercices de base REPS', () => {
+  const base = exerciseResolver([
+    ...MUSCULATION_EXERCISES.map((e) => ({ id: e.id, name: e.name, emoji: e.emoji })),
+    { id: 'lib_0025', name: 'Barbell bench press', emoji: '🏋️' },
+  ]);
+
+  it('relie les grands mouvements Strong / Hevy aux exercices de base (même historique que dans REPS)', () => {
+    expect(base('Bench Press (Barbell)').exerciseId).toBe('bench_press'); // pas son homonyme de la bibliothèque
+    expect(base('Squat (Barbell)').exerciseId).toBe('barbell_squat');
+    expect(base('Lat Pulldown (Cable)').exerciseId).toBe('lat_pulldown');
+    expect(base('Triceps Pushdown (Cable - Straight Bar)').exerciseId).toBe('tricep_pushdown');
+    expect(base('Lying Leg Curl (Machine)').exerciseId).toBe('leg_curl');
   });
 });
