@@ -272,6 +272,16 @@ describe('sessionStore', () => {
       expect(useSessionStore.getState().isActive).toBe(false);
     });
 
+    it('saves nothing for a session without any rep (forgotten empty session auto-finished after 2 h)', async () => {
+      useSessionStore.setState({
+        isActive: true, startTime: Date.now() - 7_300_000,
+        exercises: [{ name: 'Pompes', emoji: '🔥', reps: 0 }], totalReps: 0, duration: 7300,
+      });
+      await useSessionStore.getState().endSession();
+      expect(firebaseModule.createSession).not.toHaveBeenCalled(); // a 0-rep session counted as a training day
+      expect(useSessionStore.getState().isActive).toBe(false);
+    });
+
     it('saves once even when called again while the first save is in flight (auto-finish ticks every second)', async () => {
       let release!: (id: string) => void;
       vi.mocked(firebaseModule.createSession).mockReturnValueOnce(new Promise((r) => { release = r; }) as never);
@@ -300,7 +310,7 @@ describe('sessionStore', () => {
     it('should throw if no user is connected', async () => {
       
       vi.mocked(userStoreModule.useUserStore.getState).mockReturnValueOnce({ currentUser: null, user: null } as any);
-      useSessionStore.setState({ isActive: true, startTime: Date.now() });
+      useSessionStore.setState({ isActive: true, startTime: Date.now(), totalReps: 10, exercises: [{ name: 'Pompes', emoji: '🔥', reps: 10 }] });
       await expect(useSessionStore.getState().endSession()).rejects.toThrow('Aucun utilisateur connecté');
     });
   });

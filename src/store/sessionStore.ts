@@ -83,6 +83,13 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         if (!isActive || !startTime) {
           return;
         }
+        // Nothing done, nothing saved (same rule as the « Terminer » button): the 2-hour auto-finish saved forgotten
+        // empty sessions, which counted as training days in the streak
+        if (totalReps === 0) {
+          get().resetSession();
+          clearCurrentSessionFromLocal();
+          return;
+        }
 
         const { currentUser, user } = useUserStore.getState();
         if (!currentUser) {
