@@ -12,7 +12,9 @@ async function registerFCMServiceWorker(): Promise<ServiceWorkerRegistration | n
   if (!('serviceWorker' in navigator)) return null;
 
   try {
-    const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' });
+    // Own scope (Firebase's default): '/' is the PWA worker's scope, and two workers cannot share one —
+    // each registration replaced the other (offline cache gone, then push gone on the next load)
+    const reg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/firebase-cloud-messaging-push-scope' });
 
     // Transmet la config Firebase au SW (il ne peut pas lire import.meta.env)
     const config = {
