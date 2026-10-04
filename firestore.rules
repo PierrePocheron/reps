@@ -15,6 +15,15 @@ service cloud.firestore {
     // Une demande d'ami (ID déterministe `${from}_${to}`) au statut donné
     // existe-t-elle entre a et b, dans un sens ou l'autre ?
     // NB : les get()/exists() d'un batch voient l'état AVANT le batch.
+    // State once the current write (or batch) is applied: the app accepts a request and links both friends lists
+    // in ONE batch, where get() would still see the request as pending
+    function requestBetweenAfter(a, b, statuses) {
+      return (existsAfter(/databases/$(database)/documents/friend_requests/$(a + '_' + b))
+                && getAfter(/databases/$(database)/documents/friend_requests/$(a + '_' + b)).data.status in statuses)
+          || (existsAfter(/databases/$(database)/documents/friend_requests/$(b + '_' + a))
+                && getAfter(/databases/$(database)/documents/friend_requests/$(b + '_' + a)).data.status in statuses);
+    }
+
     function requestBetween(a, b, statuses) {
       return (exists(/databases/$(database)/documents/friend_requests/$(a + '_' + b))
                 && get(/databases/$(database)/documents/friend_requests/$(a + '_' + b)).data.status in statuses)
@@ -68,7 +77,7 @@ service cloud.firestore {
           // il s'ajoute lui-même (acceptation) ou se retire lui-même (suppression)
           && (
             (added == [request.auth.uid].toSet() && removed.size() == 0
-              && requestBetween(request.auth.uid, userId, ['accepted']))
+              && requestBetweenAfter(request.auth.uid, userId, ['accepted']))
             || (removed == [request.auth.uid].toSet() && added.size() == 0)
           );
       }

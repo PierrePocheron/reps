@@ -14,7 +14,7 @@ import {
   assertSucceeds,
   assertFails,
 } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp, arrayRemove } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp, arrayRemove, writeBatch } from 'firebase/firestore';
 
 const PROJECT = 'reps-rules-test';
 let passed = 0, failed = 0;
@@ -116,6 +116,29 @@ await test('l\'écriture croisée ne peut PAS ajouter quelqu\'un d\'autre que so
   assertFails(updateDoc(doc(carol, 'users/dave'), { friends: ['carol', 'mallory'] })));
 await test('retrait croisé : un ami peut se retirer lui-même (suppression d\'ami)', () =>
   assertSucceeds(updateDoc(doc(bob, 'users/alice'), { friends: [] })));
+
+// the real acceptance (acceptFriendRequest): ONE batch — request → accepted + both friends lists.
+// Rules' get() sees the state before the batch (still pending): the cross write must look after it
+const fresh = (name) => ({ displayName: name, searchName: name, totalReps: 0, totalSessions: 0, badges: [], friends: [], currentStreak: 0, longestStreak: 0 });
+await env.withSecurityRulesDisabled(async (ctx) => {
+  const f = ctx.firestore();
+  for (const n of ['ivy', 'jack', 'kim', 'leo']) await setDoc(doc(f, `users/${n}`), fresh(n));
+  await setDoc(doc(f, 'friend_requests/jack_ivy'), { fromUserId: 'jack', toUserId: 'ivy', status: 'pending', fromDisplayName: 'jack' });
+  await setDoc(doc(f, 'friend_requests/leo_kim'), { fromUserId: 'leo', toUserId: 'kim', status: 'pending', fromDisplayName: 'leo' });
+});
+await test("acceptation en un seul batch depuis une demande en attente (comme l'appli)", () => {
+  const ivy = env.authenticatedContext('ivy').firestore(), b = writeBatch(ivy);
+  b.update(doc(ivy, 'friend_requests/jack_ivy'), { status: 'accepted' });
+  b.update(doc(ivy, 'users/ivy'), { friends: ['jack'] });
+  b.update(doc(ivy, 'users/jack'), { friends: ['ivy'] });
+  return assertSucceeds(b.commit());
+});
+await test("pas d'écriture croisée dans un batch qui laisse la demande en attente", () => {
+  const kim = env.authenticatedContext('kim').firestore(), b = writeBatch(kim);
+  b.update(doc(kim, 'users/kim'), { friends: ['leo'] });
+  b.update(doc(kim, 'users/leo'), { friends: ['kim'] });
+  return assertFails(b.commit());
+});
 
 await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'users/erin'), { displayName: 'erin', friends: ['frank', 'gus', 'hal'] }));
 await test('suppression du compte : on se retire des amis d\'un ami (arrayRemove)', () =>
