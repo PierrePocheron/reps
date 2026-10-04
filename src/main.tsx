@@ -11,6 +11,7 @@ import {
   matchRoutes,
 } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
+import { reloadOnStaleChunk } from '@/utils/staleChunk';
 
 // Initialiser Sentry pour monitoring production
 if (import.meta.env.VITE_SENTRY_DSN) {
@@ -63,6 +64,8 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 
 // Wrapper BrowserRouter avec Sentry pour tracking navigation
 const SentryBrowserRouter = Sentry.withSentryRouting(BrowserRouter);
+
+window.addEventListener('vite:preloadError', (event) => reloadOnStaleChunk(event));
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

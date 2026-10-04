@@ -33,6 +33,8 @@ firebase deploy --only hosting --project reps
 ```
 
 Vérifier ensuite : https://pedro-reps.web.app (connexion, une séance, la politique de confidentialité `/privacy-policy`).
+Les onglets restés ouverts sur l'ancienne version se rechargent seuls (une fois) quand ils demandent une page qui
+n'existe plus (`src/utils/staleChunk.ts`), au lieu d'afficher l'écran d'erreur.
 
 ---
 
