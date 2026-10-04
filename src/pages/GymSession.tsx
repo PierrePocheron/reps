@@ -739,7 +739,7 @@ function SetExecuteRow({
   return (
     <div>
     <div className={cn(
-      'flex items-center gap-2 px-3 py-2 rounded-xl transition-colors',
+      'flex flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2 rounded-xl transition-colors', // wraps only with a very large font
       set.completed ? 'bg-green-500/10' : 'bg-muted/30'
     )}>
       <button
@@ -754,27 +754,27 @@ function SetExecuteRow({
           : set.type ? SET_TYPE_META[set.type].short : `S${number}`}
       </button>
 
-      <div className="flex items-center gap-1 flex-1 min-w-0">
+      <div className="flex items-center gap-1 flex-1">
         <Input
           type="number"
           value={reps}
           onChange={(e) => { setReps(e.target.value); onUpdate(exerciseId, setIndex, Number(e.target.value) || 0, Number(weight) || 0); }}
           onFocus={onFocusSel}
           aria-label={`${timed ? 'Durée en secondes' : 'Répétitions'}, série ${setIndex + 1}`}
-          className={`h-8 w-14 max-[359px]:w-12 min-w-0 text-sm p-1 ${NUM_CLS}`}
+          className={`h-8 w-0 flex-1 max-w-14 min-w-[calc(3ch_+_0.75rem)] text-sm p-1 ${NUM_CLS}`}
           min={0}
         />
         <UnitToggle timed={timed} onToggle={onToggleTimed} />
       </div>
 
-      <div className="flex items-center gap-1 flex-1 min-w-0">
+      <div className="flex items-center gap-1 flex-1">
         <Input
           type="number"
           value={weight}
           onChange={(e) => { setWeight(e.target.value); onUpdate(exerciseId, setIndex, Number(reps) || 0, Number(e.target.value) || 0); }}
           onFocus={onFocusSel}
           aria-label={`Charge en kg, série ${setIndex + 1}`}
-          className={`h-8 w-16 max-[359px]:w-14 min-w-0 text-sm p-1 ${NUM_CLS}`}
+          className={`h-8 w-0 flex-1 max-w-16 min-w-[calc(5ch_+_0.75rem)] text-sm p-1 ${NUM_CLS}`}
           min={0}
         />
         <span className="text-xs text-muted-foreground">kg</span>
@@ -786,7 +786,7 @@ function SetExecuteRow({
           value={set.rpe ?? ''}
           onChange={(e) => onRpe(e.target.value ? Number(e.target.value) : undefined)}
           aria-label={`RPE (effort ressenti), série ${setIndex + 1}`}
-          className="h-11 w-11 -my-1.5 -mr-1.5 flex-shrink-0 appearance-none rounded-lg bg-transparent text-center text-xs font-semibold text-green-700 dark:text-green-400 border border-green-500/30"
+          className="h-11 w-11 -my-1.5 -mr-1.5 ml-auto flex-shrink-0 appearance-none rounded-lg bg-transparent text-center text-xs font-semibold text-green-700 dark:text-green-400 border border-green-500/30"
         >
           <option value="">RPE</option>
           {RPE_VALUES.map((v) => <option key={v} value={v}>{v.toLocaleString('fr-FR')}</option>)}
@@ -801,7 +801,7 @@ function SetExecuteRow({
           }}
           aria-label={set.completed ? `Série ${setIndex + 1} validée` : `Valider la série ${setIndex + 1}`}
           className={cn(
-            'h-11 w-11 -my-1.5 -mr-1.5 flex items-center justify-center rounded-lg transition-all active:scale-95 flex-shrink-0',
+            'h-11 w-11 -my-1.5 -mr-1.5 ml-auto flex items-center justify-center rounded-lg transition-all active:scale-95 flex-shrink-0',
             set.completed
               ? 'text-green-600 dark:text-green-500'
               : 'text-muted-foreground hover:text-green-500 hover:bg-green-500/10'
