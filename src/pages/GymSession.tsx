@@ -7,7 +7,7 @@ import { AddGymExerciseDialog } from '@/components/AddGymExerciseDialog';
 import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
 import { PlateCalculator } from '@/components/gym/PlateCalculator';
 import { Timer } from '@/components/Timer';
-import { useGymSessionStore, NOTE_MAX } from '@/store/gymSessionStore';
+import { useGymSessionStore, NOTE_MAX, restSeconds } from '@/store/gymSessionStore';
 import { useUserStore } from '@/store/userStore';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -58,6 +58,8 @@ function GymSession() {
     restDuration,
     showRestTimer,
     restEndsAt,
+    restExerciseId,
+    restByExercise,
     autoRest,
     setAutoRest,
     showRpe,
@@ -196,7 +198,7 @@ function GymSession() {
   const handleCompleteSet = (exerciseId: string, setIndex: number, reps: number, weight: number) => {
     completeSetAt(exerciseId, setIndex, reps, weight);
     // Comme Strong : repos à chaque série… sauf au milieu d'un tour de superset
-    if (autoRest && completedSets + 1 < totalSets && restAfterSet(useGymSessionStore.getState().exercises, exerciseId)) startRestTimer();
+    if (autoRest && completedSets + 1 < totalSets && restAfterSet(useGymSessionStore.getState().exercises, exerciseId)) startRestTimer(exerciseId);
     const best = bestsRef.current[exerciseId];
     const e1rm = estimate1RM(weight, reps);
     const warmup = exercises.find((ex) => ex.exerciseId === exerciseId)?.sets[setIndex]?.type === 'warmup';
@@ -497,7 +499,8 @@ function GymSession() {
           {showRestTimer && restEndsAt && (
             <InlineRestTimer
               endsAt={restEndsAt}
-              durationSeconds={restDuration}
+              durationSeconds={restSeconds({ restDuration, restByExercise }, restExerciseId)}
+              forName={exercises.find((ex) => ex.exerciseId === restExerciseId)?.name}
               onDismiss={dismissRestTimer}
               onChangeDuration={setRestDuration}
               autoRest={autoRest}
@@ -891,9 +894,11 @@ function InlineRestTimer({
   onChangeDuration,
   autoRest,
   onToggleAutoRest,
+  forName,
 }: {
   endsAt: number;
   durationSeconds: number;
+  forName?: string;
   onDismiss: () => void;
   onChangeDuration: (v: number) => void;
   autoRest: boolean;
@@ -969,6 +974,7 @@ function InlineRestTimer({
           </button>
         ))}
       </div>
+      {forName && <p className="text-xs text-muted-foreground truncate">Durée retenue pour {forName}</p>}
     </div>
   );
 }

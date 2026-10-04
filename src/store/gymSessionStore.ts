@@ -24,6 +24,8 @@ interface GymSessionState {
   restDuration: number; // durée repos entre sets (secondes)
   showRestTimer: boolean;
   restEndsAt: number | null; // horodatage de fin du repos (le décompte en dérive)
+  restExerciseId: string | null; // exercice dont le repos est en cours (null : repos lancé à la main)
+  restByExercise: Record<string, number>; // durée retenue par exercice, comme Hevy (préférence, persistée)
   autoRest: boolean; // lancer le repos quand une série est validée (préférence, persistée)
   showRpe: boolean; // saisir le RPE des séries validées (préférence, persistée)
   suggestLoad: boolean; // proposer la charge suivante quand tout a été réussi (préférence, persistée)
@@ -43,7 +45,7 @@ interface GymSessionState {
   // Actions — Exécution
   startExecution: () => void;
   completeSetAt: (exerciseId: string, setIndex: number, actualReps: number, actualWeight: number) => void;
-  startRestTimer: () => void;
+  startRestTimer: (exerciseId?: string) => void;
   dismissRestTimer: () => void;
   setRestDuration: (seconds: number) => void;
   setAutoRest: (on: boolean) => void;
@@ -66,6 +68,10 @@ interface GymSessionState {
 
 // Persisté en localStorage : une séance en cours survit à un rechargement ou à
 // l'arrêt de la WebView par Android (terminer/annuler la remet à « idle »).
+/** Durée du repos : celle retenue pour l'exercice, sinon la durée par défaut. */
+export const restSeconds = (s: Pick<GymSessionState, 'restDuration' | 'restByExercise'>, exerciseId: string | null) =>
+  (exerciseId && s.restByExercise[exerciseId]) || s.restDuration;
+
 export const useGymSessionStore = create<GymSessionState>()(persist((set, get) => ({
   phase: 'idle',
   exercises: [],
@@ -76,6 +82,8 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   restDuration: 90, // 90 secondes par défaut
   showRestTimer: false,
   restEndsAt: null,
+  restExerciseId: null,
+  restByExercise: {},
   autoRest: true,
   showRpe: false,
   suggestLoad: true,
@@ -201,9 +209,9 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     }));
   },
 
-  startRestTimer: () => {
-    const restEndsAt = Date.now() + get().restDuration * 1000;
-    set({ showRestTimer: true, restEndsAt });
+  startRestTimer: (exerciseId) => {
+    const restEndsAt = Date.now() + restSeconds(get(), exerciseId ?? null) * 1000;
+    set({ showRestTimer: true, restEndsAt, restExerciseId: exerciseId ?? null });
     void scheduleRestEnd(restEndsAt);
   },
 
@@ -216,8 +224,11 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   },
 
   setRestDuration: (seconds: number) => {
-    set({ restDuration: seconds });
-    if (get().showRestTimer) get().startRestTimer(); // changer la durée relance le repos
+    const { showRestTimer, restExerciseId: id } = get();
+    // Pendant le repos d'un exercice : durée retenue pour lui ; sinon durée par défaut
+    if (showRestTimer && id) set((s) => ({ restByExercise: { ...s.restByExercise, [id]: seconds } }));
+    else set({ restDuration: seconds });
+    if (showRestTimer) get().startRestTimer(id ?? undefined); // changer la durée relance le repos
   },
 
   setAutoRest: (on: boolean) => set({ autoRest: on }),
@@ -336,6 +347,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     currentSetIndex: s.currentSetIndex,
     startTime: s.startTime,
     restDuration: s.restDuration,
+    restByExercise: s.restByExercise,
     autoRest: s.autoRest,
     showRpe: s.showRpe,
     suggestLoad: s.suggestLoad,

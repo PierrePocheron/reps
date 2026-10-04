@@ -49,3 +49,29 @@ describe('gymSessionStore — notification de fin de repos', () => {
     expect(cancelRestEnd).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('gymSessionStore — repos par exercice (#49)', () => {
+  it('retient la durée changée pendant le repos d\'un exercice, garde la durée par défaut ailleurs', () => {
+    const { startRestTimer, setRestDuration, dismissRestTimer } = useGymSessionStore.getState();
+    useGymSessionStore.setState({ restDuration: 90, restByExercise: {} });
+    const left = () => (useGymSessionStore.getState().restEndsAt ?? 0) - Date.now();
+
+    startRestTimer('barbell_squat');
+    setRestDuration(180); // pendant le repos du squat
+    dismissRestTimer();
+    expect(useGymSessionStore.getState()).toMatchObject({ restDuration: 90, restByExercise: { barbell_squat: 180 } });
+
+    startRestTimer('barbell_squat');
+    expect(left()).toBeGreaterThan(170_000);
+    startRestTimer('barbell_curl');
+    expect(left()).toBeLessThanOrEqual(90_000);
+
+    startRestTimer(); // repos lancé à la main : change la durée par défaut
+    setRestDuration(60);
+    expect(useGymSessionStore.getState().restDuration).toBe(60);
+    dismissRestTimer();
+
+    const saved = JSON.parse(localStorage.getItem('reps_gym_session') ?? '{}').state;
+    expect(saved.restByExercise).toEqual({ barbell_squat: 180 });
+  });
+});

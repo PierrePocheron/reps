@@ -94,6 +94,7 @@ const steps = [
     assert.equal(await page.getByRole('switch', { name: /Repos auto/ }).count(), 0, 'pas de repos après A1');
     await cards.nth(1).getByRole('button', { name: /^Valider la série 1/ }).click();
     await page.getByRole('switch', { name: /Repos auto/ }).waitFor();
+    await page.getByText(/^Durée retenue pour /).waitFor(); // repos propre à l'exercice (#49)
     // annuler : rien n'est enregistré, retour à l'accueil
     await page.getByRole('button', { name: 'Annuler la séance' }).first().click();
     await page.getByRole('dialog').or(page.locator('[aria-labelledby=cancel-session-title]')).getByRole('button', { name: 'Annuler la séance' }).click();
