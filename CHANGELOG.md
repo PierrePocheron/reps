@@ -63,6 +63,8 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 - Les badges débloqués apparaissent enfin dans le fil des amis (l'événement était effacé aussitôt)
 - Suggestion de charge : les séries dégressives n'y comptent plus, « Appliquer » ne les alourdit plus
 - Statistiques et badges à jour juste après une séance muscu, un jour de défi ou un changement d'objectif
+- Modèles enregistrés depuis une séance : vrais noms et images des exercices de la bibliothèque ou importés
+- Modifier une séance garde les séries ratées (la suggestion de charge ne croit plus à tort que tout est réussi)
 
 ### Technique
 - Démo complète hors ligne sur émulateurs (`yarn dev:demo`), parcours e2e, audit de contraste, tests des règles Firestore
