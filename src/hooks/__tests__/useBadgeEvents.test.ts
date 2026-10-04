@@ -68,7 +68,8 @@ describe('useBadgeEvents Hook', () => {
                 type: 'added',
                 doc: {
                     id: 'event-123',
-                    data: () => mockEventData
+                    data: () => mockEventData,
+                    metadata: { hasPendingWrites: true } // just written by this device
                 }
             }]
         };
@@ -91,8 +92,22 @@ describe('useBadgeEvents Hook', () => {
             description: "🏆 Test Badge"
         }));
 
-        // Verify cleanup (delete doc)
-        expect(writeBatch).toHaveBeenCalled();
+        // The event stays: friends' activity feeds read it ("X a débloqué un badge")
+        expect(writeBatch).not.toHaveBeenCalled();
+    });
+
+    it('does not replay the toast for an event read back from the server (app reloaded within the minute)', () => {
+        useUserStore.setState({ user: { uid: 'u1' } as any });
+        let snapshotCallback: any;
+        (onSnapshot as any).mockImplementation((_q: any, cb: any) => { snapshotCallback = cb; return vi.fn(); });
+        renderHook(() => useBadgeEvents());
+        snapshotCallback({ docChanges: () => [{ type: 'added', doc: {
+            id: 'event-synced',
+            data: () => ({ badgeName: 'Test Badge', badgeEmoji: '🏆', createdAt: { toMillis: () => Date.now() - 5000 } }),
+            metadata: { hasPendingWrites: false },
+        } }] });
+        vi.advanceTimersByTime(2000);
+        expect(mockToast).not.toHaveBeenCalled();
     });
 
     it('should ignore old events (> 60s)', () => {
@@ -116,7 +131,8 @@ describe('useBadgeEvents Hook', () => {
                     data: () => ({
                         badgeName: 'Old Badge',
                         createdAt: { toMillis: () => oldDate }
-                    })
+                    }),
+                    metadata: { hasPendingWrites: true } // only the age filter is under test
                 }
             }]
         };

@@ -1,11 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { collection, query, where, onSnapshot, orderBy, limit, writeBatch, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { useUserStore } from '@/store/userStore';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/useSound';
 import { useHaptic } from '@/hooks/useHaptic';
-import { logger } from '@/utils/logger';
 
 export function useBadgeEvents() {
     const { user } = useUserStore();
@@ -33,10 +32,11 @@ export function useBadgeEvents() {
                     const eventData = change.doc.data();
                     const eventId = change.doc.id;
 
-                    // Ignorer les événements déjà traités localement ou trop vieux (ex: au chargement initial)
-                    // Pour simplifier, on supprime l'événement après traitement pour ne plus l'avoir
-                    // Mais on utilise une ref pour éviter le double déclenchement en mode Strict
+                    // Ignorer les événements déjà traités (double déclenchement en mode Strict)
                     if (processedEvents.current.has(eventId)) return;
+                    // Only an event this device just wrote: one read back from the server (app reloaded within the
+                    // minute) was already celebrated. The event is never deleted: friends' feeds show it
+                    if (!change.doc.metadata.hasPendingWrites) return;
 
                     // Si l'événement a plus de 1 minute, on l'ignore (probablement un vieux truc qui traîne)
                     const eventTime = eventData.createdAt?.toMillis?.() || Date.now();
@@ -59,12 +59,6 @@ export function useBadgeEvents() {
                             duration: 6000, // Un peu plus long pour être sûr d'être vu
                         });
                     }, 1000);
-
-                    // 3. Supprimer l'événement pour ne pas le rejouer
-                    // On le supprime de Firestore pour nettoyer
-                    const batch = writeBatch(db);
-                    batch.delete(doc(db, 'users', user.uid, 'userEvents', eventId));
-                    batch.commit().catch((e) => logger.error('Badge batch commit error', e));
                 }
             });
         });
