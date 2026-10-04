@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { applyThemeColor, getCurrentThemeColor, themeColors } from '../theme-colors';
+import { applyThemeColor, getCurrentThemeColor, themeColors, readableOnWhite, contrastWithWhite } from '../theme-colors';
+import type { ThemeColor } from '../theme-colors';
 
 describe('theme-colors', () => {
   beforeEach(() => {
@@ -78,6 +79,30 @@ describe('theme-colors', () => {
     it('should correctly identify green theme', () => {
       applyThemeColor('green');
       expect(getCurrentThemeColor()).toBe('green');
+    });
+  });
+
+  // ==================== ACCENT TEXT ON WHITE (#67) ====================
+
+  describe('readableOnWhite', () => {
+    it('makes every theme readable as text on white (AA 4.5:1)', () => {
+      for (const color of Object.keys(themeColors) as ThemeColor[]) {
+        expect(contrastWithWhite(readableOnWhite(themeColors[color].hsl))).toBeGreaterThanOrEqual(4.5);
+      }
+    });
+
+    it('leaves a colour that already passes untouched', () => {
+      expect(readableOnWhite(themeColors.violet.hsl)).toBe(themeColors.violet.hsl);
+    });
+
+    it('only darkens (same hue and saturation)', () => {
+      const [h, s] = themeColors.yellow.hsl.split(' ');
+      expect(readableOnWhite(themeColors.yellow.hsl).startsWith(`${h} ${s}`)).toBe(true);
+    });
+
+    it('is applied with the theme', () => {
+      applyThemeColor('yellow');
+      expect(document.documentElement.style.getPropertyValue('--primary-text')).toBe(readableOnWhite(themeColors.yellow.hsl));
     });
   });
 });

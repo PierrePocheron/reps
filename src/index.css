@@ -101,6 +101,11 @@
 /* Mode sombre : texte en couleur d'accent ou destructive éclairci pour le contraste AA (4,5:1).
    La couleur d'accent est choisie par l'utilisateur : on la mélange au blanc plutôt que de fixer une teinte ;
    les fonds (boutons) gardent la couleur d'origine. Repli : couleur d'origine si color-mix n'est pas pris en charge. */
+/* Light mode, same principle: accent text darkened just enough for AA, per theme (--primary-text, set by
+   applyThemeColor; the violet already passes and is unchanged). */
+.text-primary {
+  color: hsl(var(--primary-text, var(--primary)));
+}
 .dark .text-primary {
   color: hsl(var(--primary));
   color: color-mix(in srgb, hsl(var(--primary)) 62%, white);
