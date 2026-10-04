@@ -114,3 +114,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | passe UI/UX visuels store | Démo réinitialisée (données propres) ; 8 captures Play Store régénérées sur l'interface actuelle | `78af5c1` |
 | 2026-10-04 | #64 | Titre (repris du modèle) et note de séance : historique, partage, export / import CSV | `50906fe` |
 | 2026-10-04 | #65 | Rappel « Précédent : 10 × 90 kg » sous une série modifiée (colonne Précédent de Hevy/Strong, sans colonne de plus) | `fc952be` |
+| 2026-10-04 | passe UI/UX titre de séance | Séance ouverte à mi-page depuis une carte basse de l'historique (scrollY 1318) → remontée en haut à chaque navigation (sauf retour) + e2e ; champs titre/note OK en clair/sombre à 320 px | `8dcdc0d` |
