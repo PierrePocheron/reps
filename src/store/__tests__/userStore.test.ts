@@ -97,6 +97,23 @@ describe('userStore', () => {
         });
     });
 
+    describe('user document listener', () => {
+        it('is stopped on reset and never stacked across loads', async () => {
+            const unsubscribe = vi.fn();
+            (firebase.subscribeToUser as any).mockReturnValue(unsubscribe);
+            (firebase.getCurrentUserProfile as any).mockResolvedValue({ uid: 'u1', displayName: 'P' });
+            (firebase.calculateUserStats as any).mockResolvedValue({ totalReps: 0 });
+            useUserStore.setState({ currentUser: { uid: 'u1' } as any });
+
+            await useUserStore.getState().loadUserProfile();
+            await useUserStore.getState().loadUserProfile(); // e.g. profile reloaded: previous listener replaced
+            expect(unsubscribe).toHaveBeenCalledTimes(1);
+
+            useUserStore.getState().reset(); // sign-out: without this the listener hit permission-denied
+            expect(unsubscribe).toHaveBeenCalledTimes(2);
+        });
+    });
+
     describe('loadUserProfile', () => {
         it('should load profile and stats if current user exists', async () => {
             useUserStore.setState({ currentUser: { uid: 'u1' } as any });

@@ -38,6 +38,15 @@ interface UserState {
   reset: () => void;
 }
 
+// Live user document listener: one at a time, stopped on reset (sign-out / deletion), or it hit permission-denied
+let stopUserListener: (() => void) | null = null;
+function listenToUser(uid: string, setUser: (user: User) => void) {
+  stopUserListener?.();
+  stopUserListener = subscribeToUser(uid, (updatedUser) => {
+    if (updatedUser) setUser(updatedUser);
+  });
+}
+
 /**
  * Store Zustand pour la gestion de l'utilisateur et de l'authentification
  */
@@ -125,11 +134,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         await get().refreshStats();
 
         if (currentUser.uid === userProfile.uid) {
-             subscribeToUser(currentUser.uid, (updatedUser) => {
-              if (updatedUser) {
-                get().setUser(updatedUser);
-              }
-            });
+             listenToUser(currentUser.uid, get().setUser);
         }
       } else {
         // Retry logic...
@@ -141,9 +146,7 @@ export const useUserStore = create<UserState>((set, get) => ({
            get().setUser(retryProfile);
            await get().refreshStats();
 
-            subscribeToUser(currentUser.uid, (updatedUser) => {
-              if (updatedUser) get().setUser(updatedUser);
-            });
+            listenToUser(currentUser.uid, get().setUser);
            return;
         }
 
@@ -160,9 +163,7 @@ export const useUserStore = create<UserState>((set, get) => ({
           if (newProfile) {
             get().setUser(newProfile);
             await get().refreshStats();
-             subscribeToUser(currentUser.uid, (updatedUser) => {
-              if (updatedUser) get().setUser(updatedUser);
-            });
+             listenToUser(currentUser.uid, get().setUser);
           }
         } catch (createError) {
            logger.error("[UserStore] Impossible de créer le profil fallback:", createError);
@@ -264,6 +265,8 @@ export const useUserStore = create<UserState>((set, get) => ({
    * Réinitialise l'état du store
    */
   reset: () => {
+    stopUserListener?.();
+    stopUserListener = null;
     // Nettoyer la session en cours (Zustand + LocalStorage)
     try {
       // Import dynamique pour éviter les dépendances circulaires top-level à l'initialisation

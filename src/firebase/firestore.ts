@@ -266,7 +266,8 @@ export function subscribeToUser(
       emit();
     },
     (error) => {
-      logger.error('Erreur lors de l\'écoute du document utilisateur:', error);
+      // signed out (or account deleted): the rules now refuse this read, which is expected, not an error
+      if (auth.currentUser) logger.error('Erreur lors de l\'écoute du document utilisateur:', error);
       callback(null);
     }
   );

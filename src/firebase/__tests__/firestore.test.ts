@@ -180,6 +180,16 @@ describe('subscribeToUser', () => {
     expect(onSnapshot).toHaveBeenCalledTimes(1);
     expect(typeof unsubscribe).toBe('function');
   });
+  it('stays quiet on the permission-denied that follows sign-out', async () => {
+    const { logger } = await import('@/utils/logger');
+    const errorSpy = vi.spyOn(logger, 'error');
+    const callback = vi.fn();
+    subscribeToUser('uid123', callback); // auth.currentUser is null in this suite: signed out
+    const onError = vi.mocked(onSnapshot).mock.calls[0]![2] as unknown as (e: Error) => void;
+    onError(Object.assign(new Error('Missing or insufficient permissions.'), { code: 'permission-denied' }));
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(callback).toHaveBeenCalledWith(null);
+  });
 });
 
 // ==================== SESSIONS ====================
