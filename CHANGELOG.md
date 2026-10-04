@@ -23,7 +23,7 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 - Écran de fin de séance (reps, kcal, comparaison), séance oubliée à une date passée
 
 ### Historique et données
-- Page historique (muscu / renfo / records), filtre par exercice
+- Page historique (muscu / renfo / records), filtre par exercice, séances plus anciennes chargées à la demande
 - Refaire, modifier, supprimer une séance ; l'enregistrer comme modèle
 - Export CSV (format Strong) et JSON complet (mensurations, modèles, notes, RPE, types de séries), import Strong / Hevy sans doublon
 - Hors ligne : séances, modèles, mensurations et modifications enregistrés sans réseau, envoyés au retour de la connexion

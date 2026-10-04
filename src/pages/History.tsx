@@ -322,9 +322,22 @@ function PRCard({ pr, onOpen }: { pr: PersonalRecord; onOpen: () => void }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+/** The list stays in place while the next page loads. */
+function LoadOlder({ loading, onClick }: { loading: boolean; onClick: () => void }) {
+  return (
+    <Button variant="outline" className="w-full min-h-11 rounded-xl" disabled={loading} onClick={onClick}>
+      {loading ? <LoadingSpinner size="sm" /> : 'Voir les séances plus anciennes'}
+    </Button>
+  );
+}
+
+// ponytail: « load more » raises the limit and re-reads from the top (simple); cursor pages if reads cost matters
+const PAGE = 100;
+
 function History() {
   const [activeTab, setActiveTab] = useState<Tab>('musculation');
-  const history = useSessionHistory(100);
+  const [limit, setLimit] = useState(PAGE); // past the latest 100 sessions, older ones were unreachable (#71)
+  const history = useSessionHistory(limit);
   const { loading, error, refetch } = history;
   // Séances supprimées (#56) : retirées tout de suite, sans recharger la liste (pas de clignotement)
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
@@ -565,7 +578,7 @@ function History() {
             <p className="text-sm text-muted-foreground">Vérifie ta connexion puis réessaie.</p>
             <Button variant="outline" size="sm" className="rounded-xl" onClick={refetch}>Réessayer</Button>
           </div>
-        ) : loading ? (
+        ) : loading && history.sessions.length === 0 && history.gymSessions.length === 0 ? (
           <div className="flex justify-center py-16">
             <LoadingSpinner size="lg" />
           </div>
@@ -605,6 +618,7 @@ function History() {
                   onDelete={() => setToDelete({ kind: 'gym', id: s.sessionId })}
                   onEdit={() => setToEdit(s)} />
               ))}
+              {history.gymSessions.length >= limit && <LoadOlder loading={loading} onClick={() => setLimit((l) => l + PAGE)} />}
             </div>
           )
         ) : activeTab === 'renforcement' ? (
@@ -625,6 +639,7 @@ function History() {
                   onDelete={() => setToDelete({ kind: 'renfo', id: s.sessionId })}
                   onEdit={() => setToEditRenfo(s)} />
               ))}
+              {history.sessions.length >= limit && <LoadOlder loading={loading} onClick={() => setLimit((l) => l + PAGE)} />}
             </div>
           )
         ) : (
