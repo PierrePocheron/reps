@@ -61,6 +61,12 @@ describe('liveStreak', () => {
     expect(liveStreak(5, daysAgo(2), key(10), today)).toBe(5); // joker d'une autre semaine
     expect(liveStreak(5, daysAgo(3), null, today)).toBe(0);
   });
+
+  it("le joker en attente (hier) ne compte pas comme un joker déjà pris : valeurs recalculées au lancement", () => {
+    const s = trainingStreaks([daysAgo(4), daysAgo(3), daysAgo(2)], today); // repos hier, pas encore entraîné aujourd'hui
+    expect(s).toMatchObject({ current: 3, pendingJoker: key(1), lastJokerDay: key(1) });
+    expect(liveStreak(s.current, daysAgo(2), s.lastJokerDay, today)).toBe(3); // widget et en-tête affichaient 0
+  });
 });
 
 describe('weeklyStreaks', () => {

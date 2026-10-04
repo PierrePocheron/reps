@@ -60,7 +60,8 @@ export function liveStreak(streak: number, lastTraining: Date | null | undefined
   const last = dayKey(lastTraining), t = dayKey(today);
   if (last === t || nextDayKey(last) === t) return streak;
   const missed = nextDayKey(last);
-  const jokerFree = !lastJokerDay || weekKey(lastJokerDay) !== weekKey(missed);
+  // lastJokerDay === missed: the joker pending on that very day (stats recomputed before today's session), not one spent earlier
+  const jokerFree = !lastJokerDay || lastJokerDay === missed || weekKey(lastJokerDay) !== weekKey(missed);
   return nextDayKey(missed) === t && jokerFree ? streak : 0;
 }
 
