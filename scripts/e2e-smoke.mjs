@@ -70,6 +70,7 @@ const steps = [
     await page.getByRole('button', { name: /Développé couché/ }).first().click();
     await page.getByRole('button', { name: /^Valider la série 1/ }).first().click();
     await page.getByRole('button', { name: /^Terminer/ }).click();
+    await page.getByText(/de volume|volume que|Volume un peu/).first().waitFor(); // ended right away: the recap still compares
     await finish();
     // renfo : séance de base
     await center().click();

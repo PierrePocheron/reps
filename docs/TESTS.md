@@ -34,7 +34,7 @@ Ce projet utilise des **tests unitaires**, des **tests d'intégration légère**
 | Parcours | Ce qui est vérifié |
 |---|---|
 | Connexion, navigation | Chaque onglet de la barre flottante ouvre sa page ; le bouton central ouvre un sélecteur de séance qui répond |
-| Nouvelle séance (bouton central) | Muscu : séance libre, exercice ajouté, série validée, récap ; renfo : séance de base, récap ; séances supprimées ensuite |
+| Nouvelle séance (bouton central) | Muscu : séance libre, exercice ajouté, série validée, fin immédiate avec comparaison au récap ; renfo : séance de base, récap ; séances supprimées ensuite |
 | Séance muscu complète | Refaire, titre et note, rappel « Précédent », repos auto, barre fixée, écran de récap, carte titrée dans l'historique |
 | Séance renfo | Refaire, compter, récap avec comparaison — réseau lent (1,5 s) et fin immédiate |
 | Hors ligne | Bandeau sur une ligne qui ne masque pas l'en-tête de séance ; réseau coupé avant « Terminer » : récap et retour à l'accueil sans attendre le réseau, séance dans l'historique à la reconnexion ; suppression hors ligne qui tient au retour du réseau |

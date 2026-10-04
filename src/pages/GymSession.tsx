@@ -132,6 +132,7 @@ function GymSession() {
   const bestsRef = useRef<Record<string, number>>({});
   const bestSecsRef = useRef<Record<string, number>>({}); // meilleure durée, exercices en durée (#59)
   const [gymHistory, setGymHistory] = useState<GymSessionData[]>([]);
+  const historyLoad = useRef<Promise<GymSessionData[]>>(Promise.resolve([])); // awaited by the recap (see handleEndSession)
   // Récap affiché après la fin de séance (#54) ; posé avant endSession pour devancer le retour à l'accueil
   const [showBackdate, setShowBackdate] = useState(false);
   const [summary, setSummary] = useState<{ stats: SummaryStat[]; comparison: string | null; card: SessionCard } | null>(null);
@@ -140,7 +141,9 @@ function GymSession() {
   const uid = user?.uid;
   useEffect(() => {
     if (!uid || phase === 'idle') return;
-    getUserGymSessions(uid, 200).then((sessions) => {
+    const load = getUserGymSessions(uid, 200);
+    historyLoad.current = load.catch(() => []);
+    load.then((sessions) => {
       bestsRef.current = bestE1RMByExercise(sessions);
       bestSecsRef.current = bestSecondsByExercise(sessions);
       setGymHistory(sessions);
@@ -257,9 +260,12 @@ function GymSession() {
   const handleEndSession = async () => {
     if (ending) return;
     setEnding(true);
+    // Ended before the 200-session history arrived (it takes over a second): wait for it, capped so it never
+    // blocks offline, or the recap had no comparison
+    const history = await Promise.race([historyLoad.current, new Promise<GymSessionData[]>((r) => setTimeout(() => r(gymHistory), 3000))]);
     // Récap et carte de partage figés avant que endSession ne vide le store
     const duration = backdate ? backdate.duration : startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
-    const sum = gymSummary(exercises, gymHistory);
+    const sum = gymSummary(exercises, history);
     setSummary({
       card: gymCard({ date: new Date(backdate?.at ?? Date.now()), duration, exercises, title }),
       comparison: comparisonText(sum.deltaPct),
