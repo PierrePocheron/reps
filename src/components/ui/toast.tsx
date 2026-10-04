@@ -49,8 +49,8 @@ const Toast = React.forwardRef<
       {...props}
     >
       {props.children}
-      {/* Barre de progression */}
-      <div className="absolute bottom-0 left-0 h-1 w-full bg-primary/10">
+      {/* Barre de progression : masquée en « animations réduites » (elle y resterait vide pendant 3 s) */}
+      <div className="absolute bottom-0 left-0 h-1 w-full bg-primary/10 motion-reduce:hidden">
         <div className="h-full bg-primary animate-toast-progress" />
       </div>
     </ToastPrimitives.Root>

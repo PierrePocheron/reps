@@ -519,7 +519,7 @@ function History() {
             role="tab"
             aria-selected={activeTab === 'musculation'}
             onClick={() => setActiveTab('musculation')}
-            className={`flex-1 min-w-0 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
+            className={`flex-auto min-w-0 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
               activeTab === 'musculation'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -537,7 +537,7 @@ function History() {
             role="tab"
             aria-selected={activeTab === 'renforcement'}
             onClick={() => setActiveTab('renforcement')}
-            className={`flex-1 min-w-0 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
+            className={`flex-auto min-w-0 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
               activeTab === 'renforcement'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -555,7 +555,7 @@ function History() {
             role="tab"
             aria-selected={activeTab === 'records'}
             onClick={() => setActiveTab('records')}
-            className={`flex-1 min-w-0 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
+            className={`flex-auto min-w-0 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
               activeTab === 'records'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
