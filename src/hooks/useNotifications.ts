@@ -87,19 +87,14 @@ export const useNotifications = () => {
         const [hours = 20, minutes = 0] = timeStr.split(':').map(Number);
         await LocalNotifications.cancel({ notifications: [{ id: 1 }] });
 
-        const scheduleTime = new Date();
-        scheduleTime.setHours(hours, minutes, 0, 0);
-        if (Date.now() > scheduleTime.getTime()) {
-          scheduleTime.setDate(scheduleTime.getDate() + 1);
-        }
-
         await LocalNotifications.schedule({
           notifications: [
             {
               title: "💪 C'est l'heure des Reps !",
               body: 'Chaque rep compte. Lance ta séance maintenant !',
               id: 1,
-              schedule: { at: scheduleTime, every: 'day', allowWhileIdle: true },
+              // `on` repeats (cron-like, rescheduled after each delivery); with `at`, `every` is ignored: it fired once
+              schedule: { on: { hour: hours, minute: minutes }, allowWhileIdle: true },
               sound: undefined,
               attachments: undefined,
               actionTypeId: '',
