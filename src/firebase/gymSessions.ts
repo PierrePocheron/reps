@@ -4,6 +4,7 @@ import {
   getDocs,
   query,
   orderBy,
+  where,
   limit,
   Timestamp,
   deleteDoc,
@@ -43,6 +44,14 @@ export async function createGymSession(
     logger.error('Erreur lors de la création de la séance muscu:', error as Error);
     throw error;
   }
+}
+
+/** Gym sessions within [from, to): period recaps must not stop at the latest page of history. */
+export async function getUserGymSessionsBetween(userId: string, from: Date, to: Date): Promise<GymSession[]> {
+  const q = query(collection(db, 'gym_sessions', userId, 'userGymSessions'),
+    where('date', '>=', Timestamp.fromDate(from)), where('date', '<', Timestamp.fromDate(to)), orderBy('date', 'desc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((docSnap) => ({ sessionId: docSnap.id, ...docSnap.data() })) as GymSession[];
 }
 
 /**

@@ -9,7 +9,7 @@ import { Flame, Dumbbell, Calendar, Zap, AlertTriangle, Trophy, Sunrise, Sun, Mo
 import { AdSpace } from '@/components/AdSpace';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ADS_CONFIG } from '@/config/ads';
-import { useSessionHistory } from '@/hooks/useSessionHistory';
+import { useSessionHistory, usePeriodHistory } from '@/hooks/useSessionHistory';
 import type { Session, GymSession } from '@/firebase/types';
 import { setsByMuscle, MUSCLE_GROUPS, REPS_PER_SET } from '@/utils/muscles';
 import { periodRecap, recapCard, recapRange, type RecapKind } from '@/utils/recap';
@@ -396,7 +396,11 @@ function PeriodRecap({ sessions, gymSessions }: { sessions: Session[]; gymSessio
   const [kind, setKind] = useState<RecapKind>('month');
   const [offset, setOffset] = useState(0);
   const { from, to, label } = recapRange(kind, offset);
-  const recap = periodRecap(gymSessions, sessions, from, to);
+  // The whole period (a busy year exceeds the 200 sessions loaded for the page); recent data meanwhile
+  const period = usePeriodHistory(from, to);
+  const recap = period.loaded
+    ? periodRecap(period.gymSessions, period.sessions, from, to)
+    : periodRecap(gymSessions, sessions, from, to);
   const fmt = (n: number) => n.toLocaleString('fr-FR');
   const tiles = [
     { label: recap.sessions > 1 ? 'Séances' : 'Séance', value: fmt(recap.sessions) },

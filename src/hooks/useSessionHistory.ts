@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getUserSessions } from '@/firebase/firestore';
-import { getUserGymSessions } from '@/firebase/gymSessions';
+import { getUserSessions, getUserSessionsBetween } from '@/firebase/firestore';
+import { getUserGymSessions, getUserGymSessionsBetween } from '@/firebase/gymSessions';
 import { useUserStore } from '@/store/userStore';
 import type { Session, GymSession } from '@/firebase/types';
 
@@ -48,4 +48,24 @@ export function useSessionHistory(limitCount = 200): SessionHistory {
   }, [uid, limitCount, tick]);
 
   return { sessions, gymSessions, loading, error, refetch: () => setTick((t) => t + 1) };
+}
+
+/** Sessions of one period (month / year recap), read by date range rather than from the latest page. */
+export function usePeriodHistory(from: Date, to: Date): { sessions: Session[]; gymSessions: GymSession[]; loaded: boolean } {
+  const uid = useUserStore().user?.uid;
+  const [state, setState] = useState<{ key: string; sessions: Session[]; gymSessions: GymSession[] } | null>(null);
+  const key = `${uid}:${from.getTime()}:${to.getTime()}`;
+
+  useEffect(() => {
+    if (!uid) return;
+    let alive = true;
+    Promise.all([getUserSessionsBetween(uid, from, to), getUserGymSessionsBetween(uid, from, to)])
+      .then(([sessions, gymSessions]) => { if (alive) setState({ key, sessions, gymSessions }); })
+      .catch(() => { /* the recap falls back to the sessions already loaded */ });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- key covers uid, from and to
+  }, [key]);
+
+  const loaded = state?.key === key;
+  return { sessions: loaded ? state.sessions : [], gymSessions: loaded ? state.gymSessions : [], loaded };
 }

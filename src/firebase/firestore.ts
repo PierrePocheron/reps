@@ -356,6 +356,14 @@ export async function deleteSession(userId: string, sessionId: string): Promise<
   await queuedIfOffline(deleteDoc(doc(db, 'sessions', userId, 'userSessions', sessionId)));
 }
 
+/** Renfo sessions within [from, to): period recaps must not stop at the latest page of history. */
+export async function getUserSessionsBetween(userId: string, from: Date, to: Date): Promise<Session[]> {
+  const q = query(collection(db, 'sessions', userId, 'userSessions'),
+    where('date', '>=', Timestamp.fromDate(from)), where('date', '<', Timestamp.fromDate(to)), orderBy('date', 'desc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((d) => ({ sessionId: d.id, ...d.data() })) as Session[];
+}
+
 export async function getUserSessions(userId: string, limitCount = 50): Promise<Session[]> {
   try {
     const sessionsRef = collection(db, 'sessions', userId, 'userSessions');
