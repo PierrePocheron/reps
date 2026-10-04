@@ -25,7 +25,7 @@ export function ColorPicker({ selectedColor, onColorChange, className }: ColorPi
             type="button"
             onClick={() => onColorChange(color)}
             className={cn(
-              'relative flex flex-col items-center justify-center gap-1.5 rounded-lg border-2 p-2 transition-all hover:scale-105',
+              'relative flex flex-col items-center justify-center gap-1.5 rounded-lg border-2 px-1 py-2 transition-all hover:scale-105',
               isSelected ? 'shadow-md' : 'border-border bg-card'
             )}
             style={{

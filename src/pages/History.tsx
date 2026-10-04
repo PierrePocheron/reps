@@ -240,7 +240,7 @@ function PRCard({ pr, onOpen }: { pr: PersonalRecord; onOpen: () => void }) {
     >
       <div className="flex items-stretch">
         <div className="w-1.5 bg-yellow-500/70" />
-        <div className="flex-1 p-4">
+        <div className="flex-1 min-w-0 p-4">
           <div className="flex items-center gap-3">
             {/* Image ou emoji */}
             <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
@@ -402,7 +402,7 @@ function History() {
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <Dumbbell className="h-4 w-4 text-blue-500" />
+            <Dumbbell className="h-4 w-4 text-blue-500 max-[359px]:hidden" />
             Muscu
             {gymSessions.length > 0 && (
               <span className="text-xs bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full font-semibold">
@@ -420,7 +420,7 @@ function History() {
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <Zap className="h-4 w-4 text-orange-500" />
+            <Zap className="h-4 w-4 text-orange-500 max-[359px]:hidden" />
             Renfo
             {sessions.length > 0 && (
               <span className="text-xs bg-orange-500/10 text-orange-800 dark:text-orange-400 px-1.5 py-0.5 rounded-full font-semibold">
@@ -438,7 +438,7 @@ function History() {
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <Trophy className="h-4 w-4 text-yellow-500" />
+            <Trophy className="h-4 w-4 text-yellow-500 max-[359px]:hidden" />
             Records
             {personalRecords.length > 0 && (
               <span className="text-xs bg-yellow-500/10 text-yellow-800 dark:text-yellow-400 px-1.5 py-0.5 rounded-full font-semibold">

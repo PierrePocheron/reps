@@ -147,32 +147,32 @@ function Settings() {
           <CardContent className="space-y-4">
             <div>
               <p className="text-sm font-medium mb-2">Mode</p>
-              <div className="flex gap-2" role="group" aria-label="Mode d'affichage">
+              <div className="grid grid-cols-3 gap-2" role="group" aria-label="Mode d'affichage">
                 <Button
                   variant={theme === 'light' ? 'default' : 'outline'}
                   aria-pressed={theme === 'light'}
                   onClick={() => setTheme('light')}
-                  className="flex-1"
+                  className="h-auto min-w-0 flex-col gap-1 px-1.5 py-2.5"
                 >
-                  <Sun className="h-4 w-4 mr-2" />
+                  <Sun className="h-4 w-4" />
                   Clair
                 </Button>
                 <Button
                   variant={theme === 'dark' ? 'default' : 'outline'}
                   aria-pressed={theme === 'dark'}
                   onClick={() => setTheme('dark')}
-                  className="flex-1"
+                  className="h-auto min-w-0 flex-col gap-1 px-1.5 py-2.5"
                 >
-                  <Moon className="h-4 w-4 mr-2" />
+                  <Moon className="h-4 w-4" />
                   Sombre
                 </Button>
                 <Button
                   variant={theme === 'system' ? 'default' : 'outline'}
                   aria-pressed={theme === 'system'}
                   onClick={() => setTheme('system')}
-                  className="flex-1"
+                  className="h-auto min-w-0 flex-col gap-1 px-1.5 py-2.5"
                 >
-                  <Monitor className="h-4 w-4 mr-2" />
+                  <Monitor className="h-4 w-4" />
                   Système
                 </Button>
               </div>
@@ -268,12 +268,12 @@ function Settings() {
             <p className="text-sm text-muted-foreground">
               Nombre de séances visées par semaine (affiché dans les statistiques).
             </p>
-            <div className="flex gap-2" role="group" aria-label="Objectif hebdomadaire">
+            <div className="grid grid-cols-5 gap-1.5" role="group" aria-label="Objectif hebdomadaire">
               {WEEKLY_GOAL_OPTIONS.map((g) => (
                 <Button
                   key={g}
                   variant={weeklyGoal === g ? 'default' : 'outline'}
-                  className={cn('flex-1 active:scale-95', weeklyGoal === g && 'ring-2 ring-offset-2 ring-primary')}
+                  className={cn('min-w-0 px-0 max-[359px]:text-xs active:scale-95', weeklyGoal === g && 'ring-2 ring-offset-2 ring-primary')}
                   aria-pressed={weeklyGoal === g}
                   onClick={() => setWeeklyGoal(g)}
                 >
@@ -323,7 +323,7 @@ function Settings() {
                 <Button
                   key={opt.id}
                   variant={language === opt.id ? 'default' : 'outline'}
-                  className={cn('flex-1 active:scale-95', language === opt.id && 'ring-2 ring-offset-2 ring-primary')}
+                  className={cn('flex-1 min-w-0 px-2 active:scale-95', language === opt.id && 'ring-2 ring-offset-2 ring-primary')}
                   aria-pressed={language === opt.id}
                   onClick={() => setLanguage(opt.id)}
                 >

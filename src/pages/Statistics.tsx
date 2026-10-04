@@ -229,21 +229,21 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
             <button
               onClick={() => setMode('reps')}
               aria-pressed={activeMode === 'reps'}
-              className={`flex items-center gap-1 px-3 py-1.5 min-h-11 rounded-md text-xs font-medium transition-all active:scale-95 ${
+              className={`flex items-center gap-1 px-3 max-[359px]:px-2 py-1.5 min-h-11 rounded-md text-xs font-medium transition-all active:scale-95 ${
                 activeMode === 'reps' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'
               }`}
             >
-              <Zap className="w-3 h-3 text-orange-500" />
+              <Zap className="w-3 h-3 text-orange-500 max-[359px]:hidden" />
               Reps
             </button>
             <button
               onClick={() => setMode('volume')}
               aria-pressed={activeMode === 'volume'}
-              className={`flex items-center gap-1 px-3 py-1.5 min-h-11 rounded-md text-xs font-medium transition-all active:scale-95 ${
+              className={`flex items-center gap-1 px-3 max-[359px]:px-2 py-1.5 min-h-11 rounded-md text-xs font-medium transition-all active:scale-95 ${
                 activeMode === 'volume' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'
               }`}
             >
-              <Dumbbell className="w-3 h-3 text-blue-500" />
+              <Dumbbell className="w-3 h-3 text-blue-500 max-[359px]:hidden" />
               Volume
             </button>
           </div>

@@ -2,7 +2,8 @@
  * Test de fumée de bout en bout sur la démo (émulateurs + données fictives).
  * Prérequis : `yarn dev:demo` lancé. Usage : `yarn e2e` (code de sortie ≠ 0 au premier échec).
  * Couvre les parcours où une régression bloque l'utilisateur : connexion, navigation,
- * séance muscu de bout en bout (note, repos auto, fin de séance), séance renfo, courbe de progression.
+ * séance muscu de bout en bout (note, repos auto, fin de séance), séance renfo, courbe de progression,
+ * mise en page sans débordement sur petit écran.
  */
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
@@ -127,6 +128,32 @@ const steps = [
     const coveredByNav = await page.evaluate(() => !!document.elementFromPoint(innerWidth / 2, innerHeight - 20)?.closest('nav'));
     assert.ok(!coveredByNav, 'la navigation recouvre la feuille ouverte');
     await assertAlive('records');
+  }],
+
+  ['petit écran (320 px) : rien ne déborde', async () => {
+    await page.keyboard.press('Escape');
+    await page.setViewportSize({ width: 320, height: 640 });
+    for (const path of ['/', '/history', '/statistics', '/profil', '/settings', '/friends', '/challenges', '/leaderboard', '/templates']) {
+      await page.goto(`${BASE}${path}`);
+      await page.waitForTimeout(800);
+      // boutons shadcn en nowrap : une rangée trop large pousse la page ou se fait rogner par sa carte
+      const over = await page.evaluate(() => {
+        // décor en position absolue et rangées défilantes (overflow-x: auto) exclus : débordements voulus
+        const inFlow = (e, box) => {
+          for (let n = e; n && n !== box; n = n.parentElement) {
+            const cs = getComputedStyle(n);
+            if (['absolute', 'fixed'].includes(cs.position) || (n !== e && ['auto', 'scroll'].includes(cs.overflowX))) return false;
+          }
+          return true;
+        };
+        return [...document.querySelectorAll('[role=group], [role=tablist], .rounded-2xl.border, .rounded-lg.border')]
+          .filter((box) => getComputedStyle(box).overflowX !== 'auto')
+          .filter((box) => { const r = box.getBoundingClientRect().right; return [...box.querySelectorAll('*')].some((e) => inFlow(e, box) && e.getBoundingClientRect().width > 0 && e.getBoundingClientRect().right > r + 1); })
+          .map((box) => box.getAttribute('aria-label') || box.innerText.trim().split('\n')[0].slice(0, 30));
+      });
+      assert.deepEqual(over, [], `débordement sur ${path}`);
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
   }],
 ];
 
