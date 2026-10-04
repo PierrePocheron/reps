@@ -563,6 +563,10 @@ function History() {
               <p className="font-semibold">Aucune séance muscu</p>
               <p className="text-sm text-muted-foreground">Tes séances de musculation apparaîtront ici.</p>
               <Button size="sm" className="mt-2 rounded-xl active:scale-95 transition-transform" onClick={() => { startFreeSession(); navigate('/gym'); }}>Démarrer une séance muscu</Button>
+              {/* Nouvel arrivant (#61) : reprendre son historique d'une autre appli */}
+              <button type="button" onClick={() => navigate('/settings#import')} className="min-h-11 px-2 text-xs font-medium text-primary hover:underline">
+                Tu viens de Strong ou Hevy ? Importer ton historique
+              </button>
             </div>
           ) : (
             <div className="space-y-3">

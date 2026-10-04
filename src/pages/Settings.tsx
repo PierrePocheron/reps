@@ -68,6 +68,10 @@ function Settings() {
       toast({ title: 'Erreur', description: 'Impossible de lire ce fichier', variant: 'destructive' });
     }
   };
+  // Arrivée depuis l'historique vide (lien « Tu viens de Strong ou Hevy ? ») : montrer le bouton d'import
+  useEffect(() => {
+    if (window.location.hash === '#import') document.getElementById('import')?.scrollIntoView({ block: 'center' });
+  }, []);
   const confirmImport = async () => {
     if (!importPreview || !user) return;
     setImporting(true);
@@ -471,10 +475,10 @@ function Settings() {
             </div>
           </CardContent>
         </Card>
-        {/* À propos */}
+        {/* Tes données : export, import, confidentialité */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-bold">À propos</CardTitle>
+            <CardTitle className="text-lg font-bold">Tes données</CardTitle>
           </CardHeader>
           <CardContent className="p-0 divide-y">
             <button
@@ -514,6 +518,7 @@ function Settings() {
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </button>
             <button
+              id="import"
               onClick={() => csvInput.current?.click()}
               disabled={historyLoading || importing} // l'historique sert à écarter les doublons
               className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 active:bg-muted transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
