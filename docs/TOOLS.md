@@ -194,7 +194,7 @@ Fichier de configuration : [src/firebase/config.ts](../src/firebase/config.ts)
 | `src/firebase/config.ts` | Initialisation app, Auth, Firestore, App Check |
 | `src/firebase/auth.ts` | Sign in/up (email, Google), sign out, profil |
 | `src/firebase/firestore.ts` | CRUD : users, sessions, exercices, stats, badges, amis |
-| `src/firebase/offline.ts` | Cache localStorage (sessions en cours, exercices) ; `queuedIfOffline` : écriture qui n'attend pas le réseau (file du cache persistant Firestore) |
+| `src/firebase/offline.ts` | Séance renfo en cours dans localStorage, état du réseau ; `queuedIfOffline` : écriture qui n'attend pas le réseau (la synchronisation est celle de Firestore : cache persistant + file d'écritures) |
 | `src/firebase/challenges.ts` | Logique des défis entre amis |
 | `src/firebase/index.ts` | Export centralisé de tous les modules |
 

@@ -3,11 +3,8 @@ import {
   saveCurrentSessionToLocal,
   getCurrentSessionFromLocal,
   clearCurrentSessionFromLocal,
-  saveExercisesToLocal,
-  getExercisesFromLocal,
   isOffline,
   onNetworkChange,
-  syncLocalDataWithFirestore,
   queuedIfOffline,
 } from '../offline';
 
@@ -87,47 +84,6 @@ describe('firebase/offline', () => {
 
   // ==================== SAVE EXERCISES TO LOCAL ====================
 
-  describe('saveExercisesToLocal', () => {
-    it('should save exercises to localStorage', () => {
-      const exercises = [{ id: 'pushups', name: 'Pompes', emoji: '💪' }];
-      saveExercisesToLocal(exercises);
-      expect(localStorageMock.setItem).toHaveBeenCalledWith(
-        'reps_exercises',
-        JSON.stringify(exercises)
-      );
-    });
-
-    it('should handle errors gracefully', () => {
-      localStorageMock.setItem.mockImplementationOnce(() => { throw new Error('StorageError'); });
-      expect(() => saveExercisesToLocal([])).not.toThrow();
-    });
-  });
-
-  // ==================== GET EXERCISES FROM LOCAL ====================
-
-  describe('getExercisesFromLocal', () => {
-    it('should return empty array when no exercises stored', () => {
-      localStorageMock.getItem.mockReturnValueOnce(null);
-      const result = getExercisesFromLocal();
-      expect(result).toEqual([]);
-    });
-
-    it('should return parsed exercises from localStorage', () => {
-      const exercises = [{ id: 'pushups', name: 'Pompes', emoji: '💪' }];
-      localStorageMock.getItem.mockReturnValueOnce(JSON.stringify(exercises));
-      const result = getExercisesFromLocal();
-      expect(result).toEqual(exercises);
-    });
-
-    it('should return empty array on JSON parse error', () => {
-      localStorageMock.getItem.mockReturnValueOnce('invalid-json{{{');
-      const result = getExercisesFromLocal();
-      expect(result).toEqual([]);
-    });
-  });
-
-  // ==================== IS OFFLINE ====================
-
   describe('isOffline', () => {
     it('should return false when online', () => {
       Object.defineProperty(navigator, 'onLine', { value: true, configurable: true });
@@ -181,41 +137,6 @@ describe('firebase/offline', () => {
 
   // ==================== SYNC LOCAL DATA WITH FIRESTORE ====================
 
-  describe('syncLocalDataWithFirestore', () => {
-    it('should return early if offline', async () => {
-      Object.defineProperty(navigator, 'onLine', { value: false, configurable: true });
-      localStorageMock.getItem.mockReturnValueOnce(null);
-
-      await syncLocalDataWithFirestore('user123');
-      // Should not call any firestore functions
-      expect(localStorageMock.getItem).not.toHaveBeenCalled();
-    });
-
-    it('should return early if no local session', async () => {
-      Object.defineProperty(navigator, 'onLine', { value: true, configurable: true });
-      localStorageMock.getItem.mockReturnValueOnce(null);
-
-      await syncLocalDataWithFirestore('user123');
-      expect(localStorageMock.getItem).toHaveBeenCalledTimes(1);
-    });
-
-    it('should return early if local session has no startTime', async () => {
-      Object.defineProperty(navigator, 'onLine', { value: true, configurable: true });
-      localStorageMock.getItem.mockReturnValueOnce(JSON.stringify({ exercises: [] }));
-
-      await syncLocalDataWithFirestore('user123');
-      expect(localStorageMock.getItem).toHaveBeenCalledTimes(1);
-    });
-
-    it('should return early if local session has no sessionId', async () => {
-      Object.defineProperty(navigator, 'onLine', { value: true, configurable: true });
-      const session = { startTime: Date.now(), exercises: [], duration: 0, totalReps: 0 };
-      localStorageMock.getItem.mockReturnValueOnce(JSON.stringify(session));
-
-      await syncLocalDataWithFirestore('user123');
-      expect(localStorageMock.getItem).toHaveBeenCalledTimes(1);
-    });
-  });
 });
 
 describe('queuedIfOffline', () => {

@@ -1,9 +1,8 @@
 import { logger } from '@/utils/logger';
 
 /**
- * Gestion du cache offline avec IndexedDB/localStorage
- * Firestore gère déjà la persistance avec enableIndexedDbPersistence,
- * mais on peut ajouter une couche supplémentaire avec localStorage pour certaines données
+ * Offline helpers: the in-progress renfo session in localStorage, network state, and writes that do not wait
+ * for the server. Syncing itself is Firestore's job (persistent cache + pending-writes queue, see config.ts).
  */
 
 // Type pour la session locale (différent de Session car on stocke startTime au lieu de date)
@@ -12,12 +11,10 @@ export interface LocalSession {
   exercises: Array<{ name: string; emoji: string; reps: number }>;
   duration: number;
   totalReps: number;
-  sessionId?: string;
 }
 
 const STORAGE_KEYS = {
   CURRENT_SESSION: 'reps_current_session',
-  EXERCISES: 'reps_exercises',
   USER_PREFERENCES: 'reps_user_preferences',
 } as const;
 
@@ -57,33 +54,6 @@ export function clearCurrentSessionFromLocal(): void {
     localStorage.removeItem(STORAGE_KEYS.CURRENT_SESSION);
   } catch (error) {
     logger.error('Erreur lors de la suppression de la session:', error);
-  }
-}
-
-/**
- * Sauvegarder les exercices dans localStorage
- */
-export function saveExercisesToLocal(exercises: Array<{ id: string; name: string; emoji: string }>): void {
-  try {
-    localStorage.setItem(STORAGE_KEYS.EXERCISES, JSON.stringify(exercises));
-  } catch (error) {
-    logger.error('Erreur lors de la sauvegarde des exercices:', error);
-  }
-}
-
-/**
- * Récupérer les exercices depuis localStorage
- */
-export function getExercisesFromLocal(): Array<{ id: string; name: string; emoji: string }> {
-  try {
-    const exercisesData = localStorage.getItem(STORAGE_KEYS.EXERCISES);
-    if (exercisesData) {
-      return JSON.parse(exercisesData);
-    }
-    return [];
-  } catch (error) {
-    logger.error('Erreur lors de la récupération des exercices:', error);
-    return [];
   }
 }
 
@@ -129,47 +99,4 @@ export function onNetworkChange(callback: (isOnline: boolean) => void): () => vo
     window.removeEventListener('online', handleOnline);
     window.removeEventListener('offline', handleOffline);
   };
-}
-
-/**
- * Synchroniser les données locales avec Firestore quand la connexion est rétablie
- * Cette fonction peut être appelée automatiquement quand on détecte un retour en ligne
- */
-export async function syncLocalDataWithFirestore(userId: string): Promise<void> {
-  if (isOffline()) {
-    return;
-  }
-
-  try {
-    // Récupérer la session en cours depuis localStorage
-    const localSession = getCurrentSessionFromLocal();
-    if (localSession?.startTime !== undefined) {
-      // Vérifier si la session existe déjà dans Firestore
-      const { getSession } = await import('./firestore');
-      const sessionId = localSession.sessionId;
-
-      if (sessionId && localSession.startTime !== undefined) {
-        const existingSession = await getSession(userId, sessionId);
-
-        if (!existingSession) {
-          // Créer la session dans Firestore
-          const { createSession } = await import('./firestore');
-          const { Timestamp } = await import('firebase/firestore');
-          await createSession(userId, {
-            date: Timestamp.fromMillis(localSession.startTime),
-            duration: localSession.duration || 0,
-            exercises: localSession.exercises || [],
-            totalReps: localSession.totalReps || 0,
-          });
-
-          // Supprimer la session locale après synchronisation
-          clearCurrentSessionFromLocal();
-        }
-      }
-    }
-
-    logger.info('Synchronisation terminée');
-  } catch (error) {
-    logger.error('Erreur lors de la synchronisation:', error);
-  }
 }

@@ -49,11 +49,8 @@ export {
   saveCurrentSessionToLocal,
   getCurrentSessionFromLocal,
   clearCurrentSessionFromLocal,
-  saveExercisesToLocal,
-  getExercisesFromLocal,
   isOffline,
   onNetworkChange,
-  syncLocalDataWithFirestore,
 } from './offline';
 export type { LocalSession } from './offline';
 
