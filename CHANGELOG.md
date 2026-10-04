@@ -60,6 +60,9 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 - Fil d'activité : tous les amis y apparaissent (seuls les 10 premiers étaient lus)
 - Récap du mois / de l'année : les exercices en durée ne gonflent plus le volume ni les répétitions
 - Réglages ne plante plus dans Safari sur iPhone (onglet classique) ni dans les navigateurs intégrés
+- Les badges débloqués apparaissent enfin dans le fil des amis (l'événement était effacé aussitôt)
+- Suggestion de charge : les séries dégressives n'y comptent plus, « Appliquer » ne les alourdit plus
+- Statistiques et badges à jour juste après une séance muscu, un jour de défi ou un changement d'objectif
 
 ### Technique
 - Démo complète hors ligne sur émulateurs (`yarn dev:demo`), parcours e2e, audit de contraste, tests des règles Firestore
