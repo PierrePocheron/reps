@@ -16,12 +16,11 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
   onCancel: () => void;
   onSave: (exercises: GymSessionExercise[]) => Promise<void>;
 }) {
-  // Copie de travail : seules les séries faites ; la valeur réalisée devient la valeur de la série
+  // Working copy: every set, the done ones are edited on their achieved values. The target and the unfinished sets
+  // stay as they were, otherwise the next session's load suggestion read missed reps as « tout réussi »
   const [exercises, setExercises] = useState<GymSessionExercise[]>(() => session.exercises.map((ex) => ({
     ...ex,
-    sets: ex.sets.filter((s) => s.completed).map((s) => ({
-      ...s, reps: s.actualReps ?? s.reps, weight: s.actualWeight ?? s.weight, actualReps: undefined, actualWeight: undefined,
-    })),
+    sets: ex.sets.map((s) => (s.completed ? { ...s, actualReps: s.actualReps ?? s.reps, actualWeight: s.actualWeight ?? s.weight } : s)),
   })));
   const [saving, setSaving] = useState(false);
 
@@ -32,11 +31,12 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
   const addSet = (i: number) =>
     setExercises((list) => list.map((ex, a) => {
       if (a !== i) return ex;
-      const last = ex.sets[ex.sets.length - 1];
-      return { ...ex, sets: [...ex.sets, { reps: last?.reps ?? 10, weight: last?.weight ?? 0, completed: true }] };
+      const last = [...ex.sets].reverse().find((s) => s.completed);
+      const reps = last?.actualReps ?? 10, weight = last?.actualWeight ?? 0;
+      return { ...ex, sets: [...ex.sets, { reps, weight, actualReps: reps, actualWeight: weight, completed: true }] };
     }));
 
-  const kept = exercises.filter((ex) => ex.sets.length > 0);
+  const kept = exercises.filter((ex) => ex.sets.some((s) => s.completed));
   const save = async () => {
     setSaving(true);
     try { await onSave(kept); } finally { setSaving(false); }
@@ -53,7 +53,7 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
           {exercises.map((ex, i) => (
             <section key={ex.exerciseId} aria-label={ex.name} className="space-y-2">
               <h3 className="text-sm font-semibold">{ex.emoji} {ex.name}</h3>
-              {ex.sets.map((s, j) => (
+              {ex.sets.map((s, j) => (!s.completed ? null : (
                 <div key={j} className="flex items-center gap-2">
                   <button
                     type="button"
@@ -63,20 +63,20 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
                   >
                     {s.type ? SET_TYPE_META[s.type].short : `S${j + 1}`}
                   </button>
-                  <Input type="number" min={0} inputMode="numeric" value={s.reps || ''} placeholder="0" className={NUM}
+                  <Input type="number" min={0} inputMode="numeric" value={s.actualReps || ''} placeholder="0" className={NUM}
                     aria-label={`Répétitions, série ${j + 1} de ${ex.name}`}
-                    onChange={(e) => patch(i, j, { reps: Math.max(0, Math.round(Number(e.target.value) || 0)) })} />
+                    onChange={(e) => patch(i, j, { actualReps: Math.max(0, Math.round(Number(e.target.value) || 0)) })} />
                   <span className="text-xs text-muted-foreground">{isTimed(ex) ? 's' : 'reps'}</span>
-                  <Input type="number" min={0} step="0.5" inputMode="decimal" value={s.weight || ''} placeholder="0" className={NUM}
+                  <Input type="number" min={0} step="0.5" inputMode="decimal" value={s.actualWeight || ''} placeholder="0" className={NUM}
                     aria-label={`Charge en kg, série ${j + 1} de ${ex.name}`}
-                    onChange={(e) => patch(i, j, { weight: Math.max(0, Number(e.target.value) || 0) })} />
+                    onChange={(e) => patch(i, j, { actualWeight: Math.max(0, Number(e.target.value) || 0) })} />
                   <span className="text-xs text-muted-foreground">kg</span>
                   <button type="button" onClick={() => removeSet(i, j)} aria-label={`Retirer la série ${j + 1} de ${ex.name}`}
                     className="ml-auto h-11 w-11 -mr-2 flex items-center justify-center rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-              ))}
+              )))}
               <button type="button" onClick={() => addSet(i)} className="min-h-11 inline-flex items-center gap-1.5 text-xs font-medium text-primary">
                 <Plus className="h-3.5 w-3.5" aria-hidden /> Ajouter une série
               </button>
