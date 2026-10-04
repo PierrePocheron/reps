@@ -111,7 +111,8 @@ export function parseWorkoutsCsv(text: string, resolve: ResolveExercise): Import
     if (type) set.type = type;
     if (rpe) set.rpe = rpe;
     const note = (r[c.note] ?? '').trim();
-    if (note && !ex.note) ex.note = note;
+    // two source names on one exercise (synonyms): keep every note, not just the first
+    if (note && !ex.note?.split(' · ').includes(note)) ex.note = ex.note ? `${ex.note} · ${note}` : note;
     ex.sets.push(set);
   }
   return [...sessions.values()].sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -134,26 +135,28 @@ const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLo
 // same words in any order, plural-insensitive: Strong / Hevy « Bench Press (Barbell) » = « Barbell bench press »
 const wordBag = (s: string) => normalize(s).split(' ').map((w) => w.replace(/s$/, '')).sort().join(' ');
 
-// Strong / Hevy names of the REPS base exercises: the imported history goes on in the exercise picked in REPS
+// Strong / Hevy names of the REPS base exercises: the imported history goes on in the exercise picked in REPS.
+// Only names of the same movement: a distinct variant (seated calf raise, rope pushdown…) keeps its own exercise,
+// otherwise two variants done in one workout would merge into one
 const BASE_ALIASES: Record<string, string[]> = {
   bench_press: ['Bench Press (Barbell)'],
   incline_bench: ['Incline Bench Press (Barbell)'],
   dumbbell_fly: ['Chest Fly (Dumbbell)', 'Dumbbell Fly'],
-  cable_fly: ['Cable Crossover', 'Cable Fly Crossovers', 'Chest Fly (Cable)'],
+  cable_fly: ['Cable Crossover', 'Cable Fly Crossovers'],
   chest_dips: ['Chest Dip', 'Chest Dip (Weighted)'],
   deadlift: ['Deadlift (Barbell)'],
   barbell_row: ['Bent Over Row (Barbell)'],
-  dumbbell_row: ['Dumbbell Row', 'Bent Over One Arm Row (Dumbbell)', 'Bent Over Row (Dumbbell)'],
-  lat_pulldown: ['Lat Pulldown (Cable)', 'Lat Pulldown (Machine)'],
-  cable_row: ['Seated Row (Cable)', 'Seated Cable Row - V Grip (Cable)', 'Seated Cable Row - Bar Grip'],
+  dumbbell_row: ['Dumbbell Row', 'Bent Over One Arm Row (Dumbbell)'],
+  lat_pulldown: ['Lat Pulldown (Cable)'],
+  cable_row: ['Seated Row (Cable)', 'Seated Cable Row - V Grip (Cable)'],
   weighted_pullups: ['Pull Up (Weighted)', 'Weighted Pull Up'],
   barbell_squat: ['Squat (Barbell)', 'Back Squat (Barbell)'],
   leg_press: ['Leg Press', 'Leg Press (Machine)'],
-  leg_curl: ['Lying Leg Curl (Machine)', 'Seated Leg Curl (Machine)'],
+  leg_curl: ['Lying Leg Curl (Machine)'],
   leg_extension: ['Leg Extension (Machine)'],
   romanian_deadlift: ['Romanian Deadlift (Barbell)'],
   weighted_hip_thrust: ['Hip Thrust (Barbell)'],
-  machine_calf: ['Calf Raise (Machine)', 'Standing Calf Raise (Machine)', 'Seated Calf Raise (Machine)', 'Calf Press (Machine)'],
+  machine_calf: ['Calf Raise (Machine)', 'Standing Calf Raise (Machine)'],
   overhead_press: ['Overhead Press (Barbell)'],
   db_lateral_raise: ['Lateral Raise (Dumbbell)'],
   front_raise: ['Front Raise (Dumbbell)'],
@@ -162,15 +165,15 @@ const BASE_ALIASES: Record<string, string[]> = {
   dumbbell_curl: ['Bicep Curl (Dumbbell)'],
   hammer_curl: ['Hammer Curl (Dumbbell)'],
   skull_crusher: ['Skullcrusher (Barbell)', 'Lying Triceps Extension (Barbell)'],
-  tricep_pushdown: ['Triceps Pushdown (Cable - Straight Bar)', 'Triceps Pushdown', 'Triceps Rope Pushdown'],
-  overhead_ext: ['Overhead Triceps Extension (Cable)', 'Overhead Triceps Extension (Dumbbell)', 'Triceps Extension (Cable)'],
+  tricep_pushdown: ['Triceps Pushdown (Cable - Straight Bar)', 'Triceps Pushdown'],
+  overhead_ext: ['Overhead Triceps Extension (Cable)', 'Triceps Extension (Cable)'],
   crunch_machine: ['Crunch (Machine)'],
 };
 const aliasOf = new Map(Object.entries(BASE_ALIASES).flatMap(([id, names]) => names.map((n) => [wordBag(n), id] as const)));
 
 /**
- * Reconnaît un exercice par son nom : nom Strong / Hevy d'un exercice de base, puis FR ou EN (sans accents ni casse,
- * mots dans n'importe quel ordre) ; sinon exercice personnalisé stable. À nom égal, le premier de `known` l'emporte (exercices REPS avant la bibliothèque).
+ * Reconnaît un exercice par son nom : nom exact FR ou EN (sans accents ni casse), nom Strong / Hevy d'un exercice de
+ * base, puis mêmes mots dans n'importe quel ordre ; sinon exercice personnalisé stable. À nom égal, le premier de `known` l'emporte (exercices REPS avant la bibliothèque).
  */
 export function exerciseResolver(known: { id: string; name: string; emoji: string }[]): ResolveExercise {
   const byId = new Map(known.map((k) => [k.id, k] as const));
@@ -180,7 +183,8 @@ export function exerciseResolver(known: { id: string; name: string; emoji: strin
     if (!byBag.has(wordBag(k.name))) byBag.set(wordBag(k.name), k);
   }
   return (name) => {
-    const hit = byId.get(aliasOf.get(wordBag(name)) ?? '') ?? byName.get(normalize(name)) ?? byBag.get(wordBag(name));
+    // exact name first: a REPS export re-imported keeps its library exercises (« Barbell bench press »)
+    const hit = byName.get(normalize(name)) ?? byId.get(aliasOf.get(wordBag(name)) ?? '') ?? byBag.get(wordBag(name));
     return hit ? { exerciseId: hit.id, name: hit.name, emoji: hit.emoji } : { exerciseId: `import_${normalize(name).replace(/ /g, '_')}`, name, emoji: '🏋️' };
   };
 }

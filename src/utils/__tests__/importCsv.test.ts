@@ -35,8 +35,8 @@ describe('parseWorkoutsCsv', () => {
   it('export Strong actuel : unités dans les en-têtes (« Weight (kg) », « Duration (sec) »)', () => {
     const csv = [
       '"Workout #";"Date";"Workout Name";"Duration (sec)";"Exercise Name";"Set Order";"Weight (kg)";"Reps";"RPE";"Distance (meters)";"Seconds";"Notes";"Workout Notes"',
-      '"1";"2026-10-02 18:00:00";"Push";"3600";"Barbell Bench Press";"1";"82.5";"8";"";"";"";"";""',
-      '"1";"2026-10-02 18:00:00";"Push";"3600";"Barbell Bench Press";"2";"82.5";"7";"9";"";"";"";""',
+      '"1";"2026-10-02 18:00:00";"Push";"3600";"Bench Press (Barbell)";"1";"82.5";"8";"";"";"";"";""',
+      '"1";"2026-10-02 18:00:00";"Push";"3600";"Bench Press (Barbell)";"2";"82.5";"7";"9";"";"";"";""',
     ].join('\n');
     const [s] = parseWorkoutsCsv(csv, resolve);
     expect(s).toMatchObject({ duration: 3600, exercises: [{ exerciseId: 'bench_press', sets: [{ weight: 82.5, reps: 8 }, { weight: 82.5, reps: 7, rpe: 9 }] }] });
@@ -53,8 +53,8 @@ describe('parseWorkoutsCsv', () => {
   it('export Hevy : début / fin, types, poids en kg', () => {
     const csv = [
       '"title","start_time","end_time","description","exercise_title","superset_id","exercise_notes","set_index","set_type","weight_kg","reps","distance_km","duration_seconds","rpe"',
-      '"Pull","3 Oct 2026, 09:00","3 Oct 2026, 10:15","","Barbell Bench Press","","","0","normal","80","5","","",""',
-      '"Pull","3 Oct 2026, 09:00","3 Oct 2026, 10:15","","Barbell Bench Press","","","1","failure","81.25","4","","","9"',
+      '"Pull","3 Oct 2026, 09:00","3 Oct 2026, 10:15","","Bench Press (Barbell)","","","0","normal","80","5","","",""',
+      '"Pull","3 Oct 2026, 09:00","3 Oct 2026, 10:15","","Bench Press (Barbell)","","","1","failure","81.25","4","","","9"',
     ].join('\n');
     const [s] = parseWorkoutsCsv(csv, resolve);
     expect(s).toMatchObject({ date: new Date(2026, 9, 3, 9, 0), duration: 4500,
@@ -125,5 +125,43 @@ describe("aperçu d'import", () => {
     expect(POUNDS_HEADER.test('title,start_time,weight_lbs,reps')).toBe(true);
     expect(POUNDS_HEADER.test('"Date";"Weight (lbs)";"Reps"')).toBe(true);
     expect(POUNDS_HEADER.test('"Date";"Weight (kg)";"Reps"')).toBe(false);
+  });
+});
+
+describe('import : variantes et réimport', () => {
+  const known = [
+    ...MUSCULATION_EXERCISES.map((e) => ({ id: e.id, name: e.name, emoji: e.emoji })),
+    { id: 'lib_0025', name: 'Barbell bench press', emoji: '🏋️' },
+  ];
+  const strong = (rows: [string, string, string, string, string][]) => [
+    'Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE',
+    ...rows.map(([ex, order, w, r, note]) => `2026-10-02 18:00:00,Push,1h,${ex},${order},${w},${r},,,${note},,`),
+  ].join('\n');
+
+  it('garde séparées deux variantes différentes faites dans la même séance (séries et notes intactes)', () => {
+    const [s] = parseWorkoutsCsv(strong([
+      ['Triceps Pushdown (Cable - Straight Bar)', '1', '40', '10', 'barre'],
+      ['Triceps Rope Pushdown', '1', '25', '12', 'corde'],
+      ['Standing Calf Raise (Machine)', '1', '120', '10', ''],
+      ['Seated Calf Raise (Machine)', '1', '40', '15', ''],
+    ]), exerciseResolver(known));
+    expect(s!.exercises).toHaveLength(4);
+    expect(s!.exercises.map((e) => e.note).filter(Boolean)).toEqual(['barre', 'corde']);
+  });
+
+  it("deux noms du même exercice dans une séance : séries regroupées, aucune note perdue", () => {
+    const [s] = parseWorkoutsCsv(strong([
+      ['Triceps Pushdown (Cable - Straight Bar)', '1', '40', '10', 'barre'],
+      ['Triceps Pushdown', '2', '40', '8', 'lent'],
+    ]), exerciseResolver(known));
+    expect(s!.exercises).toHaveLength(1);
+    expect(s!.exercises[0]).toMatchObject({ exerciseId: 'tricep_pushdown', note: 'barre · lent' });
+    expect(s!.exercises[0]!.sets).toHaveLength(2);
+  });
+
+  it("réimport d'un export REPS : un exercice anglais de la bibliothèque reste le même (le nom exact passe avant l'alias)", () => {
+    const resolve = exerciseResolver(known);
+    expect(resolve('Barbell bench press').exerciseId).toBe('lib_0025');
+    expect(resolve('Bench Press (Barbell)').exerciseId).toBe('bench_press');
   });
 });
