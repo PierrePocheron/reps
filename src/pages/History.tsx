@@ -336,6 +336,18 @@ function History() {
     .filter((s) => !deletedIds.includes(s.sessionId))
     .map((s) => (edits[s.sessionId] ? { ...s, ...edits[s.sessionId] } : s)), [history.gymSessions, deletedIds, edits]);
   const [toEdit, setToEdit] = useState<GymSession | null>(null);
+  // Filtre par exercice (#63, Strong) : exercices de l'historique, du plus fréquent au plus rare
+  const [exerciseFilter, setExerciseFilter] = useState('');
+  const exerciseOptions = useMemo(() => {
+    const seen = new Map<string, { name: string; count: number }>();
+    for (const s of gymSessions) for (const ex of s.exercises) {
+      const o = seen.get(ex.exerciseId) ?? { name: ex.name, count: 0 };
+      o.count++;
+      seen.set(ex.exerciseId, o);
+    }
+    return [...seen].sort((a, b) => b[1].count - a[1].count);
+  }, [gymSessions]);
+  const shownGymSessions = exerciseFilter ? gymSessions.filter((s) => s.exercises.some((ex) => ex.exerciseId === exerciseFilter)) : gymSessions;
   const { imageMap, infoMap } = useExerciseImages();
   const navigate = useNavigate();
   const [detailPr, setDetailPr] = useState<PersonalRecord | null>(null);
@@ -570,7 +582,20 @@ function History() {
             </div>
           ) : (
             <div className="space-y-3">
-              {gymSessions.map((s) => (
+              {exerciseOptions.length > 1 && (
+                <select
+                  value={exerciseFilter}
+                  onChange={(e) => setExerciseFilter(e.target.value)}
+                  aria-label="Filtrer les séances par exercice"
+                  className="w-full min-h-11 rounded-xl border bg-card px-3 text-sm"
+                >
+                  <option value="">Tous les exercices ({gymSessions.length} séances)</option>
+                  {exerciseOptions.map(([id, o]) => (
+                    <option key={id} value={id}>{o.name} ({o.count})</option>
+                  ))}
+                </select>
+              )}
+              {shownGymSessions.map((s) => (
                 <MuscuCard key={s.sessionId} session={s} imageMap={imageMap} onRedo={() => redoGym(s)}
                   onSaveTemplate={() => { setSaveAsTemplate(s); setTemplateName(`Séance du ${s.date.toDate().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`); }}
                   onShare={() => share(gymCard({ date: s.date.toDate(), duration: s.duration, exercises: s.exercises }))}

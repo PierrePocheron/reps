@@ -245,6 +245,21 @@ const steps = [
     await assertAlive('suppression de séance');
   }],
 
+  ['filtrer l\'historique par exercice', async () => {
+    await page.goto(`${BASE}/history`);
+    await page.getByRole('tab', { name: /Muscu/ }).click();
+    const filter = page.getByRole('combobox', { name: 'Filtrer les séances par exercice' });
+    const cards = page.getByRole('button', { name: 'Actions de la séance' });
+    await cards.first().waitFor();
+    const all = await cards.count();
+    const values = await filter.locator('option').evaluateAll((os) => os.map((o) => o.value));
+    await filter.selectOption(values[values.length - 1]); // l'exercice le plus rare
+    const some = await cards.count();
+    assert.ok(some > 0 && some < all, `filtre : ${some} séance(s) sur ${all}`);
+    await filter.selectOption('');
+    assert.equal(await cards.count(), all, 'filtre effacé');
+  }],
+
   ['importer un CSV Strong (aperçu, import, pas de doublon)', async () => {
     // date passée unique à chaque exécution : n'interfère ni avec la série ni avec les séances récentes
     const m = new Date().getMinutes(), h = new Date().getHours();
@@ -255,13 +270,14 @@ const steps = [
     await page.goto(`${BASE}/settings`);
     const btn = page.getByRole('button', { name: /Importer depuis Strong ou Hevy/ });
     await btn.waitFor();
-    for (let i = 0; i < 50 && await btn.isDisabled(); i++) await page.waitForTimeout(100); // historique chargé
+    for (let i = 0; i < 100 && await btn.isDisabled(); i++) await page.waitForTimeout(100); // historique chargé
     await page.locator('input[type=file][accept*=csv]').setInputFiles(file);
     const dialog = page.getByRole('dialog');
     await dialog.getByText(/1 séance du 15\/03\/2025/).waitFor();
     await dialog.getByText(/1\/2 exercices reconnus/).waitFor();
     await dialog.getByRole('button', { name: 'Importer' }).click();
     await page.getByText('1 séance importée').first().waitFor();
+    for (let i = 0; i < 100 && await btn.isDisabled(); i++) await page.waitForTimeout(100); // historique rechargé
     await page.locator('input[type=file][accept*=csv]').setInputFiles(file); // réimport : déjà là
     await page.getByRole('dialog').getByText(/déjà dans ton historique/).waitFor();
     await page.getByRole('dialog').getByRole('button', { name: 'Annuler' }).click();
