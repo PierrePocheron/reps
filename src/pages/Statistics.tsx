@@ -493,8 +493,8 @@ function TrainingHabits({ sessions, gymSessions }: { sessions: Session[]; gymSes
             </div>
             <div className="flex-1">
               <div className="flex justify-between text-sm mb-1.5">
-                <span className="font-medium">{label} <span className="text-xs font-normal text-muted-foreground">· {range}</span></span>
-                <span className="text-muted-foreground">{counts[i]} séance{counts[i]! > 1 ? 's' : ''}</span>
+                <span className="font-medium">{label} <span className="text-xs font-normal text-muted-foreground whitespace-nowrap">· {range}</span></span>
+                <span className="text-muted-foreground whitespace-nowrap">{counts[i]} séance{counts[i]! > 1 ? 's' : ''}</span>
               </div>
               <div className="h-2 bg-secondary rounded-full overflow-hidden">
                 <div className="h-full bg-primary rounded-full" style={{ width: `${(counts[i]! / hours.length) * 100}%` }} />
@@ -564,7 +564,7 @@ export default function Statistics() {
                 <Target className="h-4 w-4 text-primary" />
                 <span className="text-sm font-semibold">Objectif cette semaine</span>
               </div>
-              <span className="text-sm font-bold">
+              <span className="text-sm font-bold whitespace-nowrap">
                 {Math.min(thisWeekCount, weeklyGoal)}/{weeklyGoal} séances
               </span>
             </div>

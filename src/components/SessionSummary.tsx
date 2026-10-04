@@ -18,7 +18,7 @@ export function SessionSummary({ stats, comparison, onShare, onDone }: {
       <div className="max-w-md w-full mx-auto flex-1 flex flex-col items-center text-center gap-6">
         <div className="text-6xl" aria-hidden>💪</div>
         <div>
-          <h1 className="text-3xl font-black uppercase tracking-tight">Séance terminée !</h1>
+          <h1 className="text-3xl font-black uppercase tracking-tight">Séance terminée{'\u00a0'}!</h1>{/* no-break space: the « ! » wrapped alone at 320 px */}
           {comparison && <p className="mt-2 text-sm text-muted-foreground">{comparison}</p>}
         </div>
         <dl className="grid grid-cols-2 gap-3 w-full">

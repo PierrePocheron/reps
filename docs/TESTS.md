@@ -50,7 +50,8 @@ Ce projet utilise des **tests unitaires**, des **tests d'intégration légère**
 
 Il échoue si une page lève une erreur JS ou se fige (boucle de rendu), avec un garde-fou global de 6 minutes.
 Les parcours ajoutent des séances à la démo : relancer `yarn dev:demo` repart de données propres. Après des dizaines
-de passages, l'émulateur Firestore grossit (plusieurs Go) et ralentit jusqu'à faire échouer des parcours : relancer la démo.
+de passages, l'émulateur Firestore grossit (plusieurs Go, `firestore-debug.log` : « too many pending messagings in the back channel »)
+et ralentit jusqu'à faire échouer des parcours (ex. récap muscu sans comparaison, historique > 3 s) : relancer la démo.
 En cas d'échec, le message montre l'élément attendu (journal d'appel Playwright).
 
 ```bash
