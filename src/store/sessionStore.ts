@@ -39,6 +39,8 @@ interface SessionState {
   getFormattedDuration: () => string;
 }
 
+let ending: Promise<void> | null = null; // endSession in flight
+
 /**
  * Store Zustand pour la gestion de la session d'entraînement
  */
@@ -72,55 +74,60 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   /**
    * Termine la session et sauvegarde dans Firestore
    */
-  endSession: async (): Promise<void> => {
-    try {
-      const { startTime, exercises, totalReps, isActive } = get();
-      if (!isActive || !startTime) {
-        return;
-      }
-
-      const { currentUser, user } = useUserStore.getState();
-      if (!currentUser) {
-        throw new Error('Aucun utilisateur connecté');
-      }
-
-      // Durée réelle, ou celle saisie pour une séance oubliée
-      const { backdate } = get();
-      const duration = backdate ? backdate.duration : Math.floor((Date.now() - startTime) / 1000);
-
-      const totalCalories = renfoCalories(user, exercises);
-
-      // Créer la session dans Firestore
-      await createSession(currentUser.uid, {
-        date: backdate ? Timestamp.fromDate(new Date(backdate.at)) : Timestamp.now(),
-        duration,
-        exercises,
-        totalReps,
-        totalCalories: Math.round(totalCalories),
-      });
-
-      // Si la création réussit, on considère la session comme terminée localement
-      // même si les mises à jour de stats échouent
+  endSession: (): Promise<void> => {
+    // One save at a time: isActive only drops after the write (up to 2.5 s offline) while the 2-hour auto-finish
+    // ticks every second in each mounted useSession, so every tick saved the session again (duplicates)
+    ending ??= (async (): Promise<void> => {
       try {
-        // Mettre à jour les stats de l'utilisateur
-        await updateUserStatsAfterSession(currentUser.uid, totalReps);
+        const { startTime, exercises, totalReps, isActive } = get();
+        if (!isActive || !startTime) {
+          return;
+        }
 
-        // Rafraîchir les stats dans le store utilisateur
-        await useUserStore.getState().refreshStats();
-      } catch (statsError) {
-        logger.error('Erreur lors de la mise à jour des stats:', statsError);
-        // On continue pour nettoyer la session locale
+        const { currentUser, user } = useUserStore.getState();
+        if (!currentUser) {
+          throw new Error('Aucun utilisateur connecté');
+        }
+
+        // Durée réelle, ou celle saisie pour une séance oubliée
+        const { backdate } = get();
+        const duration = backdate ? backdate.duration : Math.floor((Date.now() - startTime) / 1000);
+
+        const totalCalories = renfoCalories(user, exercises);
+
+        // Créer la session dans Firestore
+        await createSession(currentUser.uid, {
+          date: backdate ? Timestamp.fromDate(new Date(backdate.at)) : Timestamp.now(),
+          duration,
+          exercises,
+          totalReps,
+          totalCalories: Math.round(totalCalories),
+        });
+
+        // Si la création réussit, on considère la session comme terminée localement
+        // même si les mises à jour de stats échouent
+        try {
+          // Mettre à jour les stats de l'utilisateur
+          await updateUserStatsAfterSession(currentUser.uid, totalReps);
+
+          // Rafraîchir les stats dans le store utilisateur
+          await useUserStore.getState().refreshStats();
+        } catch (statsError) {
+          logger.error('Erreur lors de la mise à jour des stats:', statsError);
+          // On continue pour nettoyer la session locale
+        }
+
+        // Réinitialiser la session
+        get().resetSession();
+
+        // Supprimer la session locale
+        clearCurrentSessionFromLocal();
+      } catch (error) {
+        logger.error('Erreur lors de la fin de la session:', error);
+        throw error;
       }
-
-      // Réinitialiser la session
-      get().resetSession();
-
-      // Supprimer la session locale
-      clearCurrentSessionFromLocal();
-    } catch (error) {
-      logger.error('Erreur lors de la fin de la session:', error);
-      throw error;
-    }
+    })().finally(() => { ending = null; });
+    return ending;
   },
 
   /**

@@ -272,6 +272,20 @@ describe('sessionStore', () => {
       expect(useSessionStore.getState().isActive).toBe(false);
     });
 
+    it('saves once even when called again while the first save is in flight (auto-finish ticks every second)', async () => {
+      let release!: (id: string) => void;
+      vi.mocked(firebaseModule.createSession).mockReturnValueOnce(new Promise((r) => { release = r; }) as never);
+      useSessionStore.setState({
+        isActive: true, startTime: Date.now() - 7_300_000,
+        exercises: [{ name: 'Pompes', emoji: '🔥', reps: 20 }], totalReps: 20, duration: 7300,
+      });
+      const first = useSessionStore.getState().endSession();
+      const second = useSessionStore.getState().endSession(); // next 1-second tick, or another mounted useSession
+      release('s1');
+      await Promise.all([first, second]);
+      expect(firebaseModule.createSession).toHaveBeenCalledTimes(1);
+    });
+
     it('séance oubliée (#58) : enregistrée à la date et avec la durée saisies, puis oubliée', async () => {
       const at = Date.now() - 2 * 86_400_000;
       useSessionStore.setState({ isActive: true, startTime: Date.now() - 5000, exercises: [{ name: 'Pompes', emoji: '🔥', reps: 20 }], totalReps: 20 });
