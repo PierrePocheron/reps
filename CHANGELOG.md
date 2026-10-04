@@ -52,6 +52,11 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
   changement d'heure et après minuit
 - Récap toujours comparé, même en terminant tout de suite ; onglet ouvert pendant un déploiement rechargé tout seul
 - Démarrage plus léger : pages chargées à la demande, framer-motion hors du démarrage
+- Série gardée le lendemain d'un jour de repos couvert par le joker (le widget et l'en-tête affichaient 0)
+- « Refaire » garde les échauffements comme échauffements (volume, records et suggestions justes)
+- Mensurations : plus d'historique écrasé par une mesure ajoutée avant la fin du chargement
+- Rappel d'entraînement quotidien qui revient chaque jour (il ne sonnait qu'une fois sur Android et iOS)
+- Accepter une demande d'ami fonctionne *(règles Firestore à déployer)*
 
 ### Technique
 - Démo complète hors ligne sur émulateurs (`yarn dev:demo`), parcours e2e, audit de contraste, tests des règles Firestore
