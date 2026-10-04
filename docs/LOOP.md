@@ -107,3 +107,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | sécu + backlog + #60 | Clé API Firebase Android signalée par GitHub → google-services.json retiré du dépôt et ignoré (`90f42e2`, clé à restreindre/remplacer côté console) ; 4 issues (#60-#63) ; dernières séances dans la fiche exercice | `be438b3` |
 | 2026-10-04 | passe UI/UX fiche exercice + contraste | « Dernières séances » à 320 px clair/sombre : rien ne déborde ; yarn a11y : AA respecté avec menu ⋯, unité reps ⇄ s, chrono ; RAS | — |
 | 2026-10-04 | #61 | Import CSV Strong / Hevy / export REPS : aperçu, exercices reconnus FR/EN, doublons écartés, stats recalculées ; 12 parcours e2e verts | `972a15e` |
+| 2026-10-04 | #62 | Remplacer un exercice en séance (depuis sa fiche ; séries, superset et place conservés) | `2d37c06` |
