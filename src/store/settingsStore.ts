@@ -16,6 +16,7 @@ interface SettingsState {
   weeklyGoal: number; // nombre de séances visées par semaine (0 = désactivé)
   streakMode: 'daily' | 'weekly'; // série en jours d'affilée (avec joker) ou en semaines à l'objectif atteint
   language: LanguageSetting;
+  keepAwake: boolean; // écran allumé pendant une séance (Strong)
 
   // Actions
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
@@ -27,6 +28,7 @@ interface SettingsState {
   setWeeklyGoal: (goal: number) => void;
   setStreakMode: (mode: 'daily' | 'weekly') => void;
   setLanguage: (language: LanguageSetting) => void;
+  setKeepAwake: (on: boolean) => void;
   loadSettings: () => void;
   saveSettings: () => void;
   applyTheme: () => void;
@@ -64,6 +66,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     weeklyGoal: storedSettings.weeklyGoal ?? 3,
     streakMode: storedSettings.streakMode ?? 'daily',
     language: storedSettings.language ?? 'auto',
+    keepAwake: storedSettings.keepAwake ?? true,
 
     // Actions
     setTheme: (theme) => {
@@ -119,6 +122,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
       get().saveSettings();
     },
 
+    setKeepAwake: (on) => {
+      set({ keepAwake: on });
+      get().saveSettings();
+    },
+
     /**
      * Charge les paramètres depuis localStorage
      */
@@ -149,6 +157,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
             weeklyGoal,
             streakMode: get().streakMode,
             language,
+            keepAwake: get().keepAwake,
           })
         );
       } catch (error) {

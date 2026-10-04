@@ -6,7 +6,9 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        registerPlugin(RepsWidgetPlugin.class); // plugin local : avant super.onCreate
+        // plugins locaux : avant super.onCreate
+        registerPlugin(RepsWidgetPlugin.class);
+        registerPlugin(KeepAwakePlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

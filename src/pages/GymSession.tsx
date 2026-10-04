@@ -8,6 +8,7 @@ import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
 import { PlateCalculator } from '@/components/gym/PlateCalculator';
 import { Timer } from '@/components/Timer';
 import { useGymSessionStore, NOTE_MAX, restSeconds } from '@/store/gymSessionStore';
+import { useKeepAwake } from '@/hooks/useKeepAwake';
 import { useUserStore } from '@/store/userStore';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -83,6 +84,7 @@ function GymSession() {
     completeSetAt,
     startRestTimer,
   } = useGymSessionStore();
+  useKeepAwake(phase === 'execute');
 
   const { user } = useUserStore();
   const { imageMap, infoMap } = useExerciseImages();

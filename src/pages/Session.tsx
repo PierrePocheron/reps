@@ -18,6 +18,7 @@ import { calculateDynamicCalories } from '@/utils/calories';
 import { DEFAULT_EXERCISES } from '@/utils/constants';
 import type { Exercise } from '@/firebase/types';
 import { logger } from '@/utils/logger';
+import { useKeepAwake } from '@/hooks/useKeepAwake';
 import { ToastAction } from '@/components/ui/toast';
 import { renfoCard, shareSessionCard } from '@/utils/shareCard';
 
@@ -39,6 +40,7 @@ function Session() {
     getAvailableExercises,
     addCustomExercise,
   } = useSession();
+  useKeepAwake(isActive);
 
   const [removingExercise, setRemovingExercise] = useState<string | null>(null);
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);

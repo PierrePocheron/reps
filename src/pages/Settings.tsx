@@ -37,7 +37,7 @@ function Settings() {
   const { toast } = useToast();
   const { theme, colorTheme, setTheme, setColorTheme } = useTheme();
   const { user, updateProfile } = useUserStore();
-  const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, weeklyGoal, language, streakMode, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled, setWeeklyGoal, setLanguage, setStreakMode } = useSettingsStore();
+  const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, weeklyGoal, language, streakMode, keepAwake, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled, setWeeklyGoal, setLanguage, setStreakMode, setKeepAwake } = useSettingsStore();
   const deviceLanguage = detectDeviceLanguage();
   const { scheduleDailyReminder, cancelReminder } = useNotifications();
   const { sessions, gymSessions, loading: historyLoading } = useSessionHistory(500);
@@ -241,6 +241,7 @@ function Settings() {
             {[
               { label: 'Repos automatique', hint: 'Lance le minuteur à chaque série validée (muscu)', on: autoRest, toggle: () => setAutoRest(!autoRest) },
               { label: 'RPE par série', hint: "Note l'effort ressenti (6 à 10) des séries validées", on: showRpe, toggle: () => setShowRpe(!showRpe) },
+              { label: 'Écran allumé', hint: 'Pendant une séance, le téléphone ne se met pas en veille', on: keepAwake, toggle: () => setKeepAwake(!keepAwake) },
               { label: 'Suggestion de charge', hint: 'Toutes tes séries réussies la dernière fois ? +2,5 kg proposés (+1,25 kg bras et épaules)', on: suggestLoad, toggle: () => setSuggestLoad(!suggestLoad) },
             ].map((row) => (
               <div key={row.label} className="flex items-center justify-between gap-3 pt-4 border-t">
