@@ -27,6 +27,26 @@ export function toggleSupersetLink(list: GymSessionExercise[], i: number, newId 
 }
 
 /**
+ * Échange l'exercice `i` et le suivant (réordonner, comme Hevy / Strong). Un groupe doit rester d'un seul
+ * tenant : un exercice qui se retrouve séparé de son groupe le quitte (échanger au sein d'un groupe le garde).
+ */
+export function swapWithNext(list: GymSessionExercise[], i: number): GymSessionExercise[] {
+  const a = list[i], b = list[i + 1];
+  if (!a || !b) return list;
+  const swapped = [...list.slice(0, i), b, a, ...list.slice(i + 2)];
+  const seen = new Set<string>();
+  let prev: string | undefined;
+  const contiguous = swapped.map((ex) => {
+    const id = ex.supersetId;
+    if (id && id !== prev && seen.has(id)) { prev = undefined; return { ...ex, supersetId: undefined }; }
+    if (id) seen.add(id);
+    prev = id;
+    return ex;
+  });
+  return normalize(contiguous);
+}
+
+/**
  * Repos après une série d'un superset : seulement quand aucun autre exercice du groupe n'attend
  * sa série du même tour (A1 → B1 → repos → A2 → B2…).
  */

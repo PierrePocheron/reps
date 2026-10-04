@@ -5,7 +5,7 @@ import { Timestamp } from 'firebase/firestore';
 import { createGymSession, calculateTotalVolume } from '@/firebase/gymSessions';
 import { updateUserStatsAfterSession } from '@/firebase/firestore';
 import { isWorkSet } from '@/utils/records';
-import { toggleSupersetLink } from '@/utils/superset';
+import { toggleSupersetLink, swapWithNext } from '@/utils/superset';
 import { logger } from '@/utils/logger';
 import { scheduleRestEnd, cancelRestEnd } from '@/utils/restNotification';
 import { useUserStore } from './userStore';
@@ -40,6 +40,7 @@ interface GymSessionState {
   duplicateLastSet: (exerciseId: string) => void;
   prependWarmup: (exerciseId: string, sets: { weight: number; reps: number }[]) => void;
   toggleSuperset: (index: number) => void;
+  swapExercises: (index: number) => void;
   setExerciseNote: (exerciseId: string, note: string) => void;
 
   // Actions — Exécution
@@ -156,6 +157,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   },
 
   toggleSuperset: (index: number) => set((state) => ({ exercises: toggleSupersetLink(state.exercises, index) })),
+  swapExercises: (index: number) => set((state) => ({ exercises: swapWithNext(state.exercises, index) })),
 
   setExerciseNote: (exerciseId: string, note: string) => {
     set((state) => ({

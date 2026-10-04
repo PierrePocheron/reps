@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { toggleSupersetLink, restAfterSet, supersetLetters } from '../superset';
+import { toggleSupersetLink, restAfterSet, supersetLetters, swapWithNext } from '../superset';
 import type { GymSessionExercise } from '@/firebase/types';
 
 const ex = (id: string, done: number, total = 3, supersetId?: string): GymSessionExercise => ({
@@ -30,5 +30,24 @@ describe('supersets', () => {
 
   it('lettres A, B par groupe', () => {
     expect(supersetLetters([ex('a', 0, 1, 'x'), ex('b', 0, 1, 'x'), ex('c', 0, 1), ex('d', 0, 1, 'y')])).toEqual({ x: 'A', y: 'B' });
+  });
+});
+
+describe('swapWithNext (#53)', () => {
+  const order = (l: GymSessionExercise[]) => l.map((e) => `${e.exerciseId}${e.supersetId ? `:${e.supersetId}` : ''}`).join(' ');
+
+  it('échange deux exercices voisins, sans toucher au reste', () => {
+    expect(order(swapWithNext([ex('a', 0), ex('b', 0), ex('c', 0)], 0))).toBe('b a c');
+    expect(order(swapWithNext([ex('a', 0), ex('b', 0)], 1))).toBe('a b'); // pas de suivant
+  });
+
+  it('garde un superset quand on échange ses membres', () => {
+    expect(order(swapWithNext([ex('a', 0, 3, 's'), ex('b', 0, 3, 's'), ex('c', 0)], 0))).toBe('b:s a:s c');
+  });
+
+  it('un exercice glissé au milieu d\'un superset le défait ; un membre sorti du groupe le quitte', () => {
+    expect(order(swapWithNext([ex('a', 0, 3, 's'), ex('b', 0, 3, 's'), ex('c', 0)], 1))).toBe('a c b');
+    const three = [ex('a', 0, 3, 's'), ex('b', 0, 3, 's'), ex('c', 0, 3, 's'), ex('d', 0)];
+    expect(order(swapWithNext(three, 2))).toBe('a:s b:s d c');
   });
 });

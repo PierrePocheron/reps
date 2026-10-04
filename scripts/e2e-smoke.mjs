@@ -87,6 +87,13 @@ const steps = [
     // échauffement (séries É en tête)
     await cards.nth(0).getByRole('button', { name: /^Ajouter l'échauffement/ }).click();
     await cards.nth(0).getByRole('button', { name: /: échauffement/ }).first().waitFor();
+    // réordonner : « Échanger » inverse les deux premiers exercices (#53)
+    const firstName = async () => (await cards.nth(0).getByRole('button', { name: /voir la fiche/ }).getAttribute('aria-label')).split(' : ')[0];
+    const first = await firstName();
+    await page.getByRole('button', { name: /^Échanger / }).first().click();
+    assert.notEqual(await firstName(), first, 'les deux premiers exercices sont échangés');
+    await page.getByRole('button', { name: /^Échanger / }).first().click(); // retour à l'ordre initial
+    assert.equal(await firstName(), first);
     // superset entre les deux premiers exercices
     await page.getByRole('button', { name: /^Faire un superset avec/ }).first().click();
     assert.equal(await page.getByText(/^Superset A/).count(), 2, 'deux cartes « Superset A »');

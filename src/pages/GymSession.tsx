@@ -32,6 +32,7 @@ import {
   StickyNote,
   TrendingUp,
   Link2,
+  ArrowUpDown,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ToastAction } from '@/components/ui/toast';
@@ -73,6 +74,7 @@ function GymSession() {
     setExerciseNote,
     prependWarmup,
     toggleSuperset,
+    swapExercises,
     startExecution,
     dismissRestTimer,
     setRestDuration,
@@ -277,9 +279,9 @@ function GymSession() {
 
         <div className="p-4 max-w-2xl mx-auto space-y-4">
           {/* Exercices planifiés */}
-          {enrichedExercises.map((exercise) => (
+          {enrichedExercises.map((exercise, idx) => (
+            <Fragment key={exercise.exerciseId}>
             <GymExerciseCard
-              key={exercise.exerciseId}
               exercise={exercise}
               defaultSet={historyDefaults[exercise.exerciseId]}
               onAddSet={(s) => addSet(exercise.exerciseId, s)}
@@ -287,6 +289,12 @@ function GymSession() {
               onRemoveSet={(i) => removeSet(exercise.exerciseId, i)}
               onRemoveExercise={() => removeExercise(exercise.exerciseId)}
             />
+            {idx < enrichedExercises.length - 1 && (
+              <div className="flex justify-center -my-1">
+                <SwapButton upper={exercise.name} lower={enrichedExercises[idx + 1]!.name} onSwap={() => swapExercises(idx)} />
+              </div>
+            )}
+            </Fragment>
           ))}
 
           {/* Empty state */}
@@ -459,7 +467,8 @@ function GymSession() {
             const next = enrichedExercises[idx + 1]!;
             const linked = !!exercise.supersetId && exercise.supersetId === next.supersetId;
             return (
-              <div className="flex justify-center -my-1">
+              <div className="flex justify-center gap-2 -my-1">
+                <SwapButton upper={exercise.name} lower={next.name} onSwap={() => swapExercises(idx)} />
                 <button
                   type="button"
                   onClick={() => toggleSuperset(idx)}
@@ -884,6 +893,20 @@ const SET_TYPE_META: Record<SetType, { short: string; label: string; cls: string
 };
 const SET_TYPE_CYCLE: (SetType | undefined)[] = [undefined, 'warmup', 'drop', 'failure'];
 const nextSetType = (t: SetType | undefined) => SET_TYPE_CYCLE[(SET_TYPE_CYCLE.indexOf(t) + 1) % SET_TYPE_CYCLE.length];
+
+/** Échange un exercice et le suivant (réordonner, #53) — boutons plutôt que glisser-déposer : accessible. */
+function SwapButton({ upper, lower, onSwap }: { upper: string; lower: string; onSwap: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onSwap}
+      aria-label={`Échanger ${upper} et ${lower}`}
+      className="min-h-11 px-3 rounded-full border border-dashed border-border text-xs font-medium text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5"
+    >
+      <ArrowUpDown className="h-3.5 w-3.5" aria-hidden /> Échanger
+    </button>
+  );
+}
 
 const REST_PRESETS = [
   { label: '30s', value: 30 },
