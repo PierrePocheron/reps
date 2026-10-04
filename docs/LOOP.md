@@ -88,3 +88,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | #35 #37 → bloqué-pierre ; backlog | Health Connect et Wear OS dépendent de la Play Console (+ images d'émulateur) → commentés ; 4 nouvelles issues issues de la comparaison (#51-#54) | — |
 | 2026-10-04 | #51 | Minuteur de repos −15 s / +15 s (fin décalée, notification replanifiée) | `a910a12` |
 | 2026-10-04 | passe UI/UX écrans de séance | Repos ouvert : la barre flottante cachait « Ajouter un exercice » ; lignes de série hors carte à 320 px ; noms d'exercice tronqués → corrigés + e2e étendu | `1ad9f99` |
+| 2026-10-04 | #52 (en vérif) | Écran allumé pendant la séance + réglage ; Android en FLAG_KEEP_SCREEN_ON (la Wake Lock de la WebView ne relâche pas) ; vérif Android à refaire (émulateur figé) | `d0da348` |
