@@ -1,6 +1,6 @@
 import type { GymSession, Session } from '@/firebase/types';
 import { plural } from '@/utils/formatters';
-import { isWorkSet } from '@/utils/records';
+import { isTimed, isWorkSet } from '@/utils/records';
 import { MUSCLE_GROUPS, setsByMuscle, type MuscleGroup } from '@/utils/muscles';
 import type { SessionCard } from '@/utils/shareCard';
 
@@ -34,9 +34,10 @@ export function periodRecap(gym: GymSession[], renfo: Session[], from: Date, to:
   const r = renfo.filter((s) => inRange(s.date.toDate()));
   let volume = 0, reps = 0, records = 0;
   for (const s of g) for (const ex of s.exercises) for (const set of ex.sets.filter(isWorkSet)) {
+    if (set.isRecord) records++; // a best duration is a record too
+    if (isTimed(ex)) continue;   // seconds are neither reps nor kg × reps (same rule as the session's totalVolume)
     const w = set.actualWeight ?? set.weight, n = set.actualReps ?? set.reps;
     volume += w * n; reps += n;
-    if (set.isRecord) records++;
   }
   for (const s of r) reps += s.totalReps;
   const days = new Set([...g, ...r].map((s) => s.date.toDate().toDateString()));

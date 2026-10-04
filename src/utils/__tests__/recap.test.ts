@@ -28,6 +28,14 @@ describe('récap', () => {
     expect(r.topMuscles[0]).toEqual({ group: 'Jambes', sets: 4 });
     expect(recapCard(r, 'Septembre 2026', new Date(2026, 8, 1)).stats.map((s) => s.label)).toEqual(['Séances', 'Jours', 'Volume', 'Record']);
   });
+
+  it("un exercice en durée n'ajoute ni volume ni répétitions (secondes × kg), son record compte", () => {
+    const gym = [{ date: ts(new Date(2026, 8, 10, 18)), exercises: [{ exerciseId: 'weighted_plank', name: 'Gainage lesté', emoji: '🧱', timed: true, sets: [
+      { weight: 20, reps: 60, completed: true, isRecord: true },
+      { weight: 20, reps: 60, completed: true },
+    ] }] }] as GymSession[];
+    expect(periodRecap(gym, [], new Date(2026, 8, 1), new Date(2026, 9, 1))).toMatchObject({ volume: 0, reps: 0, records: 1 });
+  });
 });
 
 describe('recapCard muscles', () => {
