@@ -43,7 +43,7 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
 
   return (
     <Dialog open onOpenChange={(open) => !open && !saving && onCancel()}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle>Modifier la séance</DialogTitle>
           <DialogDescription>Corrige charges et répétitions ; volume, records et stats sont recalculés.</DialogDescription>
@@ -83,7 +83,8 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
           ))}
         </div>
         {kept.length === 0 && <p className="text-xs text-muted-foreground">Plus aucune série : supprime plutôt la séance depuis l'historique.</p>}
-        <div className="flex gap-2">
+        {/* Boutons toujours visibles, même quand la liste défile (séance longue) */}
+        <div className="sticky -bottom-6 -mx-6 -mb-6 px-6 pt-3 pb-6 flex gap-2 bg-background border-t">
           <Button variant="outline" className="flex-1 min-h-11" onClick={onCancel} disabled={saving}>Annuler</Button>
           <Button className="flex-1 min-h-11" onClick={() => void save()} disabled={saving || kept.length === 0}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enregistrer'}
