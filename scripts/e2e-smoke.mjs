@@ -457,6 +457,8 @@ const steps = [
     await page.getByRole('tab', { name: /Muscu/ }).click();
     await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
     await page.waitForURL(`${BASE}/gym`);
+    const consoleErrors = [];
+    page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text().slice(0, 200)); });
     await page.goto(`${BASE}/profil`);
     await page.getByRole('button', { name: 'Se déconnecter' }).click();
     await page.getByRole('button', { name: 'Me déconnecter' }).click();
@@ -471,7 +473,12 @@ const steps = [
     await page.fill('#email', DEMO.email);
     await page.fill('#password', DEMO.password);
     await page.click('button[type=submit]');
-    await page.waitForURL(`${BASE}/`);
+    // intermittent: once in a while the app stays on the login form after signing back in — report what is shown
+    await page.waitForURL(`${BASE}/`).catch(async () => {
+      const shown = (await page.locator('body').innerText()).replace(/\n+/g, ' | ');
+      const fields = `email « ${await page.inputValue('#email').catch(() => '?')} », mot de passe ${(await page.inputValue('#password').catch(() => '')).length} car.`;
+      throw new Error(`reconnexion bloquée sur ${page.url()} (${fields}) : ${shown.slice(0, 300)}\n  console : ${consoleErrors.slice(0, 6).join(' // ')}`);
+    });
     await page.getByText('Bonjour').waitFor();
     await assertAlive('reconnexion');
   }],
