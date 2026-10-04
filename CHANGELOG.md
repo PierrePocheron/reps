@@ -57,6 +57,9 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 - Mensurations : plus d'historique écrasé par une mesure ajoutée avant la fin du chargement
 - Rappel d'entraînement quotidien qui revient chaque jour (il ne sonnait qu'une fois sur Android et iOS)
 - Accepter une demande d'ami fonctionne *(règles Firestore à déployer)*
+- Fil d'activité : tous les amis y apparaissent (seuls les 10 premiers étaient lus)
+- Récap du mois / de l'année : les exercices en durée ne gonflent plus le volume ni les répétitions
+- Réglages ne plante plus dans Safari sur iPhone (onglet classique) ni dans les navigateurs intégrés
 
 ### Technique
 - Démo complète hors ligne sur émulateurs (`yarn dev:demo`), parcours e2e, audit de contraste, tests des règles Firestore
