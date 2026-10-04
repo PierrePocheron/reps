@@ -85,7 +85,8 @@ const cutOff = () => p.evaluate(() => [...document.querySelectorAll('main *, [ro
   }
   return r.right > limit + 1;
 }).map((el) => `coupé : <${el.tagName.toLowerCase()}> « ${(el.getAttribute('aria-label') || el.textContent || '').trim().slice(0, 40)} »`).slice(0, 10));
-// with reduced motion, nothing may still be moving once the screen has settled (pulses, loops, confetti)
+// with reduced motion, nothing may still be moving once the screen has settled (pulses, loops): CSS and Web
+// Animations only — canvas confetti are not visible to getAnimations(), their disableForReducedMotion is not checked here
 const moving = () => (large ? p.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running')
   .map((a) => `animation en cours malgré « animations réduites » : ${a.animationName ?? a.constructor.name} sur <${a.effect?.target?.tagName?.toLowerCase()}>`)) : []);
 const run = async () => [...await audit(), ...await unnamed(), ...await cutOff(), ...await moving()];

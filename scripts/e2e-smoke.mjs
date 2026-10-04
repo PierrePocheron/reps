@@ -415,6 +415,21 @@ const steps = [
     await dialog.getByText(/1\/2 exercices reconnus/).waitFor();
     await dialog.getByRole('button', { name: 'Importer' }).click();
     await page.getByText('1 séance importée').first().waitFor();
+    // the imported data itself: units read from the headers, « Bench Press (Barbell) » on the base exercise
+    await page.goto(`${BASE}/history`);
+    await page.getByRole('tab', { name: /Muscu/ }).click();
+    const filter = page.getByRole('combobox').first();
+    await filter.locator('option', { hasText: 'Machine inconnue e2e' }).first().waitFor({ state: 'attached' });
+    const label = (await filter.locator('option').allInnerTexts()).find((o) => o.startsWith('Machine inconnue e2e'));
+    await filter.selectOption({ label });
+    const day = `${d.getDate() === 1 ? '1er' : d.getDate()} ${d.toLocaleDateString('fr-FR', { month: 'long' })} ${d.getFullYear()}`;
+    const card = page.locator('div.rounded-2xl').filter({ hasText: day }).filter({ hasText: 'Machine inconnue e2e' }).first();
+    await card.waitFor();
+    const text = await card.innerText();
+    assert.match(text, /Développé couché/, `import : exercice de base attendu\n${text}`);
+    assert.match(text, /1 × 40 kg/, `import : charge attendue\n${text}`);
+    await page.goto(`${BASE}/settings`);
+    await btn.waitFor();
     for (let i = 0; i < 100 && await btn.isDisabled(); i++) await page.waitForTimeout(100); // historique rechargé
     await page.locator('input[type=file][accept*=csv]').setInputFiles(file); // réimport : déjà là
     await page.getByRole('dialog').getByText(/déjà dans ton historique/).waitFor();
