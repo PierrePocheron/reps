@@ -43,6 +43,7 @@ interface GymSessionState {
   toggleSuperset: (index: number) => void;
   swapExercises: (index: number) => void;
   toggleTimed: (exerciseId: string) => void;
+  replaceExercise: (exerciseId: string, by: Exercise) => void;
   setExerciseNote: (exerciseId: string, note: string) => void;
 
   // Actions — Exécution
@@ -162,6 +163,13 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
 
   toggleSuperset: (index: number) => set((state) => ({ exercises: toggleSupersetLink(state.exercises, index) })),
   swapExercises: (index: number) => set((state) => ({ exercises: swapWithNext(state.exercises, index) })),
+  // Machine prise (#62, Hevy « Replace exercise ») : séries, superset et place gardés ; note, unité et trophées propres à l'ancien
+  replaceExercise: (exerciseId: string, by: Exercise) => set((state) => (state.exercises.some((ex) => ex.exerciseId === by.id) ? state : {
+    exercises: state.exercises.map((ex) => (ex.exerciseId !== exerciseId ? ex : {
+      ...ex, exerciseId: by.id, name: by.name, emoji: by.emoji, imageUrl: by.imageUrl, note: undefined, timed: undefined,
+      sets: ex.sets.map((s) => ({ ...s, isRecord: false })),
+    })),
+  })),
   toggleTimed: (exerciseId: string) => set((state) => ({ exercises: state.exercises.map((ex) => (ex.exerciseId === exerciseId ? { ...ex, timed: !isTimed(ex) } : ex)) })),
 
   setExerciseNote: (exerciseId: string, note: string) => {

@@ -97,3 +97,20 @@ describe('gymSessionStore — repos −15 s / +15 s (#51)', () => {
     expect(useGymSessionStore.getState().restEndsAt).toBeNull();
   });
 });
+
+describe('gymSessionStore — remplacer un exercice (#62)', () => {
+  it('garde séries, superset et place ; oublie note, unité et trophées ; refuse un exercice déjà présent', () => {
+    useGymSessionStore.setState({ exercises: [
+      { exerciseId: 'barbell_squat', name: 'Squat', emoji: '🏋️', note: 'rack 4', supersetId: 's1', timed: false, sets: [{ weight: 100, reps: 5, completed: true, isRecord: true }, { weight: 100, reps: 5, completed: false }] },
+      { exerciseId: 'leg_press', name: 'Presse', emoji: '🦵', supersetId: 's1', sets: [] },
+    ] });
+    const { replaceExercise } = useGymSessionStore.getState();
+    replaceExercise('barbell_squat', { id: 'hack_squat', name: 'Hack squat', emoji: '🦵', category: 'legs', workoutType: 'musculation' } as never);
+    const [ex] = useGymSessionStore.getState().exercises;
+    expect(ex).toMatchObject({ exerciseId: 'hack_squat', name: 'Hack squat', supersetId: 's1', note: undefined, timed: undefined });
+    expect(ex!.sets).toEqual([{ weight: 100, reps: 5, completed: true, isRecord: false }, { weight: 100, reps: 5, completed: false, isRecord: false }]);
+
+    replaceExercise('hack_squat', { id: 'leg_press', name: 'Presse', emoji: '🦵' } as never); // déjà dans la séance
+    expect(useGymSessionStore.getState().exercises[0]!.exerciseId).toBe('hack_squat');
+  });
+});

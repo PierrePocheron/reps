@@ -128,6 +128,13 @@ const steps = [
     await page.waitForTimeout(1200);
     await cards.nth(0).getByRole('button', { name: /^Arrêter le chrono/ }).click();
     assert.equal(await validated(), validatedBefore + 1, 'le chrono valide la série');
+    // remplacer (#62) : nouvel exercice à la même place, séries gardées
+    const setsBefore = await cards.nth(0).getByRole('button', { name: /^Série \d+ : / }).count();
+    await cards.nth(0).getByRole('button', { name: /voir la fiche/ }).click();
+    await page.getByRole('button', { name: /Remplacer par un autre exercice/ }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /Développé couché/ }).first().click();
+    await cards.nth(0).getByRole('button', { name: /^Développé couché : voir la fiche/ }).waitFor();
+    assert.equal(await cards.nth(0).getByRole('button', { name: /^Série \d+ : / }).count(), setsBefore, 'séries conservées');
     // annuler : rien n'est enregistré, retour à l'accueil
     await page.getByRole('button', { name: 'Annuler la séance' }).first().click();
     await page.getByRole('dialog').or(page.locator('[aria-labelledby=cancel-session-title]')).getByRole('button', { name: 'Annuler la séance' }).click();

@@ -24,6 +24,7 @@ interface Props {
   history?: ExercisePoint[];
   timed?: boolean; // exercice en durée : courbe de la meilleure durée (#55)
   log?: ExerciseLogEntry[]; // dernières séances, séries en clair (#60)
+  onReplace?: () => void; // en séance : remplacer par un autre exercice (#62)
   onClose: () => void;
 }
 
@@ -38,6 +39,7 @@ export function ExerciseDetailSheet({
   history,
   timed,
   log,
+  onReplace,
   onClose,
 }: Props) {
   const lang = useLanguage();
@@ -131,6 +133,13 @@ export function ExerciseDetailSheet({
                 ))}
               </ul>
             </div>
+          )}
+
+          {onReplace && (
+            <button type="button" onClick={onReplace}
+              className="w-full min-h-11 rounded-xl border border-dashed border-border text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary/40">
+              ⇄ Remplacer par un autre exercice
+            </button>
           )}
 
           {/* Instructions */}

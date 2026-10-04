@@ -82,6 +82,7 @@ function GymSession() {
     toggleSuperset,
     swapExercises,
     toggleTimed,
+    replaceExercise,
     backdate,
     setBackdate,
     startExecution,
@@ -101,6 +102,7 @@ function GymSession() {
   const { imageMap, infoMap } = useExerciseImages();
   const lang = useLanguage();
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
+  const [replaceTarget, setReplaceTarget] = useState<string | null>(null); // exercice à remplacer (#62)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [ending, setEnding] = useState(false);
   const [detailExerciseId, setDetailExerciseId] = useState<string | null>(null);
@@ -626,8 +628,9 @@ function GymSession() {
 
       <AddGymExerciseDialog
         open={showExerciseDialog}
-        onOpenChange={setShowExerciseDialog}
+        onOpenChange={(open) => { setShowExerciseDialog(open); if (!open) setReplaceTarget(null); }}
         onAdd={(exercise) => {
+          if (replaceTarget) { replaceExercise(replaceTarget, exercise); setReplaceTarget(null); return; }
           addExercise(exercise);
           // Comme Hevy : les séries de la dernière fois, sinon une série par défaut
           const last = lastWorkSets(gymHistory, exercise.id);
@@ -660,6 +663,7 @@ function GymSession() {
             history={exerciseHistory(gymHistory, ex.exerciseId)}
             log={exerciseLog(gymHistory, ex.exerciseId)}
             timed={isTimed(ex)}
+            onReplace={() => { setReplaceTarget(ex.exerciseId); setDetailExerciseId(null); setShowExerciseDialog(true); }}
             onClose={() => setDetailExerciseId(null)}
           />
         );
