@@ -29,7 +29,7 @@ Ce projet utilise des **tests unitaires**, des **tests d'intégration légère**
 
 ### Test de fumée E2E (`yarn e2e`)
 
-`scripts/e2e-smoke.mjs` pilote un vrai navigateur (Playwright) sur la démo. Il enchaîne 15 parcours :
+`scripts/e2e-smoke.mjs` pilote un vrai navigateur (Playwright) sur la démo. Il enchaîne 16 parcours :
 
 | Parcours | Ce qui est vérifié |
 |---|---|
@@ -46,6 +46,7 @@ Ce projet utilise des **tests unitaires**, des **tests d'intégration légère**
 | Filtrer l'historique | Filtre par exercice ; « Refaire » depuis une carte basse ouvre la séance en haut |
 | Import CSV Strong | Aperçu, import, réimport sans doublon |
 | Petit écran (320 px) | Rien ne déborde sur les pages principales, dans le dialogue de suppression du compte, ni en séance (repos ouvert) |
+| Déconnexion, reconnexion | Séance muscu en cours annulée à la déconnexion, retour à la connexion, reconnexion |
 
 Il échoue si une page lève une erreur JS ou se fige (boucle de rendu), avec un garde-fou global de 6 minutes.
 Les parcours ajoutent des séances à la démo : relancer `yarn dev:demo` repart de données propres. Après des dizaines

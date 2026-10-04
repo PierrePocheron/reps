@@ -450,6 +450,31 @@ const steps = [
     await page.waitForURL(`${BASE}/`);
     await page.setViewportSize({ width: 390, height: 844 });
   }],
+
+  ['déconnexion puis reconnexion (séance en cours non transmise)', async () => {
+    // a gym session in progress must not survive sign-out (the next account on the device got it)
+    await page.goto(`${BASE}/history`);
+    await page.getByRole('tab', { name: /Muscu/ }).click();
+    await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+    await page.waitForURL(`${BASE}/gym`);
+    await page.goto(`${BASE}/profil`);
+    await page.getByRole('button', { name: 'Se déconnecter' }).click();
+    await page.getByRole('button', { name: 'Me déconnecter' }).click();
+    await page.waitForURL(/\/login/);
+    // reset() cancels it right after the redirect (dynamic import): poll instead of reading once
+    let phase;
+    for (let i = 0; i < 50 && phase !== 'idle'; i++) {
+      phase = await page.evaluate(() => JSON.parse(localStorage.getItem('reps_gym_session') ?? '{}')?.state?.phase);
+      if (phase !== 'idle') await page.waitForTimeout(100);
+    }
+    assert.equal(phase, 'idle', 'séance muscu conservée après déconnexion');
+    await page.fill('#email', DEMO.email);
+    await page.fill('#password', DEMO.password);
+    await page.click('button[type=submit]');
+    await page.waitForURL(`${BASE}/`);
+    await page.getByText('Bonjour').waitFor();
+    await assertAlive('reconnexion');
+  }],
 ];
 
 let failed = false;
