@@ -42,7 +42,7 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 ### Interface et accessibilité
 - Barre de navigation flottante en pilule, réduite au défilement
 - Bibliothèque de 1 324 exercices illustrés en français et en anglais
-- Contraste AA en clair et en sombre (texte d'accent lisible pour tous les thèmes), écrans dès 320 px, lecteurs d'écran (dialogues nommés, cibles de 44 px)
+- Contraste AA en clair et en sombre (texte d'accent lisible pour tous les thèmes), écrans dès 320 px, appli Android en portrait comme la PWA (en paysage, la barre de séance couvrait l'écran), lecteurs d'écran (dialogues nommés, cibles de 44 px)
 - Tutoiement partout, accords au singulier, « Réglages », « Badges », « Modèles » ; interrupteurs dans les réglages
 
 ### Fiabilité et confidentialité
