@@ -29,11 +29,24 @@ Ce projet utilise des **tests unitaires**, des **tests d'intégration légère**
 
 ### Test de fumée E2E (`yarn e2e`)
 
-`scripts/e2e-smoke.mjs` pilote un vrai navigateur (Playwright) sur la démo : connexion, navigation, séance muscu
-complète (refaire, note, repos auto, terminer, barre fixée à l'écran), séance renfo, échauffement + superset (pas de
-repos au milieu du tour) + annulation, mensurations, récap et muscles travaillés, courbe de progression (fenêtre
-au-dessus de la navigation), et rien qui déborde à 320 px sur les pages principales. Il échoue si une page lève une
-erreur JS ou se fige (boucle de rendu).
+`scripts/e2e-smoke.mjs` pilote un vrai navigateur (Playwright) sur la démo. Il enchaîne 13 parcours :
+
+| Parcours | Ce qui est vérifié |
+|---|---|
+| Connexion, navigation | Chaque onglet de la barre flottante ouvre sa page |
+| Séance muscu complète | Refaire, titre et note, rappel « Précédent », repos auto, barre fixée, écran de récap, carte titrée dans l'historique |
+| Séance renfo | Refaire, compter, récap avec comparaison |
+| Échauffement, superset, repos | Échauffement en tête, échanger deux exercices, pas de repos au milieu d'un tour, ±15 s, durée retenue, exercice en secondes + chrono, remplacer un exercice, annulation |
+| Mensurations et récap | Saisie, récap mensuel et muscles travaillés |
+| Records | Courbe de progression au-dessus de la navigation |
+| Séance oubliée | Muscu et renfo enregistrées à une date passée, rangées à leur date |
+| Modifier / supprimer | Charge corrigée (muscu), reps corrigées (renfo), suppression confirmée |
+| Filtrer l'historique | Filtre par exercice ; « Refaire » depuis une carte basse ouvre la séance en haut |
+| Import CSV Strong | Aperçu, import, réimport sans doublon |
+| Petit écran (320 px) | Rien ne déborde sur les pages principales ni en séance (repos ouvert) |
+
+Il échoue si une page lève une erreur JS ou se fige (boucle de rendu), avec un garde-fou global de 6 minutes.
+Les parcours ajoutent des séances à la démo : relancer `yarn dev:demo` repart de données propres.
 
 ```bash
 yarn dev:demo   # terminal 1 : émulateurs + données de démo

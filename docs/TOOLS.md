@@ -148,7 +148,14 @@ Fichier [capacitor.config.ts](../capacitor.config.ts) :
 | `@capgo/capacitor-social-login` | Authentification Google native (iOS/Android) |
 | `@capacitor-community/admob` | Publicités natives (bannières) |
 | `@capacitor/haptics` | Retours haptiques (vibrations) |
-| `@capacitor/local-notifications` | Notifications locales |
+| `@capacitor/local-notifications` | Fin de repos (écran verrouillé, alarme exacte), rappels |
+| `@capacitor/share`, `@capacitor/filesystem` | Partage d'image et export de fichiers sur mobile |
+| `@capacitor/app` | Liens profonds (`com.pierre.reps.app://home`, tap sur le widget) |
+| `@capacitor/status-bar` | Barre d'état |
+| Plugin local `RepsWidget` | Widget d'écran d'accueil Android (`RepsWidgetPlugin.java`, `RepsWidgetProvider.java`) |
+| Plugin local `KeepAwake` | Écran allumé pendant une séance (`KeepAwakePlugin.java`) |
+
+Les plugins locaux sont enregistrés dans `MainActivity.java` (avant `super.onCreate`).
 
 ---
 
@@ -266,10 +273,13 @@ Pipeline défini dans [.github/workflows/ci.yml](../.github/workflows/ci.yml).
 
 | Cible | Déclencheur | Commande |
 |---|---|---|
-| Firebase Hosting (web) | Push `main` via CI | `yarn deploy` |
-| Vercel (web alternatif) | Auto via intégration Vercel | — |
-| iOS (App Store) | Manuel depuis Xcode | `yarn build && yarn cap:sync && cap open ios` |
-| Android (Play Store) | Manuel depuis Android Studio | `yarn build && yarn cap:sync && cap open android` |
+| Firebase Hosting (web) | Push sur `prod` via la CI | automatique (à la main : `firebase deploy --only hosting --project reps`) |
+| Règles / index Firestore | Manuel, après `yarn test:rules` | `firebase deploy --only firestore --project reps` |
+| Android (Play Store) | Manuel | `bash scripts/build-android-release.sh` → AAB dans la Play Console |
+| iOS (App Store) | Manuel depuis Xcode | `yarn build && npx cap sync ios && npx cap open ios` → Archive |
+
+⚠️ `yarn deploy` (= `firebase deploy`) déploie **tout**, règles Firestore comprises : préférer les commandes ciblées.
+Procédures complètes et prérequis des stores : [DEPLOY.md](DEPLOY.md).
 
 ---
 
@@ -286,7 +296,14 @@ yarn lint                   # Lint ESLint (0 warning toléré)
 yarn format                 # Formatage Prettier
 yarn type-check             # Vérification TypeScript
 
+# ── Démo locale ────────────────────────────────────────
+yarn dev:demo               # Émulateurs Firebase + données fictives → http://localhost:5199
+
 # ── Tests ──────────────────────────────────────────────
+yarn test:rules             # Règles Firestore sur l'émulateur
+yarn e2e                    # Parcours de bout en bout (démo lancée)
+yarn a11y                   # Audit de contraste AA, clair et sombre (démo lancée)
+yarn store:screenshots      # Captures Play Store (démo lancée)
 yarn test                   # Mode watch (développement)
 yarn test --run             # Exécution unique de tous les tests
 yarn test:coverage          # Tests + rapport de couverture HTML/LCOV
@@ -298,6 +315,10 @@ yarn cap:sync               # Sync build web → natif
 yarn cap:open:ios           # Ouvrir dans Xcode
 yarn cap:open:android       # Ouvrir dans Android Studio
 
-# ── Déploiement ────────────────────────────────────────
-yarn deploy                 # Build + déploiement Firebase Hosting
+# ── Release & déploiement (voir RELEASE.md et DEPLOY.md) ─
+scripts/release.sh prepare X.Y.Z      # sur dev : versions
+scripts/release.sh publish            # sur prod : tag + release GitHub
+bash scripts/setup-keystore.sh        # une fois : keystore de signature Android
+bash scripts/build-android-release.sh # AAB signé pour la Play Console
+firebase deploy --only firestore --project reps   # règles et index Firestore
 ```

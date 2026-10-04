@@ -1,121 +1,104 @@
-# 🏋️ Reps - L'expérience Musculation Ultime
+# 🏋️ REPS — ton carnet d'entraînement
 
-> **Plus qu'une simple application de suivi, Reps est une expérience sociale et gamifiée conçue pour pousser vos limites.**
-> Une Application Web (PWA) propulsée en natif sur iOS et Android, alliant la flexibilité du Web à la puissance du Natif.
+> Le carnet d'entraînement **gratuit et en français**, pour la muscu **et** le poids du corps —
+> motivé par tes amis. Application web (PWA) et Android (Capacitor), iOS prévu.
 
-[![Status](https://img.shields.io/badge/Status-Active-success)]() [![License](https://img.shields.io/badge/license-MIT-blue)]() [![CI/CD](https://github.com/PierrePocheron/reps/actions/workflows/ci.yml/badge.svg)](https://github.com/PierrePocheron/reps/actions/workflows/ci.yml) [![Vercel](https://vercel.com/button)](https://vercel.com/pierre-pocheron/reps)
+[![CI/CD](https://github.com/PierrePocheron/reps/actions/workflows/ci.yml/badge.svg)](https://github.com/PierrePocheron/reps/actions/workflows/ci.yml)
 
-📖 **Documentation** : [Tests](docs/TESTS.md) · [Outils](docs/TOOLS.md)
+**Web** : https://pedro-reps.web.app · **Android** : [dernière version](https://github.com/PierrePocheron/reps/releases/latest)
 
-<div align="center">
-  <a href="https://pedro-reps.web.app">
-    <img src="https://img.shields.io/badge/iOS_PWA-Add_to_Home_Screen-black?style=for-the-badge&logo=apple" alt="iOS PWA" height="40" />
-  </a>
-  <a href="https://github.com/PierrePocheron/reps/releases/latest">
-    <img src="https://img.shields.io/badge/Android-Download_APK-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download APK" height="40" />
-  </a>
-</div>
-
----
-
-## 📱 Aperçu & Interface
-
-| Accueil | Session | Classement | Statistiques |
+| | | | |
 |:---:|:---:|:---:|:---:|
-| ![Home](/screenshots/reps_home.png) | ![Session](/screenshots/reps_session.png) | ![Leaderboard](/screenshots/reps_top.png) | ![Statistics](/screenshots/reps_stats.png) |
-| *Votre tableau de bord* | *Suivi en temps réel* | *Défiez vos amis* | *Statistiques* |
-
-| Friends | Achievements | Profile | Settings |
-|:---:|:---:|:---:|:---:|
-| ![Friends](/screenshots/reps_social.png) | ![Achievements](/screenshots/reps_achievements.png) | ![Profile](/screenshots/reps_profil.png) | ![Settings](/screenshots/reps_settings.png) |
-| *Amis et fil d'actualité* | *Achievements et badges* | *Profil* | *Paramètres* |
+| ![Accueil](store/fr-FR/screenshots/01-accueil.png) | ![Séance](store/fr-FR/screenshots/02-seance-muscu.png) | ![Progression](store/fr-FR/screenshots/03-progression.png) | ![Statistiques](store/fr-FR/screenshots/04-statistiques.png) |
 
 ---
 
-## ⚡️ Stack Technologique & Outils
+## Fonctionnalités
 
-Ce projet est une démonstration technique utilisant un écosystème moderne pour garantir performance, fluidité et maintenabilité.
+**Séance muscu**
+- Saisie rapide : valeurs de la dernière fois, rappel « Précédent » quand on s'en écarte, suggestion de surcharge progressive
+- Types de séries (échauffement, dégressive, échec), RPE, notes, supersets, exercices en durée avec chrono
+- Réordonner / remplacer un exercice, titre et note de séance, séance oubliée saisie à sa vraie date
+- Minuteur de repos automatique (notification écran verrouillé, durée par exercice, ±15 s), écran maintenu allumé
+- Records en direct (charge et durée) avec célébration, écran de récap, partage en image
+- Calculateurs de disques et de séries d'échauffement
 
-### 💻 Cœur & Frontend
-*   **[React 18](https://react.dev/) & [TypeScript](https://www.typescriptlang.org/)** : Architecture robuste, typée et composants réactifs.
-*   **[Vite](https://vitejs.dev/)** : Environnement de développement ultra-rapide et build optimisé.
-*   **[TailwindCSS](https://tailwindcss.com/)** : Styling "Utility-first" pour un Design System sur-mesure et cohérent.
-*   **[Framer Motion](https://www.framer.com/motion/)** : Moteur d'animations fluide (60fps) pour les transitions de pages et micro-interactions.
-*   **[Shadcn/ui](https://ui.shadcn.com/)** : Composants UI accessibles et personnalisables (basés sur Radix Primitives).
-*   **[Zustand](https://github.com/pmndrs/zustand)** : Gestion d'état global minimaliste et performante.
+**Séance renfo** : compteur de répétitions en direct, calories estimées, modèles, récap.
 
-### 📲 Mobile & Natif (iOS / Android)
-L'application exploite **[Capacitor](https://capacitorjs.com/)** (v5) pour offrir une véritable expérience native.
-*   **Plugins Natifs** :
-    *   `@codetrix-studio/capacitor-google-auth` : Authentification Google native (OAuth2) sans redirection web.
-    *   `@capacitor-community/admob` : Levier de monétisation native (Bannières publicitaires) pour iOS et Android.
-    *   `@capacitor/haptics` : Retours haptiques (vibrations) précis.
-    *   `@capacitor/local-notifications` : Rappels d'entraînements et motivation.
-*   **Monétisation Hybride** :
-    *   **AdMob** : Publicités natives optimisées pour les stores.
-    *   **Google AdSense** : Revenus complémentaires sur la version Web/Desktop.
-*   **Outils de Build** :
-    *   **Xcode** & **Swift** : Configuration iOS profonde (Capabilities, Info.plist, Safe Areas).
-    *   **CocoaPods** : Gestion des dépendances natives iOS.
-    *   **Android Studio** & **Gradle** : Pipeline de build Android optimisé.
+**Progrès** : courbe par exercice (1RM estimé, charge, volume, durée), dernières séances détaillées, records,
+répartition musculaire, statistiques et habitudes, récap mensuel / annuel partageable, mensurations et poids de corps.
 
-### 🔥 Backend & Infrastructure
-*   **[Firebase](https://firebase.google.com/)** :
-    *   **Firestore** : Base de données NoSQL temps réel pour la synchro instantanée entre appareils.
-    *   **Authentication** : Gestion sécurisée des identités.
-    *   **Hosting** : Déploiement global sur CDN.
+**Historique** : modifier, supprimer, filtrer par exercice ; export CSV (format Strong) et **import Strong / Hevy**.
 
-### 🎨 Design & Production
-*   **[Shorts.so](https://shorts.so/)** : Génération des mockups de présentation haute fidélité.
-*   **Lucide React** : Set d'icônes vectorielles léger et cohérent.
-*   **Canvas Confetti** : Effets de particules pour la gamification (Célébrations).
+**Motivation & social** : série quotidienne (avec joker) ou hebdomadaire, objectif hebdo, questionnaire de départ,
+badges, défis, amis, fil d'activité, classement, widget Android.
+
+**Accessibilité** : contraste AA (clair et sombre), écrans dès 320 px, lecteurs d'écran.
 
 ---
 
-## 💎 Principes de Développement
+## Stack
 
-Ce projet met en œuvre des concepts avancés pour gommer la frontière Web/Natif :
-
-1.  **Native Feel First** :
-    *   Suppression du "Rubber-banding" (scroll élastique) excessif.
-    *   Désactivation du Zoom tactile et sélection de texte.
-    *   Gestion précise des **Safe Areas** (Notch, Dynamic Island) via CSS `env()`.
-2.  **Gamification Poussée** :
-    *   Système de leveling algorithmique.
-    *   **Badge System** dynamique (15+ succès à débloquer).
-    *   Calcul de "Streaks" (Séries) pour la rétention utilisateur.
-3.  **Performance UX** :
-    *   Optimistic UI pour une réactivité immédiate sans attendre le réseau.
-    *   Mode Offline partiel.
+| Couche | Outils |
+|---|---|
+| Front | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui (Radix), Zustand, Framer Motion (pages secondaires) |
+| Mobile | Capacitor 8 (Android, iOS) — notifications locales, partage, fichiers, haptique, AdMob, connexion Google native, plugins locaux (widget, écran allumé) |
+| Back | Firebase : Authentication, Firestore (règles testées), Hosting, App Check |
+| Qualité | Vitest, tests de règles Firestore, e2e Playwright, audit de contraste, ESLint, SonarCloud, Sentry |
 
 ---
 
-## 🛠️ Configuration Développement
-
-Pour les développeurs souhaitant explorer le code source.
-
-### 1. Variables d'environnement
-Créez un fichier `.env` à la racine du projet contenant vos clés Firebase :
-
-```env
-VITE_FIREBASE_API_KEY=votre_api_key
-VITE_FIREBASE_AUTH_DOMAIN=projet.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=votre_projet_id
-VITE_FIREBASE_STORAGE_BUCKET=projet.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=votre_sender_id
-VITE_FIREBASE_APP_ID=votre_app_id
-VITE_APP_ENV=development
-```
-
-### 2. Installation & Lancement
+## Démarrer
 
 ```bash
-# Installation des dépendances JS
 yarn install
-
-# Lancer en mode Web
-yarn dev
-
-# Synchroniser les projets natifs (nécessite les IDEs installés)
-yarn cap:sync
+yarn dev:demo     # démo complète hors ligne : émulateurs Firebase + données fictives → http://localhost:5199
 ```
+
+Avec un vrai projet Firebase : `cp .env.example .env`, remplir les clés ([ENV.md](ENV.md)), puis `yarn dev`.
+
+### Commandes utiles
+
+| Commande | Rôle |
+|---|---|
+| `yarn dev` / `yarn dev:demo` | Serveur de dev (vrai projet / démo sur émulateurs) |
+| `yarn build` | Build de production (`dist/`) |
+| `yarn type-check` · `yarn lint` | Types · lint (0 avertissement exigé, aussi en CI) |
+| `yarn vitest run` | Tests unitaires et composants |
+| `yarn test:rules` | Règles Firestore sur l'émulateur |
+| `yarn e2e` · `yarn a11y` | Parcours de bout en bout · audit de contraste (démo lancée) |
+| `yarn store:screenshots` | Captures Play Store (`store/fr-FR/screenshots/`) |
+| `yarn cap:sync` · `yarn cap:open:android` | Synchroniser / ouvrir le projet natif |
+
+---
+
+## Branches, versions, déploiement
+
+`dev` (travail quotidien) → `main` (PR) → `prod` (releases taguées X.Y.Z, déploiement web automatique).
+
+- Releases : [docs/RELEASE.md](docs/RELEASE.md)
+- **Déploiements et prérequis stores** (web, règles Firestore, Play Store, App Store) : [docs/DEPLOY.md](docs/DEPLOY.md)
+
+---
+
+## Documentation
+
+| Document | Contenu |
+|---|---|
+| [ENV.md](ENV.md) | Variables d'environnement, fichiers natifs, secrets CI |
+| [docs/DEPLOY.md](docs/DEPLOY.md) | Procédures de déploiement, checklists Play Store / App Store |
+| [docs/RELEASE.md](docs/RELEASE.md) | Branches, versionnage, publication d'une version |
+| [docs/TESTS.md](docs/TESTS.md) | Tests unitaires, règles, e2e, accessibilité, démo Android |
+| [docs/TOOLS.md](docs/TOOLS.md) | Outils du projet et commandes |
+| [docs/PLAYSTORE.md](docs/PLAYSTORE.md) | Fiche Play Store, Data Safety, captures |
+| [docs/COMPETITIVE.md](docs/COMPETITIVE.md) | Analyse concurrentielle (Hevy, Strong…) et écarts restants |
+| [docs/LOOP.md](docs/LOOP.md) | Boucle d'amélioration continue et son journal |
+| [docs/WEBSITE.md](docs/WEBSITE.md) | Réflexion sur le site vitrine |
+
+---
+
+## Règles du dépôt
+
+Dépôt **public** : aucune donnée personnelle (noms réels, identité de l'éditeur, clés) dans le code, les tests
+ou les commits — l'identité vit dans `.env` et les secrets GitHub. Les fichiers Firebase natifs
+(`google-services.json`, `GoogleService-Info.plist`) et la keystore ne sont pas versionnés.

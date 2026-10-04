@@ -44,12 +44,16 @@ Reps, c'est ton carnet d'entraînement : gratuit, en français, pour la muscu co
 • Ta séance est sauvegardée en continu : même si l'appli se ferme, tu reprends où tu en étais.
 • 1 324 exercices illustrés, avec les muscles ciblés et les consignes pas à pas.
 • Modèles de séance, ou refais une séance passée en un geste depuis l'historique.
+• Supersets, exercices en durée (gainage) avec chrono, échauffement calculé, suggestion de charge quand tout est réussi.
+• Repos réglable par exercice, ±15 s d'un geste, écran maintenu allumé pendant la séance.
+• Réordonne ou remplace un exercice en pleine séance, donne un titre et une note à ta séance.
 
 ━━━ VOIS TA PROGRESSION ━━━
 
 • Records détectés en direct : bats ton meilleur 1RM estimé et Reps te le fête.
 • Une courbe par exercice : 1RM estimé, charge max ou volume, sur 3 mois, 1 an ou depuis le début.
-• Historique complet de tes séances et de tes records.
+• Historique complet de tes séances et de tes records : modifie, supprime, filtre par exercice, ajoute une séance oubliée.
+• Écran de fin de séance : durée, volume, records et comparaison avec ta dernière séance.
 • Statistiques : calendrier d'activité, progression semaine par semaine, créneaux où tu t'entraînes le plus.
 • Muscles travaillés : tes séries par groupe musculaire sur 7 ou 30 jours.
 • Série de jours d'entraînement d'affilée, renfo et muscu confondus.
@@ -72,12 +76,12 @@ Reps, c'est ton carnet d'entraînement : gratuit, en français, pour la muscu co
 
 ━━━ TES DONNÉES T'APPARTIENNENT ━━━
 
-Tes séances sont synchronisées de façon sécurisée et ne sont jamais revendues. Tu peux supprimer ton compte et toutes tes données depuis l'appli.
+Tes séances sont synchronisées de façon sécurisée et ne sont jamais revendues. Exporte-les en CSV quand tu veux, ou importe ton historique Strong ou Hevy pour tout retrouver dans Reps. Tu peux supprimer ton compte et toutes tes données depuis l'appli.
 
 Débutant ou confirmé, lance ta première séance : chaque rep compte.
 ```
 
-*(~3 000 caractères. À ne pas promettre tant que ce n'est pas tranché : « sans pub », niveaux — il n'y a pas de système de niveaux dans l'appli.)*
+*(~3 150 caractères. À ne pas promettre tant que ce n'est pas tranché : « sans pub », niveaux — il n'y a pas de système de niveaux dans l'appli.)*
 
 ---
 
@@ -106,6 +110,8 @@ Première version de Reps !
 • 1 324 exercices illustrés (FR/EN)
 • Statistiques, séries, défis progressifs et 22 badges
 • Classement et fil d'activité avec tes amis
+• Import de ton historique Strong ou Hevy
+• Widget Android : ta série d'un coup d'œil
 ```
 
 ---

@@ -18,10 +18,15 @@ scripts/release.sh publish            # sur prod : tag v1.0.0 + release GitHub (
 bash scripts/build-android-release.sh # AAB signé à uploader dans la Play Console
 ```
 
+Avant la release : règles Firestore à jour déployées si elles ont changé, captures store régénérées si l'interface
+a changé (`yarn store:screenshots`). Publication sur les stores et prérequis : [DEPLOY.md](DEPLOY.md).
+
 Le `versionCode` Android est dérivé de la version (`1.2.3` → `10203`), donc toujours croissant.
 
 ## CI
 
-- Tests, type-check et build sur chaque push `dev`/`main`/`prod` et chaque PR vers `main`/`prod`.
+- Tests, type-check, **lint** et build sur chaque push `dev`/`main`/`prod` et chaque PR vers `main`/`prod`.
 - Déploiement web uniquement sur `prod`. Les variables `VITE_*` viennent des secrets GitHub :
   `gh secret set -f .env` (une fois, depuis la racine du repo).
+- Les règles Firestore ne sont **pas** déployées par la CI (`firebase deploy --only firestore`, voir [DEPLOY.md](DEPLOY.md)).
+- Les e2e (`yarn e2e`) et l'audit de contraste (`yarn a11y`) tournent en local sur la démo, pas en CI.

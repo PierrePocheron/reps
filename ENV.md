@@ -1,36 +1,37 @@
-# Variables d'environnement
+# Variables d'environnement et fichiers de configuration
 
-Créez un fichier `.env` à la racine du projet avec les variables suivantes :
+Copier le modèle puis le remplir : `cp .env.example .env`. **Ne jamais committer** `.env` (ignoré par git).
 
-```env
-# Firebase Configuration
-# Récupérez ces valeurs depuis la console Firebase : https://console.firebase.google.com
-# Allez dans Project Settings > General > Your apps
+## `.env`
 
-VITE_FIREBASE_API_KEY=your_api_key_here
-VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
-VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
+| Variable | Obligatoire | Où la trouver |
+|---|---|---|
+| `VITE_FIREBASE_API_KEY` … `VITE_FIREBASE_APP_ID` | Oui | Firebase Console › Paramètres du projet › Vos applications › appli Web |
+| `VITE_FIREBASE_MEASUREMENT_ID` | Non | Idem (Google Analytics) |
+| `VITE_FIREBASE_VAPID_KEY` | Notifications web | Firebase › Cloud Messaging › Certificats Web Push |
+| `VITE_RECAPTCHA_SITE_KEY` | App Check (prod) | Firebase › App Check › appli Web (reCAPTCHA v3) |
+| `VITE_SENTRY_DSN` | Non | sentry.io › projet › Client Keys (DSN) |
+| `VITE_APP_VERSION` | Non | Version suivie par Sentry (alignée sur `package.json`) |
+| `VITE_LEGAL_NAME`, `VITE_CONTACT_EMAIL` | Oui (prod) | Éditeur affiché dans la politique de confidentialité |
 
-# Environment
-VITE_APP_ENV=development
-```
+> Le dépôt est **public** : l'identité de l'éditeur ne vit que dans `.env` et les secrets GitHub, jamais dans le code.
 
-## Comment obtenir vos clés Firebase
+## Démo locale (sans projet Firebase)
 
-1. Allez sur [Firebase Console](https://console.firebase.google.com)
-2. Sélectionnez votre projet (ou créez-en un nouveau)
-3. Cliquez sur l'icône d'engrenage ⚙️ > **Project Settings**
-4. Dans l'onglet **General**, faites défiler jusqu'à **Your apps**
-5. Si vous n'avez pas encore d'app web, cliquez sur **Add app** > **Web** (</>)
-6. Copiez les valeurs de configuration et collez-les dans votre fichier `.env`
+`yarn dev:demo` utilise `.env.demo` (versionné, valeurs fictives) et les **émulateurs Firebase** :
+aucune clé réelle n'est nécessaire. Comptes de démo : voir `scripts/seed-emulator.mjs`.
 
-## Sécurité
+## Fichiers natifs (non versionnés)
 
-⚠️ **Important** : Ne commitez jamais votre fichier `.env` dans Git. Il est déjà dans `.gitignore`.
+| Fichier | Rôle | Où le récupérer |
+|---|---|---|
+| `android/app/google-services.json` | Firebase + connexion Google sur Android | Firebase › appli Android `com.pierre.reps.app` |
+| `ios/App/App/GoogleService-Info.plist` | Firebase + connexion Google sur iOS | Firebase › appli iOS |
+| `android/reps-release.keystore`, `android/keystore.properties` | Signature du build release | `bash scripts/setup-keystore.sh` (à sauvegarder hors du repo) |
 
-Pour la production, configurez les variables d'environnement directement dans votre plateforme de déploiement (Firebase Hosting, Vercel, Netlify, etc.).
+## CI (GitHub Actions)
 
+Les mêmes variables `VITE_*` sont stockées en **secrets GitHub** : `gh secret set -f .env` depuis la racine.
+Secrets supplémentaires : `FIREBASE_SERVICE_ACCOUNT_REPS_APP` (déploiement Hosting), `SONAR_TOKEN` (analyse qualité).
+
+Procédures complètes de publication : [docs/DEPLOY.md](docs/DEPLOY.md).
