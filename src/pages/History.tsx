@@ -12,7 +12,9 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy, RotateCcw, Share2, BookmarkPlus, Trash2, Loader2, MoreVertical, Pencil } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { EditGymSessionDialog } from '@/components/EditGymSessionDialog';
-import { deleteSession, updateUserStatsAfterSession } from '@/firebase/firestore';
+import { EditRenfoSessionDialog } from '@/components/EditRenfoSessionDialog';
+import { renfoCalories } from '@/utils/calories';
+import { deleteSession, updateSession, updateUserStatsAfterSession } from '@/firebase/firestore';
 import { deleteGymSession, updateGymSession } from '@/firebase/gymSessions';
 import { logger } from '@/utils/logger';
 import { gymCard, renfoCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
@@ -99,7 +101,7 @@ function CardActions({ onRedo, onShare }: { onRedo: () => void; onShare: () => v
   );
 }
 
-function RenforcementCard({ session, onRedo, onShare, onDelete }: { session: Session; onRedo: () => void; onShare: () => void; onDelete: () => void }) {
+function RenforcementCard({ session, onRedo, onShare, onDelete, onEdit }: { session: Session; onRedo: () => void; onShare: () => void; onDelete: () => void; onEdit: () => void }) {
   const date = session.date.toDate();
   return (
     <div className="rounded-2xl border bg-card overflow-hidden shadow-sm">
@@ -117,7 +119,7 @@ function RenforcementCard({ session, onRedo, onShare, onDelete }: { session: Ses
                 <Clock className="h-3 w-3 text-muted-foreground" />
                 <span className="text-xs font-medium">{formatDurationLong(session.duration)}</span>
               </div>
-              <CardMenu onDelete={onDelete} />
+              <CardMenu onEdit={onEdit} onDelete={onDelete} />
             </div>
           </div>
 
@@ -322,7 +324,11 @@ function History() {
   const { loading, error, refetch } = history;
   // Séances supprimées (#56) : retirées tout de suite, sans recharger la liste (pas de clignotement)
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
-  const sessions = useMemo(() => history.sessions.filter((s) => !deletedIds.includes(s.sessionId)), [history.sessions, deletedIds]);
+  const [renfoEdits, setRenfoEdits] = useState<Record<string, Pick<Session, 'exercises' | 'totalReps' | 'totalCalories'>>>({});
+  const sessions = useMemo(() => history.sessions
+    .filter((s) => !deletedIds.includes(s.sessionId))
+    .map((s) => (renfoEdits[s.sessionId] ? { ...s, ...renfoEdits[s.sessionId] } : s)), [history.sessions, deletedIds, renfoEdits]);
+  const [toEditRenfo, setToEditRenfo] = useState<Session | null>(null);
   // Séances modifiées (#57) : appliquées tout de suite, sans recharger
   const [edits, setEdits] = useState<Record<string, Pick<GymSession, 'exercises' | 'totalVolume' | 'totalSets'>>>({});
   const gymSessions = useMemo(() => history.gymSessions
@@ -354,6 +360,21 @@ function History() {
       toast({ title: 'Erreur', description: 'Impossible de modifier la séance', variant: 'destructive' });
     }
   };
+  const saveRenfoEdit = async (exercises: Session['exercises']) => {
+    if (!toEditRenfo || !user) return;
+    try {
+      const fields = await updateSession(user.uid, toEditRenfo.sessionId, exercises, renfoCalories(user, exercises));
+      setRenfoEdits((e) => ({ ...e, [toEditRenfo.sessionId]: fields }));
+      setToEditRenfo(null);
+      toast({ title: 'Séance modifiée' });
+      await updateUserStatsAfterSession(user.uid, 0); // le total de reps du profil change
+      await refreshStats();
+    } catch (err) {
+      logger.error('Modification de séance renfo :', err);
+      toast({ title: 'Erreur', description: 'Impossible de modifier la séance', variant: 'destructive' });
+    }
+  };
+
   const confirmDelete = async () => {
     if (!toDelete || !user) return;
     setDeleting(true);
@@ -567,7 +588,8 @@ function History() {
               {sessions.map((s) => (
                 <RenforcementCard key={s.sessionId} session={s} onRedo={() => redoRenfo(s)}
                   onShare={() => share(renfoCard({ ...s, date: s.date.toDate() }))}
-                  onDelete={() => setToDelete({ kind: 'renfo', id: s.sessionId })} />
+                  onDelete={() => setToDelete({ kind: 'renfo', id: s.sessionId })}
+                  onEdit={() => setToEditRenfo(s)} />
               ))}
             </div>
           )
@@ -619,6 +641,7 @@ function History() {
         </DialogContent>
       </Dialog>
       {toEdit && <EditGymSessionDialog session={toEdit} onCancel={() => setToEdit(null)} onSave={saveEdit} />}
+      {toEditRenfo && <EditRenfoSessionDialog session={toEditRenfo} onCancel={() => setToEditRenfo(null)} onSave={saveRenfoEdit} />}
       <Dialog open={!!toDelete} onOpenChange={(open) => !open && !deleting && setToDelete(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>

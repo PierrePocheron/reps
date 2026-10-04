@@ -152,7 +152,7 @@ const steps = [
     await assertAlive('records');
   }],
 
-  ['modifier une séance (charge corrigée, carte à jour)', async () => {
+  ['modifier une séance muscu et renfo (cartes à jour)', async () => {
     await page.goto(`${BASE}/history`);
     await page.getByRole('tab', { name: /Muscu/ }).click();
     await page.getByRole('button', { name: 'Actions de la séance' }).first().click();
@@ -162,6 +162,14 @@ const steps = [
     await dialog.getByRole('button', { name: 'Enregistrer' }).click();
     await page.getByText('Séance modifiée').first().waitFor();
     await page.getByText(/× 123 kg/).first().waitFor(); // carte mise à jour sans rechargement
+    // renfo : reps corrigées
+    await page.getByRole('tab', { name: /Renfo/ }).click();
+    await page.getByRole('button', { name: 'Actions de la séance' }).first().click();
+    await page.getByRole('menuitem', { name: 'Modifier' }).click();
+    await page.getByRole('dialog').getByRole('spinbutton', { name: /^Répétitions de / }).first().fill('77');
+    await page.getByRole('dialog').getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByText('Séance modifiée').first().waitFor();
+    await page.getByText(/\b77\b/).first().waitFor();
     await assertAlive('modification de séance');
   }],
 

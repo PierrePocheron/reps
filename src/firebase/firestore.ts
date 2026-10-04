@@ -22,7 +22,7 @@ import {
   deleteField,
 } from 'firebase/firestore';
 import { db, auth } from './config';
-import type { User, Session, Exercise, Notification, MotivationalPhrase, UserStats, FriendRequest } from './types';
+import type { User, Session, SessionExercise, Exercise, Notification, MotivationalPhrase, UserStats, FriendRequest } from './types';
 import { getUnlockedBadges, DEFAULT_EXERCISES } from '@/utils/constants';
 import { logger } from '@/utils/logger';
 import { trainingStreaks, weeklyStreaks } from '@/utils/streak';
@@ -336,6 +336,17 @@ export async function getLastSession(userId: string): Promise<Session | null> {
 /**
  * Obtenir toutes les sessions d'un utilisateur
  */
+/** Modifier une séance renfo passée (#57) : reps par exercice ; total de reps recalculé, calories fournies. */
+export async function updateSession(userId: string, sessionId: string, exercises: SessionExercise[], totalCalories: number) {
+  const fields = {
+    exercises: exercises.map(({ name, emoji, reps }) => ({ name, emoji, reps })),
+    totalReps: exercises.reduce((n, ex) => n + ex.reps, 0),
+    totalCalories: Math.round(totalCalories),
+  };
+  await updateDoc(doc(db, 'sessions', userId, 'userSessions', sessionId), fields);
+  return fields;
+}
+
 /** Supprimer une séance renfo (#56) : le classement et le fil lisent les séances en direct ; stats à recalculer. */
 export async function deleteSession(userId: string, sessionId: string): Promise<void> {
   await deleteDoc(doc(db, 'sessions', userId, 'userSessions', sessionId));
