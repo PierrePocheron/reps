@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { templateExercise } from '@/utils/progression';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -14,6 +15,7 @@ interface MuscuExercise {
   exerciseId: string;
   name: string;
   emoji: string;
+  imageUrl?: string;
   sets: { reps: number; weight: number }[];
 }
 
@@ -43,10 +45,7 @@ export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) 
     setEmoji(initial.emoji);
     setWorkoutType(initial.workoutType);
     setSelectedIds(initial.exerciseIds ?? []);
-    setMuscuExercises((initial.muscuExercises ?? []).map((me) => {
-      const ex = MUSCULATION_EXERCISES.find((e) => e.id === me.exerciseId);
-      return { exerciseId: me.exerciseId, name: ex?.name ?? me.exerciseId, emoji: ex?.emoji ?? '🏋️', sets: me.sets.map((s) => ({ ...s })) };
-    }));
+    setMuscuExercises((initial.muscuExercises ?? []).map((me) => ({ ...templateExercise(me), sets: me.sets.map((s) => ({ ...s })) })));
   }, [open, initial]);
 
   if (!open) return null;
@@ -149,7 +148,7 @@ export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) 
           ? { exerciseIds: selectedIds }
           : {
               muscuExercises: muscuExercises.map((m) => ({
-                exerciseId: m.exerciseId,
+                exerciseId: m.exerciseId, name: m.name, emoji: m.emoji, ...(m.imageUrl ? { imageUrl: m.imageUrl } : {}),
                 sets: m.sets,
               })),
             }),

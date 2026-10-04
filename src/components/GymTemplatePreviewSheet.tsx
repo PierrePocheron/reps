@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
+import { templateExercise } from '@/utils/progression';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { MUSCULATION_EXERCISES } from '@/utils/constants';
 import type { WorkoutTemplate } from '@/firebase/types';
 import { useExerciseImages } from '@/hooks/useExerciseImages';
 
@@ -26,14 +26,8 @@ export function GymTemplatePreviewSheet({ template, onClose, onStart }: Props) {
   if (!template) return null;
 
   const exercises = (template.muscuExercises ?? []).map((me) => {
-    const ex = MUSCULATION_EXERCISES.find((e) => e.id === me.exerciseId);
-    return {
-      exerciseId: me.exerciseId,
-      name: ex?.name ?? me.exerciseId,
-      emoji: ex?.emoji ?? '🏋️',
-      imageUrl: imageMap[me.exerciseId] ?? ex?.imageUrl,
-      sets: me.sets,
-    };
+    const ex = templateExercise(me);
+    return { ...ex, imageUrl: imageMap[me.exerciseId] ?? ex.imageUrl, sets: me.sets };
   });
 
   return (

@@ -1,6 +1,6 @@
 import exerciseDetails from '@/data/exerciseDetails.json';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
-import type { GymSession, PlannedSet } from '@/firebase/types';
+import type { GymSession, PlannedSet, WorkoutTemplate } from '@/firebase/types';
 
 const DETAILS = exerciseDetails as Record<string, { target: string }>;
 const SMALL_MUSCLES = new Set(['delts', 'biceps', 'triceps']);
@@ -59,7 +59,10 @@ export function templateFromSession(session: Pick<GymSession, 'exercises'>, name
     .map((ex) => {
       const work = ex.sets.filter((s) => s.type !== 'warmup');
       const done = work.filter((s) => s.completed);
-      return { exerciseId: ex.exerciseId, sets: (done.length ? done : work).map((s) => ({ reps: s.actualReps ?? s.reps, weight: s.actualWeight ?? s.weight })) };
+      return {
+        exerciseId: ex.exerciseId, name: ex.name, emoji: ex.emoji, ...(ex.imageUrl ? { imageUrl: ex.imageUrl } : {}),
+        sets: (done.length ? done : work).map((s) => ({ reps: s.actualReps ?? s.reps, weight: s.actualWeight ?? s.weight })),
+      };
     })
     .filter((ex) => ex.sets.length > 0);
   return {
@@ -80,4 +83,10 @@ export function redoExercises(session: Pick<GymSession, 'exercises'>) {
       ...(set.type ? { type: set.type } : {}),
     })),
   }));
+}
+
+/** Exercice d'un modèle prêt à afficher : catalogue de base, sinon nom / emoji / image gardés dans le modèle, sinon l'id. */
+export function templateExercise(me: NonNullable<WorkoutTemplate['muscuExercises']>[number]) {
+  const ex = MUSCULATION_EXERCISES.find((e) => e.id === me.exerciseId);
+  return { exerciseId: me.exerciseId, name: ex?.name ?? me.name ?? me.exerciseId, emoji: ex?.emoji ?? me.emoji ?? '🏋️', imageUrl: ex?.imageUrl ?? me.imageUrl };
 }

@@ -1,11 +1,11 @@
 import { useState } from 'react';
+import { templateExercise } from '@/utils/progression';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import {
   DEFAULT_RENFORCEMENT_TEMPLATES,
   DEFAULT_MUSCULATION_TEMPLATES,
   RENFORCEMENT_EXERCISES,
-  MUSCULATION_EXERCISES,
 } from '@/utils/constants';
 import { useSessionStore } from '@/store/sessionStore';
 import { useGymSessionStore } from '@/store/gymSessionStore';
@@ -51,7 +51,7 @@ function TemplateCard({
           .map((id) => RENFORCEMENT_EXERCISES.find((ex) => ex.id === id)?.emoji ?? '💪')
       : (template.muscuExercises ?? [])
           .slice(0, 4)
-          .map((me) => MUSCULATION_EXERCISES.find((ex) => ex.id === me.exerciseId)?.emoji ?? '🏋️');
+          .map((me) => templateExercise(me).emoji);
 
   return (
     <div className="flex items-stretch gap-2">
@@ -143,16 +143,10 @@ function Templates() {
   const handleMuscuTemplate = (template: WorkoutTemplate) => {
     if (!template.muscuExercises || guardSession()) return;
     haptics.impact();
-    const gymExercises: GymSessionExercise[] = template.muscuExercises.map((me) => {
-      const exercise = MUSCULATION_EXERCISES.find((ex) => ex.id === me.exerciseId);
-      return {
-        exerciseId: me.exerciseId,
-        name: exercise?.name ?? me.exerciseId,
-        emoji: exercise?.emoji ?? '🏋️',
-        imageUrl: exercise?.imageUrl,
-        sets: me.sets.map((s) => ({ ...s, completed: false })),
-      };
-    });
+    const gymExercises: GymSessionExercise[] = template.muscuExercises.map((me) => ({
+      ...templateExercise(me),
+      sets: me.sets.map((s) => ({ ...s, completed: false })),
+    }));
     loadGymTemplate(gymExercises, template.name);
     startExecution();
     navigate('/gym');

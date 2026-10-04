@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { suggestNextWeight, incrementFor, lastWorkSets, templateFromSession, redoExercises, isLoadSet } from '../progression';
+import { suggestNextWeight, incrementFor, lastWorkSets, templateFromSession, redoExercises, isLoadSet, templateExercise } from '../progression';
 import type { GymSession, PlannedSet } from '@/firebase/types';
 
 const session = (exerciseId: string, sets: PlannedSet[]) =>
@@ -52,7 +52,7 @@ describe('templateFromSession', () => {
     ] };
     expect(templateFromSession(s, '  Ma séance  ')).toEqual({
       name: 'Ma séance', emoji: '🏋️', workoutType: 'musculation', description: 'Développé couché · Dips',
-      muscuExercises: [{ exerciseId: 'bench_press', sets: [{ reps: 9, weight: 80 }, { reps: 8, weight: 80 }] }],
+      muscuExercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [{ reps: 9, weight: 80 }, { reps: 8, weight: 80 }] }],
     });
   });
 });
@@ -67,5 +67,27 @@ describe('redoExercises', () => {
       { reps: 8, weight: 40, completed: false, type: 'warmup' },
       { reps: 4, weight: 100, completed: false }, // réalisé, prêt à valider
     ]);
+  });
+});
+
+describe('modèle enregistré depuis une séance (bibliothèque, import)', () => {
+  const s = { exercises: [
+    { exerciseId: 'lib_0001', name: 'Relevé de buste 3/4', emoji: '💪', imageUrl: 'https://img/lib_0001.gif', sets: [done(0, 15)] },
+    { exerciseId: 'import_hip_thrust_barbell', name: 'Hip Thrust (Barbell)', emoji: '🏋️', sets: [done(80, 10)] },
+    { exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [done(80, 8)] },
+  ] };
+
+  it("garde nom, emoji et image : le modèle n'affiche plus « lib_0001 »", () => {
+    const t = templateFromSession(s, 'Push');
+    expect(t.muscuExercises.map(templateExercise).map((e) => [e.name, e.imageUrl])).toEqual([
+      ['Relevé de buste 3/4', 'https://img/lib_0001.gif'],
+      ['Hip Thrust (Barbell)', undefined],
+      ['Développé couché', undefined],
+    ]);
+    expect(t.muscuExercises[1]).not.toHaveProperty('imageUrl'); // Firestore refuses undefined fields
+  });
+
+  it('ancien modèle sans nom gardé : identifiant en dernier recours', () => {
+    expect(templateExercise({ exerciseId: 'lib_0042', sets: [] }).name).toBe('lib_0042');
   });
 });

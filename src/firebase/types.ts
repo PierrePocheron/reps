@@ -206,6 +206,10 @@ export interface WorkoutTemplate {
   exerciseIds?: string[]; // pour renforcement
   muscuExercises?: {       // pour musculation
     exerciseId: string;
+    // display data kept for exercises outside the base catalogue (library, CSV import): no raw « lib_0001 »
+    name?: string;
+    emoji?: string;
+    imageUrl?: string;
     sets: { reps: number; weight: number }[];
   }[];
   // Champs présents uniquement sur les templates utilisateur (Firestore)
