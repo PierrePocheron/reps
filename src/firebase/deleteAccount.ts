@@ -1,9 +1,11 @@
 import {
+  clearIndexedDbPersistence,
   collection,
   doc,
   getDocs,
   query,
   where,
+  terminate,
   writeBatch,
   type DocumentReference,
 } from 'firebase/firestore';
@@ -114,4 +116,13 @@ export async function deleteUserAccount(userId: string, password?: string): Prom
   // Étape 3 : compte Auth (la ré-auth vient d'avoir lieu)
   await deleteUser(currentUser);
   logger.info('Compte supprimé');
+
+  // Étape 4 : copie locale (cache persistant Firestore) — Firestore inutilisable ensuite, l'appelant recharge l'appli.
+  // Pas à la simple déconnexion : les écritures faites hors ligne et pas encore envoyées seraient perdues.
+  try {
+    await terminate(db);
+    await clearIndexedDbPersistence(db);
+  } catch (error) {
+    logger.warn('Cache local non vidé après suppression du compte', { error });
+  }
 }

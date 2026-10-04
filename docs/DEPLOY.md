@@ -94,7 +94,8 @@ Contrôle rapide sur émulateur ou téléphone : voir [TESTS.md › Démo sur l'
 - [ ] **Fiche** : textes, icône 512 × 512, feature graphic 1024 × 500, captures (`store/fr-FR/screenshots/`,
       régénérables avec `yarn store:screenshots`) — contenu prêt dans [PLAYSTORE.md](PLAYSTORE.md)
 - [ ] **Règles de confidentialité** : URL publique → `https://pedro-reps.web.app/privacy-policy`
-- [ ] **Suppression de compte** : dans l'appli (Profil › Supprimer mon compte, déjà là) **et** une URL web
+- [ ] **Suppression de compte** : dans l'appli (Profil › Supprimer mon compte, déjà là : données Firestore, compte et
+      copie locale de l'appareil) **et** une URL web
       expliquant la démarche (page du site, #24)
 - [ ] **Sécurité des données** (Data Safety) : questionnaire rempli d'après [PLAYSTORE.md](PLAYSTORE.md#déclarations-de-données-data-safety--play-console)
 - [ ] **Accès à l'appli** : fournir un **compte de test** (e-mail + mot de passe) aux réviseurs, l'appli exigeant une connexion

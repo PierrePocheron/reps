@@ -57,7 +57,7 @@ function Profil() {
     setIsDeleting(true);
     try {
       await deleteAccount(isPasswordAccount ? deletePassword : undefined);
-      navigate('/login');
+      window.location.replace('/'); // rechargement complet (→ connexion) : Firestore a été arrêté pour vider son cache
     } catch {
       toast({
         title: 'Erreur',

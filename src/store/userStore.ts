@@ -271,6 +271,10 @@ export const useUserStore = create<UserState>((set, get) => ({
       import('./sessionStore').then(({ useSessionStore }) => {
         useSessionStore.getState().resetSession();
       });
+      // Séance muscu aussi (persistée) : sinon le compte suivant sur l'appareil la retrouvait et l'enregistrait chez lui
+      import('./gymSessionStore').then(({ useGymSessionStore }) => {
+        useGymSessionStore.getState().cancelSession();
+      });
 
       import('@/firebase').then(({ clearCurrentSessionFromLocal }) => {
         clearCurrentSessionFromLocal();

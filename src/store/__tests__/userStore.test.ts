@@ -192,4 +192,12 @@ describe('userStore', () => {
             expect(useUserStore.getState().user?.newBadgeIds).toEqual([]);
         });
     });
+
+    it('reset : la séance muscu en cours ne passe pas au compte suivant', async () => {
+        const { useGymSessionStore } = await import('../gymSessionStore');
+        useGymSessionStore.getState().startFreeSession();
+        expect(useGymSessionStore.getState().phase).not.toBe('idle');
+        useUserStore.getState().reset();
+        await vi.waitFor(() => expect(useGymSessionStore.getState().phase).toBe('idle'));
+    });
 });
