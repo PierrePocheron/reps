@@ -45,7 +45,7 @@ Ce projet utilise des **tests unitaires**, des **tests d'intégration légère**
 | Séance oubliée | Muscu et renfo enregistrées à une date passée, rangées à leur date |
 | Modifier / supprimer | Charge corrigée (muscu), reps corrigées (renfo), suppression confirmée |
 | Filtrer l'historique | Filtre par exercice ; « Refaire » depuis une carte basse ouvre la séance en haut |
-| Import CSV Strong | Aperçu, import, réimport sans doublon |
+| Import CSV Strong | Format actuel (unités dans les en-têtes, « ; », « Bench Press (Barbell) » relié au développé couché) : aperçu, import, réimport sans doublon |
 | Petit écran (320 px) | Rien ne déborde sur les pages principales, dans le dialogue de suppression du compte, ni en séance (repos ouvert) |
 | Déconnexion, reconnexion | Séance muscu en cours annulée à la déconnexion, retour à la connexion, reconnexion |
 

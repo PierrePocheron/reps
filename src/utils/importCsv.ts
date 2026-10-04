@@ -41,6 +41,8 @@ const durationOf = (s: string) => {
   if (parts.length === 0) return Math.round(num(s));
   return parts.reduce((t, [, n, u]) => t + Number(n) * (u === 'h' ? 3600 : u === 'm' ? 60 : 1), 0);
 };
+/** Colonne de charges en livres : Hevy « weight_lbs », Strong « Weight (lbs) ». */
+export const POUNDS_HEADER = /weight_lbs|weight \(lbs?\)/i;
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 /** « 2026-10-02 18:05:00 » (Strong) ou « 2 Oct 2026, 18:05 » (Hevy), en heure locale. */
 const dateOf = (s: string): Date | null => {
@@ -78,7 +80,7 @@ export function parseWorkoutsCsv(text: string, resolve: ResolveExercise): Import
     : { start: col('Date'), end: -1, workout: col('Workout Name'), exercise: col('Exercise Name'), type: col('Set Order'),
         weight: col('Weight'), reps: col('Reps'), seconds: col('Seconds'), note: col('Notes'), rpe: col('RPE'), duration: col('Duration'), workoutNote: col('Workout Notes') };
   if (c.start < 0 || c.exercise < 0) return [];
-  const lbs = /lb/.test(head[c.weight] ?? ''); // Hevy « weight_lbs », Strong « Weight (lbs) »
+  const lbs = POUNDS_HEADER.test(head[c.weight] ?? '');
   const kg = (w: number) => (lbs ? Math.round(w * 0.45359237 * 10) / 10 : w);
 
   const sessions = new Map<string, ImportedSession>();
@@ -113,6 +115,14 @@ export function parseWorkoutsCsv(text: string, resolve: ResolveExercise): Import
     ex.sets.push(set);
   }
   return [...sessions.values()].sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
+/** Phrase de l'aperçu d'import (séances du plus ancien au plus récent). */
+export function importSummary(sessions: { date: Date }[], known: number, exercises: number, pounds: boolean): string {
+  const n = sessions.length, day = (d: Date) => d.toLocaleDateString('fr-FR');
+  const first = day(sessions[0]!.date), last = day(sessions[n - 1]!.date);
+  return `${n} séance${n > 1 ? 's' : ''} du ${first}${first === last ? '' : ` au ${last}`} · ${known}/${exercises} exercices reconnus`
+    + ` (les autres deviennent des exercices perso) · charges ${pounds ? 'converties des livres en kg' : 'lues en kg'}.`;
 }
 
 /** Sans doublon : une séance qui démarre à moins d'une minute d'une séance existante est déjà là. */

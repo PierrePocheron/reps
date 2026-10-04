@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseCsv, parseWorkoutsCsv, newSessionsOnly, exerciseResolver } from '../importCsv';
+import { parseCsv, parseWorkoutsCsv, newSessionsOnly, exerciseResolver, importSummary, POUNDS_HEADER } from '../importCsv';
 import { sessionsToCsv } from '../exportCsv';
 import type { GymSession } from '@/firebase/types';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
@@ -109,5 +109,21 @@ describe('exerciseResolver : exercices de base REPS', () => {
     expect(base('Lat Pulldown (Cable)').exerciseId).toBe('lat_pulldown');
     expect(base('Triceps Pushdown (Cable - Straight Bar)').exerciseId).toBe('tricep_pushdown');
     expect(base('Lying Leg Curl (Machine)').exerciseId).toBe('leg_curl');
+  });
+});
+
+describe("aperçu d'import", () => {
+  const day = (d: number) => ({ date: new Date(2024, 6, d, 18) });
+
+  it('une seule journée : pas de « du 29/07/2024 au 29/07/2024 »', () => {
+    expect(importSummary([day(29)], 3, 4, false)).toBe('1 séance du 29/07/2024 · 3/4 exercices reconnus (les autres deviennent des exercices perso) · charges lues en kg.');
+    expect(importSummary([day(1), day(29)], 4, 4, false)).toMatch(/^2 séances du 01\/07\/2024 au 29\/07\/2024 · /);
+  });
+
+  it('dit quand les charges étaient en livres', () => {
+    expect(importSummary([day(29)], 1, 1, true)).toMatch(/charges converties des livres en kg\.$/);
+    expect(POUNDS_HEADER.test('title,start_time,weight_lbs,reps')).toBe(true);
+    expect(POUNDS_HEADER.test('"Date";"Weight (lbs)";"Reps"')).toBe(true);
+    expect(POUNDS_HEADER.test('"Date";"Weight (kg)";"Reps"')).toBe(false);
   });
 });

@@ -398,9 +398,10 @@ const steps = [
     const d = new Date(new Date(2025, 0, 1).getTime() + (Math.floor(Date.now() / 60_000) % (360 * 1440)) * 60_000);
     const p2 = (n) => String(n).padStart(2, '0');
     const stamp = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}:00`;
-    const csv = ['Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE',
-      `${stamp},Push,0h 45m,Développé couché,1,40,10,,,,,`,
-      `${stamp},Push,0h 45m,Machine inconnue e2e,1,20,12,,,,,`].join('\n');
+    // current Strong format: units in headers, ; separator, « Exercise (Equipment) » names (older format: unit tests)
+    const csv = ['"Workout #";"Date";"Workout Name";"Duration (sec)";"Exercise Name";"Set Order";"Weight (kg)";"Reps";"RPE";"Distance (meters)";"Seconds";"Notes";"Workout Notes"',
+      `"1";"${stamp}";"Push";"2700";"Bench Press (Barbell)";"1";"40.0";"10";"";"";"";"";""`,
+      `"1";"${stamp}";"Push";"2700";"Machine inconnue e2e";"1";"20.0";"12";"";"";"";"";""`].join('\n');
     const file = { name: 'strong.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) };
     await page.goto(`${BASE}/settings`);
     const btn = page.getByRole('button', { name: /Importer depuis Strong ou Hevy/ });
@@ -408,7 +409,7 @@ const steps = [
     for (let i = 0; i < 100 && await btn.isDisabled(); i++) await page.waitForTimeout(100); // historique chargé
     await page.locator('input[type=file][accept*=csv]').setInputFiles(file);
     const dialog = page.getByRole('dialog');
-    await dialog.getByText(`1 séance du ${d.toLocaleDateString('fr-FR')}`, { exact: false }).waitFor();
+    await dialog.getByText(`1 séance du ${d.toLocaleDateString('fr-FR')} · 1/2 exercices reconnus`, { exact: false }).waitFor();
     await dialog.getByText(/1\/2 exercices reconnus/).waitFor();
     await dialog.getByRole('button', { name: 'Importer' }).click();
     await page.getByText('1 séance importée').first().waitFor();

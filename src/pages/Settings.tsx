@@ -14,7 +14,7 @@ import { useSettingsStore, type LanguageSetting } from '@/store/settingsStore';
 import { detectDeviceLanguage } from '@/hooks/useLanguage';
 import { Moon, Sun, Monitor, Bell, Dumbbell, Shield, ChevronRight, Target, Download, Upload, Languages, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { parseWorkoutsCsv, newSessionsOnly, exerciseResolver, type ImportedSession } from '@/utils/importCsv';
+import { parseWorkoutsCsv, newSessionsOnly, exerciseResolver, importSummary, POUNDS_HEADER, type ImportedSession } from '@/utils/importCsv';
 import { importGymSessions } from '@/firebase/gymSessions';
 import { loadExerciseLibrary, toExercise } from '@/utils/exerciseLibrary';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
@@ -52,7 +52,7 @@ function Settings() {
   const { sessions, gymSessions, loading: historyLoading, refetch: refetchHistory } = useSessionHistory(500);
   // Import d'un export Strong / Hevy (#61) : aperçu, puis confirmation
   const csvInput = useRef<HTMLInputElement>(null);
-  const [importPreview, setImportPreview] = useState<{ sessions: ImportedSession[]; skipped: number; exercises: number; known: number } | null>(null);
+  const [importPreview, setImportPreview] = useState<{ sessions: ImportedSession[]; skipped: number; exercises: number; known: number; pounds: boolean } | null>(null);
   const [importing, setImporting] = useState(false);
   const importedDates = useRef<Date[]>([]); // déjà importées, avant même le rechargement de l'historique : pas de doublon
   const refreshStats = useUserStore((st) => st.refreshStats);
@@ -60,7 +60,8 @@ function Settings() {
     try {
       const [fr, en] = await Promise.all([loadExerciseLibrary('fr'), loadExerciseLibrary('en')]);
       const known = [...MUSCULATION_EXERCISES, ...[...fr, ...en].map((e) => toExercise(e))].map((e) => ({ id: e.id, name: e.name, emoji: e.emoji }));
-      const all = parseWorkoutsCsv(await file.text(), exerciseResolver(known));
+      const text = await file.text();
+      const all = parseWorkoutsCsv(text, exerciseResolver(known));
       if (all.length === 0) {
         toast({ title: 'Aucune séance trouvée', description: "Ce fichier n'est pas un export Strong ou Hevy.", variant: 'destructive' });
         return;
@@ -68,7 +69,7 @@ function Settings() {
       const whole = user ? (await fetchWholeHistory(user.uid)).gymSessions : gymSessions; // duplicates older than a page too
       const fresh = newSessionsOnly(all, [...whole.map((s) => s.date.toDate()), ...importedDates.current]);
       const ids = new Set(fresh.flatMap((s) => s.exercises.map((e) => e.exerciseId)));
-      setImportPreview({ sessions: fresh, skipped: all.length - fresh.length, exercises: ids.size, known: [...ids].filter((id) => !id.startsWith('import_')).length });
+      setImportPreview({ sessions: fresh, skipped: all.length - fresh.length, exercises: ids.size, known: [...ids].filter((id) => !id.startsWith('import_')).length, pounds: POUNDS_HEADER.test(text.split('\n', 1)[0] ?? '') });
     } catch (err) {
       logger.error('Lecture du CSV :', err);
       toast({ title: 'Erreur', description: 'Impossible de lire ce fichier', variant: 'destructive' });
@@ -500,7 +501,7 @@ function Settings() {
             <DialogTitle>Importer ton historique ?</DialogTitle>
             <DialogDescription>
               {importPreview && importPreview.sessions.length > 0
-                ? `${importPreview.sessions.length} séance${importPreview.sessions.length > 1 ? 's' : ''} du ${importPreview.sessions[0]!.date.toLocaleDateString('fr-FR')} au ${importPreview.sessions[importPreview.sessions.length - 1]!.date.toLocaleDateString('fr-FR')} · ${importPreview.known}/${importPreview.exercises} exercices reconnus (les autres deviennent des exercices perso) · charges lues en kg.`
+                ? importSummary(importPreview.sessions, importPreview.known, importPreview.exercises, importPreview.pounds)
                 : 'Toutes les séances de ce fichier sont déjà dans ton historique.'}
               {importPreview && importPreview.skipped > 0 && ` ${importPreview.skipped} déjà présente${importPreview.skipped > 1 ? 's' : ''}, ignorée${importPreview.skipped > 1 ? 's' : ''}.`}
             </DialogDescription>
