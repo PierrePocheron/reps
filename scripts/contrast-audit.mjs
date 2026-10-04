@@ -41,9 +41,13 @@ for (const path of ['/', '/statistics', '/history', '/profil', '/settings', '/ch
   const r = await audit(); failures += r.length; if (r.length) console.log(`\n== ${scheme} ${path}\n` + r.join('\n'));
 }
 await p.goto('http://localhost:5199/history'); await p.getByRole('button', { name: 'Refaire cette séance' }).first().click(); await p.waitForURL(/gym$/);
+p.setDefaultTimeout(10_000); // une action introuvable échoue vite au lieu d'épuiser le délai global
 const card = p.locator('div.rounded-2xl.border-2').first();
-await card.getByRole('button', { name: /^Série 1 : normale/ }).click(); await card.getByRole('button', { name: /^Série 2 : normale/ }).click(); await card.getByRole('button', { name: /^Série 2 : échauffement/ }).click();
-await card.getByRole('button', { name: /^Série 3 : normale/ }).click(); await card.getByRole('button', { name: /^Série 3 : échauffement/ }).click(); await card.getByRole('button', { name: /^Série 3 : dégressive/ }).click();
+// 3 séries de types différents (É, D, !) : la dernière séance de la démo peut n'en avoir qu'une
+const typeBtns = card.getByRole('button', { name: /^Série \d+ : / });
+while (await typeBtns.count() < 4) await card.getByRole('button', { name: /^Série \d+$/ }).click();
+for (let i = 1; i <= 3; i++) for (let k = 0; k < i; k++) await typeBtns.nth(i).click();
+await card.getByRole('button', { name: /^Valider la série 1/ }).click(); // minuteur de repos (±15 s, préréglages)
 await p.waitForTimeout(500); const g = await audit(); failures += g.length; if (g.length) console.log(`\n== ${scheme} /gym\n` + g.join('\n'));
 await p.goto('http://localhost:5199/settings'); await p.evaluate(() => localStorage.removeItem('reps_gym_session'));
 await ctx.close();

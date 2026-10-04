@@ -660,7 +660,7 @@ function SetExecuteRow({
         onClick={() => onType(nextSetType(set.type))}
         aria-label={`Série ${setIndex + 1} : ${set.type ? SET_TYPE_META[set.type].label : 'normale'}${set.isRecord ? ', record personnel' : ''} — changer le type`}
         className={cn('h-11 w-8 -my-1.5 -ml-1.5 flex-shrink-0 flex items-center justify-center rounded-lg text-xs font-bold active:scale-95',
-          set.type ? SET_TYPE_META[set.type].cls : set.completed ? 'text-green-500' : 'text-muted-foreground')}
+          set.type ? SET_TYPE_META[set.type].cls : set.completed ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground')}
       >
         {set.isRecord
           ? <Trophy className="h-4 w-4 text-amber-500" aria-hidden />
@@ -716,7 +716,7 @@ function SetExecuteRow({
           className={cn(
             'h-11 w-11 -my-1.5 -mr-1.5 flex items-center justify-center rounded-lg transition-all active:scale-95 flex-shrink-0',
             set.completed
-              ? 'text-green-500'
+              ? 'text-green-600 dark:text-green-500'
               : 'text-muted-foreground hover:text-green-500 hover:bg-green-500/10'
           )}
         >
