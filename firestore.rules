@@ -140,10 +140,17 @@ service cloud.firestore {
           && request.auth.uid == fromId
           && fromId != userId
           && get(/databases/$(database)/documents/users/$(userId)).data.friends.hasAny([request.auth.uid])
-          && request.resource.data.keys().hasOnly(['createdAt'])
+          && request.resource.data.keys().hasOnly(['createdAt', 'fromUid'])
+          && request.resource.data.fromUid == fromId
           && request.resource.data.createdAt == request.time;
-        allow delete: if isAuthenticated() && request.auth.uid == fromId;
+        // the giver withdraws it; the session owner may too (deleting their account removes the kudos they received)
+        allow delete: if isAuthenticated() && (request.auth.uid == fromId || request.auth.uid == userId);
       }
+    }
+
+    // Kudos one has given, found by collection group query (fromUid) to delete them with the account
+    match /{path=**}/kudos/{fromId} {
+      allow read: if isAuthenticated();
     }
 
     match /{path=**}/userSessions/{sessionId} {

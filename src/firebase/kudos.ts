@@ -14,7 +14,8 @@ export async function getKudos(ownerId: string, sessionId: string): Promise<stri
 
 /** Encourage la séance d'un ami et le prévient (notification in-app). */
 export async function giveKudos(ownerId: string, sessionId: string, me: { uid: string; displayName: string }): Promise<void> {
-  await setDoc(doc(kudosCol(ownerId, sessionId), me.uid), { createdAt: serverTimestamp() });
+  // fromUid (= doc id): lets account deletion find the kudos one gave (collection group query)
+  await setDoc(doc(kudosCol(ownerId, sessionId), me.uid), { createdAt: serverTimestamp(), fromUid: me.uid });
   await createNotification({
     userId: ownerId, fromUserId: me.uid, fromName: me.displayName, type: 'kudos', read: false,
     title: 'Encouragement 👏', message: `${me.displayName} a encouragé ta séance`,

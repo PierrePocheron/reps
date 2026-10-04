@@ -14,7 +14,7 @@ import {
   assertSucceeds,
   assertFails,
 } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, collectionGroup, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp } from 'firebase/firestore';
 
 const PROJECT = 'reps-rules-test';
 let passed = 0, failed = 0;
@@ -142,16 +142,22 @@ await test('autrui ne lit pas mes notifications', async () => {
 console.log('\n─ Encouragements (kudos) ─');
 // (bob s'est retiré des amis d'alice plus haut ; bob a toujours alice en ami)
 const kudo = (ctx, from) => doc(ctx, `sessions/bob/userSessions/b1/kudos/${from}`);
-await test('un ami encourage une séance', () => assertSucceeds(setDoc(kudo(alice, 'alice'), { createdAt: serverTimestamp() })));
-await test('une seule réaction par personne (pas de réécriture)', () => assertFails(setDoc(kudo(alice, 'alice'), { createdAt: serverTimestamp() })));
-await test('pas de réaction au nom d\'un autre', () => assertFails(setDoc(kudo(alice, 'mallory'), { createdAt: serverTimestamp() })));
-await test('un inconnu ne peut pas encourager', () => assertFails(setDoc(kudo(mallory, 'mallory'), { createdAt: serverTimestamp() })));
-await test('pas de réaction à sa propre séance', () => assertFails(setDoc(kudo(bob, 'bob'), { createdAt: serverTimestamp() })));
-await test('pas de champ en plus', () => assertFails(setDoc(doc(alice, 'sessions/bob/userSessions/b2/kudos/alice'), { createdAt: serverTimestamp(), msg: 'spam' })));
-await test('on retire seulement sa propre réaction', async () => {
-  await assertFails(deleteDoc(kudo(mallory, 'alice')));
-  await assertSucceeds(deleteDoc(kudo(alice, 'alice')));
+const k = (from) => ({ createdAt: serverTimestamp(), fromUid: from });
+await test('un ami encourage une séance', () => assertSucceeds(setDoc(kudo(alice, 'alice'), k('alice'))));
+await test('une seule réaction par personne (pas de réécriture)', () => assertFails(setDoc(kudo(alice, 'alice'), k('alice'))));
+await test('pas de réaction au nom d\'un autre', () => assertFails(setDoc(kudo(alice, 'mallory'), k('mallory'))));
+await test('fromUid = l\'auteur (retrouvable à la suppression du compte)', () => assertFails(setDoc(doc(alice, 'sessions/bob/userSessions/b3/kudos/alice'), k('mallory'))));
+await test('un inconnu ne peut pas encourager', () => assertFails(setDoc(kudo(mallory, 'mallory'), k('mallory'))));
+await test('pas de réaction à sa propre séance', () => assertFails(setDoc(kudo(bob, 'bob'), k('bob'))));
+await test('pas de champ en plus', () => assertFails(setDoc(doc(alice, 'sessions/bob/userSessions/b2/kudos/alice'), { ...k('alice'), msg: 'spam' })));
+await test('on retrouve ses propres réactions (suppression du compte)', () =>
+  assertSucceeds(getDocs(query(collectionGroup(alice, 'kudos'), where('fromUid', '==', 'alice')))));
+await test('un tiers ne retire pas la réaction d\'un autre', () => assertFails(deleteDoc(kudo(mallory, 'alice'))));
+await test('le propriétaire de la séance retire les réactions reçues (suppression du compte)', async () => {
+  await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'sessions/bob/userSessions/b1/kudos/carol'), { createdAt: new Date(), fromUid: 'carol' }));
+  await assertSucceeds(deleteDoc(doc(bob, 'sessions/bob/userSessions/b1/kudos/carol')));
 });
+await test('on retire sa propre réaction', () => assertSucceeds(deleteDoc(kudo(alice, 'alice'))));
 
 console.log('\n─ Modèles des amis ─');
 // (bob a toujours alice en ami ; alice ne l'a plus depuis le test de suppression)

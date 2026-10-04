@@ -48,8 +48,10 @@ firebase deploy --only firestore:rules --project reps    # règles
 firebase deploy --only firestore:indexes --project reps  # index (si firestore.indexes.json change)
 ```
 
-**En attente de déploiement** (prêtes sur `dev`, testées) : kudos sur l'activité des amis (#30),
-lecture des modèles d'un ami (#31). Déployer les règles **avant** de publier la version de l'appli qui s'en sert.
+**En attente de déploiement** (prêtes sur `dev`, testées) : kudos sur l'activité des amis (#30) — avec leur
+effacement à la suppression du compte (champ `fromUid`, index de groupe de collections `kudos.fromUid` dans
+`firestore.indexes.json`) —, lecture des modèles d'un ami (#31). Déployer **règles et index** avant de publier la
+version de l'appli qui s'en sert.
 
 ---
 

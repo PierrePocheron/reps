@@ -1,6 +1,7 @@
 import {
   clearIndexedDbPersistence,
   collection,
+  collectionGroup,
   doc,
   getDocs,
   query,
@@ -77,7 +78,13 @@ async function deleteUserFirestoreData(userId: string): Promise<void> {
   // Sous-collections du compte
   collect(await getDocs(collection(db, 'users', userId, 'userEvents')));
   collect(await getDocs(collection(db, 'users', userId, 'private')));
-  collect(await getDocs(collection(db, 'sessions', userId, 'userSessions')));
+  const renfoSessions = await getDocs(collection(db, 'sessions', userId, 'userSessions'));
+  collect(renfoSessions);
+  // Kudos are subcollections: deleting a session leaves them behind. Received ones (owner may delete them)…
+  const received = await Promise.all(renfoSessions.docs.map((d) => getDocs(collection(db, 'sessions', userId, 'userSessions', d.id, 'kudos'))));
+  received.forEach(collect);
+  // …and the ones given on friends' sessions (fromUid, collection group)
+  collect(await getDocs(query(collectionGroup(db, 'kudos'), where('fromUid', '==', userId))));
   collect(await getDocs(collection(db, 'gym_sessions', userId, 'userGymSessions')));
   collect(await getDocs(collection(db, 'userTemplates', userId, 'templates')));
 
