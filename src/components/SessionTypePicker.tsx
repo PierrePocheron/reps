@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Dumbbell, Zap, X, LayoutTemplate } from 'lucide-react';
@@ -13,6 +14,14 @@ export function SessionTypePicker({ open, onClose }: SessionTypePickerProps) {
   const navigate = useNavigate();
   const haptics = useHaptic();
   const { startFreeSession } = useGymSessionStore();
+
+  // Escape closes it, like the other sheets (ExerciseDetailSheet, GymTemplatePreviewSheet)
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -40,7 +49,7 @@ export function SessionTypePicker({ open, onClose }: SessionTypePickerProps) {
       />
 
       {/* Bottom sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-[70] bg-background rounded-t-2xl shadow-xl animate-in slide-in-from-bottom-4 duration-300">
+      <div role="dialog" aria-modal="true" aria-labelledby="session-type-title" className="fixed bottom-0 left-0 right-0 z-[70] bg-background rounded-t-2xl shadow-xl animate-in slide-in-from-bottom-4 duration-300">
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
@@ -49,10 +58,11 @@ export function SessionTypePicker({ open, onClose }: SessionTypePickerProps) {
         <div className="px-5 pt-2 pb-[calc(2rem+env(safe-area-inset-bottom))]">
           {/* Header */}
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-bold">Choisir le type de séance</h2>
+            <h2 id="session-type-title" className="text-lg font-bold">Choisir le type de séance</h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-full hover:bg-muted transition-colors"
+              aria-label="Fermer"
+              className="flex h-11 w-11 -mr-2 items-center justify-center rounded-full hover:bg-muted transition-colors"
             >
               <X className="w-5 h-5 text-muted-foreground" />
             </button>
