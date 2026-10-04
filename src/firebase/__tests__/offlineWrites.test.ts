@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { addDoc, deleteDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, deleteDoc, setDoc, updateDoc, writeBatch } from 'firebase/firestore';
 import { createUserTemplate, deleteUserTemplate, updateUserTemplate } from '../templates';
 import { saveBodyEntries } from '../bodyMetrics';
-import { updateGymSession, deleteGymSession } from '../gymSessions';
+import { updateGymSession, deleteGymSession, importGymSessions } from '../gymSessions';
 import { updateSession, deleteSession, updateUserDocument } from '../firestore';
 
 // Offline, Firestore only settles a write once the server acknowledges it: the UI must not wait forever
@@ -12,6 +12,7 @@ describe('user-data writes while offline (no server ack)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     for (const write of [addDoc, deleteDoc, setDoc, updateDoc]) vi.mocked(write).mockImplementation(never);
+    vi.mocked(writeBatch).mockImplementation(() => ({ set: vi.fn(), commit: never }) as never);
   });
 
   afterEach(() => {
@@ -26,6 +27,7 @@ describe('user-data writes while offline (no server ack)', () => {
     ['saveBodyEntries', () => saveBodyEntries('u1', [])],
     ['updateGymSession', () => updateGymSession('u1', 's1', [])],
     ['deleteGymSession', () => deleteGymSession('u1', 's1')],
+    ['importGymSessions', () => importGymSessions('u1', [{ date: new Date(2026, 0, 5), duration: 3600, exercises: [] }])],
     ['updateSession', () => updateSession('u1', 's1', [], 0)],
     ['deleteSession', () => deleteSession('u1', 's1')],
     ['updateUserDocument', () => updateUserDocument('u1', { weeklyGoal: 3 } as never)],

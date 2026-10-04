@@ -159,7 +159,7 @@ export async function importGymSessions(userId: string, sessions: { date: Date; 
         createdAt: Timestamp.now(),
       });
     }
-    await batch.commit();
+    await queuedIfOffline(batch.commit()); // offline: queued by the persistent cache, sent on reconnection
   }
 }
 
