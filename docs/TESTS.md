@@ -53,7 +53,8 @@ Il échoue si une page lève une erreur JS ou se fige (boucle de rendu), avec un
 Les parcours ajoutent des séances à la démo : relancer `yarn dev:demo` repart de données propres. Après des dizaines
 de passages, l'émulateur Firestore grossit (plusieurs Go, `firestore-debug.log` : « too many pending messagings in the back channel »)
 et ralentit jusqu'à faire échouer des parcours (ex. récap muscu sans comparaison, historique > 3 s) : relancer la démo.
-En cas d'échec, le message montre l'élément attendu (journal d'appel Playwright).
+En cas d'échec, le message montre l'élément attendu (journal d'appel Playwright). Chaque parcours affiche sa durée
+(environ 80 s au total) ; au-delà de 6 min le script s'arrête en nommant le parcours bloqué.
 
 ```bash
 yarn dev:demo   # terminal 1 : émulateurs + données de démo

@@ -12,7 +12,9 @@ const BASE = 'http://localhost:5199';
 const DEMO = { email: 'demo@reps.test', password: 'reps-demo-2026' }; // compte fictif des émulateurs
 
 // Garde-fou : jamais de script bloqué indéfiniment (boucle d'amélioration, CI)
-setTimeout(() => { console.error('✗ délai dépassé (6 min)'); process.exit(2); }, 360_000).unref();
+let current = 'démarrage'; // named in the timeout message: a hang otherwise says nothing about where
+const started = Date.now();
+setTimeout(() => { console.error(`✗ délai dépassé (6 min) pendant « ${current} »`); process.exit(2); }, 360_000).unref();
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'fr-FR' });
 await ctx.addInitScript(() => localStorage.setItem('reps_onboarding_v2', '1'));
@@ -499,9 +501,11 @@ const steps = [
 
 let failed = false;
 for (const [name, run] of steps) {
+  current = name;
+  const t0 = Date.now();
   try {
     await run();
-    console.log(`✓ ${name}`);
+    console.log(`✓ ${name} (${Math.round((Date.now() - t0) / 1000)} s)`);
   } catch (err) {
     failed = true;
     console.error(`✗ ${name}\n  ${err.message.split('\n').slice(0, 4).join('\n  ')}`); // keep the awaited locator from the call log
@@ -509,4 +513,5 @@ for (const [name, run] of steps) {
   }
 }
 await browser.close();
+console.log(`${failed ? '✗' : '✓'} ${Math.round((Date.now() - started) / 1000)} s au total`);
 process.exit(failed ? 1 : 0);
