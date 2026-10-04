@@ -99,3 +99,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | passe UI/UX textes (statique) | Machine saturée (charge 179, VM + Chrome) → pas d'e2e ; tutoiement rétabli (2 toasts de notifications, accroche de l'accueil déconnecté) ; console.error de l'ErrorBoundary gardé (dev seulement, évite un double envoi Sentry) | `9297308` |
 | 2026-10-04 | #57 (2/2) | Modifier une séance renfo (reps, exercices, calories et totaux recalculés) → issue fermée ; e2e complet vert (10 parcours) | `db26828` |
 | 2026-10-04 | #58 (1/2) | Séance muscu oubliée : date/heure/durée saisies, enregistrée à sa date (série et stats à jour) ; e2e 11 parcours verts | `fa8a443` |
+| 2026-10-04 | passe UI/UX fenêtres | Menu ⋯, Modifier (muscu/renfo), Supprimer, Séance oubliée audités à 320 px clair/sombre (contraste AA OK) ; boutons d'édition coupés en bas → pied collant ; défilement latéral de 5 px supprimé | `bbb5c71` |
