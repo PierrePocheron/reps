@@ -218,7 +218,7 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
       animate={{ opacity: 1, y: 0 }}
       className="bg-card border rounded-2xl p-4"
     >
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-primary" />
           Progression hebdomadaire

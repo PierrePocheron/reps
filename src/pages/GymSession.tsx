@@ -754,27 +754,27 @@ function SetExecuteRow({
           : set.type ? SET_TYPE_META[set.type].short : `S${number}`}
       </button>
 
-      <div className="flex items-center gap-1 flex-1">
+      <div className="flex items-center gap-1 flex-1 min-w-0">
         <Input
           type="number"
           value={reps}
           onChange={(e) => { setReps(e.target.value); onUpdate(exerciseId, setIndex, Number(e.target.value) || 0, Number(weight) || 0); }}
           onFocus={onFocusSel}
           aria-label={`${timed ? 'Durée en secondes' : 'Répétitions'}, série ${setIndex + 1}`}
-          className={`h-8 w-14 max-[359px]:w-12 text-sm p-1 ${NUM_CLS}`}
+          className={`h-8 w-14 max-[359px]:w-12 min-w-0 text-sm p-1 ${NUM_CLS}`}
           min={0}
         />
         <UnitToggle timed={timed} onToggle={onToggleTimed} />
       </div>
 
-      <div className="flex items-center gap-1 flex-1">
+      <div className="flex items-center gap-1 flex-1 min-w-0">
         <Input
           type="number"
           value={weight}
           onChange={(e) => { setWeight(e.target.value); onUpdate(exerciseId, setIndex, Number(reps) || 0, Number(e.target.value) || 0); }}
           onFocus={onFocusSel}
           aria-label={`Charge en kg, série ${setIndex + 1}`}
-          className={`h-8 w-16 max-[359px]:w-14 text-sm p-1 ${NUM_CLS}`}
+          className={`h-8 w-16 max-[359px]:w-14 min-w-0 text-sm p-1 ${NUM_CLS}`}
           min={0}
         />
         <span className="text-xs text-muted-foreground">kg</span>

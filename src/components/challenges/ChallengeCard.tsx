@@ -376,7 +376,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                     </div>
 
                     {isDoneToday ? (
-                        <Button variant="outline" className="flex-1 min-w-[7.5rem] bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400 hover:bg-green-500/20 px-2" disabled>
+                        <Button variant="outline" className="flex-1 min-w-[7.5rem] bg-green-500/10 border-green-500/20 text-green-800 dark:text-green-400 hover:bg-green-500/20 px-2 disabled:opacity-100" disabled>
                             <CheckCircle2 className="w-4 h-4 mr-1.5" />
                             Validé
                         </Button>

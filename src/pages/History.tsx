@@ -91,11 +91,11 @@ function CardMenu({ onEdit, onSaveTemplate, onDelete }: { onEdit?: () => void; o
 
 function CardActions({ onRedo, onShare }: { onRedo: () => void; onShare: () => void }) {
   return (
-    <div className="flex gap-2">
-      <Button variant="outline" className="flex-1 min-h-11" onClick={onRedo} aria-label="Refaire cette séance">
+    <div className="flex flex-wrap gap-2">
+      <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={onRedo} aria-label="Refaire cette séance">
         <RotateCcw className="h-4 w-4 mr-2" /> Refaire
       </Button>
-      <Button variant="outline" className="flex-1 min-h-11" onClick={onShare}>
+      <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={onShare}>
         <Share2 className="h-4 w-4 mr-2" /> Partager
       </Button>
     </div>
@@ -519,7 +519,7 @@ function History() {
             role="tab"
             aria-selected={activeTab === 'musculation'}
             onClick={() => setActiveTab('musculation')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
+            className={`flex-1 min-w-0 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
               activeTab === 'musculation'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -537,7 +537,7 @@ function History() {
             role="tab"
             aria-selected={activeTab === 'renforcement'}
             onClick={() => setActiveTab('renforcement')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
+            className={`flex-1 min-w-0 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
               activeTab === 'renforcement'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -555,7 +555,7 @@ function History() {
             role="tab"
             aria-selected={activeTab === 'records'}
             onClick={() => setActiveTab('records')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
+            className={`flex-1 min-w-0 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 py-2.5 rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-muted ${
               activeTab === 'records'
                 ? 'bg-background text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'

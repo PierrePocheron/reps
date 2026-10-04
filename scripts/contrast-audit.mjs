@@ -1,6 +1,7 @@
 /**
  * Audit de contraste WCAG AA (4,5:1, 3:1 pour le grand texte) sur les écrans principaux, en clair et en sombre,
- * et contrôles sans nom accessible (WCAG 4.1.2 : bouton-icône sans aria-label, champ sans libellé).
+ * contrôles sans nom accessible (WCAG 4.1.2 : bouton-icône sans aria-label, champ sans libellé)
+ * et texte ou bouton coupé, y compris avec la plus grande police d'Android (WCAG 1.4.4).
  * Prérequis : `yarn dev:demo` lancé. Usage : `yarn a11y` (code de sortie ≠ 0 s'il reste des échecs).
  */
 import { chromium } from 'playwright';
@@ -22,9 +23,15 @@ const pickTheme = async (page, name) => {
 };
 const b = await chromium.launch();
 let failures = 0;
-for (const scheme of ['light', 'dark']) {
-const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, colorScheme: scheme, isMobile: true, hasTouch: true });
-await ctx.addInitScript(() => localStorage.setItem('reps_onboarding_v2', '1'));
+for (const pass of ['light', 'dark', 'large']) {
+const scheme = pass === 'dark' ? 'dark' : 'light';
+// Android « Très grande » police: the WebView scales the root font size (16 → 20.8 px, measured on API 33), so rem layouts grow too
+const large = pass === 'large';
+const ctx = await b.newContext({ viewport: large ? { width: 360, height: 780 } : { width: 390, height: 844 }, colorScheme: scheme, isMobile: true, hasTouch: true });
+await ctx.addInitScript((large) => {
+  localStorage.setItem('reps_onboarding_v2', '1');
+  if (large) document.addEventListener('DOMContentLoaded', () => document.documentElement.style.setProperty('font-size', '130%', 'important'));
+}, large);
 const p = await ctx.newPage();
 await p.goto('http://localhost:5199/login'); await p.fill('#email', DEMO.email); await p.fill('#password', DEMO.password);
 await p.click('button[type=submit]'); await p.waitForURL('http://localhost:5199/');
@@ -62,10 +69,23 @@ const unnamed = () => p.evaluate(() => {
       : !name(el)))
     .map((el) => `sans nom : ${el.outerHTML.slice(0, 90).replace(/\s+/g, ' ')}`);
 });
-const run = async () => [...await audit(), ...await unnamed()];
+// text or controls cut off on the right, by the screen or by an overflow-hidden parent (scrollers and ellipses are deliberate)
+const cutOff = () => p.evaluate(() => [...document.querySelectorAll('main *, [role=dialog] *')].filter((el) => {
+  const text = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+  if (!text && !el.matches('button, a[href], input, select, [role=tab], [role=switch]')) return false;
+  const r = el.getBoundingClientRect(); if (!r.width) return false;
+  let limit = innerWidth;
+  for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+    const cs = getComputedStyle(a);
+    if (['auto', 'scroll'].includes(cs.overflowX) || cs.textOverflow === 'ellipsis') return false;
+    if (cs.overflowX !== 'visible') limit = Math.min(limit, a.getBoundingClientRect().right);
+  }
+  return r.right > limit + 1;
+}).map((el) => `coupé : <${el.tagName.toLowerCase()}> « ${(el.getAttribute('aria-label') || el.textContent || '').trim().slice(0, 40)} »`).slice(0, 10));
+const run = async () => [...await audit(), ...await unnamed(), ...await cutOff()];
 for (const path of ['/', '/statistics', '/history', '/profil', '/settings', '/challenges', '/leaderboard']) {
   await p.goto('http://localhost:5199' + path); await p.waitForTimeout(2200);
-  const r = await run(); failures += r.length; if (r.length) console.log(`\n== ${scheme} ${path}\n` + r.join('\n'));
+  const r = await run(); failures += r.length; if (r.length) console.log(`\n== ${pass} ${path}\n` + r.join('\n'));
 }
 await p.goto('http://localhost:5199/history'); await p.getByRole('button', { name: 'Refaire cette séance' }).first().click(); await p.waitForURL(/gym$/);
 p.setDefaultTimeout(10_000); // une action introuvable échoue vite au lieu d'épuiser le délai global
@@ -75,11 +95,11 @@ const typeBtns = card.getByRole('button', { name: /^Série \d+ : / });
 while (await typeBtns.count() < 4) await card.getByRole('button', { name: /^Série \d+$/ }).click();
 for (let i = 1; i <= 3; i++) for (let k = 0; k < i; k++) await typeBtns.nth(i).click();
 await card.getByRole('button', { name: /^Valider la série 1/ }).click(); // minuteur de repos (±15 s, préréglages)
-await p.waitForTimeout(500); const g = await run(); failures += g.length; if (g.length) console.log(`\n== ${scheme} /gym\n` + g.join('\n'));
+await p.waitForTimeout(500); const g = await run(); failures += g.length; if (g.length) console.log(`\n== ${pass} /gym\n` + g.join('\n'));
 await p.goto('http://localhost:5199/settings'); await p.evaluate(() => localStorage.removeItem('reps_gym_session'));
 if (themeName) await pickTheme(p, 'Violet');
 await ctx.close();
 }
 await b.close();
-console.log(failures ? `\n✗ ${failures} problème(s) d'accessibilité (contraste AA ou nom manquant)${THEME ? ` (thème ${THEME})` : ''}` : `✓ contraste AA et noms accessibles respectés (clair et sombre${THEME ? `, thème ${THEME}` : ''})`);
+console.log(failures ? `\n✗ ${failures} problème(s) d'accessibilité (contraste AA, nom manquant ou texte coupé)${THEME ? ` (thème ${THEME})` : ''}` : `✓ contraste AA, noms accessibles et texte entier (clair, sombre et grande police${THEME ? `, thème ${THEME}` : ''})`);
 process.exit(failures ? 1 : 0);

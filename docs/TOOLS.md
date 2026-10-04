@@ -302,7 +302,7 @@ yarn dev:demo               # Émulateurs Firebase + données fictives → http:
 # ── Tests ──────────────────────────────────────────────
 yarn test:rules             # Règles Firestore sur l'émulateur
 yarn e2e                    # Parcours de bout en bout (démo lancée)
-yarn a11y                   # Audit de contraste AA, clair et sombre (démo lancée)
+yarn a11y                   # Audit AA : contraste clair/sombre, noms, texte coupé en grande police (démo lancée)
 yarn store:screenshots      # Captures Play Store (démo lancée)
 yarn test                   # Mode watch (développement)
 yarn test --run             # Exécution unique de tous les tests
