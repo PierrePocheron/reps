@@ -12,6 +12,13 @@ export interface SessionHistory {
   refetch: () => void;
 }
 
+/** The whole history, for the rare reads that must not stop at a page: export and import duplicate check. */
+export async function fetchWholeHistory(uid: string): Promise<{ sessions: Session[]; gymSessions: GymSession[] }> {
+  const ALL = 100_000; // Settings used the latest 500: older sessions were missing from « toutes tes données »
+  const [sessions, gymSessions] = await Promise.all([getUserSessions(uid, ALL), getUserGymSessions(uid, ALL)]);
+  return { sessions, gymSessions };
+}
+
 export function useSessionHistory(limitCount = 200): SessionHistory {
   const uid = useUserStore().user?.uid;
   const [sessions, setSessions] = useState<Session[]>([]);

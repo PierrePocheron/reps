@@ -22,7 +22,7 @@ import { useUserStore } from '@/store/userStore';
 import { cn } from '@/utils/cn';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { useSessionHistory } from '@/hooks/useSessionHistory';
+import { useSessionHistory, fetchWholeHistory } from '@/hooks/useSessionHistory';
 import { saveFile } from '@/utils/saveFile';
 import { localDay } from '@/utils/formatters';
 import { useGymSessionStore } from '@/store/gymSessionStore';
@@ -65,7 +65,8 @@ function Settings() {
         toast({ title: 'Aucune séance trouvée', description: "Ce fichier n'est pas un export Strong ou Hevy.", variant: 'destructive' });
         return;
       }
-      const fresh = newSessionsOnly(all, [...gymSessions.map((s) => s.date.toDate()), ...importedDates.current]);
+      const whole = user ? (await fetchWholeHistory(user.uid)).gymSessions : gymSessions; // duplicates older than a page too
+      const fresh = newSessionsOnly(all, [...whole.map((s) => s.date.toDate()), ...importedDates.current]);
       const ids = new Set(fresh.flatMap((s) => s.exercises.map((e) => e.exerciseId)));
       setImportPreview({ sessions: fresh, skipped: all.length - fresh.length, exercises: ids.size, known: [...ids].filter((id) => !id.startsWith('import_')).length });
     } catch (err) {
@@ -111,9 +112,10 @@ function Settings() {
     setExporting(true);
     try {
       const day = localDay(new Date());
+      const all = user?.uid ? await fetchWholeHistory(user.uid) : { sessions, gymSessions }; // every session, not a page
       if (format === 'csv') {
         // BOM : Excel lit alors les accents correctement
-        const done = await saveFile(`reps-export-${day}.csv`, '\uFEFF' + sessionsToCsv(gymSessions, sessions), 'text/csv');
+        const done = await saveFile(`reps-export-${day}.csv`, '\uFEFF' + sessionsToCsv(all.gymSessions, all.sessions), 'text/csv');
         if (done) toast({ title: 'Export CSV prêt', description: 'Une ligne par série, compatible Strong / Hevy.' });
         return;
       }
@@ -121,7 +123,7 @@ function Settings() {
       const [body, templates] = user?.uid
         ? await Promise.all([getBodyEntries(user.uid).catch(() => []), getUserTemplates(user.uid).catch(() => [])])
         : [[], []];
-      const exportData = buildJsonExport({ user, sessions, gymSessions, body, templates });
+      const exportData = buildJsonExport({ user, sessions: all.sessions, gymSessions: all.gymSessions, body, templates });
 
       const done = await saveFile(`reps-export-${day}.json`, JSON.stringify(exportData, null, 2), 'application/json');
       if (done) toast({ title: 'Export prêt', description: 'Toutes tes données au format JSON.' });
