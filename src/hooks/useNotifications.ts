@@ -76,7 +76,7 @@ export const useNotifications = () => {
         if (!granted) {
           toast({
             title: 'Notifications désactivées',
-            description: 'Activez les notifications dans les réglages de votre appareil.',
+            description: 'Active les notifications dans les réglages de ton appareil.',
             variant: 'destructive',
           });
           return false;
@@ -127,7 +127,7 @@ export const useNotifications = () => {
       if (!token) {
         toast({
           title: 'Notifications refusées',
-          description: 'Autorisez les notifications dans votre navigateur.',
+          description: 'Autorise les notifications dans ton navigateur.',
           variant: 'destructive',
         });
         return false;

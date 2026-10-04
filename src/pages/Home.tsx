@@ -130,7 +130,7 @@ function Home() {
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
         <h1 className="mb-4 text-4xl font-bold">🏋️ Reps</h1>
         <p className="mb-8 text-center text-muted-foreground">
-          Suivez vos entraînements de musculation au poids du corps
+          Suis tes séances de muscu et de renfo au poids du corps
         </p>
         <Button onClick={() => navigate('/profil')} size="lg">
           Se connecter
