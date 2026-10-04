@@ -214,11 +214,11 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
               const w = firstSet ? (firstSet.actualWeight ?? firstSet.weight) : 0;
               const rpes = completedSetsList.map((st) => st.rpe ?? 0).filter(Boolean);
               const warmups = ex.sets.filter((st) => st.completed && st.type === 'warmup').length;
-              const setsSummary = (completedSetsList.length > 0
-                ? `${completedSetsList.length} × ${isTimed(ex) ? `${firstSet!.actualReps ?? firstSet!.reps} s` : w > 0 ? `${formatNumber(w)} kg` : 'poids du corps'}`
-                : `${ex.sets.length} série${ex.sets.length > 1 ? 's' : ''}`)
-                + (rpes.length ? ` · RPE ${formatNumber(Math.max(...rpes))}` : '')
-                + (warmups ? ` · ${warmups} échauff.` : '');
+              const setsSummary = completedSetsList.length === 0
+                ? (warmups ? `${warmups} échauff.` : 'aucune série validée') // planned sets are kept for « Refaire » but were not done
+                : `${completedSetsList.length} × ${isTimed(ex) ? `${firstSet!.actualReps ?? firstSet!.reps} s` : w > 0 ? `${formatNumber(w)} kg` : 'poids du corps'}`
+                  + (rpes.length ? ` · RPE ${formatNumber(Math.max(...rpes))}` : '')
+                  + (warmups ? ` · ${warmups} échauff.` : '');
 
               return (
                 <div key={i} className="flex items-center gap-3">

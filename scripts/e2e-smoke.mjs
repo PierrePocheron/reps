@@ -121,6 +121,8 @@ const steps = [
     await page.goto(`${BASE}/history`);
     await page.getByText(`« ${note} »`).waitFor();
     await page.getByText('Haut du corps e2e').first().waitFor(); // titre affiché sur la carte
+    // only set 1 was validated: the other exercises must not read as done ("4 séries")
+    await page.getByText(/aucune série validée/).first().waitFor({ timeout: 5000 });
   }],
 
   ['séance renfo : refaire, compter, terminer', async () => {
@@ -267,7 +269,12 @@ const steps = [
     await page.getByText('Ta progression').waitFor();
     await page.locator('svg[role=img]').last().waitFor();
     // la feuille passe au-dessus de la navigation (un contexte d'empilement parasite la mettait dessous)
-    const coveredByNav = await page.evaluate(() => !!document.elementFromPoint(innerWidth / 2, innerHeight - 20)?.closest('nav'));
+    // polled: a single snapshot could land during the sheet's slide-in animation (flaky); a stacking bug stays covered
+    let coveredByNav = true;
+    for (let i = 0; i < 30 && coveredByNav; i++) {
+      coveredByNav = await page.evaluate(() => !!document.elementFromPoint(innerWidth / 2, innerHeight - 20)?.closest('nav'));
+      if (coveredByNav) await page.waitForTimeout(100);
+    }
     assert.ok(!coveredByNav, 'la navigation recouvre la feuille ouverte');
     await assertAlive('records');
   }],
