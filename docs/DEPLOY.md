@@ -143,6 +143,8 @@ Puis App Store Connect : **TestFlight** (test interne), et soumission à la revu
       sont personnalisées, ajouter `NSUserTrackingUsageDescription` et la demande d'autorisation
 - [ ] **Suppression de compte dans l'appli** (règle 5.1.1) : déjà là
 - [ ] Fiche App Store Connect : captures iPhone 6,7" et 6,5", étiquettes de confidentialité, compte de test pour la revue
+- [ ] **Saisie décimale sur iPhone** (clavier français) : taper « 57,5 » dans une charge doit enregistrer 57,5 kg, pas 0.
+      Vérifié sous Chromium (Android, web) : la virgule est acceptée ; WebKit n'a pas pu être testé en local
 
 ---
 
