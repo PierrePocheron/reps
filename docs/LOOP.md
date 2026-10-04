@@ -83,3 +83,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | passe UI/UX historique 360 px | Cartes coupées à droite (Refaire/Partager trop larges, nowrap) → libellé court + min-w-0 ; « 1 série » ; dette lint repérée → #50 | `20084c0` |
 | 2026-10-04 | #49 | Durée de repos retenue par exercice (changée pendant son repos), défaut global sinon | `988a9a8` |
 | 2026-10-04 | #50 | yarn lint à 0 (any toléré dans les tests, deps de hooks exactes, code mort) + lint dans la CI | `d28a10b` |
+| 2026-10-04 | passe UI/UX petits écrans | Scan 320→412 px : Réglages débordaient sur presque tous les téléphones (mode, objectif hebdo), onglets/records/stats/classement/couleurs à 320 px → corrigés + étape e2e « rien ne déborde à 320 px » (échoue sans le fix) | `1bdd4dc` |
