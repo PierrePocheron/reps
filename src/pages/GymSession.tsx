@@ -38,7 +38,7 @@ import confetti from 'canvas-confetti';
 import { ToastAction } from '@/components/ui/toast';
 import { exactAlarmDenied, openExactAlarmSettings } from '@/utils/restNotification';
 import { gymCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
-import { gymSummary, volumeComparison } from '@/utils/summary';
+import { gymSummary, comparisonText } from '@/utils/summary';
 import { formatDurationLong } from '@/utils/formatters';
 import { SessionSummary, type SummaryStat } from '@/components/SessionSummary';
 import { lastWorkSets, suggestNextWeight, type LoadSuggestion } from '@/utils/progression';
@@ -243,7 +243,7 @@ function GymSession() {
     const sum = gymSummary(exercises, gymHistory);
     setSummary({
       card: gymCard({ date: new Date(), duration, exercises }),
-      comparison: volumeComparison(sum.deltaPct),
+      comparison: comparisonText(sum.deltaPct),
       stats: [
         { label: 'Durée', value: formatDurationLong(duration) },
         { label: 'Volume', value: `${sum.volume.toLocaleString('fr-FR')} kg` },

@@ -14,14 +14,19 @@ export function gymSummary(exercises: GymSessionExercise[], history: Pick<GymSes
     volume,
     sets: exercises.reduce((n, ex) => n + ex.sets.filter(isWorkSet).length, 0),
     records: exercises.reduce((n, ex) => n + ex.sets.filter((s) => s.isRecord).length, 0),
-    deltaPct: previous?.totalVolume ? Math.round(((volume - previous.totalVolume) / previous.totalVolume) * 100) : null,
+    deltaPct: deltaPct(volume, previous?.totalVolume),
   };
 }
 
+/** Écart en % arrondi ; null sans référence. */
+export const deltaPct = (now: number, before: number | null | undefined) =>
+  before ? Math.round(((now - before) / before) * 100) : null;
+
 /** Phrase de comparaison, toujours encourageante (Gentler Streak) ; null sans séance de référence. */
-export function volumeComparison(deltaPct: number | null): string | null {
-  if (deltaPct === null) return null;
-  if (deltaPct > 0) return `+${deltaPct} % de volume par rapport à ta dernière séance 📈`;
-  if (deltaPct === 0) return 'Même volume que ta dernière séance : régulier 👊';
-  return `Volume un peu plus léger que la dernière fois (${deltaPct} %) : chaque séance compte`;
+export function comparisonText(delta: number | null, kind: 'volume' | 'reps' = 'volume'): string | null {
+  if (delta === null) return null;
+  const volume = kind === 'volume';
+  if (delta > 0) return `+${delta} % ${volume ? 'de volume' : 'de reps'} par rapport à ta dernière séance 📈`;
+  if (delta === 0) return `${volume ? 'Même volume' : 'Autant de reps'} que ta dernière séance : régulier 👊`;
+  return `${volume ? 'Volume un peu plus léger' : 'Un peu moins de reps'} que la dernière fois (${delta} %) : chaque séance compte`;
 }

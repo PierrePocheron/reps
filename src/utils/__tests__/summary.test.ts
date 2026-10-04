@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { gymSummary, volumeComparison } from '../summary';
+import { gymSummary, comparisonText } from '../summary';
 import type { GymSessionExercise } from '@/firebase/types';
 
 const ex = (exerciseId: string, sets: GymSessionExercise['sets']): GymSessionExercise => ({ exerciseId, name: exerciseId, emoji: '🏋️', sets });
@@ -21,11 +21,14 @@ describe('gymSummary', () => {
   });
 });
 
-describe('volumeComparison', () => {
-  it('toujours encourageante', () => {
-    expect(volumeComparison(28)).toMatch(/^\+28 %/);
-    expect(volumeComparison(0)).toMatch(/Même volume/);
-    expect(volumeComparison(-5)).toMatch(/plus léger.*-5 %/);
-    expect(volumeComparison(null)).toBeNull();
+describe('comparisonText', () => {
+  it('toujours encourageante, en volume (muscu) ou en reps (renfo)', () => {
+    expect(comparisonText(28)).toMatch(/^\+28 % de volume/);
+    expect(comparisonText(0)).toMatch(/Même volume/);
+    expect(comparisonText(-5)).toMatch(/plus léger.*-5 %/);
+    expect(comparisonText(null)).toBeNull();
+    expect(comparisonText(12, 'reps')).toMatch(/^\+12 % de reps/);
+    expect(comparisonText(0, 'reps')).toMatch(/Autant de reps/);
+    expect(comparisonText(-3, 'reps')).toMatch(/moins de reps.*-3 %/);
   });
 });

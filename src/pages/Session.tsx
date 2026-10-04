@@ -19,8 +19,11 @@ import { DEFAULT_EXERCISES } from '@/utils/constants';
 import type { Exercise } from '@/firebase/types';
 import { logger } from '@/utils/logger';
 import { useKeepAwake } from '@/hooks/useKeepAwake';
-import { ToastAction } from '@/components/ui/toast';
-import { renfoCard, shareSessionCard } from '@/utils/shareCard';
+import { renfoCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
+import { getUserSessions } from '@/firebase/firestore';
+import { comparisonText, deltaPct } from '@/utils/summary';
+import { formatDurationLong } from '@/utils/formatters';
+import { SessionSummary, type SummaryStat } from '@/components/SessionSummary';
 
 function Session() {
   const navigate = useNavigate();
@@ -47,6 +50,14 @@ function Session() {
   const [isLoadingLastSession, setIsLoadingLastSession] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const { user } = useUserStore();
+  // Récap de fin de séance (#54) et reps de la séance renfo précédente, chargées dès l'ouverture
+  const [summary, setSummary] = useState<{ stats: SummaryStat[]; comparison: string | null; card: SessionCard } | null>(null);
+  const [previousReps, setPreviousReps] = useState<number | null>(null);
+  const uid = user?.uid;
+  useEffect(() => {
+    if (!uid) return;
+    getUserSessions(uid, 1).then(([last]) => setPreviousReps(last?.totalReps ?? null)).catch(() => { /* comparaison facultative */ });
+  }, [uid]);
   const { play } = useSound();
   const haptics = useHaptic();
 
@@ -75,27 +86,25 @@ function Session() {
     }
 
     setIsEnding(true);
-    // Carte de partage figée avant que endSession ne vide le store
-    const card = renfoCard({ date: new Date(), duration: startTime ? Math.floor((Date.now() - startTime) / 1000) : 0, exercises, totalReps, totalCalories: currentCalories });
+    // Récap et carte de partage figés avant que endSession ne vide le store
+    const duration = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+    setSummary({
+      card: renfoCard({ date: new Date(), duration, exercises, totalReps, totalCalories: currentCalories }),
+      comparison: comparisonText(deltaPct(totalReps, previousReps), 'reps'),
+      stats: [
+        { label: 'Durée', value: formatDurationLong(duration) },
+        { label: 'Reps', value: totalReps.toLocaleString('fr-FR') },
+        { label: 'Calories', value: `${Math.round(currentCalories)} kcal` },
+        { label: 'Exercices', value: String(exercises.length) },
+      ],
+    });
     try {
       await endSession();
-      toast({
-        action: <ToastAction altText="Partager ma séance en image" onClick={() => void shareSessionCard(card).catch(() => {})}>Partager</ToastAction>,
-        title: 'Séance terminée',
-        description: `Bravo ! ${totalReps} reps • ${Math.round(currentCalories)} kcal 🔥`,
-      });
       play('complete');
       haptics.notification();
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-      // Petit délai pour laisser le temps au store de se mettre à jour
-      setTimeout(() => {
-        navigate('/');
-      }, 100);
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     } catch (error) {
+      setSummary(null);
       toast({
         title: 'Erreur',
         description: 'Impossible de sauvegarder la séance',
@@ -184,7 +193,14 @@ function Session() {
   // Si on n'est pas authentifié, on redirige (déjà géré plus haut)
   // Si la session n'est pas active, on affiche un loader en attendant le useEffect
   if (!isActive) {
-    return null; // ou un loader
+    return summary && (
+      <SessionSummary
+        stats={summary.stats}
+        comparison={summary.comparison}
+        onShare={() => void shareSessionCard(summary.card).catch(() => {})}
+        onDone={() => navigate('/')}
+      />
+    );
   }
 
   // Calculer les calories en temps réel

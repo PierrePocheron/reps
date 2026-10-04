@@ -79,6 +79,9 @@ const steps = [
     await page.waitForURL(`${BASE}/session`);
     await page.getByText('+10', { exact: true }).first().click();
     await page.getByRole('button', { name: /Terminer la séance/ }).click();
+    await page.getByRole('heading', { name: 'Séance terminée !' }).waitFor(); // récap renfo (#54)
+    await page.getByText(/de reps|reps que/).first().waitFor(); // comparaison avec la séance précédente
+    await page.getByRole('button', { name: 'Terminer', exact: true }).click();
     await page.waitForURL(`${BASE}/`);
     await assertAlive('fin de séance renfo');
   }],
