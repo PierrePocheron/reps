@@ -119,7 +119,7 @@ export const useNotifications = () => {
     } else {
       // Web — FCM push
       if (!('Notification' in window)) {
-        toast({ title: 'Non supporté', description: 'Votre navigateur ne supporte pas les notifications.', variant: 'destructive' });
+        toast({ title: 'Non supporté', description: 'Ton navigateur ne gère pas les notifications.', variant: 'destructive' });
         return false;
       }
 
@@ -156,7 +156,7 @@ export const useNotifications = () => {
       try {
         await LocalNotifications.cancel({ notifications: [{ id: 1 }] });
         setIsScheduled(false);
-        toast({ title: 'Rappel désactivé', description: 'Vous ne recevrez plus de rappel quotidien.' });
+        toast({ title: 'Rappel désactivé', description: 'Tu ne recevras plus de rappel quotidien.' });
       } catch (err) {
         logger.error('Erreur annulation notif:', err);
       }
@@ -166,7 +166,7 @@ export const useNotifications = () => {
       if (user?.uid) {
         await disableFCMNotifications(user.uid);
       }
-      toast({ title: 'Notifications désactivées', description: 'Vous ne recevrez plus de rappel.' });
+      toast({ title: 'Notifications désactivées', description: 'Tu ne recevras plus de rappel.' });
     }
   }, [toast, user?.uid]);
 

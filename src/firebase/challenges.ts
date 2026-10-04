@@ -202,7 +202,7 @@ export const joinChallenge = async (userId: string, challengeId: string): Promis
   );
   const activeSnap = await getDocs(activeQ);
   if (activeSnap.size >= MAX_ACTIVE_CHALLENGES) {
-      throw new Error(`Limite atteinte : Vous ne pouvez avoir que ${MAX_ACTIVE_CHALLENGES} défis actifs en même temps.`);
+      throw new Error(`Limite atteinte : tu ne peux avoir que ${MAX_ACTIVE_CHALLENGES} défis actifs en même temps.`);
   }
 
   // Check if already active
@@ -215,7 +215,7 @@ export const joinChallenge = async (userId: string, challengeId: string): Promis
 
   const snapshot = await getDocs(q);
   if (!snapshot.empty) {
-    throw new Error("Vous participez déjà à ce défi !");
+    throw new Error("Tu participes déjà à ce défi !");
   }
 
   const newChallengeRef = doc(collection(db, 'user_challenges'));
@@ -290,7 +290,7 @@ export const createCustomChallenge = async (
     );
     const activeSnap = await getDocs(activeQ);
     if (activeSnap.size >= MAX_ACTIVE_CHALLENGES) {
-        throw new Error(`Limite atteinte : Vous ne pouvez avoir que ${MAX_ACTIVE_CHALLENGES} défis actifs en même temps.`);
+        throw new Error(`Limite atteinte : tu ne peux avoir que ${MAX_ACTIVE_CHALLENGES} défis actifs en même temps.`);
     }
 
     // B. Build Definition
@@ -369,7 +369,7 @@ export const validateChallengeDay = async (
             const maxAllowedIndex = getDayIndex(userChallenge.startDate, new Date());
 
             if (currentStepIndex > maxAllowedIndex) {
-               throw new Error("Vous êtes déjà à jour ! Revenez demain pour la suite.");
+               throw new Error("Tu es déjà à jour ! Reviens demain pour la suite.");
             }
 
             // C. Create Session (Social + Stats + Leaderboard)
