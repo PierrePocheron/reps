@@ -30,6 +30,8 @@ interface GymSessionState {
   showRpe: boolean; // saisir le RPE des séries validées (préférence, persistée)
   suggestLoad: boolean; // proposer la charge suivante quand tout a été réussi (préférence, persistée)
   backdate: { at: number; duration: number } | null; // séance oubliée (#58) : date passée et durée (s) saisies
+  title: string;       // titre de la séance (#64), repris du modèle
+  sessionNote: string; // note de séance (#64)
 
   // Actions — Planning
   startPlanning: () => void;
@@ -57,6 +59,8 @@ interface GymSessionState {
   setShowRpe: (on: boolean) => void;
   setSuggestLoad: (on: boolean) => void;
   setBackdate: (backdate: { at: number; duration: number } | null) => void;
+  setTitle: (title: string) => void;
+  setSessionNote: (note: string) => void;
   endSession: () => Promise<void>;
   cancelSession: () => void;
 
@@ -66,7 +70,7 @@ interface GymSessionState {
   hasExercise: (exerciseId: string) => boolean;
 
   // Templates
-  loadGymTemplate: (exercises: GymSessionExercise[]) => void;
+  loadGymTemplate: (exercises: GymSessionExercise[], title?: string) => void;
 
   // Séance libre — démarre directement en execute sans exercices
   startFreeSession: () => void;
@@ -94,6 +98,8 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   showRpe: false,
   suggestLoad: true,
   backdate: null,
+  title: '',
+  sessionNote: '',
 
   // ─── Planning ─────────────────────────────────────────────────────────
 
@@ -260,6 +266,8 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   setShowRpe: (on: boolean) => set({ showRpe: on }),
   setSuggestLoad: (on: boolean) => set({ suggestLoad: on }),
   // Jamais dans le futur : la date est ramenée à maintenant au pire
+  setTitle: (title) => set({ title: title.slice(0, 60) }),
+  setSessionNote: (sessionNote) => set({ sessionNote: sessionNote.slice(0, NOTE_MAX) }),
   setBackdate: (backdate) => set({ backdate: backdate && { at: Math.min(backdate.at, Date.now()), duration: Math.max(0, backdate.duration) } }),
 
   endSession: async () => {
@@ -278,6 +286,8 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
       await createGymSession(currentUser.uid, {
         userId: currentUser.uid,
         date: backdate ? Timestamp.fromDate(new Date(backdate.at)) : Timestamp.now(),
+        ...(get().title.trim() ? { title: get().title.trim() } : {}),
+        ...(get().sessionNote.trim() ? { note: get().sessionNote.trim() } : {}),
         duration,
         exercises: sanitizedExercises,
         totalVolume: Math.round(totalVolume),
@@ -306,6 +316,8 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
       showRestTimer: false,
       restEndsAt: null,
       backdate: null,
+      title: '',
+      sessionNote: '',
     });
   },
 
@@ -330,6 +342,8 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     set({
       phase: 'execute',
       exercises: [],
+      title: '',
+      sessionNote: '',
       currentExerciseIndex: 0,
       currentSetIndex: 0,
       startTime: Date.now(),
@@ -338,10 +352,12 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     });
   },
 
-  loadGymTemplate: (exercises: GymSessionExercise[]) => {
+  loadGymTemplate: (exercises: GymSessionExercise[], title = '') => {
     set({
       phase: 'plan',
       exercises,
+      title,
+      sessionNote: '',
       currentExerciseIndex: 0,
       currentSetIndex: 0,
       startTime: null,
@@ -363,5 +379,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     showRpe: s.showRpe,
     suggestLoad: s.suggestLoad,
     backdate: s.backdate,
+    title: s.title,
+    sessionNote: s.sessionNote,
   }),
 }));

@@ -175,8 +175,9 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
         <div className="flex-1 min-w-0 p-4 space-y-3">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold">{formatDate(date)}</p>
+            <div className="min-w-0">
+              {session.title && <p className="text-sm font-bold truncate">{session.title}</p>}
+              <p className={session.title ? 'text-xs text-muted-foreground' : 'text-sm font-semibold'}>{formatDate(date)}</p>
               <p className="text-xs text-muted-foreground">{formatTime(date)}</p>
             </div>
             <div className="flex items-center gap-1.5">
@@ -201,6 +202,8 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
               <span className="text-xs text-muted-foreground">série{completedSets > 1 ? 's' : ''}</span>
             </div>
           </div>
+
+          {session.note && <p className="text-xs italic text-muted-foreground">« {session.note} »</p>}
 
           {/* Exercises summary */}
           <div className="space-y-1.5">
@@ -429,7 +432,7 @@ function History() {
     loadGymTemplate(s.exercises.map((ex) => ({
       exerciseId: ex.exerciseId, name: ex.name, emoji: ex.emoji, imageUrl: ex.imageUrl, supersetId: ex.supersetId, timed: ex.timed,
       sets: ex.sets.map((set) => ({ reps: set.actualReps ?? set.reps, weight: set.actualWeight ?? set.weight, completed: false })),
-    })));
+    })), s.title);
     startExecution();
     navigate('/gym');
   };
@@ -598,7 +601,7 @@ function History() {
               {shownGymSessions.map((s) => (
                 <MuscuCard key={s.sessionId} session={s} imageMap={imageMap} onRedo={() => redoGym(s)}
                   onSaveTemplate={() => { setSaveAsTemplate(s); setTemplateName(`Séance du ${s.date.toDate().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`); }}
-                  onShare={() => share(gymCard({ date: s.date.toDate(), duration: s.duration, exercises: s.exercises }))}
+                  onShare={() => share(gymCard({ date: s.date.toDate(), duration: s.duration, exercises: s.exercises, title: s.title }))}
                   onDelete={() => setToDelete({ kind: 'gym', id: s.sessionId })}
                   onEdit={() => setToEdit(s)} />
               ))}

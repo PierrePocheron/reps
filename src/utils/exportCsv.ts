@@ -20,8 +20,8 @@ export function sessionsToCsv(gymSessions: GymSession[], sessions: Session[]): s
     for (const ex of s.exercises) {
       let n = 0; // les échauffements sont marqués « W » (comme l'export Strong) et ne sont pas numérotés
       ex.sets.filter((set) => set.completed).forEach((set, i) => rows.push({
-        at, cells: [stamp(at), 'Musculation', duration(s.duration), ex.name, set.type === 'warmup' ? 'W' : ++n, set.actualWeight ?? set.weight,
-          isTimed(ex) ? '' : set.actualReps ?? set.reps, '', isTimed(ex) ? set.actualReps ?? set.reps : '', i === 0 ? ex.note ?? '' : '', '', set.rpe ?? ''],
+        at, cells: [stamp(at), s.title || 'Musculation', duration(s.duration), ex.name, set.type === 'warmup' ? 'W' : ++n, set.actualWeight ?? set.weight,
+          isTimed(ex) ? '' : set.actualReps ?? set.reps, '', isTimed(ex) ? set.actualReps ?? set.reps : '', i === 0 ? ex.note ?? '' : '', s.note ?? '', set.rpe ?? ''],
       }));
     }
   }

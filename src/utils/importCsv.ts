@@ -1,7 +1,7 @@
 import type { GymSessionExercise, PlannedSet, SetType } from '@/firebase/types';
 
 /** Séance lue dans un export Strong ou Hevy (#61). */
-export interface ImportedSession { date: Date; duration: number; exercises: GymSessionExercise[] }
+export interface ImportedSession { date: Date; duration: number; exercises: GymSessionExercise[]; title?: string; note?: string }
 export type ResolveExercise = (name: string) => { exerciseId: string; name: string; emoji: string };
 
 /** CSV RFC 4180 : guillemets, "" échappés, retours à la ligne dans un champ ; séparateur , ou ; (détecté). */
@@ -72,9 +72,9 @@ export function parseWorkoutsCsv(text: string, resolve: ResolveExercise): Import
   const hevy = col('exercise_title') >= 0;
   const c = hevy
     ? { start: col('start_time'), end: col('end_time'), workout: col('title'), exercise: col('exercise_title'), type: col('set_type'),
-        weight: col('weight_kg'), reps: col('reps'), seconds: col('duration_seconds'), note: col('exercise_notes'), rpe: col('rpe'), duration: -1 }
+        weight: col('weight_kg'), reps: col('reps'), seconds: col('duration_seconds'), note: col('exercise_notes'), rpe: col('rpe'), duration: -1, workoutNote: col('description') }
     : { start: col('Date'), end: -1, workout: col('Workout Name'), exercise: col('Exercise Name'), type: col('Set Order'),
-        weight: col('Weight'), reps: col('Reps'), seconds: col('Seconds'), note: col('Notes'), rpe: col('RPE'), duration: col('Duration') };
+        weight: col('Weight'), reps: col('Reps'), seconds: col('Seconds'), note: col('Notes'), rpe: col('RPE'), duration: col('Duration'), workoutNote: col('Workout Notes') };
   if (c.start < 0 || c.exercise < 0) return [];
 
   const sessions = new Map<string, ImportedSession>();
@@ -89,6 +89,9 @@ export function parseWorkoutsCsv(text: string, resolve: ResolveExercise): Import
       const duration = end ? Math.max(0, Math.round((end.getTime() - date.getTime()) / 1000))
         : c.duration >= 0 ? durationOf(r[c.duration] ?? '') : 0;
       s = { date, duration, exercises: [] };
+      const title = (r[c.workout] ?? '').trim(), note = (r[c.workoutNote] ?? '').trim();
+      if (title && title !== 'Musculation') s.title = title.slice(0, 60); // « Musculation » : titre par défaut de l'export REPS
+      if (note) s.note = note.slice(0, 300);
       sessions.set(key, s);
     }
     const resolved = resolve(exName);

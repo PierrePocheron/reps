@@ -25,6 +25,7 @@ describe('parseWorkoutsCsv', () => {
     expect(parseWorkoutsCsv(csv, resolve)).toHaveLength(1); // ligne « Renforcement » de l'export REPS ignorée
     expect(s!.date).toEqual(new Date(2026, 9, 2, 18, 5));
     expect(s!.duration).toBe(3900);
+    expect(s!.title).toBe('Push'); // titre de séance (#64)
     expect(s!.exercises[0]).toMatchObject({ exerciseId: 'bench_press', name: 'Développé couché', note: 'banc 3',
       sets: [{ weight: 20, reps: 12, completed: true, type: 'warmup' }, { weight: 62.5, reps: 8, completed: true, rpe: 8.5 }] });
     expect(s!.exercises[1]).toMatchObject({ exerciseId: 'import_gainage', timed: true, sets: [{ reps: 60, weight: 0 }] });
@@ -42,10 +43,11 @@ describe('parseWorkoutsCsv', () => {
   });
 
   it("relit l'export de REPS (aller-retour) et ignore les séances déjà présentes", () => {
-    const gym = [{ date: { toDate: () => new Date(2026, 9, 2, 18, 5) }, duration: 3900,
+    const gym = [{ date: { toDate: () => new Date(2026, 9, 2, 18, 5) }, duration: 3900, title: 'Jambes', note: 'bien dormi',
       exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [{ weight: 60, reps: 8, completed: true, actualWeight: 62.5 }] }] }] as unknown as GymSession[];
     const back = parseWorkoutsCsv(sessionsToCsv(gym, []), resolve);
     expect(back[0]!.exercises[0]!.sets).toEqual([{ weight: 62.5, reps: 8, completed: true }]);
+    expect(back[0]).toMatchObject({ title: 'Jambes', note: 'bien dormi' }); // titre et note de séance (#64)
     expect(newSessionsOnly(back, [new Date(2026, 9, 2, 18, 5, 30)])).toEqual([]);
   });
 });

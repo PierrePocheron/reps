@@ -17,11 +17,15 @@ describe('gymSessionStore — séance oubliée (#58)', () => {
       exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [{ weight: 60, reps: 8, completed: true }] }],
     });
     useGymSessionStore.getState().setBackdate({ at, duration: 3600 });
+    useGymSessionStore.getState().setTitle('  Jambes  ');
+    useGymSessionStore.getState().setSessionNote('genou sensible');
     await useGymSessionStore.getState().endSession();
 
     const saved = vi.mocked(createGymSession).mock.calls[0]![1];
     expect(saved.date.toDate().getTime()).toBe(at);
     expect(saved.duration).toBe(3600);
+    expect(saved).toMatchObject({ title: 'Jambes', note: 'genou sensible' }); // #64
+    expect(useGymSessionStore.getState().title).toBe('');
     expect(useGymSessionStore.getState().backdate).toBeNull();
 
     useGymSessionStore.getState().setBackdate({ at: Date.now() + 3_600_000, duration: 60 });

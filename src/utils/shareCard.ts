@@ -16,7 +16,7 @@ const MAX_LINES = 6;
 const num = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
 
 /** Résumé d'une séance muscu : durée, volume, séries, records, meilleure série par exercice. */
-export function gymCard(s: { date: Date; duration: number; exercises: GymSessionExercise[] }): SessionCard {
+export function gymCard(s: { date: Date; duration: number; exercises: GymSessionExercise[]; title?: string }): SessionCard {
   let volume = 0, sets = 0, records = 0;
   const lines = s.exercises.flatMap((ex) => {
     const done = ex.sets.filter(isWorkSet);
@@ -38,7 +38,7 @@ export function gymCard(s: { date: Date; duration: number; exercises: GymSession
     { label: 'Séries', value: String(sets) },
   ];
   if (records > 0) stats.push({ label: records > 1 ? 'Records' : 'Record', value: `🏆 ${records}` });
-  return { title: 'Séance muscu', date: s.date, stats, lines: lines.slice(0, MAX_LINES), more: Math.max(0, lines.length - MAX_LINES) };
+  return { title: s.title?.trim() || 'Séance muscu', date: s.date, stats, lines: lines.slice(0, MAX_LINES), more: Math.max(0, lines.length - MAX_LINES) };
 }
 
 /** Résumé d'une séance renfo : durée, reps, calories, reps par exercice. */

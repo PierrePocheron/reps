@@ -104,6 +104,8 @@ export interface GymSessionExercise {
 // Séance musculation (collection séparée dans Firestore)
 export interface GymSession {
   sessionId: string;
+  title?: string; // « Push », « Jambes »… repris du modèle (#64)
+  note?: string;  // note de séance (#64)
   userId: string;
   date: Timestamp;
   duration: number;       // secondes

@@ -85,6 +85,10 @@ function GymSession() {
     replaceExercise,
     backdate,
     setBackdate,
+    title,
+    setTitle,
+    sessionNote,
+    setSessionNote,
     startExecution,
     dismissRestTimer,
     setRestDuration,
@@ -257,7 +261,7 @@ function GymSession() {
     const duration = backdate ? backdate.duration : startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
     const sum = gymSummary(exercises, gymHistory);
     setSummary({
-      card: gymCard({ date: new Date(backdate?.at ?? Date.now()), duration, exercises }),
+      card: gymCard({ date: new Date(backdate?.at ?? Date.now()), duration, exercises, title }),
       comparison: comparisonText(sum.deltaPct),
       stats: [
         { label: 'Durée', value: formatDurationLong(duration) },
@@ -455,6 +459,15 @@ function GymSession() {
       {/* Liste complète des exercices */}
       {/* Marge sous la barre flottante : plus haute avec le minuteur de repos ouvert, sinon il cache le bas de la liste */}
       <div className={cn('p-4 max-w-2xl mx-auto space-y-4', showRestTimer ? 'pb-[22rem]' : 'pb-48')}>
+        {/* Titre de séance (#64) : repris du modèle, modifiable */}
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          maxLength={60}
+          placeholder="Titre de la séance (facultatif)"
+          aria-label="Titre de la séance"
+          className="w-full min-h-11 bg-transparent text-lg font-bold placeholder:text-base placeholder:font-medium placeholder:text-muted-foreground/70 border-b border-dashed border-border focus:border-primary focus:outline-none"
+        />
         {exercises.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 space-y-4 text-center">
             <div className="bg-blue-500/10 p-4 rounded-full">
@@ -537,6 +550,14 @@ function GymSession() {
           <Plus className="h-4 w-4" />
           Ajouter un exercice
         </button>
+        <input
+          value={sessionNote}
+          onChange={(e) => setSessionNote(e.target.value)}
+          maxLength={NOTE_MAX}
+          placeholder="Note de séance (forme, sommeil, sensations…)"
+          aria-label="Note de séance"
+          className="w-full min-h-11 bg-transparent text-sm placeholder:text-muted-foreground/70 border-b border-dashed border-border focus:border-primary focus:outline-none"
+        />
         {/* Séance oubliée (#58) : la saisir maintenant, l'enregistrer à sa vraie date */}
         <button type="button" onClick={() => setShowBackdate(true)} className="mx-auto block min-h-11 px-3 text-xs font-medium text-muted-foreground hover:text-primary">
           {backdate

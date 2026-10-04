@@ -128,7 +128,7 @@ export async function updateGymSession(userId: string, sessionId: string, exerci
 }
 
 /** Importer des séances (export Strong / Hevy, #61), par lots de 400 écritures (limite Firestore : 500). */
-export async function importGymSessions(userId: string, sessions: { date: Date; duration: number; exercises: GymSessionExercise[] }[]): Promise<void> {
+export async function importGymSessions(userId: string, sessions: { date: Date; duration: number; exercises: GymSessionExercise[]; title?: string; note?: string }[]): Promise<void> {
   const ref = collection(db, 'gym_sessions', userId, 'userGymSessions');
   for (let i = 0; i < sessions.length; i += 400) {
     const batch = writeBatch(db);
@@ -139,6 +139,8 @@ export async function importGymSessions(userId: string, sessions: { date: Date; 
         date: Timestamp.fromDate(s.date),
         duration: s.duration,
         exercises,
+        ...(s.title ? { title: s.title } : {}),
+        ...(s.note ? { note: s.note } : {}),
         totalVolume: Math.round(calculateTotalVolume(exercises)),
         totalSets: exercises.reduce((n, ex) => n + ex.sets.filter(isWorkSet).length, 0),
         createdAt: Timestamp.now(),

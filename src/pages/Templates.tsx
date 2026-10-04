@@ -153,7 +153,7 @@ function Templates() {
         sets: me.sets.map((s) => ({ ...s, completed: false })),
       };
     });
-    loadGymTemplate(gymExercises);
+    loadGymTemplate(gymExercises, template.name);
     startExecution();
     navigate('/gym');
   };

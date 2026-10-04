@@ -56,6 +56,7 @@ const steps = [
     await page.waitForURL(`${BASE}/gym`);
     const note = `e2e ${Date.now()}`;
     await page.getByRole('textbox', { name: /^Note pour/ }).first().fill(note);
+    await page.getByRole('textbox', { name: 'Titre de la séance' }).fill('Haut du corps e2e'); // titre (#64)
     await page.getByRole('button', { name: 'Valider la série 1' }).first().click();
     await page.getByRole('switch', { name: /Repos auto/ }).waitFor(); // le repos s'est lancé tout seul
     // la barre « minuteur + Terminer » doit rester fixée à l'écran (un parent transformé la renvoyait en bas du contenu)
@@ -71,6 +72,7 @@ const steps = [
     await assertAlive('fin de séance muscu');
     await page.goto(`${BASE}/history`);
     await page.getByText(`« ${note} »`).waitFor();
+    await page.getByText('Haut du corps e2e').first().waitFor(); // titre affiché sur la carte
   }],
 
   ['séance renfo : refaire, compter, terminer', async () => {
