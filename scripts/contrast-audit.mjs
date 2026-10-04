@@ -1,5 +1,6 @@
 /**
- * Audit de contraste WCAG AA (4,5:1, 3:1 pour le grand texte) sur les écrans principaux, en clair et en sombre.
+ * Audit de contraste WCAG AA (4,5:1, 3:1 pour le grand texte) sur les écrans principaux, en clair et en sombre,
+ * et contrôles sans nom accessible (WCAG 4.1.2 : bouton-icône sans aria-label, champ sans libellé).
  * Prérequis : `yarn dev:demo` lancé. Usage : `yarn a11y` (code de sortie ≠ 0 s'il reste des échecs).
  */
 import { chromium } from 'playwright';
@@ -49,7 +50,19 @@ const audit = () => p.evaluate(() => {
   return [...out.keys()].slice(0, 25);
 });
 if (themeName) await pickTheme(p, themeName);
-const run = audit;
+// interactive elements a screen reader would announce without a name
+const unnamed = () => p.evaluate(() => {
+  const name = (el) => (el.getAttribute('aria-label') || '').trim()
+    || (el.getAttribute('aria-labelledby') || '').split(' ').map((id) => document.getElementById(id)?.textContent ?? '').join('').trim()
+    || (el.textContent || '').trim() || (el.getAttribute('title') || '').trim();
+  return [...document.querySelectorAll('button, a[href], [role=button], [role=switch], [role=tab], input:not([type=hidden]), select, textarea')]
+    .filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !el.closest('[aria-hidden=true]'); })
+    .filter((el) => (['INPUT', 'SELECT', 'TEXTAREA'].includes(el.tagName)
+      ? !(el.getAttribute('aria-label') || (el.id && document.querySelector(`label[for="${el.id}"]`)) || el.closest('label') || el.getAttribute('aria-labelledby') || el.getAttribute('placeholder'))
+      : !name(el)))
+    .map((el) => `sans nom : ${el.outerHTML.slice(0, 90).replace(/\s+/g, ' ')}`);
+});
+const run = async () => [...await audit(), ...await unnamed()];
 for (const path of ['/', '/statistics', '/history', '/profil', '/settings', '/challenges', '/leaderboard']) {
   await p.goto('http://localhost:5199' + path); await p.waitForTimeout(2200);
   const r = await run(); failures += r.length; if (r.length) console.log(`\n== ${scheme} ${path}\n` + r.join('\n'));
@@ -68,5 +81,5 @@ if (themeName) await pickTheme(p, 'Violet');
 await ctx.close();
 }
 await b.close();
-console.log(failures ? `\n✗ ${failures} texte(s) sous le contraste AA${THEME ? ` (thème ${THEME})` : ''}` : `✓ contraste AA respecté (clair et sombre${THEME ? `, thème ${THEME}` : ''})`);
+console.log(failures ? `\n✗ ${failures} problème(s) d'accessibilité (contraste AA ou nom manquant)${THEME ? ` (thème ${THEME})` : ''}` : `✓ contraste AA et noms accessibles respectés (clair et sombre${THEME ? `, thème ${THEME}` : ''})`);
 process.exit(failures ? 1 : 0);

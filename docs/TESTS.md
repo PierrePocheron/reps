@@ -62,10 +62,11 @@ yarn e2e        # terminal 2
 
 À lancer avant chaque PR vers `main`.
 
-### Audit de contraste (`yarn a11y`)
+### Audit d'accessibilité (`yarn a11y`)
 
 `scripts/contrast-audit.mjs` calcule le contraste de chaque texte visible (WCAG AA : 4,5:1, 3:1 pour le grand texte)
-sur 8 écrans, en clair et en sombre, avec les fonds réels (transparences comprises). Démo lancée, puis `yarn a11y`.
+sur 8 écrans, en clair et en sombre, avec les fonds réels (transparences comprises), et repère les contrôles sans nom
+accessible (bouton-icône sans `aria-label`, champ sans libellé). Démo lancée, puis `yarn a11y`.
 Par défaut il audite le violet du compte démo ; `A11Y_THEME=blue yarn a11y` (ou `red`, `green`…) choisit une autre
 couleur dans Réglages (puis remet le violet). Le texte d'accent passe pour tous les thèmes ; restent les **textes blancs
 sur fond de couleur** (boutons) des thèmes autres que violet, en attente d'une décision de palette (#67).
