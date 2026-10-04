@@ -44,7 +44,7 @@ import { gymSummary, comparisonText } from '@/utils/summary';
 import { formatDurationLong, plural, frDate } from '@/utils/formatters';
 import { SessionSummary, type SummaryStat } from '@/components/SessionSummary';
 import { BackdateDialog } from '@/components/BackdateDialog';
-import { lastWorkSets, suggestNextWeight, type LoadSuggestion } from '@/utils/progression';
+import { isLoadSet, lastWorkSets, suggestNextWeight, type LoadSuggestion } from '@/utils/progression';
 import { loadPlatePrefs, warmupSets } from '@/utils/plates';
 import { restAfterSet, supersetLetters } from '@/utils/superset';
 import { cn } from '@/utils/cn';
@@ -505,7 +505,7 @@ function GymSession() {
             onToggleTimed={() => toggleTimed(exercise.exerciseId)}
             previousSets={lastWorkSets(gymHistory, exercise.exerciseId)}
             onApplySuggestion={(s) => exercise.sets.forEach((set, i) => {
-              if (!set.completed && set.type !== 'warmup' && (set.actualWeight ?? set.weight) < s.to) updateSet(exercise.exerciseId, i, { weight: s.to, actualWeight: s.to });
+              if (!set.completed && isLoadSet(set) && (set.actualWeight ?? set.weight) < s.to) updateSet(exercise.exerciseId, i, { weight: s.to, actualWeight: s.to }); // a planned drop set keeps its lighter load
             })}
             onNoteChange={(note) => setExerciseNote(exercise.exerciseId, note)}
             onAddSet={(exerciseId) => {
@@ -930,7 +930,7 @@ function ExecuteExerciseCard({
 
       <div className="p-3 space-y-2">
         {/* Surcharge progressive : proposée tant qu'une série de travail reste sous la charge suggérée */}
-        {suggestion && exercise.sets.some((st) => !st.completed && st.type !== 'warmup' && (st.actualWeight ?? st.weight) < suggestion.to) && (
+        {suggestion && exercise.sets.some((st) => !st.completed && isLoadSet(st) && (st.actualWeight ?? st.weight) < suggestion.to) && (
           <div className="flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2">
             <TrendingUp className="h-4 w-4 text-primary flex-shrink-0" aria-hidden />
             <p className="flex-1 text-xs">

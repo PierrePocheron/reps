@@ -1,6 +1,6 @@
 import exerciseDetails from '@/data/exerciseDetails.json';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
-import type { GymSession } from '@/firebase/types';
+import type { GymSession, PlannedSet } from '@/firebase/types';
 
 const DETAILS = exerciseDetails as Record<string, { target: string }>;
 const SMALL_MUSCLES = new Set(['delts', 'biceps', 'triceps']);
@@ -11,6 +11,9 @@ export function incrementFor(exerciseId: string): number {
   const category = MUSCULATION_EXERCISES.find((e) => e.id === exerciseId)?.category;
   return (target && SMALL_MUSCLES.has(target)) || category === 'arms' || category === 'shoulders' ? 1.25 : 2.5;
 }
+
+/** Série qui compte pour la charge à suggérer : ni échauffement, ni dégressive (allégée exprès, souvent jusqu'à l'échec). */
+export const isLoadSet = (s: Pick<PlannedSet, 'type'>) => s.type !== 'warmup' && s.type !== 'drop';
 
 export interface LoadSuggestion {
   from: number;        // charge de travail de la dernière séance
@@ -27,7 +30,7 @@ export function suggestNextWeight(history: GymSession[], exerciseId: string): Lo
   for (const session of history) {
     const ex = session.exercises.find((e) => e.exerciseId === exerciseId);
     if (!ex) continue;
-    const work = ex.sets.filter((s) => s.type !== 'warmup');
+    const work = ex.sets.filter(isLoadSet);
     if (work.length === 0) continue;
     const allHit = work.every((s) => s.completed && (s.actualReps ?? s.reps) >= s.reps);
     const from = Math.max(...work.map((s) => s.actualWeight ?? s.weight));

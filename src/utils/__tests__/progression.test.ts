@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { suggestNextWeight, incrementFor, lastWorkSets, templateFromSession, redoExercises } from '../progression';
+import { suggestNextWeight, incrementFor, lastWorkSets, templateFromSession, redoExercises, isLoadSet } from '../progression';
 import type { GymSession, PlannedSet } from '@/firebase/types';
 
 const session = (exerciseId: string, sets: PlannedSet[]) =>
@@ -15,6 +15,12 @@ describe('suggestNextWeight', () => {
   it('une série ratée ou non validée → pas de suggestion', () => {
     expect(suggestNextWeight([session('bench_press', [done(80, 8), done(80, 8, 6)])], 'bench_press')).toBeNull();
     expect(suggestNextWeight([session('bench_press', [done(80, 8), { weight: 80, reps: 8, completed: false }])], 'bench_press')).toBeNull();
+  });
+
+  it('une série dégressive ne compte pas pour la charge (ni dans le résumé, ni ratée)', () => {
+    const h = [session('bench_press', [done(100, 5), done(100, 5), done(100, 5), { ...done(60, 12, 8), type: 'drop' }])];
+    expect(suggestNextWeight(h, 'bench_press')).toMatchObject({ from: 100, to: 102.5, summary: '3 × 5 à 100 kg' });
+    expect([isLoadSet({ type: 'drop' }), isLoadSet({ type: 'warmup' }), isLoadSet({ type: 'failure' }), isLoadSet({})]).toEqual([false, false, true, true]);
   });
 
   it('se base sur la dernière séance contenant l\'exercice', () => {
