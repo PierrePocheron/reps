@@ -20,7 +20,8 @@ bash scripts/build-android-release.sh # AAB signé à uploader dans la Play Cons
 ```
 
 Avant la release : règles Firestore à jour déployées si elles ont changé, captures store régénérées si l'interface
-a changé (`yarn store:screenshots`). Publication sur les stores et prérequis : [DEPLOY.md](DEPLOY.md).
+a changé (`yarn store:screenshots`), `yarn audit --groups dependencies` relancé (ne compte que ce qui part dans
+l'appli : la plupart des alertes viennent de l'outillage ou des versions Node de Firebase, voir #68). Publication sur les stores et prérequis : [DEPLOY.md](DEPLOY.md).
 
 Le `versionCode` Android est dérivé de la version (`1.2.3` → `10203`), donc toujours croissant.
 
