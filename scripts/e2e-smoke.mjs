@@ -238,6 +238,29 @@ const steps = [
     await assertAlive('suppression de séance');
   }],
 
+  ['importer un CSV Strong (aperçu, import, pas de doublon)', async () => {
+    // date passée unique à chaque exécution : n'interfère ni avec la série ni avec les séances récentes
+    const m = new Date().getMinutes(), h = new Date().getHours();
+    const csv = ['Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE',
+      `2025-03-15 ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00,Push,0h 45m,Développé couché,1,40,10,,,,,`,
+      `2025-03-15 ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00,Push,0h 45m,Machine inconnue e2e,1,20,12,,,,,`].join('\n');
+    const file = { name: 'strong.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) };
+    await page.goto(`${BASE}/settings`);
+    const btn = page.getByRole('button', { name: /Importer depuis Strong ou Hevy/ });
+    await btn.waitFor();
+    for (let i = 0; i < 50 && await btn.isDisabled(); i++) await page.waitForTimeout(100); // historique chargé
+    await page.locator('input[type=file][accept*=csv]').setInputFiles(file);
+    const dialog = page.getByRole('dialog');
+    await dialog.getByText(/1 séance du 15\/03\/2025/).waitFor();
+    await dialog.getByText(/1\/2 exercices reconnus/).waitFor();
+    await dialog.getByRole('button', { name: 'Importer' }).click();
+    await page.getByText('1 séance importée').first().waitFor();
+    await page.locator('input[type=file][accept*=csv]').setInputFiles(file); // réimport : déjà là
+    await page.getByRole('dialog').getByText(/déjà dans ton historique/).waitFor();
+    await page.getByRole('dialog').getByRole('button', { name: 'Annuler' }).click();
+    await assertAlive('import CSV');
+  }],
+
   ['petit écran (320 px) : rien ne déborde', async () => {
     await page.keyboard.press('Escape');
     await page.setViewportSize({ width: 320, height: 640 });

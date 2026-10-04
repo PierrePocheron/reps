@@ -9,6 +9,7 @@ import {
   deleteDoc,
   doc,
   updateDoc,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from './config';
 import type { GymSession, GymSessionExercise } from './types';
@@ -124,6 +125,27 @@ export async function updateGymSession(userId: string, sessionId: string, exerci
   };
   await updateDoc(doc(db, 'gym_sessions', userId, 'userGymSessions', sessionId), fields);
   return fields;
+}
+
+/** Importer des séances (export Strong / Hevy, #61), par lots de 400 écritures (limite Firestore : 500). */
+export async function importGymSessions(userId: string, sessions: { date: Date; duration: number; exercises: GymSessionExercise[] }[]): Promise<void> {
+  const ref = collection(db, 'gym_sessions', userId, 'userGymSessions');
+  for (let i = 0; i < sessions.length; i += 400) {
+    const batch = writeBatch(db);
+    for (const s of sessions.slice(i, i + 400)) {
+      const exercises = sanitizeExercises(s.exercises);
+      batch.set(doc(ref), {
+        userId,
+        date: Timestamp.fromDate(s.date),
+        duration: s.duration,
+        exercises,
+        totalVolume: Math.round(calculateTotalVolume(exercises)),
+        totalSets: exercises.reduce((n, ex) => n + ex.sets.filter(isWorkSet).length, 0),
+        createdAt: Timestamp.now(),
+      });
+    }
+    await batch.commit();
+  }
 }
 
 /** Supprimer une séance muscu (#56) : le classement et le fil lisent les séances en direct ; stats à recalculer. */

@@ -8,7 +8,12 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { useTheme } from '@/hooks/useTheme';
 import { useSettingsStore, type LanguageSetting } from '@/store/settingsStore';
 import { detectDeviceLanguage } from '@/hooks/useLanguage';
-import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2, Shield, ChevronRight, Target, Download, Languages, Loader2 } from 'lucide-react';
+import { Moon, Sun, Monitor, Bell, Vibrate, Dumbbell, Volume2, Shield, ChevronRight, Target, Download, Upload, Languages, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { parseWorkoutsCsv, newSessionsOnly, exerciseResolver, type ImportedSession } from '@/utils/importCsv';
+import { importGymSessions } from '@/firebase/gymSessions';
+import { loadExerciseLibrary, toExercise } from '@/utils/exerciseLibrary';
+import { MUSCULATION_EXERCISES } from '@/utils/constants';
 import { useUserStore } from '@/store/userStore';
 import { cn } from '@/utils/cn';
 import { useNavigate } from 'react-router-dom';
@@ -40,7 +45,46 @@ function Settings() {
   const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, weeklyGoal, language, streakMode, keepAwake, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled, setWeeklyGoal, setLanguage, setStreakMode, setKeepAwake } = useSettingsStore();
   const deviceLanguage = detectDeviceLanguage();
   const { scheduleDailyReminder, cancelReminder } = useNotifications();
-  const { sessions, gymSessions, loading: historyLoading } = useSessionHistory(500);
+  const { sessions, gymSessions, loading: historyLoading, refetch: refetchHistory } = useSessionHistory(500);
+  // Import d'un export Strong / Hevy (#61) : aperçu, puis confirmation
+  const csvInput = useRef<HTMLInputElement>(null);
+  const [importPreview, setImportPreview] = useState<{ sessions: ImportedSession[]; skipped: number; exercises: number; known: number } | null>(null);
+  const [importing, setImporting] = useState(false);
+  const refreshStats = useUserStore((st) => st.refreshStats);
+  const onPickCsv = async (file: File) => {
+    try {
+      const [fr, en] = await Promise.all([loadExerciseLibrary('fr'), loadExerciseLibrary('en')]);
+      const known = [...MUSCULATION_EXERCISES, ...[...fr, ...en].map((e) => toExercise(e))].map((e) => ({ id: e.id, name: e.name, emoji: e.emoji }));
+      const all = parseWorkoutsCsv(await file.text(), exerciseResolver(known));
+      if (all.length === 0) {
+        toast({ title: 'Aucune séance trouvée', description: "Ce fichier n'est pas un export Strong ou Hevy.", variant: 'destructive' });
+        return;
+      }
+      const fresh = newSessionsOnly(all, gymSessions.map((s) => s.date.toDate()));
+      const ids = new Set(fresh.flatMap((s) => s.exercises.map((e) => e.exerciseId)));
+      setImportPreview({ sessions: fresh, skipped: all.length - fresh.length, exercises: ids.size, known: [...ids].filter((id) => !id.startsWith('import_')).length });
+    } catch (err) {
+      logger.error('Lecture du CSV :', err);
+      toast({ title: 'Erreur', description: 'Impossible de lire ce fichier', variant: 'destructive' });
+    }
+  };
+  const confirmImport = async () => {
+    if (!importPreview || !user) return;
+    setImporting(true);
+    try {
+      await importGymSessions(user.uid, importPreview.sessions);
+      toast({ title: `${importPreview.sessions.length} séance${importPreview.sessions.length > 1 ? 's' : ''} importée${importPreview.sessions.length > 1 ? 's' : ''}` });
+      setImportPreview(null);
+      refetchHistory();
+      await updateUserStatsAfterSession(user.uid, 0); // série, totaux et badges comptent l'historique importé
+      await refreshStats();
+    } catch (err) {
+      logger.error('Import CSV :', err);
+      toast({ title: 'Erreur', description: "L'import n'a pas abouti", variant: 'destructive' });
+    } finally {
+      setImporting(false);
+    }
+  };
   const [exporting, setExporting] = useState(false);
   const { autoRest, setAutoRest, showRpe, setShowRpe, suggestLoad, setSuggestLoad } = useGymSessionStore();
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
@@ -470,6 +514,22 @@ function Settings() {
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </button>
             <button
+              onClick={() => csvInput.current?.click()}
+              disabled={historyLoading || importing} // l'historique sert à écarter les doublons
+              className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 active:bg-muted transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+            >
+              <div className="flex items-center gap-3">
+                {importing ? <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" /> : <Upload className="h-5 w-5 text-muted-foreground" />}
+                <div className="text-left">
+                  <p className="font-medium text-sm">Importer depuis Strong ou Hevy (CSV)</p>
+                  <p className="text-xs text-muted-foreground">Reprends tout ton historique de musculation</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </button>
+            <input ref={csvInput} type="file" accept=".csv,text/csv" className="hidden" aria-hidden tabIndex={-1}
+              onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void onPickCsv(f); }} />
+            <button
               onClick={() => navigate('/privacy-policy')}
               className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 active:bg-muted transition-colors rounded-b-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
@@ -491,6 +551,25 @@ function Settings() {
 
       </div>
       {showQuestionnaire && <StartQuestionnaire onDone={() => setShowQuestionnaire(false)} />}
+      <Dialog open={!!importPreview} onOpenChange={(open) => !open && !importing && setImportPreview(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Importer ton historique ?</DialogTitle>
+            <DialogDescription>
+              {importPreview && importPreview.sessions.length > 0
+                ? `${importPreview.sessions.length} séance${importPreview.sessions.length > 1 ? 's' : ''} du ${importPreview.sessions[0]!.date.toLocaleDateString('fr-FR')} au ${importPreview.sessions[importPreview.sessions.length - 1]!.date.toLocaleDateString('fr-FR')} · ${importPreview.known}/${importPreview.exercises} exercices reconnus (les autres deviennent des exercices perso) · charges lues en kg.`
+                : 'Toutes les séances de ce fichier sont déjà dans ton historique.'}
+              {importPreview && importPreview.skipped > 0 && ` ${importPreview.skipped} déjà présente${importPreview.skipped > 1 ? 's' : ''}, ignorée${importPreview.skipped > 1 ? 's' : ''}.`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1 min-h-11" onClick={() => setImportPreview(null)} disabled={importing}>Annuler</Button>
+            <Button className="flex-1 min-h-11" onClick={() => void confirmImport()} disabled={importing || !importPreview?.sessions.length}>
+              {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Importer'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 }
