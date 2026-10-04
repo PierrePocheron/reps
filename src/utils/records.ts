@@ -1,4 +1,4 @@
-import type { GymSession, PlannedSet } from '@/firebase/types';
+import type { GymSession, GymSessionExercise, PlannedSet } from '@/firebase/types';
 
 /** Série de travail validée : l'échauffement ne compte ni dans le volume, ni dans les records, ni dans les stats. */
 export const isWorkSet = (s: Pick<PlannedSet, 'completed' | 'type'>) => s.completed && s.type !== 'warmup';
@@ -48,4 +48,24 @@ export function exerciseHistory(sessions: GymSession[], exerciseId: string): Exe
     points.push({ date: session.date.toDate(), e1rm, bestWeight, volume });
   }
   return points.sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
+/**
+ * Trophées d'une séance modifiée (#57), mêmes règles qu'en direct : une série de travail est un record si elle bat
+ * le meilleur 1RM estimé des séances précédentes (puis des séries d'avant dans la séance) ; pas d'historique = pas de record.
+ */
+export function markRecords(exercises: GymSessionExercise[], older: GymSession[]): GymSessionExercise[] {
+  const best = bestE1RMByExercise(older);
+  return exercises.map((ex) => {
+    let top = best[ex.exerciseId];
+    return {
+      ...ex,
+      sets: ex.sets.map((s) => {
+        const e = estimate1RM(s.actualWeight ?? s.weight, s.actualReps ?? s.reps);
+        const isRecord = isWorkSet(s) && top !== undefined && e > top;
+        if (isRecord) top = e;
+        return { ...s, isRecord };
+      }),
+    };
+  });
 }

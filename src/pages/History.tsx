@@ -9,14 +9,16 @@ import { useGymSessionStore } from '@/store/gymSessionStore';
 import { useSessionStore } from '@/store/sessionStore';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy, RotateCcw, Share2, BookmarkPlus, Trash2, Loader2 } from 'lucide-react';
+import { Activity, Flame, Zap, Dumbbell, Weight, Clock, Trophy, RotateCcw, Share2, BookmarkPlus, Trash2, Loader2, MoreVertical, Pencil } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { EditGymSessionDialog } from '@/components/EditGymSessionDialog';
 import { deleteSession, updateUserStatsAfterSession } from '@/firebase/firestore';
-import { deleteGymSession } from '@/firebase/gymSessions';
+import { deleteGymSession, updateGymSession } from '@/firebase/gymSessions';
 import { logger } from '@/utils/logger';
 import { gymCard, renfoCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
 import type { Session, GymSession } from '@/firebase/types';
 import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
-import { estimate1RM, exerciseHistory, isWorkSet } from '@/utils/records';
+import { estimate1RM, exerciseHistory, isWorkSet, markRecords } from '@/utils/records';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useUserStore } from '@/store/userStore';
@@ -55,18 +57,32 @@ interface PersonalRecord {
 
 // ─── Renforcement Card ────────────────────────────────────────────────────────
 
-/** Corbeille d'une carte de l'historique (#56) : ouvre la confirmation. */
-function DeleteButton({ onClick }: { onClick: () => void }) {
+/** Actions d'une carte de l'historique, regroupées comme chez Hevy : modifier (#57), modèle (#48), supprimer (#56). */
+function CardMenu({ onEdit, onSaveTemplate, onDelete }: { onEdit?: () => void; onSaveTemplate?: () => void; onDelete: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label="Supprimer cette séance"
-      title="Supprimer"
-      className="h-11 w-11 -my-2 -mr-2 flex items-center justify-center rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-    >
-      <Trash2 className="h-4 w-4" />
-    </button>
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <button type="button" aria-label="Actions de la séance"
+          className="h-11 w-11 -my-2 -mr-2 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
+          <MoreVertical className="h-4 w-4" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {onEdit && (
+          <DropdownMenuItem className="cursor-pointer min-h-11" onClick={onEdit}>
+            <Pencil className="mr-2 h-4 w-4" /> Modifier
+          </DropdownMenuItem>
+        )}
+        {onSaveTemplate && (
+          <DropdownMenuItem className="cursor-pointer min-h-11" onClick={onSaveTemplate}>
+            <BookmarkPlus className="mr-2 h-4 w-4" /> Enregistrer comme modèle
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem className="cursor-pointer min-h-11 text-destructive focus:text-destructive" onClick={onDelete}>
+          <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -101,7 +117,7 @@ function RenforcementCard({ session, onRedo, onShare, onDelete }: { session: Ses
                 <Clock className="h-3 w-3 text-muted-foreground" />
                 <span className="text-xs font-medium">{formatDurationLong(session.duration)}</span>
               </div>
-              <DeleteButton onClick={onDelete} />
+              <CardMenu onDelete={onDelete} />
             </div>
           </div>
 
@@ -142,7 +158,7 @@ function RenforcementCard({ session, onRedo, onShare, onDelete }: { session: Ses
 
 // ─── Musculation Card ─────────────────────────────────────────────────────────
 
-function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelete }: { session: GymSession; imageMap: Record<string, string>; onRedo: () => void; onShare: () => void; onSaveTemplate: () => void; onDelete: () => void }) {
+function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelete, onEdit }: { session: GymSession; imageMap: Record<string, string>; onRedo: () => void; onShare: () => void; onSaveTemplate: () => void; onDelete: () => void; onEdit: () => void }) {
   const [expanded, setExpanded] = useState(false);
   const date = session.date.toDate();
   const completedSets = session.exercises.reduce(
@@ -165,16 +181,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
                 <Clock className="h-3 w-3 text-muted-foreground" />
                 <span className="text-xs font-medium">{formatDurationLong(session.duration)}</span>
               </div>
-              <button
-                type="button"
-                onClick={onSaveTemplate}
-                aria-label="Enregistrer cette séance comme modèle"
-                title="Enregistrer comme modèle"
-                className="h-11 w-11 -my-2 -mr-2 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
-              >
-                <BookmarkPlus className="h-4 w-4" />
-              </button>
-              <DeleteButton onClick={onDelete} />
+              <CardMenu onEdit={onEdit} onSaveTemplate={onSaveTemplate} onDelete={onDelete} />
             </div>
           </div>
 
@@ -316,7 +323,12 @@ function History() {
   // Séances supprimées (#56) : retirées tout de suite, sans recharger la liste (pas de clignotement)
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
   const sessions = useMemo(() => history.sessions.filter((s) => !deletedIds.includes(s.sessionId)), [history.sessions, deletedIds]);
-  const gymSessions = useMemo(() => history.gymSessions.filter((s) => !deletedIds.includes(s.sessionId)), [history.gymSessions, deletedIds]);
+  // Séances modifiées (#57) : appliquées tout de suite, sans recharger
+  const [edits, setEdits] = useState<Record<string, Pick<GymSession, 'exercises' | 'totalVolume' | 'totalSets'>>>({});
+  const gymSessions = useMemo(() => history.gymSessions
+    .filter((s) => !deletedIds.includes(s.sessionId))
+    .map((s) => (edits[s.sessionId] ? { ...s, ...edits[s.sessionId] } : s)), [history.gymSessions, deletedIds, edits]);
+  const [toEdit, setToEdit] = useState<GymSession | null>(null);
   const { imageMap, infoMap } = useExerciseImages();
   const navigate = useNavigate();
   const [detailPr, setDetailPr] = useState<PersonalRecord | null>(null);
@@ -328,6 +340,20 @@ function History() {
   // Suppression d'une séance (#56) : confirmation, puis stats, série et totaux recalculés
   const [toDelete, setToDelete] = useState<{ kind: 'gym' | 'renfo'; id: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const saveEdit = async (exercises: GymSession['exercises']) => {
+    if (!toEdit || !user) return;
+    try {
+      // Trophées recalculés par rapport aux séances précédentes, comme en direct
+      const older = gymSessions.filter((s) => s.date.toMillis() < toEdit.date.toMillis());
+      const fields = await updateGymSession(user.uid, toEdit.sessionId, markRecords(exercises, older));
+      setEdits((e) => ({ ...e, [toEdit.sessionId]: fields }));
+      setToEdit(null);
+      toast({ title: 'Séance modifiée' });
+    } catch (err) {
+      logger.error('Modification de séance :', err);
+      toast({ title: 'Erreur', description: 'Impossible de modifier la séance', variant: 'destructive' });
+    }
+  };
   const confirmDelete = async () => {
     if (!toDelete || !user) return;
     setDeleting(true);
@@ -521,7 +547,8 @@ function History() {
                 <MuscuCard key={s.sessionId} session={s} imageMap={imageMap} onRedo={() => redoGym(s)}
                   onSaveTemplate={() => { setSaveAsTemplate(s); setTemplateName(`Séance du ${s.date.toDate().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`); }}
                   onShare={() => share(gymCard({ date: s.date.toDate(), duration: s.duration, exercises: s.exercises }))}
-                  onDelete={() => setToDelete({ kind: 'gym', id: s.sessionId })} />
+                  onDelete={() => setToDelete({ kind: 'gym', id: s.sessionId })}
+                  onEdit={() => setToEdit(s)} />
               ))}
             </div>
           )
@@ -591,6 +618,7 @@ function History() {
           <Button className="w-full min-h-11" onClick={saveTemplate} disabled={!templateName.trim()}>Enregistrer</Button>
         </DialogContent>
       </Dialog>
+      {toEdit && <EditGymSessionDialog session={toEdit} onCancel={() => setToEdit(null)} onSave={saveEdit} />}
       <Dialog open={!!toDelete} onOpenChange={(open) => !open && !deleting && setToDelete(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>

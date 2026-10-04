@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Exercise, GymSessionExercise, PlannedSet } from '@/firebase/types';
 import { Timestamp } from 'firebase/firestore';
-import { createGymSession, calculateTotalVolume } from '@/firebase/gymSessions';
+import { createGymSession, calculateTotalVolume, sanitizeExercises, NOTE_MAX } from '@/firebase/gymSessions';
 import { updateUserStatsAfterSession } from '@/firebase/firestore';
 import { isWorkSet } from '@/utils/records';
 import { toggleSupersetLink, swapWithNext } from '@/utils/superset';
@@ -11,7 +11,7 @@ import { scheduleRestEnd, cancelRestEnd } from '@/utils/restNotification';
 import { useUserStore } from './userStore';
 
 export type GymPhase = 'idle' | 'plan' | 'execute';
-export const NOTE_MAX = 300;
+export { NOTE_MAX };
 
 interface GymSessionState {
   // État
@@ -257,25 +257,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
       const totalVolume = calculateTotalVolume(exercises);
       const totalSets = exercises.reduce((sum, ex) => sum + ex.sets.filter(isWorkSet).length, 0);
 
-      // Firestore rejette les valeurs `undefined` — on les retire
-      const sanitizedExercises = exercises.map((ex) => ({
-        exerciseId: ex.exerciseId,
-        name: ex.name,
-        emoji: ex.emoji,
-        ...(ex.imageUrl ? { imageUrl: ex.imageUrl } : {}),
-        ...(ex.note?.trim() ? { note: ex.note.trim().slice(0, NOTE_MAX) } : {}),
-        ...(ex.supersetId ? { supersetId: ex.supersetId } : {}),
-        sets: ex.sets.map((s) => ({
-          reps: s.reps,
-          weight: s.weight,
-          completed: s.completed,
-          ...(s.actualReps !== undefined ? { actualReps: s.actualReps } : {}),
-          ...(s.actualWeight !== undefined ? { actualWeight: s.actualWeight } : {}),
-          ...(s.isRecord ? { isRecord: true } : {}), // trophée et records sur la carte partagée depuis l'historique
-          ...(s.rpe ? { rpe: s.rpe } : {}),
-          ...(s.type ? { type: s.type } : {}),
-        })),
-      }));
+      const sanitizedExercises = sanitizeExercises(exercises);
 
       await createGymSession(currentUser.uid, {
         userId: currentUser.uid,

@@ -152,17 +152,31 @@ const steps = [
     await assertAlive('records');
   }],
 
+  ['modifier une séance (charge corrigée, carte à jour)', async () => {
+    await page.goto(`${BASE}/history`);
+    await page.getByRole('tab', { name: /Muscu/ }).click();
+    await page.getByRole('button', { name: 'Actions de la séance' }).first().click();
+    await page.getByRole('menuitem', { name: 'Modifier' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByRole('spinbutton', { name: /^Charge en kg, série 1 de / }).first().fill('123');
+    await dialog.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByText('Séance modifiée').first().waitFor();
+    await page.getByText(/× 123 kg/).first().waitFor(); // carte mise à jour sans rechargement
+    await assertAlive('modification de séance');
+  }],
+
   ['supprimer une séance (confirmation, liste mise à jour)', async () => {
     await page.goto(`${BASE}/history`);
     await page.getByRole('tab', { name: /Muscu/ }).click();
-    const trash = page.getByRole('button', { name: 'Supprimer cette séance' });
-    await trash.first().waitFor();
-    const before = await trash.count();
-    await trash.first().click();
+    const menus = page.getByRole('button', { name: 'Actions de la séance' });
+    await menus.first().waitFor();
+    const before = await menus.count();
+    await menus.first().click();
+    await page.getByRole('menuitem', { name: 'Supprimer' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Supprimer', exact: true }).click();
     await page.getByText('Séance supprimée').first().waitFor();
-    for (let i = 0; i < 30 && (await trash.count()) >= before; i++) await page.waitForTimeout(100);
-    assert.equal(await trash.count(), before - 1, 'une séance de moins dans l\'historique');
+    for (let i = 0; i < 30 && (await menus.count()) >= before; i++) await page.waitForTimeout(100);
+    assert.equal(await menus.count(), before - 1, 'une séance de moins dans l\'historique');
     await assertAlive('suppression de séance');
   }],
 

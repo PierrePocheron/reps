@@ -9,6 +9,7 @@ import { PlateCalculator } from '@/components/gym/PlateCalculator';
 import { Timer } from '@/components/Timer';
 import { useGymSessionStore, NOTE_MAX, restSeconds } from '@/store/gymSessionStore';
 import { useKeepAwake } from '@/hooks/useKeepAwake';
+import { SET_TYPE_META, nextSetType } from '@/utils/setTypes';
 import { useUserStore } from '@/store/userStore';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -903,14 +904,6 @@ function ExecuteExerciseCard({
 
 const EXACT_ALARM_ASKED = 'reps_exact_alarm_asked';
 const RPE_VALUES = [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
-// Types de série (Hevy : W / D / F) ; toucher l'étiquette fait défiler normale → échauffement → dégressive → échec
-const SET_TYPE_META: Record<SetType, { short: string; label: string; cls: string }> = {
-  warmup: { short: 'É', label: 'échauffement', cls: 'text-amber-700 dark:text-amber-400' },
-  drop: { short: 'D', label: 'dégressive', cls: 'text-sky-700 dark:text-sky-400' },
-  failure: { short: '!', label: "jusqu'à l'échec", cls: 'text-red-600 dark:text-red-400' },
-};
-const SET_TYPE_CYCLE: (SetType | undefined)[] = [undefined, 'warmup', 'drop', 'failure'];
-const nextSetType = (t: SetType | undefined) => SET_TYPE_CYCLE[(SET_TYPE_CYCLE.indexOf(t) + 1) % SET_TYPE_CYCLE.length];
 
 /** Échange un exercice et le suivant (réordonner, #53) — boutons plutôt que glisser-déposer : accessible. */
 function SwapButton({ upper, lower, onSwap }: { upper: string; lower: string; onSwap: () => void }) {

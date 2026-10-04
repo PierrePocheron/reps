@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { estimate1RM, bestE1RMByExercise, exerciseHistory, isWorkSet } from '../records';
+import { estimate1RM, bestE1RMByExercise, exerciseHistory, isWorkSet, markRecords } from '../records';
 import type { GymSession } from '@/firebase/types';
 
 const session = (sets: { weight: number; reps: number; completed: boolean }[]) =>
@@ -43,5 +43,19 @@ describe('séries d\'échauffement', () => {
     expect(bestE1RMByExercise(s).bench_press).toBe(76);
     expect(exerciseHistory(s, 'bench_press')[0]).toMatchObject({ bestWeight: 60, volume: 480 });
     expect(isWorkSet({ completed: true, type: 'drop' })).toBe(true);
+  });
+});
+
+describe('markRecords (#57)', () => {
+  const sess = (sets: { weight: number; reps: number }[]) =>
+    ({ exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: sets.map((s) => ({ ...s, completed: true })) }] }) as unknown as GymSession;
+
+  it('trophée si la série bat les séances précédentes, puis les séries d\'avant ; jamais sans historique ni sur échauffement', () => {
+    const older = [sess([{ weight: 80, reps: 5 }])];
+    const [ex] = markRecords(sess([{ weight: 70, reps: 5 }, { weight: 85, reps: 5 }, { weight: 85, reps: 5 }, { weight: 100, reps: 3 }]).exercises, older);
+    expect(ex!.sets.map((s) => s.isRecord)).toEqual([false, true, false, true]);
+    expect(markRecords(sess([{ weight: 100, reps: 5 }]).exercises, [])[0]!.sets[0]!.isRecord).toBe(false);
+    const warm = markRecords([{ exerciseId: 'bench_press', name: 'x', emoji: 'x', sets: [{ weight: 200, reps: 5, completed: true, type: 'warmup' }] }], older);
+    expect(warm[0]!.sets[0]!.isRecord).toBe(false);
   });
 });

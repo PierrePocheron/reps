@@ -8,6 +8,7 @@ import {
   Timestamp,
   deleteDoc,
   doc,
+  updateDoc,
 } from 'firebase/firestore';
 import { db } from './config';
 import type { GymSession, GymSessionExercise } from './types';
@@ -88,6 +89,42 @@ export async function getUserGymSessions(
 /**
  * Calcule le volume total d'une séance (kg soulevés)
  */
+export const NOTE_MAX = 300;
+
+/** Firestore rejette les valeurs `undefined` — on les retire (fin de séance et modification). */
+export function sanitizeExercises(exercises: GymSessionExercise[]): GymSessionExercise[] {
+  return exercises.map((ex) => ({
+    exerciseId: ex.exerciseId,
+    name: ex.name,
+    emoji: ex.emoji,
+    ...(ex.imageUrl ? { imageUrl: ex.imageUrl } : {}),
+    ...(ex.note?.trim() ? { note: ex.note.trim().slice(0, NOTE_MAX) } : {}),
+    ...(ex.supersetId ? { supersetId: ex.supersetId } : {}),
+    sets: ex.sets.map((s) => ({
+      reps: s.reps,
+      weight: s.weight,
+      completed: s.completed,
+      ...(s.actualReps !== undefined ? { actualReps: s.actualReps } : {}),
+      ...(s.actualWeight !== undefined ? { actualWeight: s.actualWeight } : {}),
+      ...(s.isRecord ? { isRecord: true } : {}), // trophée et records sur la carte partagée depuis l'historique
+      ...(s.rpe ? { rpe: s.rpe } : {}),
+      ...(s.type ? { type: s.type } : {}),
+    })),
+  }));
+}
+
+/** Modifier une séance muscu passée (#57) : séries, volume et nombre de séries de travail recalculés. */
+export async function updateGymSession(userId: string, sessionId: string, exercises: GymSessionExercise[]) {
+  const clean = sanitizeExercises(exercises);
+  const fields = {
+    exercises: clean,
+    totalVolume: Math.round(calculateTotalVolume(clean)),
+    totalSets: clean.reduce((n, ex) => n + ex.sets.filter(isWorkSet).length, 0),
+  };
+  await updateDoc(doc(db, 'gym_sessions', userId, 'userGymSessions', sessionId), fields);
+  return fields;
+}
+
 /** Supprimer une séance muscu (#56) : le classement et le fil lisent les séances en direct ; stats à recalculer. */
 export async function deleteGymSession(userId: string, sessionId: string): Promise<void> {
   await deleteDoc(doc(db, 'gym_sessions', userId, 'userGymSessions', sessionId));
