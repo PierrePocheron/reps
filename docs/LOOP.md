@@ -92,3 +92,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | #52 → bloqué-pierre ; #53 | Émulateur saturé (ANR système en série) : test « écran allumé » à faire sur téléphone ; réordonner les exercices (« Échanger », supersets cohérents) | `9009229` |
 | 2026-10-04 | passe UI/UX contraste | yarn a11y se bloquait (séries absentes dans la séance de démo) → robuste + minuteur audité ; « S1 » validé à 2,09:1 en clair → AA | `1b7facc` |
 | 2026-10-04 | #54 (1/2) | Écran de fin de séance muscu : récap, comparaison de volume encourageante, Partager / Terminer | `c06f308` |
+| 2026-10-04 | #54 (2/2) | Écran de fin de séance renfo (reps, kcal, comparaison avec la séance précédente) → issue fermée | `f09a10e` |
