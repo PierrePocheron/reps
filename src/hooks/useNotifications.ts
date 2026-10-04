@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
 import { requestFCMToken, saveFCMToken, disableFCMNotifications, onForegroundMessage } from '@/firebase/fcm';
 import { useUserStore } from '@/store/userStore';
+import { scheduleNativeReminder } from '@/utils/dailyReminder';
 
 const isNative = Capacitor.isNativePlatform();
 
@@ -85,24 +86,7 @@ export const useNotifications = () => {
       }
 
       try {
-        const [hours = 20, minutes = 0] = timeStr.split(':').map(Number);
-        await LocalNotifications.cancel({ notifications: [{ id: 1 }] });
-
-        await LocalNotifications.schedule({
-          notifications: [
-            {
-              title: "💪 C'est l'heure des Reps !",
-              body: 'Chaque rep compte. Lance ta séance maintenant !',
-              id: 1,
-              // `on` repeats (cron-like, rescheduled after each delivery); with `at`, `every` is ignored: it fired once
-              schedule: { on: { hour: hours, minute: minutes }, allowWhileIdle: true },
-              sound: undefined,
-              attachments: undefined,
-              actionTypeId: '',
-              extra: null,
-            },
-          ],
-        });
+        await scheduleNativeReminder(timeStr);
 
         setIsScheduled(true);
         toast({ title: 'Rappel activé !', description: `Notification chaque jour à ${timeStr}.` });

@@ -6,6 +6,7 @@ import { applyThemeColor } from '@/utils/theme-colors';
 import { initializeAdMob } from '@/utils/admob';
 import { initializeSocialLogin } from '@/utils/social-login';
 import { useBadgeEvents } from '@/hooks/useBadgeEvents';
+import { restoreDailyReminder } from '@/utils/dailyReminder';
 
 /**
  * Composant d'initialisation de l'application
@@ -25,6 +26,8 @@ export function AppInitializer() {
     initializeAdMob(); // mobile
     initializeSocialLogin(); // mobile Google sign-in
     loadSettings(); // localStorage
+    const { notificationsEnabled, notificationTime } = useSettingsStore.getState();
+    void restoreDailyReminder(notificationsEnabled, notificationTime); // mobile: reminder lost by older versions
   }, [initializeAuth, loadSettings]);
 
   // Theme: the profile's colour when signed in, otherwise the local setting
