@@ -111,3 +111,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | passe UI/UX nouvel arrivant | Import Strong/Hevy proposé depuis l'historique muscu vide (ancre vers le bouton) ; section Réglages « À propos » → « Tes données » | `079aa73` |
 | 2026-10-04 | #63 (+ fix #61) | Filtrer l'historique muscu par exercice (liste native, triée par fréquence) ; import : anti-doublon immédiat après import ; 13 parcours e2e verts | `5b3cd38` |
 | 2026-10-04 | backlog | COMPETITIVE.md remis à jour (tout ce qui est livré, écarts en attente de Pierre, restants) ; 2 issues P3 (titre/note de séance, valeur précédente) | `6976062` |
+| 2026-10-04 | passe UI/UX visuels store | Démo réinitialisée (données propres) ; 8 captures Play Store régénérées sur l'interface actuelle | `78af5c1` |
