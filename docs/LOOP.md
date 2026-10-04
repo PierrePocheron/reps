@@ -102,3 +102,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | passe UI/UX fenêtres | Menu ⋯, Modifier (muscu/renfo), Supprimer, Séance oubliée audités à 320 px clair/sombre (contraste AA OK) ; boutons d'édition coupés en bas → pied collant ; défilement latéral de 5 px supprimé | `bbb5c71` |
 | 2026-10-04 | #58 (2/2) | Séance renfo oubliée (date/durée saisies) → issue fermée ; 332 tests, 11 parcours e2e verts | `689f9ba` |
 | 2026-10-04 | #55 | Exercices en durée (reps ⇄ s par exercice, hors volume/1RM, historique, CSV, partage) ; suite chrono + record de durée en issue P3 | `74ff122` |
+| 2026-10-04 | passe UI/UX exercices en durée | Records « 10 kg × 75 reps » → « 75 s » (unité de la séance la plus récente), courbe « Meilleure durée », plus d'échauffement proposé pour une durée | `e476ccc` |
