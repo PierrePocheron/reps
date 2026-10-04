@@ -48,15 +48,16 @@ export function GymTemplatePreviewSheet({ template, onClose, onStart }: Props) {
         aria-labelledby="gym-template-preview-title"
         className="relative z-10 w-full sm:max-w-md bg-background rounded-t-3xl sm:rounded-2xl shadow-xl flex flex-col max-h-[88dvh]"
       >
-        {/* Header */}
-        <div className="flex items-center gap-3 px-5 pt-5 pb-3 shrink-0">
-          <button onClick={onClose} aria-label="Fermer" className="p-3 -ml-2 rounded-full hover:bg-muted active:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+        {/* Handle + header, like the other sheets (close button on the right) */}
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+        </div>
+        <div className="flex items-center gap-3 px-5 py-3 shrink-0">
+          <span className="text-2xl">{template.emoji}</span>
+          <h2 id="gym-template-preview-title" className="flex-1 font-bold text-lg leading-tight">{template.name}</h2>
+          <button onClick={onClose} aria-label="Fermer" className="flex h-11 w-11 -mr-2 items-center justify-center rounded-full hover:bg-muted active:bg-muted text-muted-foreground hover:text-foreground transition-colors">
             <X className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2 flex-1">
-            <span className="text-xl">{template.emoji}</span>
-            <h2 id="gym-template-preview-title" className="font-bold text-base">{template.name}</h2>
-          </div>
         </div>
 
         {/* Exercises list */}
