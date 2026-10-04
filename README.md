@@ -28,7 +28,7 @@
 **Progrès** : courbe par exercice (1RM estimé, charge, volume, durée), dernières séances détaillées, records,
 répartition musculaire, statistiques et habitudes, récap mensuel / annuel partageable, mensurations et poids de corps.
 
-**Historique** : modifier, supprimer, filtrer par exercice ; export CSV (format Strong) et **import Strong / Hevy**.
+**Historique** : modifier, supprimer, filtrer par exercice ; export CSV (format Strong) et **import Strong / Hevy** (kg, ou livres Hevy converties).
 
 **Motivation & social** : série quotidienne (avec joker) ou hebdomadaire, objectif hebdo, questionnaire de départ,
 badges, défis, amis, fil d'activité, classement, widget Android.

@@ -63,7 +63,7 @@ const typeOf = (s: string): SetType | undefined => {
 
 /**
  * Séances d'un export Strong (et de l'export REPS, même format) ou Hevy, du plus ancien au plus récent.
- * Lignes « Renforcement » de l'export REPS ignorées (pas des séances muscu). Charges lues en kg.
+ * Lignes « Renforcement » de l'export REPS ignorées (pas des séances muscu). Charges en kg (livres Hevy converties).
  */
 export function parseWorkoutsCsv(text: string, resolve: ResolveExercise): ImportedSession[] {
   const [header, ...rows] = parseCsv(text);
@@ -72,10 +72,12 @@ export function parseWorkoutsCsv(text: string, resolve: ResolveExercise): Import
   const hevy = col('exercise_title') >= 0;
   const c = hevy
     ? { start: col('start_time'), end: col('end_time'), workout: col('title'), exercise: col('exercise_title'), type: col('set_type'),
-        weight: col('weight_kg'), reps: col('reps'), seconds: col('duration_seconds'), note: col('exercise_notes'), rpe: col('rpe'), duration: -1, workoutNote: col('description') }
+        weight: col('weight_kg') >= 0 ? col('weight_kg') : col('weight_lbs'), reps: col('reps'), seconds: col('duration_seconds'), note: col('exercise_notes'), rpe: col('rpe'), duration: -1, workoutNote: col('description') }
     : { start: col('Date'), end: -1, workout: col('Workout Name'), exercise: col('Exercise Name'), type: col('Set Order'),
         weight: col('Weight'), reps: col('Reps'), seconds: col('Seconds'), note: col('Notes'), rpe: col('RPE'), duration: col('Duration'), workoutNote: col('Workout Notes') };
   if (c.start < 0 || c.exercise < 0) return [];
+  const lbs = hevy && col('weight_kg') < 0; // Hevy in imperial units exports weight_lbs
+  const kg = (w: number) => (lbs ? Math.round(w * 0.45359237 * 10) / 10 : w);
 
   const sessions = new Map<string, ImportedSession>();
   for (const r of rows) {
@@ -100,7 +102,7 @@ export function parseWorkoutsCsv(text: string, resolve: ResolveExercise): Import
     const seconds = num(r[c.seconds]), reps = num(r[c.reps]);
     const timed = reps === 0 && seconds > 0; // exercice en durée (#55)
     if (timed) ex.timed = true;
-    const set: PlannedSet = { reps: timed ? seconds : reps, weight: num(r[c.weight]), completed: true };
+    const set: PlannedSet = { reps: timed ? seconds : reps, weight: kg(num(r[c.weight])), completed: true };
     const type = typeOf(r[c.type] ?? ''), rpe = num(r[c.rpe]);
     if (type) set.type = type;
     if (rpe) set.rpe = rpe;

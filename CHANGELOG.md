@@ -25,7 +25,7 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 ### Historique et données
 - Page historique (muscu / renfo / records), filtre par exercice, séances plus anciennes chargées à la demande
 - Refaire, modifier, supprimer une séance ; l'enregistrer comme modèle
-- Export CSV (format Strong) et JSON complet (mensurations, modèles, notes, RPE, types de séries), import Strong / Hevy sans doublon
+- Export CSV (format Strong) et JSON complet (mensurations, modèles, notes, RPE, types de séries), import Strong / Hevy sans doublon (charges Hevy en livres converties en kg)
 - Hors ligne : séances, modèles, mensurations et modifications enregistrés sans réseau, envoyés au retour de la connexion
 
 ### Progrès et statistiques

@@ -35,11 +35,19 @@ describe('parseWorkoutsCsv', () => {
     const csv = [
       '"title","start_time","end_time","description","exercise_title","superset_id","exercise_notes","set_index","set_type","weight_kg","reps","distance_km","duration_seconds","rpe"',
       '"Pull","3 Oct 2026, 09:00","3 Oct 2026, 10:15","","Barbell Bench Press","","","0","normal","80","5","","",""',
-      '"Pull","3 Oct 2026, 09:00","3 Oct 2026, 10:15","","Barbell Bench Press","","","1","failure","80","4","","","9"',
+      '"Pull","3 Oct 2026, 09:00","3 Oct 2026, 10:15","","Barbell Bench Press","","","1","failure","81.25","4","","","9"',
     ].join('\n');
     const [s] = parseWorkoutsCsv(csv, resolve);
     expect(s).toMatchObject({ date: new Date(2026, 9, 3, 9, 0), duration: 4500,
-      exercises: [{ exerciseId: 'lib_0025', sets: [{ weight: 80, reps: 5 }, { weight: 80, reps: 4, type: 'failure', rpe: 9 }] }] });
+      exercises: [{ exerciseId: 'lib_0025', sets: [{ weight: 80, reps: 5 }, { weight: 81.25, reps: 4, type: 'failure', rpe: 9 }] }] });
+  });
+
+  it('export Hevy en livres : charges converties en kg (pas lues comme 0)', () => {
+    const csv = [
+      '"title","start_time","end_time","description","exercise_title","superset_id","exercise_notes","set_index","set_type","weight_lbs","reps","distance_miles","duration_seconds","rpe"',
+      '"Push","3 Oct 2026, 09:00","3 Oct 2026, 10:00","","Barbell Bench Press","","","0","normal","225","5","","",""',
+    ].join('\n');
+    expect(parseWorkoutsCsv(csv, resolve)[0]!.exercises[0]!.sets[0]!.weight).toBe(102.1);
   });
 
   it("relit l'export de REPS (aller-retour) et ignore les séances déjà présentes", () => {
