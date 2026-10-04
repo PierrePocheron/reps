@@ -98,6 +98,7 @@ export interface GymSessionExercise {
   sets: PlannedSet[];
   note?: string; // réglage machine, sensation… (rappelée à la séance suivante)
   supersetId?: string; // exercices consécutifs partageant cet id = superset (repos après le dernier)
+  timed?: boolean; // séries en secondes (gainage, #55) : « reps » = secondes, hors volume et 1RM
 }
 
 // Séance musculation (collection séparée dans Firestore)

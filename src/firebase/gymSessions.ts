@@ -13,7 +13,7 @@ import {
 import { db } from './config';
 import type { GymSession, GymSessionExercise } from './types';
 import { logger } from '@/utils/logger';
-import { isWorkSet } from '@/utils/records';
+import { isWorkSet, isTimed } from '@/utils/records';
 
 /**
  * CRUD Firestore pour les séances de musculation
@@ -100,6 +100,7 @@ export function sanitizeExercises(exercises: GymSessionExercise[]): GymSessionEx
     ...(ex.imageUrl ? { imageUrl: ex.imageUrl } : {}),
     ...(ex.note?.trim() ? { note: ex.note.trim().slice(0, NOTE_MAX) } : {}),
     ...(ex.supersetId ? { supersetId: ex.supersetId } : {}),
+    ...(ex.timed !== undefined ? { timed: ex.timed } : {}),
     sets: ex.sets.map((s) => ({
       reps: s.reps,
       weight: s.weight,
@@ -132,6 +133,7 @@ export async function deleteGymSession(userId: string, sessionId: string): Promi
 
 export function calculateTotalVolume(exercises: GymSessionExercise[]): number {
   return exercises.reduce((total, ex) => {
+    if (isTimed(ex)) return total; // secondes × kg n'est pas un volume
     const exerciseVolume = ex.sets
       .filter(isWorkSet)
       .reduce((sum, s) => {

@@ -20,7 +20,7 @@ import { logger } from '@/utils/logger';
 import { gymCard, renfoCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
 import type { Session, GymSession } from '@/firebase/types';
 import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
-import { estimate1RM, exerciseHistory, isWorkSet, markRecords } from '@/utils/records';
+import { estimate1RM, exerciseHistory, isWorkSet, markRecords, isTimed } from '@/utils/records';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useUserStore } from '@/store/userStore';
@@ -211,7 +211,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
               const rpes = completedSetsList.map((st) => st.rpe ?? 0).filter(Boolean);
               const warmups = ex.sets.filter((st) => st.completed && st.type === 'warmup').length;
               const setsSummary = (completedSetsList.length > 0
-                ? `${completedSetsList.length} × ${w > 0 ? `${formatNumber(w)} kg` : 'poids du corps'}`
+                ? `${completedSetsList.length} × ${isTimed(ex) ? `${firstSet!.actualReps ?? firstSet!.reps} s` : w > 0 ? `${formatNumber(w)} kg` : 'poids du corps'}`
                 : `${ex.sets.length} série${ex.sets.length > 1 ? 's' : ''}`)
                 + (rpes.length ? ` · RPE ${formatNumber(Math.max(...rpes))}` : '')
                 + (warmups ? ` · ${warmups} échauff.` : '');
@@ -414,7 +414,7 @@ function History() {
   const redoGym = (s: GymSession) => {
     if (sessionInProgress()) return;
     loadGymTemplate(s.exercises.map((ex) => ({
-      exerciseId: ex.exerciseId, name: ex.name, emoji: ex.emoji, imageUrl: ex.imageUrl, supersetId: ex.supersetId,
+      exerciseId: ex.exerciseId, name: ex.name, emoji: ex.emoji, imageUrl: ex.imageUrl, supersetId: ex.supersetId, timed: ex.timed,
       sets: ex.sets.map((set) => ({ reps: set.actualReps ?? set.reps, weight: set.actualWeight ?? set.weight, completed: false })),
     })));
     startExecution();

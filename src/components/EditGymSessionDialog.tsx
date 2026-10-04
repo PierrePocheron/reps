@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SET_TYPE_META, nextSetType } from '@/utils/setTypes';
+import { isTimed } from '@/utils/records';
 import { cn } from '@/utils/cn';
 import type { GymSession, GymSessionExercise, PlannedSet } from '@/firebase/types';
 
@@ -65,7 +66,7 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
                   <Input type="number" min={0} inputMode="numeric" value={s.reps || ''} placeholder="0" className={NUM}
                     aria-label={`Répétitions, série ${j + 1} de ${ex.name}`}
                     onChange={(e) => patch(i, j, { reps: Math.max(0, Math.round(Number(e.target.value) || 0)) })} />
-                  <span className="text-xs text-muted-foreground">reps</span>
+                  <span className="text-xs text-muted-foreground">{isTimed(ex) ? 's' : 'reps'}</span>
                   <Input type="number" min={0} step="0.5" inputMode="decimal" value={s.weight || ''} placeholder="0" className={NUM}
                     aria-label={`Charge en kg, série ${j + 1} de ${ex.name}`}
                     onChange={(e) => patch(i, j, { weight: Math.max(0, Number(e.target.value) || 0) })} />

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { estimate1RM, bestE1RMByExercise, exerciseHistory, isWorkSet, markRecords } from '../records';
+import { estimate1RM, bestE1RMByExercise, exerciseHistory, isWorkSet, markRecords, isTimed } from '../records';
+import { calculateTotalVolume } from '@/firebase/gymSessions';
 import type { GymSession } from '@/firebase/types';
 
 const session = (sets: { weight: number; reps: number; completed: boolean }[]) =>
@@ -57,5 +58,17 @@ describe('markRecords (#57)', () => {
     expect(markRecords(sess([{ weight: 100, reps: 5 }]).exercises, [])[0]!.sets[0]!.isRecord).toBe(false);
     const warm = markRecords([{ exerciseId: 'bench_press', name: 'x', emoji: 'x', sets: [{ weight: 200, reps: 5, completed: true, type: 'warmup' }] }], older);
     expect(warm[0]!.sets[0]!.isRecord).toBe(false);
+  });
+});
+
+describe('exercices en durée (#55)', () => {
+  it('gainage lesté en durée par défaut, bascule possible ; hors 1RM et hors volume', () => {
+    expect(isTimed({ exerciseId: 'weighted_plank' })).toBe(true);
+    expect(isTimed({ exerciseId: 'weighted_plank', timed: false })).toBe(false);
+    expect(isTimed({ exerciseId: 'bench_press' })).toBe(false);
+    const plank = { exerciseId: 'plank', name: 'Gainage', emoji: '🧱', timed: true, sets: [{ weight: 10, reps: 60, completed: true }] };
+    const bench = { exerciseId: 'bench_press', name: 'DC', emoji: '🏋️', sets: [{ weight: 80, reps: 5, completed: true }] };
+    expect(bestE1RMByExercise([{ exercises: [plank, bench] } as unknown as GymSession])).not.toHaveProperty('plank');
+    expect(calculateTotalVolume([plank, bench])).toBe(400);
   });
 });

@@ -10,6 +10,7 @@ import { Timer } from '@/components/Timer';
 import { useGymSessionStore, NOTE_MAX, restSeconds } from '@/store/gymSessionStore';
 import { useKeepAwake } from '@/hooks/useKeepAwake';
 import { SET_TYPE_META, nextSetType } from '@/utils/setTypes';
+import { UnitToggle } from '@/components/gym/UnitToggle';
 import { useUserStore } from '@/store/userStore';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -26,7 +27,7 @@ import {
   type LibraryExercise,
 } from '@/utils/exerciseLibrary';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
-import { estimate1RM, bestE1RMByExercise, exerciseHistory } from '@/utils/records';
+import { estimate1RM, bestE1RMByExercise, exerciseHistory, isTimed } from '@/utils/records';
 import {
   Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
   Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2, Trophy,
@@ -80,6 +81,7 @@ function GymSession() {
     prependWarmup,
     toggleSuperset,
     swapExercises,
+    toggleTimed,
     backdate,
     setBackdate,
     startExecution,
@@ -311,6 +313,7 @@ function GymSession() {
               onUpdateSet={(i, p) => updateSet(exercise.exerciseId, i, p)}
               onRemoveSet={(i) => removeSet(exercise.exerciseId, i)}
               onRemoveExercise={() => removeExercise(exercise.exerciseId)}
+              onToggleTimed={() => toggleTimed(exercise.exerciseId)}
             />
             {idx < enrichedExercises.length - 1 && (
               <div className="flex justify-center -my-1">
@@ -471,7 +474,8 @@ function GymSession() {
             lastNote={lastNotes[exercise.exerciseId]}
             isBarbell={infoMap[exercise.exerciseId]?.equipment === 'barbell'}
             onAddWarmup={(sets) => prependWarmup(exercise.exerciseId, sets)}
-            suggestion={suggestLoad ? suggestNextWeight(gymHistory, exercise.exerciseId) : null}
+            suggestion={suggestLoad && !isTimed(exercise) ? suggestNextWeight(gymHistory, exercise.exerciseId) : null}
+            onToggleTimed={() => toggleTimed(exercise.exerciseId)}
             onApplySuggestion={(s) => exercise.sets.forEach((set, i) => {
               if (!set.completed && set.type !== 'warmup' && (set.actualWeight ?? set.weight) < s.to) updateSet(exercise.exerciseId, i, { weight: s.to, actualWeight: s.to });
             })}
@@ -667,6 +671,8 @@ function SetExecuteRow({
   onRpe,
   onType,
   number,
+  timed,
+  onToggleTimed,
 }: {
   set: PlannedSet;
   setIndex: number;
@@ -676,6 +682,8 @@ function SetExecuteRow({
   onRpe?: (rpe: number | undefined) => void; // présent seulement si le réglage « RPE par série » est actif
   onType: (type: SetType | undefined) => void;
   number: number; // numéro hors échauffements
+  timed: boolean; // « reps » = secondes (#55)
+  onToggleTimed: () => void;
 }) {
   const [reps, setReps] = useState(String(set.actualReps ?? set.reps));
   const [weight, setWeight] = useState(String(set.actualWeight ?? set.weight));
@@ -705,11 +713,11 @@ function SetExecuteRow({
           value={reps}
           onChange={(e) => { setReps(e.target.value); onUpdate(exerciseId, setIndex, Number(e.target.value) || 0, Number(weight) || 0); }}
           onFocus={onFocusSel}
-          aria-label={`Répétitions, série ${setIndex + 1}`}
+          aria-label={`${timed ? 'Durée en secondes' : 'Répétitions'}, série ${setIndex + 1}`}
           className={`h-8 w-14 max-[359px]:w-12 text-sm p-1 ${NUM_CLS}`}
           min={0}
         />
-        <span className="text-xs text-muted-foreground">reps</span>
+        <UnitToggle timed={timed} onToggle={onToggleTimed} />
       </div>
 
       <div className="flex items-center gap-1 flex-1">
@@ -774,6 +782,7 @@ function ExecuteExerciseCard({
   onApplySuggestion,
   onAddWarmup,
   supersetLabel,
+  onToggleTimed,
 }: {
   exercise: GymSessionExercise;
   onCompleteSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
@@ -789,6 +798,7 @@ function ExecuteExerciseCard({
   onApplySuggestion: (s: LoadSuggestion) => void;
   onAddWarmup: (sets: { weight: number; reps: number }[]) => void;
   supersetLabel?: string;
+  onToggleTimed: () => void;
 }) {
   const completedCount = exercise.sets.filter((s) => s.completed).length;
   const [showPlates, setShowPlates] = useState(false);
@@ -888,6 +898,8 @@ function ExecuteExerciseCard({
             onRpe={onRpe && ((rpe) => onRpe(exercise.exerciseId, i, rpe))}
             onType={(type) => onType(exercise.exerciseId, i, type)}
             number={exercise.sets.slice(0, i + 1).filter((st) => st.type !== 'warmup').length}
+            timed={isTimed(exercise)}
+            onToggleTimed={onToggleTimed}
           />
         ))}
 

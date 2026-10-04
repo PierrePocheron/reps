@@ -1,6 +1,8 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import type { GymSessionExercise, PlannedSet } from '@/firebase/types';
+import { isTimed } from '@/utils/records';
+import { UnitToggle } from './UnitToggle';
 
 const NUM_INPUT = 'text-center text-sm p-1 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
 const onFocusSelect = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
@@ -12,6 +14,7 @@ interface GymExerciseCardProps {
   onUpdateSet: (setIndex: number, partial: Partial<Omit<PlannedSet, 'completed'>>) => void;
   onRemoveSet: (setIndex: number) => void;
   onRemoveExercise: () => void;
+  onToggleTimed?: () => void; // reps ⇄ secondes (#55)
 }
 
 export function GymExerciseCard({
@@ -21,6 +24,7 @@ export function GymExerciseCard({
   onUpdateSet,
   onRemoveSet,
   onRemoveExercise,
+  onToggleTimed,
 }: GymExerciseCardProps) {
   const lastSet = exercise.sets[exercise.sets.length - 1];
 
@@ -69,11 +73,13 @@ export function GymExerciseCard({
                 value={set.reps}
                 onChange={(e) => onUpdateSet(i, { reps: parseInt(e.target.value, 10) || 0 })}
                 onFocus={onFocusSelect}
-                aria-label={`Répétitions visées, série ${i + 1}`}
+                aria-label={`${isTimed(exercise) ? 'Durée visée en secondes' : 'Répétitions visées'}, série ${i + 1}`}
                 className={`h-8 w-14 ${NUM_INPUT}`}
                 min={1}
               />
-              <span className="text-xs text-muted-foreground">reps</span>
+              {onToggleTimed
+                ? <UnitToggle timed={isTimed(exercise)} onToggle={onToggleTimed} />
+                : <span className="text-xs text-muted-foreground">{isTimed(exercise) ? 's' : 'reps'}</span>}
             </div>
 
             <div className="flex items-center gap-1 flex-1">

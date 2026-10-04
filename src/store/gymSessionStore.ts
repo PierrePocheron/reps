@@ -4,7 +4,7 @@ import type { Exercise, GymSessionExercise, PlannedSet } from '@/firebase/types'
 import { Timestamp } from 'firebase/firestore';
 import { createGymSession, calculateTotalVolume, sanitizeExercises, NOTE_MAX } from '@/firebase/gymSessions';
 import { updateUserStatsAfterSession } from '@/firebase/firestore';
-import { isWorkSet } from '@/utils/records';
+import { isWorkSet, isTimed } from '@/utils/records';
 import { toggleSupersetLink, swapWithNext } from '@/utils/superset';
 import { logger } from '@/utils/logger';
 import { scheduleRestEnd, cancelRestEnd } from '@/utils/restNotification';
@@ -42,6 +42,7 @@ interface GymSessionState {
   prependWarmup: (exerciseId: string, sets: { weight: number; reps: number }[]) => void;
   toggleSuperset: (index: number) => void;
   swapExercises: (index: number) => void;
+  toggleTimed: (exerciseId: string) => void;
   setExerciseNote: (exerciseId: string, note: string) => void;
 
   // Actions — Exécution
@@ -161,6 +162,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
 
   toggleSuperset: (index: number) => set((state) => ({ exercises: toggleSupersetLink(state.exercises, index) })),
   swapExercises: (index: number) => set((state) => ({ exercises: swapWithNext(state.exercises, index) })),
+  toggleTimed: (exerciseId: string) => set((state) => ({ exercises: state.exercises.map((ex) => (ex.exerciseId === exerciseId ? { ...ex, timed: !isTimed(ex) } : ex)) })),
 
   setExerciseNote: (exerciseId: string, note: string) => {
     set((state) => ({

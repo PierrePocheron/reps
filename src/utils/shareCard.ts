@@ -1,7 +1,7 @@
 import type { GymSessionExercise, SessionExercise } from '@/firebase/types';
 import { formatDurationLong, localDay } from '@/utils/formatters';
 import { saveFile } from '@/utils/saveFile';
-import { isWorkSet } from '@/utils/records';
+import { isWorkSet, isTimed } from '@/utils/records';
 
 export interface SessionCard {
   title: string;
@@ -21,6 +21,7 @@ export function gymCard(s: { date: Date; duration: number; exercises: GymSession
   const lines = s.exercises.flatMap((ex) => {
     const done = ex.sets.filter(isWorkSet);
     if (done.length === 0) return [];
+    if (isTimed(ex)) { sets += done.length; return [{ name: ex.name, detail: `${done.length} × ${Math.max(...done.map((st) => st.actualReps ?? st.reps))} s` }]; }
     let best = done[0]!;
     for (const set of done) {
       const w = set.actualWeight ?? set.weight, r = set.actualReps ?? set.reps;

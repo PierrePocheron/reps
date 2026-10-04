@@ -1,5 +1,9 @@
 import type { GymSession, GymSessionExercise, PlannedSet } from '@/firebase/types';
 
+/** Exercices en durée par défaut (gainage) ; l'utilisateur bascule les autres (reps ⇄ s) en séance (#55). */
+const TIMED_BY_DEFAULT = new Set(['weighted_plank']);
+export const isTimed = (ex: Pick<GymSessionExercise, 'exerciseId' | 'timed'>) => ex.timed ?? TIMED_BY_DEFAULT.has(ex.exerciseId);
+
 /** Série de travail validée : l'échauffement ne compte ni dans le volume, ni dans les records, ni dans les stats. */
 export const isWorkSet = (s: Pick<PlannedSet, 'completed' | 'type'>) => s.completed && s.type !== 'warmup';
 
@@ -12,6 +16,7 @@ export function bestE1RMByExercise(sessions: GymSession[]): Record<string, numbe
   const best: Record<string, number> = {};
   for (const session of sessions) {
     for (const ex of session.exercises) {
+      if (isTimed(ex)) continue; // une durée n'a pas de 1RM
       for (const set of ex.sets) {
         if (!isWorkSet(set)) continue;
         const e = estimate1RM(set.actualWeight ?? set.weight, set.actualReps ?? set.reps);
@@ -62,7 +67,7 @@ export function markRecords(exercises: GymSessionExercise[], older: GymSession[]
       ...ex,
       sets: ex.sets.map((s) => {
         const e = estimate1RM(s.actualWeight ?? s.weight, s.actualReps ?? s.reps);
-        const isRecord = isWorkSet(s) && top !== undefined && e > top;
+        const isRecord = !isTimed(ex) && isWorkSet(s) && top !== undefined && e > top;
         if (isRecord) top = e;
         return { ...s, isRecord };
       }),

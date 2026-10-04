@@ -118,6 +118,9 @@ const steps = [
     for (let i = 0; i < 20 && (await left()) < before + 13; i++) await page.waitForTimeout(100);
     const after = await left();
     assert.ok(after >= before + 13, `+15 s ajoute 15 s au repos (${before} → ${after})`);
+    // exercice en durée (#55) : l'unité « reps » bascule en secondes pour tout l'exercice
+    await cards.nth(0).getByRole('button', { name: /^Unité : répétitions/ }).first().click();
+    await cards.nth(0).getByRole('spinbutton', { name: /^Durée en secondes, série/ }).first().waitFor();
     // annuler : rien n'est enregistré, retour à l'accueil
     await page.getByRole('button', { name: 'Annuler la séance' }).first().click();
     await page.getByRole('dialog').or(page.locator('[aria-labelledby=cancel-session-title]')).getByRole('button', { name: 'Annuler la séance' }).click();

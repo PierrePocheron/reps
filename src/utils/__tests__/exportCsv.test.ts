@@ -23,4 +23,10 @@ describe('sessionsToCsv', () => {
     expect(lines[3]).toBe('2026-10-02 18:05:00,Musculation,1h 5m,Développé couché,1,62.5,8,,,,,8.5');
     expect(lines).toHaveLength(4); // la série non validée n'est pas exportée
   });
+
+  it('exercice en durée (#55) : secondes dans la colonne Seconds, pas dans Reps', () => {
+    const gym = [{ date: ts(new Date(2026, 9, 3, 9, 0, 0)), duration: 600,
+      exercises: [{ exerciseId: 'plank', name: 'Gainage', emoji: '🧱', timed: true, sets: [{ weight: 0, reps: 60, completed: true }] }] }] as GymSession[];
+    expect(sessionsToCsv(gym, []).split('\n')[1]).toBe('2026-10-03 09:00:00,Musculation,0h 10m,Gainage,1,0,,,60,,,');
+  });
 });
