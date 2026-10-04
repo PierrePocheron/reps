@@ -22,6 +22,7 @@ interface Props {
   secondaryMuscles?: string[];
   /** Historique de l'utilisateur sur l'exercice (muscu) : affiche la courbe de progression */
   history?: ExercisePoint[];
+  timed?: boolean; // exercice en durée : courbe de la meilleure durée (#55)
   onClose: () => void;
 }
 
@@ -34,6 +35,7 @@ export function ExerciseDetailSheet({
   target,
   secondaryMuscles,
   history,
+  timed,
   onClose,
 }: Props) {
   const lang = useLanguage();
@@ -113,7 +115,7 @@ export function ExerciseDetailSheet({
             </div>
           )}
 
-          {history && <ExerciseProgressChart points={history} />}
+          {history && <ExerciseProgressChart points={history} timed={timed} />}
 
           {/* Instructions */}
           {hasSteps ? (

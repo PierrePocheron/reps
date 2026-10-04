@@ -55,6 +55,7 @@ interface PersonalRecord {
   totalSetsCompleted: number;
   bestVolume: number; // poids × reps sur une seule série
   lastPerformed: Date;
+  timed?: boolean; // exercice en durée : bestReps = meilleure durée en secondes (#55)
 }
 
 // ─── Renforcement Card ────────────────────────────────────────────────────────
@@ -258,7 +259,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
 // ─── PR Card ──────────────────────────────────────────────────────────────────
 
 function PRCard({ pr, onOpen }: { pr: PersonalRecord; onOpen: () => void }) {
-  const oneRepMax = pr.bestWeight > 0 ? Math.round(estimate1RM(pr.bestWeight, pr.bestReps)) : null;
+  const oneRepMax = !pr.timed && pr.bestWeight > 0 ? Math.round(estimate1RM(pr.bestWeight, pr.bestReps)) : null;
 
   return (
     <button
@@ -293,10 +294,10 @@ function PRCard({ pr, onOpen }: { pr: PersonalRecord; onOpen: () => void }) {
                 <div className="flex items-center gap-1 bg-yellow-500/10 px-2.5 py-1 rounded-lg">
                   <Trophy className="h-3.5 w-3.5 text-yellow-500" />
                   <span className="text-sm font-bold text-yellow-700 dark:text-yellow-400">
-                    {pr.bestWeight > 0 ? `${formatNumber(pr.bestWeight)} kg` : `${pr.bestReps} reps`}
+                    {pr.timed ? `${pr.bestReps} s` : pr.bestWeight > 0 ? `${formatNumber(pr.bestWeight)} kg` : `${pr.bestReps} reps`}
                   </span>
                 </div>
-                {pr.bestWeight > 0 && (
+                {!pr.timed && pr.bestWeight > 0 && (
                   <p className="text-xs text-muted-foreground">× {pr.bestReps} reps</p>
                 )}
               </div>
@@ -449,24 +450,25 @@ function History() {
           totalSetsCompleted: 0,
           bestVolume: 0,
           lastPerformed: sessionDate,
+          timed: isTimed(ex), // unité de la séance la plus récente (liste triée du plus récent au plus ancien)
         };
 
+        if (isTimed(ex) !== pr.timed) { map.set(ex.exerciseId, pr); continue; } // séance dans l'autre unité : ignorée
         for (const set of ex.sets) {
           if (!isWorkSet(set)) continue;
           const w = set.actualWeight ?? set.weight;
           const r = set.actualReps ?? set.reps;
+          pr.totalSetsCompleted++;
+          if (sessionDate > pr.lastPerformed) pr.lastPerformed = sessionDate;
+          if (pr.timed) { pr.bestReps = Math.max(pr.bestReps, r); continue; } // durée : la meilleure, sans volume ni 1RM
           const vol = w * r;
 
-          pr.totalSetsCompleted++;
           if (vol > pr.bestVolume) {
             pr.bestVolume = vol;
             pr.bestWeight = w;
             pr.bestReps = r;
           } else if (w === 0 && pr.bestWeight === 0 && r > pr.bestReps) {
             pr.bestReps = r;
-          }
-          if (sessionDate > pr.lastPerformed) {
-            pr.lastPerformed = sessionDate;
           }
         }
 
@@ -627,6 +629,7 @@ function History() {
           target={infoMap[detailPr.exerciseId]?.target}
           secondaryMuscles={infoMap[detailPr.exerciseId]?.secondaryMuscles}
           history={exerciseHistory(gymSessions, detailPr.exerciseId)}
+          timed={detailPr.timed}
           onClose={() => setDetailPr(null)}
         />
       )}

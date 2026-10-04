@@ -804,8 +804,8 @@ function ExecuteExerciseCard({
   const [showPlates, setShowPlates] = useState(false);
   const nextSet = exercise.sets.find((s) => !s.completed) ?? exercise.sets[exercise.sets.length - 1];
   const nextWeight = nextSet ? (nextSet.actualWeight ?? nextSet.weight) : 0;
-  // Échauffement proposé avant la première série, s'il n'y en a pas déjà
-  const warmups = completedCount === 0 && !exercise.sets.some((st) => st.type === 'warmup')
+  // Échauffement proposé avant la première série, s'il n'y en a pas déjà (pas pour un exercice en durée)
+  const warmups = !isTimed(exercise) && completedCount === 0 && !exercise.sets.some((st) => st.type === 'warmup')
     ? warmupSets(nextWeight, isBarbell ? loadPlatePrefs() : null) : [];
 
   return (

@@ -7,6 +7,7 @@ const METRICS = [
   { key: 'e1rm', label: '1RM estimé', unit: 'kg' },
   { key: 'bestWeight', label: 'Charge max', unit: 'kg' },
   { key: 'volume', label: 'Volume', unit: 'kg' },
+  { key: 'bestSeconds', label: 'Meilleure durée', unit: 's' }, // exercice en durée (#55)
 ] as const;
 const PERIODS = [
   { key: '3m', label: '3 mois', days: 91 },
@@ -19,8 +20,9 @@ const fmt = (n: number) => Math.round(n).toLocaleString('fr-FR');
 const dayMonth = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 
 /** Courbe de progression d'un exercice (Strong / Hevy : graphique par exercice). */
-export function ExerciseProgressChart({ points }: { points: ExercisePoint[] }) {
-  const [metric, setMetric] = useState<(typeof METRICS)[number]['key']>('e1rm');
+export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint[]; timed?: boolean }) {
+  const metrics = METRICS.filter((m) => (m.key === 'bestSeconds') === !!timed);
+  const [metric, setMetric] = useState<(typeof METRICS)[number]['key']>(timed ? 'bestSeconds' : 'e1rm');
   const [period, setPeriod] = useState<(typeof PERIODS)[number]['key']>('3m');
 
   const days = PERIODS.find((p) => p.key === period)!.days;
@@ -80,7 +82,7 @@ export function ExerciseProgressChart({ points }: { points: ExercisePoint[] }) {
     <div className="space-y-3">
       {header}
       <div className="flex gap-1" role="group" aria-label="Mesure">
-        {METRICS.map((m) => (
+        {metrics.map((m) => (
           <button
             key={m.key}
             type="button"
