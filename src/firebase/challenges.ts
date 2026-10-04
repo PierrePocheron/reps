@@ -181,8 +181,8 @@ export const getDayIndex = (startDate: Timestamp, targetDate: Date = new Date())
   const target = new Date(targetDate);
   target.setHours(0, 0, 0, 0);
 
-  const diffTime = target.getTime() - start.getTime();
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  // round, not floor: across the spring clock change two midnights are 23 h apart (the challenge lost a day)
+  const diffDays = Math.round((target.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
   return Math.max(0, diffDays);
 };
 

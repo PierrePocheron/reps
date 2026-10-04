@@ -69,6 +69,18 @@ describe('Challenge Logic', () => {
              expect(getDayIndex(startTs, target)).toBe(4);
         });
 
+        it('counts calendar days across the spring clock change (23-hour day)', () => {
+             // Europe/Paris switches to summer time on 2027-03-28: midnight-to-midnight is 1 h short of 2 days
+             const previous = process.env.TZ;
+             process.env.TZ = 'Europe/Paris';
+             try {
+                 const startTs = { toDate: () => new Date(2027, 2, 27, 9) } as any;
+                 expect(getDayIndex(startTs, new Date(2027, 2, 29, 20))).toBe(2);
+             } finally {
+                 process.env.TZ = previous;
+             }
+        });
+
         it('should return 0 if target is before start', () => {
              const start = new Date('2024-01-05');
              const target = new Date('2024-01-01');
