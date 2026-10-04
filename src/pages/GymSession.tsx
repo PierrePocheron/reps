@@ -430,7 +430,7 @@ function GymSession() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div className="flex flex-col items-center">
-            <h1 className="font-bold text-lg leading-none">En séance</h1>
+            <h1 className="font-bold text-lg leading-none">Musculation</h1>
             <div className="flex items-center gap-1 text-xs text-primary font-medium">
               <Weight className="w-3 h-3" />
               <span>{completedSets}/{plural(totalSets, 'série')}</span>

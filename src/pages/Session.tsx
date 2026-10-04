@@ -9,7 +9,7 @@ import { BackButton } from '@/components/BackButton';
 import { useSession } from '@/hooks/useSession';
 import { useUserStore } from '@/store/userStore';
 import { clearCurrentSessionFromLocal } from '@/firebase';
-import { Square, Plus, Dumbbell, Flame, Loader2, History } from 'lucide-react';
+import { Square, Plus, Dumbbell, Zap, Flame, Loader2, History } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/useSound';
 import confetti from 'canvas-confetti';
@@ -221,7 +221,7 @@ function Session() {
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <BackButton to="/" />
           <div className="flex flex-col items-center">
-              <h1 className="font-bold text-lg leading-none">Séance</h1>
+              <h1 className="font-bold text-lg leading-none">Renforcement</h1>
               <div className="flex items-center gap-1 text-xs text-orange-700 dark:text-orange-400 font-medium animate-in fade-in slide-in-from-bottom-1">
                   <Flame className="w-3 h-3 fill-current" />
                   <span>{Math.round(currentCalories)} kcal</span>
@@ -253,8 +253,8 @@ function Session() {
           {exercises.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 space-y-6 animate-in fade-in-50">
               <div className="text-center space-y-2">
-                <div className="bg-primary/10 p-4 rounded-full w-fit mx-auto mb-4">
-                  <Dumbbell className="h-8 w-8 text-primary" />
+                <div className="bg-orange-500/10 p-4 rounded-full w-fit mx-auto mb-4">
+                  <Zap className="h-8 w-8 text-orange-500" />
                 </div>
                 <h3 className="font-semibold text-lg">Prêt à transpirer ?</h3>
                 <p className="text-muted-foreground text-sm max-w-[250px] mx-auto">
