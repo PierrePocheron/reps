@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { suggestNextWeight, incrementFor, lastWorkSets, templateFromSession } from '../progression';
+import { suggestNextWeight, incrementFor, lastWorkSets, templateFromSession, redoExercises } from '../progression';
 import type { GymSession, PlannedSet } from '@/firebase/types';
 
 const session = (exerciseId: string, sets: PlannedSet[]) =>
@@ -48,5 +48,18 @@ describe('templateFromSession', () => {
       name: 'Ma séance', emoji: '🏋️', workoutType: 'musculation', description: 'Développé couché · Dips',
       muscuExercises: [{ exerciseId: 'bench_press', sets: [{ reps: 9, weight: 80 }, { reps: 8, weight: 80 }] }],
     });
+  });
+});
+
+describe('redoExercises', () => {
+  it("« Refaire » garde le type des séries : un échauffement reste un échauffement (volume, « Précédent », Appliquer)", () => {
+    const [ex] = redoExercises({ exercises: [{ exerciseId: 'barbell_squat', name: 'Squat barre', emoji: '🦵', sets: [
+      { reps: 8, weight: 40, completed: true, type: 'warmup' },
+      { reps: 5, weight: 100, actualReps: 4, actualWeight: 100, completed: true },
+    ] }] });
+    expect(ex!.sets).toEqual([
+      { reps: 8, weight: 40, completed: false, type: 'warmup' },
+      { reps: 4, weight: 100, completed: false }, // réalisé, prêt à valider
+    ]);
   });
 });

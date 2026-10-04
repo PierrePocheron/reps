@@ -67,3 +67,14 @@ export function templateFromSession(session: Pick<GymSession, 'exercises'>, name
     muscuExercises,
   };
 }
+
+/** « Refaire » (Hevy / Strong) : mêmes exercices, séries réalisées prêtes à valider, types de série gardés (échauffements). */
+export function redoExercises(session: Pick<GymSession, 'exercises'>) {
+  return session.exercises.map((ex) => ({
+    exerciseId: ex.exerciseId, name: ex.name, emoji: ex.emoji, imageUrl: ex.imageUrl, supersetId: ex.supersetId, timed: ex.timed,
+    sets: ex.sets.map((set) => ({
+      reps: set.actualReps ?? set.reps, weight: set.actualWeight ?? set.weight, completed: false,
+      ...(set.type ? { type: set.type } : {}),
+    })),
+  }));
+}

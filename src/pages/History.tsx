@@ -25,7 +25,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { useUserStore } from '@/store/userStore';
 import { createUserTemplate } from '@/firebase/templates';
-import { templateFromSession } from '@/utils/progression';
+import { templateFromSession, redoExercises } from '@/utils/progression';
 
 type Tab = 'musculation' | 'renforcement' | 'records';
 
@@ -442,10 +442,7 @@ function History() {
   };
   const redoGym = (s: GymSession) => {
     if (sessionInProgress()) return;
-    loadGymTemplate(s.exercises.map((ex) => ({
-      exerciseId: ex.exerciseId, name: ex.name, emoji: ex.emoji, imageUrl: ex.imageUrl, supersetId: ex.supersetId, timed: ex.timed,
-      sets: ex.sets.map((set) => ({ reps: set.actualReps ?? set.reps, weight: set.actualWeight ?? set.weight, completed: false })),
-    })), s.title);
+    loadGymTemplate(redoExercises(s), s.title);
     startExecution();
     navigate('/gym');
   };
