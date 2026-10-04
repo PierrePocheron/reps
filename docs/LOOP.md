@@ -97,3 +97,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | backlog + #56 | Comparaison : 4 issues (#55 durée, #56 supprimer, #57 modifier, #58 séance oubliée) ; supprimer une séance (confirmation, retrait immédiat, stats recalculées) | `96336a6` |
 | 2026-10-04 | #57 (1/2) | Modifier une séance muscu passée (reps, charge, type, séries ±, records recalculés) + menu ⋯ sur les cartes | `a550470` |
 | 2026-10-04 | passe UI/UX textes (statique) | Machine saturée (charge 179, VM + Chrome) → pas d'e2e ; tutoiement rétabli (2 toasts de notifications, accroche de l'accueil déconnecté) ; console.error de l'ErrorBoundary gardé (dev seulement, évite un double envoi Sentry) | `9297308` |
+| 2026-10-04 | #57 (2/2) | Modifier une séance renfo (reps, exercices, calories et totaux recalculés) → issue fermée ; e2e complet vert (10 parcours) | `db26828` |
