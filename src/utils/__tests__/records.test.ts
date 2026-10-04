@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { estimate1RM, bestE1RMByExercise, bestSecondsByExercise, exerciseHistory, isWorkSet, markRecords, isTimed } from '../records';
+import { estimate1RM, bestE1RMByExercise, bestSecondsByExercise, exerciseHistory, exerciseLog, isWorkSet, markRecords, isTimed } from '../records';
 import { calculateTotalVolume } from '@/firebase/gymSessions';
 import type { GymSession } from '@/firebase/types';
 
@@ -89,5 +89,22 @@ describe('record de durée (#59)', () => {
     expect(bestSecondsByExercise([plank([45, 60]), plank([50])])).toEqual({ plank: 60 });
     const [ex] = markRecords(plank([55, 65, 65, 80]).exercises, [plank([60])]);
     expect(ex!.sets.map((s) => s.isRecord)).toEqual([false, true, false, true]);
+  });
+});
+
+describe('exerciseLog (#60)', () => {
+  it('séries de travail en clair, du plus récent au plus ancien, avec le record', () => {
+    const sess = (day: number, sets: PlannedSetLike[], timed = false) =>
+      ({ date: { toDate: () => new Date(2026, 9, day) }, exercises: [{ exerciseId: 'bench_press', name: 'DC', emoji: '🏋️', timed, sets }] }) as unknown as GymSession;
+    type PlannedSetLike = { weight: number; reps: number; completed: boolean; type?: 'warmup'; isRecord?: boolean; actualWeight?: number };
+    const log = exerciseLog([
+      sess(3, [{ weight: 40, reps: 10, completed: true, type: 'warmup' }, { weight: 80, reps: 8, completed: true }, { weight: 80, reps: 6, completed: true, actualWeight: 82.5, isRecord: true }]),
+      sess(1, [{ weight: 0, reps: 12, completed: true }, { weight: 0, reps: 10, completed: true }]),
+    ], 'bench_press');
+    expect(log).toEqual([
+      { date: new Date(2026, 9, 3), sets: '8×80 · 6×82,5 kg', record: true },
+      { date: new Date(2026, 9, 1), sets: '12 · 10 reps', record: false },
+    ]);
+    expect(exerciseLog([sess(2, [{ weight: 0, reps: 60, completed: true }], true)], 'bench_press')[0]!.sets).toBe('60 s');
   });
 });

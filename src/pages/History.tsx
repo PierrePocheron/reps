@@ -20,7 +20,7 @@ import { logger } from '@/utils/logger';
 import { gymCard, renfoCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
 import type { Session, GymSession } from '@/firebase/types';
 import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
-import { estimate1RM, exerciseHistory, isWorkSet, markRecords, isTimed } from '@/utils/records';
+import { estimate1RM, exerciseHistory, exerciseLog, isWorkSet, markRecords, isTimed } from '@/utils/records';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useUserStore } from '@/store/userStore';
@@ -629,6 +629,7 @@ function History() {
           target={infoMap[detailPr.exerciseId]?.target}
           secondaryMuscles={infoMap[detailPr.exerciseId]?.secondaryMuscles}
           history={exerciseHistory(gymSessions, detailPr.exerciseId)}
+          log={exerciseLog(gymSessions, detailPr.exerciseId)}
           timed={detailPr.timed}
           onClose={() => setDetailPr(null)}
         />

@@ -4,7 +4,7 @@ import { MEDIA_ATTRIBUTION } from '@/hooks/useExerciseImages';
 import { useLanguage } from '@/hooks/useLanguage';
 import { targetLabel } from '@/utils/exerciseLabels';
 import { ExerciseProgressChart } from '@/components/gym/ExerciseProgressChart';
-import type { ExercisePoint } from '@/utils/records';
+import type { ExercisePoint, ExerciseLogEntry } from '@/utils/records';
 
 const T = {
   fr: { howTo: 'Comment faire', noDesc: 'Pas de description disponible.', illustration: 'Illustration' },
@@ -23,6 +23,7 @@ interface Props {
   /** Historique de l'utilisateur sur l'exercice (muscu) : affiche la courbe de progression */
   history?: ExercisePoint[];
   timed?: boolean; // exercice en durée : courbe de la meilleure durée (#55)
+  log?: ExerciseLogEntry[]; // dernières séances, séries en clair (#60)
   onClose: () => void;
 }
 
@@ -36,6 +37,7 @@ export function ExerciseDetailSheet({
   secondaryMuscles,
   history,
   timed,
+  log,
   onClose,
 }: Props) {
   const lang = useLanguage();
@@ -116,6 +118,20 @@ export function ExerciseDetailSheet({
           )}
 
           {history && <ExerciseProgressChart points={history} timed={timed} />}
+
+          {log && log.length > 0 && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">Dernières séances</h3>
+              <ul className="divide-y rounded-xl border">
+                {log.map((e, i) => (
+                  <li key={i} className="flex items-baseline justify-between gap-3 px-3 py-2 text-sm">
+                    <span className="shrink-0 text-xs text-muted-foreground">{e.date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                    <span className="text-right tabular-nums">{e.record && <span aria-label="Record">🏆 </span>}{e.sets}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Instructions */}
           {hasSteps ? (

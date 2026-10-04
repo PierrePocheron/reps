@@ -89,3 +89,29 @@ export function markRecords(exercises: GymSessionExercise[], older: GymSession[]
     };
   });
 }
+
+export interface ExerciseLogEntry { date: Date; sets: string; record: boolean }
+
+/**
+ * Dernières séances d'un exercice, séries de travail en clair (onglet « Historique » de Strong, #60) :
+ * « 8×80 · 6×82,5 kg », « 12 · 10 reps » au poids du corps, « 60 · 75 s » en durée. `sessions` : du plus récent au plus ancien.
+ */
+export function exerciseLog(sessions: GymSession[], exerciseId: string, limit = 10): ExerciseLogEntry[] {
+  const out: ExerciseLogEntry[] = [];
+  const num = (n: number) => n.toLocaleString('fr-FR');
+  for (const session of sessions) {
+    for (const ex of session.exercises) {
+      if (ex.exerciseId !== exerciseId) continue;
+      const work = ex.sets.filter(isWorkSet);
+      if (work.length === 0) continue;
+      const reps = (s: (typeof work)[number]) => s.actualReps ?? s.reps;
+      const weight = (s: (typeof work)[number]) => s.actualWeight ?? s.weight;
+      const sets = isTimed(ex) ? `${work.map((s) => num(reps(s))).join(' · ')} s`
+        : work.some((s) => weight(s) > 0) ? `${work.map((s) => `${reps(s)}×${num(weight(s))}`).join(' · ')} kg`
+        : `${work.map(reps).join(' · ')} reps`;
+      out.push({ date: session.date.toDate(), sets, record: work.some((s) => s.isRecord) });
+    }
+    if (out.length >= limit) break;
+  }
+  return out.slice(0, limit);
+}

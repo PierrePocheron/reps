@@ -27,7 +27,7 @@ import {
   type LibraryExercise,
 } from '@/utils/exerciseLibrary';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
-import { estimate1RM, bestE1RMByExercise, bestSecondsByExercise, exerciseHistory, isTimed } from '@/utils/records';
+import { estimate1RM, bestE1RMByExercise, bestSecondsByExercise, exerciseHistory, exerciseLog, isTimed } from '@/utils/records';
 import {
   Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
   Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2, Trophy,
@@ -658,6 +658,8 @@ function GymSession() {
             target={infoMap[ex.exerciseId]?.target ?? libDetail?.target}
             secondaryMuscles={infoMap[ex.exerciseId]?.secondaryMuscles ?? libDetail?.secondaryMuscles}
             history={exerciseHistory(gymHistory, ex.exerciseId)}
+            log={exerciseLog(gymHistory, ex.exerciseId)}
+            timed={isTimed(ex)}
             onClose={() => setDetailExerciseId(null)}
           />
         );
