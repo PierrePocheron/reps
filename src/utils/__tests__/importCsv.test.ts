@@ -77,3 +77,21 @@ describe('parseWorkoutsCsv', () => {
     expect(newSessionsOnly(back, [new Date(2026, 9, 2, 18, 5, 30)])).toEqual([]);
   });
 });
+
+describe('exerciseResolver', () => {
+  const lib = exerciseResolver([
+    { id: 'weighted_pullups', name: 'Tractions lestées', emoji: '💪' },
+    { id: 'lib_fr_1', name: 'Tractions lestées', emoji: '🏋️' },
+    { id: 'lib_0025', name: 'Barbell bench press', emoji: '🏋️' },
+    { id: 'lib_0294', name: 'Dumbbell biceps curl', emoji: '🏋️' },
+  ]);
+
+  it('reconnaît le nommage Strong / Hevy « Exercice (Matériel) »', () => {
+    expect(lib('Bench Press (Barbell)').exerciseId).toBe('lib_0025');
+    expect(lib('Bicep Curl (Dumbbell)').exerciseId).toBe('lib_0294'); // bicep / biceps
+  });
+
+  it("garde l'exercice REPS quand la bibliothèque a le même nom (réimport sans historique coupé en deux)", () => {
+    expect(lib('Tractions lestées').exerciseId).toBe('weighted_pullups');
+  });
+});

@@ -121,11 +121,21 @@ export const newSessionsOnly = (imported: ImportedSession[], existing: Date[]) =
 
 const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
-/** Reconnaît un exercice par son nom (FR ou EN, sans accents ni casse) ; sinon exercice personnalisé stable. */
+// same words in any order, plural-insensitive: Strong / Hevy « Bench Press (Barbell) » = « Barbell bench press »
+const wordBag = (s: string) => normalize(s).split(' ').map((w) => w.replace(/s$/, '')).sort().join(' ');
+
+/**
+ * Reconnaît un exercice par son nom (FR ou EN, sans accents ni casse, mots dans n'importe quel ordre) ;
+ * sinon exercice personnalisé stable. À nom égal, le premier de `known` l'emporte (exercices REPS avant la bibliothèque).
+ */
 export function exerciseResolver(known: { id: string; name: string; emoji: string }[]): ResolveExercise {
-  const byName = new Map(known.map((k) => [normalize(k.name), k] as const));
+  const byName = new Map<string, (typeof known)[number]>(), byBag = new Map<string, (typeof known)[number]>();
+  for (const k of known) {
+    if (!byName.has(normalize(k.name))) byName.set(normalize(k.name), k);
+    if (!byBag.has(wordBag(k.name))) byBag.set(wordBag(k.name), k);
+  }
   return (name) => {
-    const hit = byName.get(normalize(name));
+    const hit = byName.get(normalize(name)) ?? byBag.get(wordBag(name));
     return hit ? { exerciseId: hit.id, name: hit.name, emoji: hit.emoji } : { exerciseId: `import_${normalize(name).replace(/ /g, '_')}`, name, emoji: '🏋️' };
   };
 }
