@@ -17,9 +17,11 @@ Backlog : GitHub Project « REPS — Roadmap » (#9), issues labellisées `P0` �
 5. **Vérifier** : `yarn type-check`, `yarn lint` (0 erreur), `yarn vitest run`, `yarn test:rules` si les
    règles Firestore changent ; contrôle visuel sur `yarn dev:demo` (émulateurs + données de démo, compte dans `scripts/seed-emulator.mjs`)
    et `yarn e2e` (parcours clés de bout en bout) dès qu'un parcours est touché ; `yarn a11y` (contraste) après un changement de couleurs.
-6. **Livrer** : commit (numéroté `[i/N]` si multi-commits, sans `Co-Authored-By`, **aucune donnée
+6. **Documenter** : mettre à jour le README et les docs touchés (fonctionnalité visible → README ; commande ou
+   procédure → TOOLS / DEPLOY / RELEASE ; tests → TESTS ; fiche store → PLAYSTORE).
+7. **Livrer** : commit (numéroté `[i/N]` si multi-commits, sans `Co-Authored-By`, **aucune donnée
    personnelle** — repo public), push `dev`, commentaire de bilan sur l'issue, fermeture si terminée.
-7. **Journaliser** : une ligne ci-dessous.
+8. **Journaliser** : une ligne ci-dessous.
 
 ## Interdit sans Pierre
 
