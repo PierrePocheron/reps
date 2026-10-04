@@ -91,3 +91,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | #52 (en vérif) | Écran allumé pendant la séance + réglage ; Android en FLAG_KEEP_SCREEN_ON (la Wake Lock de la WebView ne relâche pas) ; vérif Android à refaire (émulateur figé) | `d0da348` |
 | 2026-10-04 | #52 → bloqué-pierre ; #53 | Émulateur saturé (ANR système en série) : test « écran allumé » à faire sur téléphone ; réordonner les exercices (« Échanger », supersets cohérents) | `9009229` |
 | 2026-10-04 | passe UI/UX contraste | yarn a11y se bloquait (séries absentes dans la séance de démo) → robuste + minuteur audité ; « S1 » validé à 2,09:1 en clair → AA | `1b7facc` |
+| 2026-10-04 | #54 (1/2) | Écran de fin de séance muscu : récap, comparaison de volume encourageante, Partager / Terminer | `c06f308` |
