@@ -951,7 +951,7 @@ function ExecuteExerciseCard({
           {lastNote && (
             <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
               <StickyNote className="h-3.5 w-3.5 mt-px flex-shrink-0" aria-hidden />
-              <span>Dernière fois : « {lastNote} »</span>
+              <span>Dernière fois : «&nbsp;{lastNote}&nbsp;»</span>
             </p>
           )}
           <input

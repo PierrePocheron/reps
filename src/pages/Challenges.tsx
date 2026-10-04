@@ -145,7 +145,7 @@ function Section({ title, challenges, onJoin, isJoining }: { title: string, chal
     return (
         <div>
              <h2 className="text-lg font-semibold mb-3">{title}</h2>
-             <div className="grid grid-cols-2 gap-3">
+             <div className="grid grid-cols-2 max-[359px]:grid-cols-1 gap-3">{/* one column at 320 px: titles overflowed the cards */}
                 {challenges.map(challenge => (
                     <ChallengeCard
                         key={challenge.id}

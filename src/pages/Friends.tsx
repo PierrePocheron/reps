@@ -472,7 +472,7 @@ export default function Friends() {
                   ))
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    <p>Aucun utilisateur ne correspond à « {searchTerm} ».</p>
+                    <p>Aucun utilisateur ne correspond à «&nbsp;{searchTerm}&nbsp;».</p>
                     <p className="text-sm mt-1">Vérifie l'orthographe du pseudo ou essaie l'adresse e-mail exacte.</p>
                   </div>
                 )}

@@ -230,7 +230,7 @@ export function AddExerciseDialog({
                   </div>
                 ) : libraryResults.length === 0 ? (
                   <div className="flex flex-col items-center gap-3 py-10 text-center">
-                    <p className="text-sm text-muted-foreground">{search ? <>Aucun résultat pour « {search} »</> : 'Aucun exercice dans cette catégorie'}</p>
+                    <p className="text-sm text-muted-foreground">{search ? <>Aucun résultat pour «&nbsp;{search}&nbsp;»</> : 'Aucun exercice dans cette catégorie'}</p>
                     <div className="flex flex-wrap justify-center gap-2">
                       {(search || selectedCategory !== 'all') && (
                         <Button variant="outline" size="sm" onClick={() => { setSearch(''); setSelectedCategory('all'); }}>Réinitialiser</Button>
@@ -279,7 +279,7 @@ export function AddExerciseDialog({
                 )
               ) : filteredExercises.length === 0 ? (
                 <div className="flex flex-col items-center gap-3 py-10 text-center">
-                  <p className="text-sm text-muted-foreground">{search ? <>Aucun résultat pour « {search} »</> : 'Aucun exercice dans cette catégorie'}</p>
+                  <p className="text-sm text-muted-foreground">{search ? <>Aucun résultat pour «&nbsp;{search}&nbsp;»</> : 'Aucun exercice dans cette catégorie'}</p>
                   <div className="flex flex-wrap justify-center gap-2">
                     {(search || selectedCategory !== 'all') && (
                       <Button variant="outline" size="sm" onClick={() => { setSearch(''); setSelectedCategory('all'); }}>Réinitialiser</Button>

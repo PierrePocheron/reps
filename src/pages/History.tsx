@@ -203,7 +203,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
             </div>
           </div>
 
-          {session.note && <p className="text-xs italic text-muted-foreground">« {session.note} »</p>}
+          {session.note && <p className="text-xs italic text-muted-foreground">«&nbsp;{session.note}&nbsp;»</p>}
 
           {/* Exercises summary */}
           <div className="space-y-1.5">
@@ -231,7 +231,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{ex.supersetId && <span className="text-primary" aria-label="Superset">🔗 </span>}{ex.name}</p>
-                    {ex.note && <p className="text-xs italic text-muted-foreground truncate">« {ex.note} »</p>}
+                    {ex.note && <p className="text-xs italic text-muted-foreground truncate">«&nbsp;{ex.note}&nbsp;»</p>}
                   </div>
                   <p className="text-xs text-muted-foreground flex-shrink-0">{setsSummary}</p>
                 </div>
