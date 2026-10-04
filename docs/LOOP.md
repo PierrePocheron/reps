@@ -87,3 +87,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | #36 | Widget Android (série + séances de la semaine), tap → accueil, mis à jour au lancement/fin de séance, se remet à 0 seul ; vérifié sur émulateur | `4d31171` |
 | 2026-10-04 | #35 #37 → bloqué-pierre ; backlog | Health Connect et Wear OS dépendent de la Play Console (+ images d'émulateur) → commentés ; 4 nouvelles issues issues de la comparaison (#51-#54) | — |
 | 2026-10-04 | #51 | Minuteur de repos −15 s / +15 s (fin décalée, notification replanifiée) | `a910a12` |
+| 2026-10-04 | passe UI/UX écrans de séance | Repos ouvert : la barre flottante cachait « Ajouter un exercice » ; lignes de série hors carte à 320 px ; noms d'exercice tronqués → corrigés + e2e étendu | `1ad9f99` |
