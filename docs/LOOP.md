@@ -93,3 +93,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | passe UI/UX contraste | yarn a11y se bloquait (séries absentes dans la séance de démo) → robuste + minuteur audité ; « S1 » validé à 2,09:1 en clair → AA | `1b7facc` |
 | 2026-10-04 | #54 (1/2) | Écran de fin de séance muscu : récap, comparaison de volume encourageante, Partager / Terminer | `c06f308` |
 | 2026-10-04 | #54 (2/2) | Écran de fin de séance renfo (reps, kcal, comparaison avec la séance précédente) → issue fermée | `f09a10e` |
+| 2026-10-04 | passe UI/UX accessibilité + textes | Scan sémantique (noms accessibles, alt, libellés, h1) : RAS sur 10 pages + séance + récap ; accords « 1 séries / 1 jours » corrigés via plural() | `d331809` |
