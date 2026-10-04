@@ -4,4 +4,5 @@
     <string name="title_activity_main">Reps</string>
     <string name="package_name">com.pierre.reps.app</string>
     <string name="custom_url_scheme">com.pierre.reps.app</string>
+    <string name="widget_description">Ta série et tes séances de la semaine</string>
 </resources>

@@ -11,8 +11,10 @@ interface LayoutProps {
 /**
  * Layout principal de l'application avec gestion du mode offline
  */
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { lazy, Suspense, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 
 // Tutoriel chargé à la demande : il est vu une fois, et embarque framer-motion (hors du bundle initial)
 const Onboarding = lazy(() => import('@/components/Onboarding').then((m) => ({ default: m.Onboarding })));
@@ -24,6 +26,14 @@ export function Layout({ children }: LayoutProps) {
   const { isOffline } = useOffline();
   const { bannerHeight, reset } = useAdStore();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Widget d'écran d'accueil (#36) : un tap ouvre l'appli sur l'accueil
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const sub = App.addListener('appUrlOpen', ({ url }) => { if (url.endsWith('://home')) navigate('/'); });
+    return () => { void sub.then((h) => h.remove()); };
+  }, [navigate]);
 
   // Fail-safe: Si on est sur la home ('/'), on force le reset des pubs
   // au cas où le compteur serait désynchronisé

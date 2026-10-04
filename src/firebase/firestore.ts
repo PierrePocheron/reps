@@ -27,6 +27,7 @@ import { getUnlockedBadges, DEFAULT_EXERCISES } from '@/utils/constants';
 import { logger } from '@/utils/logger';
 import { trainingStreaks, weeklyStreaks } from '@/utils/streak';
 import { useSettingsStore } from '@/store/settingsStore';
+import { updateWidget, widgetData } from '@/utils/widget';
 import { getUserGymSessions } from './gymSessions';
 
 /**
@@ -476,6 +477,14 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
     const weekly = weeklyStreaks(dates, useSettingsStore.getState().weeklyGoal);
     const lastTrainingDate = trainingDates.reduce<Timestamp | undefined>(
       (latest, d) => (!latest || d.toDate() > latest.toDate() ? d : latest), undefined);
+    // Widget d'écran d'accueil : recalculé au lancement et à chaque fin de séance (#36)
+    if (userId === auth.currentUser?.uid) {
+      const { streakMode, weeklyGoal } = useSettingsStore.getState();
+      updateWidget(widgetData(dates, {
+        currentStreak, lastTrainingDate: lastTrainingDate?.toDate(), lastJokerDay,
+        weeklyStreak: weekly.current, lastMetWeek: weekly.lastMetWeek,
+      }, streakMode === 'weekly', weeklyGoal));
+    }
 
     // Caluler les sessions par créneau horaire et par exercice
     let morningSessions = 0;
