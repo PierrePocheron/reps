@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, type CSSProperties } from 'react';
 import { useOffline } from '@/hooks/useOffline';
 import { BottomNav } from '@/components/BottomNav';
 import { AlertCircle } from 'lucide-react';
@@ -56,10 +56,11 @@ export function Layout({ children }: LayoutProps) {
 
       {/* Bannière offline */}
       {isOffline && (
-        <div role="status" className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] fixed top-0 left-0 right-0 z-[60]">
-          <div className="flex items-center gap-2 text-sm text-yellow-700 dark:text-yellow-400 max-w-2xl mx-auto">
-            <AlertCircle className="h-4 w-4" aria-hidden="true" />
-            <span>Mode hors ligne — tes données seront synchronisées à la reconnexion</span>
+        // Opaque and single-line: its height is reserved below (--offline-h), content no longer shows through
+        <div role="status" className="bg-yellow-50 dark:bg-yellow-950 border-b border-yellow-500/30 px-4 pb-2 pt-[calc(0.5rem+env(safe-area-inset-top))] fixed top-0 left-0 right-0 z-[60]">
+          <div className="flex items-center gap-2 text-sm text-yellow-800 dark:text-yellow-300 max-w-2xl mx-auto whitespace-nowrap">
+            <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="truncate">Hors ligne — tout est enregistré<span className="max-[479px]:hidden">, envoi au retour du réseau</span></span>
           </div>
         </div>
       )}
@@ -68,9 +69,11 @@ export function Layout({ children }: LayoutProps) {
       <main
         className="min-h-screen transition-all duration-300"
         style={{
-          paddingTop: isOffline ? 'calc(env(safe-area-inset-top) + 2.3125rem)' : 'env(safe-area-inset-top)',
+          // sticky page headers add it to their offset so they stop below the offline banner
+          '--offline-h': isOffline ? '2.3125rem' : '0px',
+          paddingTop: 'calc(env(safe-area-inset-top) + var(--offline-h))',
           paddingBottom: bannerHeight > 0 ? `${bannerHeight}px` : undefined,
-        }}
+        } as CSSProperties}
       >
         {children}
       </main>

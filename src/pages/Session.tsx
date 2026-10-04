@@ -217,7 +217,7 @@ function Session() {
   return (
     <div className="bg-background pb-[calc(6rem+env(safe-area-inset-bottom))]">
       {/* Header Fixe */}
-      <div className="sticky top-[env(safe-area-inset-top)] z-10 bg-background/80 backdrop-blur-md border-b">
+      <div className="sticky top-[calc(env(safe-area-inset-top)+var(--offline-h,0px))] z-10 bg-background/80 backdrop-blur-md border-b">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <BackButton to="/" />
           <div className="flex flex-col items-center">

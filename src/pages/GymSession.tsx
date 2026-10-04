@@ -297,7 +297,7 @@ function GymSession() {
     return (
       <div className="bg-background pb-44 min-h-screen">
         {/* Header */}
-        <div className="sticky top-[env(safe-area-inset-top)] z-10 bg-background/80 backdrop-blur-md border-b">
+        <div className="sticky top-[calc(env(safe-area-inset-top)+var(--offline-h,0px))] z-10 bg-background/80 backdrop-blur-md border-b">
           <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
             <button
             onClick={() => (exercises.length > 0 ? setShowCancelConfirm(true) : handleCancel())}
@@ -420,7 +420,7 @@ function GymSession() {
   return (
     <div className="bg-background min-h-screen">
       {/* Header */}
-      <div className="sticky top-[env(safe-area-inset-top)] z-10 bg-background/80 backdrop-blur-md border-b">
+      <div className="sticky top-[calc(env(safe-area-inset-top)+var(--offline-h,0px))] z-10 bg-background/80 backdrop-blur-md border-b">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => navigate('/')}

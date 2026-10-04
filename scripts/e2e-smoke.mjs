@@ -144,6 +144,15 @@ const steps = [
     await page.getByRole('button', { name: 'Valider la série 1' }).first().click();
     await ctx.setOffline(true);
     try {
+      // offline banner: one line, opaque, and the sticky session header stays below it once scrolled
+      const banner = page.getByRole('status').filter({ hasText: 'Hors ligne' });
+      await banner.waitFor();
+      await page.mouse.wheel(0, 600);
+      await page.waitForTimeout(500);
+      const b = await banner.boundingBox();
+      const header = await page.getByRole('button', { name: "Retour à l'accueil" }).boundingBox();
+      assert.ok(b.height <= 40, `bandeau hors ligne sur plusieurs lignes (${b.height}px)`);
+      assert.ok(header.y >= b.y + b.height, 'en-tête de séance caché sous le bandeau hors ligne');
       await page.getByRole('button', { name: /^Terminer/ }).click();
       await page.getByRole('heading', { name: 'Séance terminée !' }).waitFor();
       await page.getByRole('button', { name: 'Terminer', exact: true }).click();

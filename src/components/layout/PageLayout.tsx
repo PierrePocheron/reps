@@ -35,7 +35,7 @@ export function PageLayout({ children, title, isHome, headerAction, backButton, 
         <div className="flex flex-col min-h-screen pb-24 bg-background">
             {/* Header */}
             {/* Header */}
-            <header className="px-5 py-4 sticky top-[env(safe-area-inset-top)] z-50 bg-background/80 backdrop-blur-md border-b border-border/40">
+            <header className="px-5 py-4 sticky top-[calc(env(safe-area-inset-top)+var(--offline-h,0px))] z-50 bg-background/80 backdrop-blur-md border-b border-border/40">
                 <div className="max-w-2xl mx-auto flex items-center justify-between">
                     {variant === 'secondary' ? (
                         <>
