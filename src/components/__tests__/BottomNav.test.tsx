@@ -56,8 +56,9 @@ describe('BottomNav Component', () => {
         // We can check if any element has 'bg-red-500'.
 
         // Note: Using container.querySelector is a bit fragile but valid for class checks on visual-only elements.
-        const dot = container.querySelector('.bg-red-500.animate-pulse');
-        expect(dot).toBeInTheDocument();
+        // La pastille est annoncée aux lecteurs d'écran avec l'onglet
+        expect(container.querySelector('[aria-hidden].bg-red-600')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Accueil, nouveaux badges' })).toBeInTheDocument();
     });
 
     it('should show friend requests count', () => {
@@ -67,5 +68,6 @@ describe('BottomNav Component', () => {
 
         renderNav();
         expect(screen.getByText('2')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: "Social, 2 demandes d'ami" })).toBeInTheDocument();
     });
 });

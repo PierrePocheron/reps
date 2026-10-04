@@ -75,10 +75,10 @@ export function Layout({ children }: LayoutProps) {
         {children}
       </main>
 
-      {/* BottomNav remontée si pub active */}
+      {/* Barre de navigation flottante (pilule), remontée si pub active ; seule la pilule capte les touchers */}
       <div
-        className="fixed left-0 right-0 z-50 transition-all duration-300"
-        style={{ bottom: bannerHeight > 0 ? `${bannerHeight}px` : 0 }}
+        className="fixed inset-x-0 z-50 pointer-events-none transition-all duration-300"
+        style={{ bottom: `calc(env(safe-area-inset-bottom) + 0.75rem + ${bannerHeight}px)` }}
       >
         <BottomNav />
       </div>

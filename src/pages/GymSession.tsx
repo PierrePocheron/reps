@@ -295,7 +295,7 @@ function GymSession() {
 
   if (phase === 'plan') {
     return (
-      <div className="bg-background pb-40 min-h-screen">
+      <div className="bg-background pb-44 min-h-screen">
         {/* Header */}
         <div className="sticky top-[env(safe-area-inset-top)] z-10 bg-background/80 backdrop-blur-md border-b">
           <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -364,8 +364,8 @@ function GymSession() {
         {/* Bouton Start fixe en bas */}
         {canStart && (
           <div
-            className="fixed left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 py-4"
-            style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
+            className="fixed left-0 right-0 bottom-0 bg-background/95 backdrop-blur-sm border-t px-4 pt-4"
+            style={{ paddingBottom: 'calc(6.25rem + env(safe-area-inset-bottom))' }} // fond jusqu'en bas : la barre de navigation flotte par-dessus
           >
             <div className="max-w-2xl mx-auto">
               <Button
@@ -458,7 +458,7 @@ function GymSession() {
 
       {/* Liste complète des exercices */}
       {/* Marge sous la barre flottante : plus haute avec le minuteur de repos ouvert, sinon il cache le bas de la liste */}
-      <div className={cn('p-4 max-w-2xl mx-auto space-y-4', showRestTimer ? 'pb-[22rem]' : 'pb-48')}>
+      <div className={cn('p-4 max-w-2xl mx-auto space-y-4', showRestTimer ? 'pb-[23.5rem]' : 'pb-52')}>
         {/* Titre de séance (#64) : repris du modèle, modifiable */}
         <input
           value={title}
@@ -572,8 +572,8 @@ function GymSession() {
 
       {/* Barre flottante du bas */}
       <div
-        className="fixed left-0 right-0 bg-background/95 backdrop-blur-sm border-t px-4 pt-3 pb-4"
-        style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
+        className="fixed left-0 right-0 bottom-0 bg-background/95 backdrop-blur-sm border-t px-4 pt-3"
+        style={{ paddingBottom: 'calc(6.25rem + env(safe-area-inset-bottom))' }} // fond jusqu'en bas : la barre de navigation flotte par-dessus
       >
         <div className="max-w-2xl mx-auto space-y-3">
           {showRestTimer && restEndsAt && (
