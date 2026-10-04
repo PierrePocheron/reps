@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { buildJsonExport } from '@/utils/exportJson';
+import { getBodyEntries } from '@/firebase/bodyMetrics';
+import { getUserTemplates } from '@/firebase/templates';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ColorPicker } from '@/components/ui/color-picker';
 import { Input } from '@/components/ui/input';
@@ -114,42 +117,11 @@ function Settings() {
         if (done) toast({ title: 'Export CSV prêt', description: 'Une ligne par série, compatible Strong / Hevy.' });
         return;
       }
-      const exportData = {
-        exportedAt: new Date().toISOString(),
-        user: {
-          displayName: user?.displayName,
-          email: user?.email,
-          weight: user?.weight,
-          height: user?.height,
-          gender: user?.gender,
-          totalReps: user?.totalReps,
-          totalSessions: user?.totalSessions,
-          currentStreak: user?.currentStreak,
-          longestStreak: user?.longestStreak,
-          badges: user?.badges,
-          createdAt: user?.createdAt,
-        },
-        sessions: sessions.map((s) => ({
-          date: s.date.toDate().toISOString(),
-          duration: s.duration,
-          totalReps: s.totalReps,
-          totalCalories: s.totalCalories,
-          exercises: s.exercises,
-        })),
-        gymSessions: gymSessions.map((s) => ({
-          date: s.date.toDate().toISOString(),
-          duration: s.duration,
-          totalVolume: s.totalVolume,
-          totalSets: s.totalSets,
-          exercises: s.exercises.map((ex) => ({
-            name: ex.name,
-            sets: ex.sets.filter((set) => set.completed).map((set) => ({
-              weight: set.actualWeight ?? set.weight,
-              reps: set.actualReps ?? set.reps,
-            })),
-          })),
-        })),
-      };
+      // everything, including body measurements and personal templates (they were missing from « toutes tes données »)
+      const [body, templates] = user?.uid
+        ? await Promise.all([getBodyEntries(user.uid).catch(() => []), getUserTemplates(user.uid).catch(() => [])])
+        : [[], []];
+      const exportData = buildJsonExport({ user, sessions, gymSessions, body, templates });
 
       const done = await saveFile(`reps-export-${day}.json`, JSON.stringify(exportData, null, 2), 'application/json');
       if (done) toast({ title: 'Export prêt', description: 'Toutes tes données au format JSON.' });
@@ -458,7 +430,7 @@ function Settings() {
                 )}
                 <div className="text-left">
                   <p className="font-medium text-sm">Exporter mes données (JSON)</p>
-                  <p className="text-xs text-muted-foreground">Sauvegarde complète : profil, séances, badges</p>
+                  <p className="text-xs text-muted-foreground">Sauvegarde complète : profil, séances, mensurations, modèles</p>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
