@@ -2,7 +2,7 @@
  * Test de fumée de bout en bout sur la démo (émulateurs + données fictives).
  * Prérequis : `yarn dev:demo` lancé. Usage : `yarn e2e` (code de sortie ≠ 0 au premier échec).
  * Couvre les parcours où une régression bloque l'utilisateur : connexion, navigation,
- * séance muscu de bout en bout (note, repos auto, fin de séance), séance renfo, courbe de progression,
+ * séance muscu de bout en bout (note, repos auto, fin de séance et récap), séance renfo, courbe de progression,
  * mise en page sans débordement sur petit écran.
  */
 import assert from 'node:assert/strict';
@@ -62,6 +62,11 @@ const steps = [
     const end = await page.getByRole('button', { name: /^Terminer/ }).boundingBox();
     assert.ok(end && end.y + end.height <= page.viewportSize().height, 'bouton Terminer hors de l\'écran');
     await page.getByRole('button', { name: /^Terminer/ }).click();
+    // écran de récap (#54) : durée, volume, séries, records, puis retour à l'accueil
+    await page.getByRole('heading', { name: 'Séance terminée !' }).waitFor();
+    assert.equal(await page.locator('dl dt').count(), 4, 'récap : 4 chiffres');
+    await assertAlive('récap de fin de séance');
+    await page.getByRole('button', { name: 'Terminer', exact: true }).click();
     await page.waitForURL(`${BASE}/`);
     await assertAlive('fin de séance muscu');
     await page.goto(`${BASE}/history`);

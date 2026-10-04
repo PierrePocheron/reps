@@ -25,7 +25,7 @@ import {
   type LibraryExercise,
 } from '@/utils/exerciseLibrary';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
-import { estimate1RM, bestE1RMByExercise, exerciseHistory, isWorkSet } from '@/utils/records';
+import { estimate1RM, bestE1RMByExercise, exerciseHistory } from '@/utils/records';
 import {
   Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
   Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2, Trophy,
@@ -37,7 +37,10 @@ import {
 import confetti from 'canvas-confetti';
 import { ToastAction } from '@/components/ui/toast';
 import { exactAlarmDenied, openExactAlarmSettings } from '@/utils/restNotification';
-import { gymCard, shareSessionCard } from '@/utils/shareCard';
+import { gymCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
+import { gymSummary, volumeComparison } from '@/utils/summary';
+import { formatDurationLong } from '@/utils/formatters';
+import { SessionSummary, type SummaryStat } from '@/components/SessionSummary';
 import { lastWorkSets, suggestNextWeight, type LoadSuggestion } from '@/utils/progression';
 import { loadPlatePrefs, warmupSets } from '@/utils/plates';
 import { restAfterSet, supersetLetters } from '@/utils/superset';
@@ -116,6 +119,8 @@ function GymSession() {
   // Records de référence (meilleur 1RM estimé par exercice) — ref : lecture synchrone au tap
   const bestsRef = useRef<Record<string, number>>({});
   const [gymHistory, setGymHistory] = useState<GymSessionData[]>([]);
+  // Récap affiché après la fin de séance (#54) ; posé avant endSession pour devancer le retour à l'accueil
+  const [summary, setSummary] = useState<{ stats: SummaryStat[]; comparison: string | null; card: SessionCard } | null>(null);
 
   // Charger les defaults (dernière séance) et les records depuis l'historique muscu
   const uid = user?.uid;
@@ -172,10 +177,19 @@ function GymSession() {
   // Plus de séance (terminée, annulée, accès direct) : retour à l'accueil. Jamais pendant le rendu :
   // la page reste montée pendant l'animation de sortie et relançait la navigation en boucle (gel à la fin de séance)
   useEffect(() => {
-    if (phase === 'idle') navigate('/', { replace: true });
-  }, [phase, navigate]);
+    if (phase === 'idle' && !summary) navigate('/', { replace: true });
+  }, [phase, summary, navigate]);
 
-  if (phase === 'idle') return null;
+  if (phase === 'idle') {
+    return summary && (
+      <SessionSummary
+        stats={summary.stats}
+        comparison={summary.comparison}
+        onShare={() => void shareSessionCard(summary.card).catch(() => {})}
+        onDone={() => navigate('/', { replace: true })}
+      />
+    );
+  }
 
   const letters = supersetLetters(exercises);
   // Dernière note par exercice (historique trié du plus récent au plus ancien)
@@ -222,24 +236,28 @@ function GymSession() {
   };
 
   const handleEndSession = async () => {
-    const recordCount = exercises.reduce((n, ex) => n + ex.sets.filter((st) => st.isRecord).length, 0);
     if (ending) return;
     setEnding(true);
-    // Carte de partage figée avant que endSession ne vide le store
-    const card = gymCard({ date: new Date(), duration: startTime ? Math.floor((Date.now() - startTime) / 1000) : 0, exercises });
+    // Récap et carte de partage figés avant que endSession ne vide le store
+    const duration = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+    const sum = gymSummary(exercises, gymHistory);
+    setSummary({
+      card: gymCard({ date: new Date(), duration, exercises }),
+      comparison: volumeComparison(sum.deltaPct),
+      stats: [
+        { label: 'Durée', value: formatDurationLong(duration) },
+        { label: 'Volume', value: `${sum.volume.toLocaleString('fr-FR')} kg` },
+        { label: 'Séries', value: String(sum.sets) },
+        { label: 'Records', value: sum.records ? `🏆 ${sum.records}` : '0' },
+      ],
+    });
     try {
       await endSession();
-      toast({
-        action: <ToastAction altText="Partager ma séance en image" onClick={() => void shareSessionCard(card).catch(() => {})}>Partager</ToastAction>,
-        title: 'Séance terminée !',
-        description: `${completedSets} séries · ${Math.round(
-          exercises.reduce((v, ex) => v + ex.sets.filter(isWorkSet).reduce((s2, s) => s2 + (s.actualWeight ?? s.weight) * (s.actualReps ?? s.reps), 0), 0)
-        )} kg soulevés${recordCount > 0 ? ` · 🏆 ${recordCount} record${recordCount > 1 ? 's' : ''}` : ''}`,
-      });
       haptics.notification();
       play('complete');
       confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
     } catch {
+      setSummary(null);
       toast({ title: 'Erreur', description: 'Impossible de sauvegarder', variant: 'destructive' });
     } finally {
       setEnding(false);
