@@ -117,3 +117,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | passe UI/UX titre de séance | Séance ouverte à mi-page depuis une carte basse de l'historique (scrollY 1318) → remontée en haut à chaque navigation (sauf retour) + e2e ; champs titre/note OK en clair/sombre à 320 px | `8dcdc0d` |
 | 2026-10-04 | demande Pierre : nav | Barre de navigation flottante en pilule façon Instagram, réduite au défilement, redéployée en remontant / au toucher ; pastilles accessibles ; e2e + AA verts | `1b1a5e2` |
 | 2026-10-04 | mesure bundle | Initial 1 361 Ko (382 Ko gzip, −8 % vs #42 malgré ~30 fonctionnalités) ; framer-motion déjà hors démarrage ; reste Sentry Replay (décision Pierre, #42) | — |
+| 2026-10-04 | demande Pierre : documentation | README réécrit, docs/DEPLOY.md (déploiements + prérequis Play Store / App Store), ENV, RELEASE, TESTS, TOOLS, PLAYSTORE à jour | `757236b` |
