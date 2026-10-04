@@ -121,3 +121,4 @@ Une issue qui en dépend → label `bloqué-pierre` + commentaire, et on passe �
 | 2026-10-04 | mesure bundle | Initial 1 361 Ko (382 Ko gzip, −8 % vs #42 malgré ~30 fonctionnalités) ; framer-motion déjà hors démarrage ; reste Sentry Replay (décision Pierre, #42) | — |
 | 2026-10-04 | demande Pierre : documentation | README réécrit, docs/DEPLOY.md (déploiements + prérequis Play Store / App Store), ENV, RELEASE, TESTS, TOOLS, PLAYSTORE à jour | `757236b` |
 | 2026-10-04 | passe UI/UX barre flottante | 10 pages : rien caché sous la pilule ; **régression de la refonte** : sélecteur du bouton central inerte (pointer-events hérité) → portail + z-[70] + e2e | `5355323` |
+| 2026-10-04 | e2e nouvel utilisateur | Parcours « nouvelle séance depuis le bouton central » (muscu libre + renfo de base, ménage ensuite) — le chemin qui avait cassé sans être vu ; 14 parcours verts | `02f8f7e` |
