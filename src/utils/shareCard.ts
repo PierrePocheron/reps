@@ -66,7 +66,14 @@ export async function renderCard(card: SessionCard): Promise<string> {
   g.fillStyle = '#FFFFFF'; g.textBaseline = 'alphabetic';
   g.font = font(600, 40); g.globalAlpha = 0.8;
   g.fillText(card.subtitle ?? frDate(card.date, { weekday: 'long', day: 'numeric', month: 'long' }), P, 150);
-  g.globalAlpha = 1; g.font = font(800, 96); g.fillText(card.title, P, 260);
+  // Titles go up to 60 characters and ran off the card at 96 px: shrink to fit, then ellipsis as a last resort
+  g.globalAlpha = 1;
+  let size = 96;
+  g.font = font(800, size);
+  while (size > 56 && g.measureText(card.title).width > W - 2 * P) g.font = font(800, (size -= 4));
+  let title = card.title;
+  while (title.length > 1 && g.measureText(title).width > W - 2 * P) title = `${title.slice(0, -2)}…`;
+  g.fillText(title, P, 260);
 
   // Statistiques en tuiles
   const tileW = (W - 2 * P - 30 * (card.stats.length - 1)) / card.stats.length;
