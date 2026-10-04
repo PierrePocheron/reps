@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  frDate,
   formatDate,
   formatDateShort,
   formatDuration,
@@ -106,5 +107,18 @@ describe('plural', () => {
     expect(plural(1.5, 'série')).toBe('1,5 série');
     expect(plural(2, 'série')).toBe('2 séries');
     expect(plural(0, 'jour')).toBe('0 jour');
+  });
+});
+
+describe('frDate', () => {
+  it('writes « 1er » before a month name', () => {
+    expect(frDate(new Date(2026, 9, 1), { weekday: 'long', day: 'numeric', month: 'long' })).toBe('jeudi 1er octobre');
+    expect(frDate(new Date(2026, 9, 1), { day: 'numeric', month: 'short' })).toBe('1er oct.');
+  });
+
+  it('leaves other days and numeric months alone', () => {
+    expect(frDate(new Date(2026, 9, 11), { day: 'numeric', month: 'long' })).toBe('11 octobre');
+    expect(frDate(new Date(2026, 9, 21), { day: 'numeric', month: 'long' })).toBe('21 octobre');
+    expect(frDate(new Date(2026, 9, 1), { day: 'numeric', month: 'numeric' })).toBe('01/10');
   });
 });

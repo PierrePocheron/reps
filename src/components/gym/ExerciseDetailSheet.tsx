@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { frDate } from '@/utils/formatters';
 import { X } from 'lucide-react';
 import { MEDIA_ATTRIBUTION } from '@/hooks/useExerciseImages';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -127,7 +128,7 @@ export function ExerciseDetailSheet({
               <ul className="divide-y rounded-xl border">
                 {log.map((e, i) => (
                   <li key={i} className="flex items-baseline justify-between gap-3 px-3 py-2 text-sm">
-                    <span className="shrink-0 text-xs text-muted-foreground">{e.date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">{frDate(e.date, { day: 'numeric', month: 'short' })}</span>
                     <span className="text-right tabular-nums">{e.record && <span aria-label="Record">🏆 </span>}{e.sets}</span>
                   </li>
                 ))}

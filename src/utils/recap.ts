@@ -1,4 +1,5 @@
 import type { GymSession, Session } from '@/firebase/types';
+import { plural } from '@/utils/formatters';
 import { isWorkSet } from '@/utils/records';
 import { MUSCLE_GROUPS, setsByMuscle, type MuscleGroup } from '@/utils/muscles';
 import type { SessionCard } from '@/utils/shareCard';
@@ -55,7 +56,7 @@ export function recapCard(recap: Recap, label: string, from: Date): SessionCard 
     recap.volume > 0 ? { label: 'Volume', value: `${num(recap.volume)} kg` } : { label: 'Reps', value: num(recap.reps) },
   ];
   if (recap.records > 0) stats.push({ label: recap.records > 1 ? 'Records' : 'Record', value: `🏆 ${recap.records}` });
-  const lines = recap.topMuscles.map((m, i) => ({ name: `${['🥇', '🥈', '🥉'][i]} ${m.group}`, detail: `${num(m.sets)} séries` }));
+  const lines = recap.topMuscles.map((m, i) => ({ name: `${['🥇', '🥈', '🥉'][i]} ${m.group}`, detail: plural(Math.round(m.sets), 'série') })); // whole sets on screen
   if (recap.volume > 0) lines.push({ name: 'Répétitions', detail: num(recap.reps) });
   return { title: 'Mon récap', subtitle: label, date: from, stats, lines, more: 0 };
 }

@@ -2,16 +2,16 @@
  * Utilitaires de formatage pour l'application
  */
 
+/** French date with Intl options, written « 1er octobre » / « 1er oct. » (Intl gives « 1 octobre »). */
+export const frDate = (date: Date, options: Intl.DateTimeFormatOptions): string =>
+  date.toLocaleString('fr-FR', options).replace(/(^|\s)1(?= [a-zéû])/g, '$11er');
+
 /**
  * Formate une date en format français
  */
 export function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(d);
+  return frDate(d, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 /**

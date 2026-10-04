@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUserStore } from '@/store/userStore';
 import { getBodyEntries, saveBodyEntries } from '@/firebase/bodyMetrics';
 import { BODY_FIELDS, bodySeries, upsertBodyEntry, type BodyEntry, type BodyField } from '@/utils/body';
-import { localDay } from '@/utils/formatters';
+import { localDay, frDate } from '@/utils/formatters';
 import { logger } from '@/utils/logger';
 import { cn } from '@/utils/cn';
 
@@ -24,7 +24,7 @@ function MiniChart({ points, unit }: { points: { date: Date; value: number }[]; 
   const t0 = points[0]!.date.getTime(), t1 = points[points.length - 1]!.date.getTime();
   const xy = points.map((p) => [PX + ((p.date.getTime() - t0) / (t1 - t0 || 1)) * (W - 2 * PX), PY + (1 - (p.value - lo) / span) * (H - 2 * PY)] as const);
   const first = vs[0]!, last = vs[vs.length - 1]!;
-  const day = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  const day = (d: Date) => frDate(d, { day: 'numeric', month: 'short' });
   return (
     <div className="space-y-1">
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto text-primary" role="img"

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { frDate } from '@/utils/formatters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -218,7 +219,7 @@ export default function Friends() {
     const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     if (dayDiff === 0) return `Aujourd'hui à ${timeStr}`;
     if (dayDiff === 1) return `Hier à ${timeStr}`;
-    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) + ` à ${timeStr}`;
+    return frDate(date, { day: 'numeric', month: 'short' }) + ` à ${timeStr}`;
   };
 
 

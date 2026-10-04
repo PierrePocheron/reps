@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { plural } from '@/utils/formatters';
+import { plural, frDate } from '@/utils/formatters';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -287,11 +287,7 @@ function Home() {
                         <span className="inline-block text-sm font-semibold first-letter:uppercase">
                           {lastActivity.date ? (
                             <>
-                              {new Date(lastActivity.date.toDate()).toLocaleDateString('fr-FR', {
-                                weekday: 'long',
-                                day: 'numeric',
-                                month: 'long',
-                              })}
+                              {frDate(lastActivity.date.toDate(), { weekday: 'long', day: 'numeric', month: 'long' })}
                               <span className="text-muted-foreground ml-2 font-normal">
                                 {new Date(lastActivity.date.toDate()).toLocaleTimeString('fr-FR', {
                                   hour: '2-digit',

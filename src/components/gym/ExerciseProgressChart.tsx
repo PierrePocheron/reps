@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { frDate } from '@/utils/formatters';
 import { TrendingUp, Trophy } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { ExercisePoint } from '@/utils/records';
@@ -17,7 +18,7 @@ const PERIODS = [
 
 const W = 320, H = 150, PL = 38, PR = 10, PT = 14, PB = 24;
 const fmt = (n: number) => Math.round(n).toLocaleString('fr-FR');
-const dayMonth = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+const dayMonth = (d: Date) => frDate(d, { day: 'numeric', month: 'short' });
 
 /** Courbe de progression d'un exercice (Strong / Hevy : graphique par exercice). */
 export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint[]; timed?: boolean }) {

@@ -1,5 +1,5 @@
 import type { GymSessionExercise, SessionExercise } from '@/firebase/types';
-import { formatDurationLong, localDay } from '@/utils/formatters';
+import { formatDurationLong, localDay, frDate } from '@/utils/formatters';
 import { saveFile } from '@/utils/saveFile';
 import { isWorkSet, isTimed } from '@/utils/records';
 
@@ -65,7 +65,7 @@ export async function renderCard(card: SessionCard): Promise<string> {
   const font = (weight: number, size: number) => `${weight} ${size}px Outfit, Inter, system-ui, sans-serif`;
   g.fillStyle = '#FFFFFF'; g.textBaseline = 'alphabetic';
   g.font = font(600, 40); g.globalAlpha = 0.8;
-  g.fillText(card.subtitle ?? card.date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }), P, 150);
+  g.fillText(card.subtitle ?? frDate(card.date, { weekday: 'long', day: 'numeric', month: 'long' }), P, 150);
   g.globalAlpha = 1; g.font = font(800, 96); g.fillText(card.title, P, 260);
 
   // Statistiques en tuiles

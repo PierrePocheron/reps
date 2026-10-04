@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { plural } from '@/utils/formatters';
+import { plural, frDate } from '@/utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -108,7 +108,7 @@ function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymS
               </div>
               {week.map((cell, di) => {
                 const isSelected = selectedDay?.date.getTime() === cell.date.getTime();
-                const dateLabel = cell.date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+                const dateLabel = frDate(cell.date, { weekday: 'long', day: 'numeric', month: 'long' });
                 return (
                   <button
                     key={di}
@@ -131,7 +131,7 @@ function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymS
         {selectedDay && (
           <>
             <span className="font-medium text-foreground first-letter:uppercase inline-block">
-              {selectedDay.date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+              {frDate(selectedDay.date, { weekday: 'long', day: 'numeric', month: 'long' })}
             </span>
             {' — '}
             {selectedDay.count > 0
@@ -447,7 +447,7 @@ function PeriodRecap({ sessions, gymSessions }: { sessions: Session[]; gymSessio
           {recap.topMuscles[0] && (
             <p className="text-sm">
               Muscle le plus travaillé : <span className="font-semibold">{recap.topMuscles[0].group}</span>
-              <span className="text-muted-foreground"> ({plural(Math.round(recap.topMuscles[0].sets * 10) / 10, 'série')})</span>
+              <span className="text-muted-foreground"> ({plural(Math.round(recap.topMuscles[0].sets), 'série')})</span>
             </p>
           )}
           <button

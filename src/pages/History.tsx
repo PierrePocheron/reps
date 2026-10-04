@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { formatDurationLong, formatNumber } from '@/utils/formatters';
+import { formatDurationLong, formatNumber, frDate } from '@/utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,7 @@ type Tab = 'musculation' | 'renforcement' | 'records';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(date: Date): string {
-  const s = date.toLocaleDateString('fr-FR', {
+  const s = frDate(date, {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -600,7 +600,7 @@ function History() {
               )}
               {shownGymSessions.map((s) => (
                 <MuscuCard key={s.sessionId} session={s} imageMap={imageMap} onRedo={() => redoGym(s)}
-                  onSaveTemplate={() => { setSaveAsTemplate(s); setTemplateName(`Séance du ${s.date.toDate().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}`); }}
+                  onSaveTemplate={() => { setSaveAsTemplate(s); setTemplateName(`Séance du ${frDate(s.date.toDate(), { day: 'numeric', month: 'long' })}`); }}
                   onShare={() => share(gymCard({ date: s.date.toDate(), duration: s.duration, exercises: s.exercises, title: s.title }))}
                   onDelete={() => setToDelete({ kind: 'gym', id: s.sessionId })}
                   onEdit={() => setToEdit(s)} />

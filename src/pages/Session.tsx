@@ -22,7 +22,7 @@ import { useKeepAwake } from '@/hooks/useKeepAwake';
 import { renfoCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
 import { getUserSessions } from '@/firebase/firestore';
 import { comparisonText, deltaPct } from '@/utils/summary';
-import { formatDurationLong } from '@/utils/formatters';
+import { formatDurationLong, frDate } from '@/utils/formatters';
 import { SessionSummary, type SummaryStat } from '@/components/SessionSummary';
 import { BackdateDialog } from '@/components/BackdateDialog';
 import { useSessionStore } from '@/store/sessionStore';
@@ -324,7 +324,7 @@ function Session() {
             {/* Séance oubliée (#58) : la saisir maintenant, l'enregistrer à sa vraie date */}
             <button type="button" onClick={() => setShowBackdate(true)} className="mx-auto block min-h-11 px-3 text-xs font-medium text-muted-foreground hover:text-primary">
               {backdate
-                ? `📅 Enregistrée le ${new Date(backdate.at).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })} · ${Math.round(backdate.duration / 60)} min — modifier`
+                ? `📅 Enregistrée le ${frDate(new Date(backdate.at), { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })} · ${Math.round(backdate.duration / 60)} min — modifier`
                 : '📅 Séance faite plus tôt ? Changer la date'}
             </button>
           </div>

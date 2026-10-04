@@ -29,3 +29,13 @@ describe('récap', () => {
     expect(recapCard(r, 'Septembre 2026', new Date(2026, 8, 1)).stats.map((s) => s.label)).toEqual(['Séances', 'Jours', 'Volume', 'Record']);
   });
 });
+
+describe('recapCard muscles', () => {
+  it('shows whole sets (secondary muscles count half a set internally)', () => {
+    const recap = { sessions: 3, trainingDays: 2, volume: 1000, reps: 50, records: 0,
+      topMuscles: [{ group: 'Bras', sets: 28.5 }, { group: 'Dos', sets: 1 }] } as never;
+    const lines = recapCard(recap, 'Octobre 2026', new Date(2026, 9, 1)).lines;
+    expect(lines[0]!.detail).toBe('29 séries');
+    expect(lines[1]!.detail).toBe('1 série');
+  });
+});
