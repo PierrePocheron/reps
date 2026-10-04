@@ -75,3 +75,25 @@ describe('gymSessionStore — repos par exercice (#49)', () => {
     expect(saved.restByExercise).toEqual({ barbell_squat: 180 });
   });
 });
+
+describe('gymSessionStore — repos −15 s / +15 s (#51)', () => {
+  it('décale la fin sans relancer le décompte, sans passer avant maintenant, et suit la notification', async () => {
+    const { scheduleRestEnd } = await import('@/utils/restNotification');
+    const { adjustRest } = useGymSessionStore.getState();
+    const end = Date.now() + 30_000;
+    useGymSessionStore.setState({ showRestTimer: true, restEndsAt: end });
+    vi.mocked(scheduleRestEnd).mockClear();
+
+    adjustRest(15);
+    expect(useGymSessionStore.getState().restEndsAt).toBe(end + 15_000);
+    expect(scheduleRestEnd).toHaveBeenLastCalledWith(end + 15_000);
+
+    adjustRest(-15); adjustRest(-15); adjustRest(-15);
+    expect(useGymSessionStore.getState().restEndsAt).toBeGreaterThanOrEqual(Date.now() - 50);
+    expect(useGymSessionStore.getState().restEndsAt).toBeLessThanOrEqual(Date.now());
+
+    useGymSessionStore.setState({ showRestTimer: false, restEndsAt: null });
+    adjustRest(15); // pas de repos en cours : rien
+    expect(useGymSessionStore.getState().restEndsAt).toBeNull();
+  });
+});

@@ -75,6 +75,7 @@ function GymSession() {
     startExecution,
     dismissRestTimer,
     setRestDuration,
+    adjustRest,
     endSession,
     cancelSession,
     getTotalSets,
@@ -504,6 +505,7 @@ function GymSession() {
               forName={exercises.find((ex) => ex.exerciseId === restExerciseId)?.name}
               onDismiss={dismissRestTimer}
               onChangeDuration={setRestDuration}
+              onAdjust={adjustRest}
               autoRest={autoRest}
               onToggleAutoRest={() => setAutoRest(!autoRest)}
             />
@@ -896,6 +898,7 @@ function InlineRestTimer({
   autoRest,
   onToggleAutoRest,
   forName,
+  onAdjust,
 }: {
   endsAt: number;
   durationSeconds: number;
@@ -904,6 +907,7 @@ function InlineRestTimer({
   onChangeDuration: (v: number) => void;
   autoRest: boolean;
   onToggleAutoRest: () => void;
+  onAdjust: (deltaSeconds: number) => void;
 }) {
   const haptics = useHaptic();
   const secondsLeft = () => Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
@@ -924,7 +928,7 @@ function InlineRestTimer({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- secondsLeft ne dépend que de endsAt
   }, [endsAt, onDismiss, haptics]);
 
-  const pct = durationSeconds > 0 ? (remaining / durationSeconds) * 100 : 0;
+  const pct = durationSeconds > 0 ? Math.min(100, (remaining / durationSeconds) * 100) : 0;
 
   return (
     <div className="bg-card border rounded-xl p-3 space-y-2">
@@ -952,11 +956,17 @@ function InlineRestTimer({
         </div>
       </div>
 
-      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-        <div
-          className="h-full bg-primary rounded-full transition-all duration-1000"
-          style={{ width: `${pct}%` }}
-        />
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={() => onAdjust(-15)} aria-label="Raccourcir le repos de 15 secondes"
+          className="min-h-9 px-2.5 rounded-lg bg-muted text-xs font-medium tabular-nums active:scale-95">−15 s</button>
+        <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full bg-primary rounded-full transition-all duration-1000"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <button type="button" onClick={() => onAdjust(15)} aria-label="Allonger le repos de 15 secondes"
+          className="min-h-9 px-2.5 rounded-lg bg-muted text-xs font-medium tabular-nums active:scale-95">+15 s</button>
       </div>
 
       <div className="flex gap-1">

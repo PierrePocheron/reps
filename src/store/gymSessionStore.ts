@@ -48,6 +48,7 @@ interface GymSessionState {
   startRestTimer: (exerciseId?: string) => void;
   dismissRestTimer: () => void;
   setRestDuration: (seconds: number) => void;
+  adjustRest: (deltaSeconds: number) => void;
   setAutoRest: (on: boolean) => void;
   setShowRpe: (on: boolean) => void;
   setSuggestLoad: (on: boolean) => void;
@@ -229,6 +230,15 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     if (showRestTimer && id) set((s) => ({ restByExercise: { ...s.restByExercise, [id]: seconds } }));
     else set({ restDuration: seconds });
     if (showRestTimer) get().startRestTimer(id ?? undefined); // changer la durée relance le repos
+  },
+
+  // −15 s / +15 s (Strong) : décale la fin sans relancer le décompte, jamais avant maintenant
+  adjustRest: (deltaSeconds: number) => {
+    const { restEndsAt } = get();
+    if (!restEndsAt) return;
+    const next = Math.max(Date.now(), restEndsAt + deltaSeconds * 1000);
+    set({ restEndsAt: next });
+    void scheduleRestEnd(next);
   },
 
   setAutoRest: (on: boolean) => set({ autoRest: on }),

@@ -96,6 +96,13 @@ const steps = [
     await cards.nth(1).getByRole('button', { name: /^Valider la série 1/ }).click();
     await page.getByRole('switch', { name: /Repos auto/ }).waitFor();
     await page.getByText(/^Durée retenue pour /).waitFor(); // repos propre à l'exercice (#49)
+    // +15 s décale la fin du repos sans relancer le décompte (#51)
+    const left = async () => { const [m, sec] = (await page.locator('.tabular-nums.text-2xl').first().innerText()).split(':').map(Number); return m * 60 + sec; };
+    const before = await left();
+    await page.getByRole('button', { name: 'Allonger le repos de 15 secondes' }).click();
+    for (let i = 0; i < 20 && (await left()) < before + 13; i++) await page.waitForTimeout(100);
+    const after = await left();
+    assert.ok(after >= before + 13, `+15 s ajoute 15 s au repos (${before} → ${after})`);
     // annuler : rien n'est enregistré, retour à l'accueil
     await page.getByRole('button', { name: 'Annuler la séance' }).first().click();
     await page.getByRole('dialog').or(page.locator('[aria-labelledby=cancel-session-title]')).getByRole('button', { name: 'Annuler la séance' }).click();
