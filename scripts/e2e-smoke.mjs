@@ -54,6 +54,43 @@ const steps = [
     await assertAlive('navigation');
   }],
 
+  ['nouvelle séance depuis le bouton central (muscu puis renfo)', async () => {
+    const center = () => page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('button', { name: 'Nouvelle séance' });
+    const finish = async () => {
+      await page.getByRole('heading', { name: 'Séance terminée !' }).waitFor();
+      await page.getByRole('button', { name: 'Terminer', exact: true }).click();
+      await page.waitForURL(`${BASE}/`);
+    };
+    // muscu : séance libre, un exercice ajouté depuis le sélecteur
+    await page.goto(`${BASE}/`);
+    await center().click();
+    await page.getByRole('button', { name: /^Musculation/ }).click();
+    await page.waitForURL(`${BASE}/gym`);
+    await page.getByRole('button', { name: /Ajouter un exercice/ }).first().click();
+    await page.getByRole('button', { name: /Développé couché/ }).first().click();
+    await page.getByRole('button', { name: /^Valider la série 1/ }).first().click();
+    await page.getByRole('button', { name: /^Terminer/ }).click();
+    await finish();
+    // renfo : séance de base
+    await center().click();
+    await page.getByRole('button', { name: /^Renforcement/ }).click();
+    await page.waitForURL(`${BASE}/session`);
+    await page.getByRole('button', { name: /Séance de base/ }).click();
+    await page.getByText('+10', { exact: true }).first().click();
+    await page.getByRole('button', { name: /Terminer la séance/ }).click();
+    await finish();
+    // ménage : ces deux séances (les plus récentes) ne doivent pas servir de modèle aux parcours suivants
+    for (const tab of [/Muscu/, /Renfo/]) {
+      await page.goto(`${BASE}/history`);
+      await page.getByRole('tab', { name: tab }).click();
+      await page.getByRole('button', { name: 'Actions de la séance' }).first().click();
+      await page.getByRole('menuitem', { name: 'Supprimer' }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Supprimer', exact: true }).click();
+      await page.getByText('Séance supprimée').first().waitFor();
+    }
+    await assertAlive('nouvelle séance');
+  }],
+
   ['séance muscu : refaire, note, repos auto, terminer', async () => {
     await page.goto(`${BASE}/history`);
     await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();

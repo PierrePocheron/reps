@@ -29,11 +29,12 @@ Ce projet utilise des **tests unitaires**, des **tests d'intégration légère**
 
 ### Test de fumée E2E (`yarn e2e`)
 
-`scripts/e2e-smoke.mjs` pilote un vrai navigateur (Playwright) sur la démo. Il enchaîne 13 parcours :
+`scripts/e2e-smoke.mjs` pilote un vrai navigateur (Playwright) sur la démo. Il enchaîne 14 parcours :
 
 | Parcours | Ce qui est vérifié |
 |---|---|
 | Connexion, navigation | Chaque onglet de la barre flottante ouvre sa page ; le bouton central ouvre un sélecteur de séance qui répond |
+| Nouvelle séance (bouton central) | Muscu : séance libre, exercice ajouté, série validée, récap ; renfo : séance de base, récap ; séances supprimées ensuite |
 | Séance muscu complète | Refaire, titre et note, rappel « Précédent », repos auto, barre fixée, écran de récap, carte titrée dans l'historique |
 | Séance renfo | Refaire, compter, récap avec comparaison |
 | Échauffement, superset, repos | Échauffement en tête, échanger deux exercices, pas de repos au milieu d'un tour, ±15 s, durée retenue, exercice en secondes + chrono, remplacer un exercice, annulation |
