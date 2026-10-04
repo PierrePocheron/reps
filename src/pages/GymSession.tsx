@@ -113,9 +113,10 @@ function GymSession() {
   const [gymHistory, setGymHistory] = useState<GymSessionData[]>([]);
 
   // Charger les defaults (dernière séance) et les records depuis l'historique muscu
+  const uid = user?.uid;
   useEffect(() => {
-    if (!user || phase === 'idle') return;
-    getUserGymSessions(user.uid, 200).then((sessions) => {
+    if (!uid || phase === 'idle') return;
+    getUserGymSessions(uid, 200).then((sessions) => {
       bestsRef.current = bestE1RMByExercise(sessions);
       setGymHistory(sessions);
       const defaults: Record<string, { reps: number; weight: number }> = {};
@@ -137,7 +138,7 @@ function GymSession() {
       }
       setHistoryDefaults(defaults);
     }).catch(() => { /* defaults facultatifs : on ignore l'échec */ });
-  }, [user?.uid, phase]);
+  }, [uid, phase]);
 
 
   // Mise à jour du timer

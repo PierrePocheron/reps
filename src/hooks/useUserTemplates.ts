@@ -4,45 +4,45 @@ import { useUserStore } from '@/store/userStore';
 import type { WorkoutTemplate } from '@/firebase/types';
 
 export function useUserTemplates() {
-  const { user } = useUserStore();
+  const uid = useUserStore().user?.uid;
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    if (!user) { setLoading(false); return; }
+    if (!uid) { setLoading(false); return; }
     setLoading(true);
-    const data = await getUserTemplates(user.uid);
+    const data = await getUserTemplates(uid);
     setTemplates(data);
     setLoading(false);
-  }, [user?.uid]);
+  }, [uid]);
 
   useEffect(() => { load(); }, [load]);
 
   const create = useCallback(
     async (data: Omit<WorkoutTemplate, 'id' | 'userId' | 'createdAt'>) => {
-      if (!user) return;
-      const created = await createUserTemplate(user.uid, data);
+      if (!uid) return;
+      const created = await createUserTemplate(uid, data);
       setTemplates((prev) => [created, ...prev]);
     },
-    [user?.uid]
+    [uid]
   );
 
   const remove = useCallback(
     async (templateId: string) => {
-      if (!user) return;
-      await deleteUserTemplate(user.uid, templateId);
+      if (!uid) return;
+      await deleteUserTemplate(uid, templateId);
       setTemplates((prev) => prev.filter((t) => t.id !== templateId));
     },
-    [user?.uid]
+    [uid]
   );
 
   const update = useCallback(
     async (templateId: string, data: Omit<WorkoutTemplate, 'id' | 'userId' | 'createdAt'>) => {
-      if (!user) return;
-      await updateUserTemplate(user.uid, templateId, data);
+      if (!uid) return;
+      await updateUserTemplate(uid, templateId, data);
       setTemplates((prev) => prev.map((t) => (t.id === templateId ? { ...t, ...data } : t)));
     },
-    [user?.uid]
+    [uid]
   );
 
   return { templates, loading, create, remove, update };

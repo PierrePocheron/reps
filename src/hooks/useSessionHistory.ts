@@ -13,7 +13,7 @@ export interface SessionHistory {
 }
 
 export function useSessionHistory(limitCount = 200): SessionHistory {
-  const { user } = useUserStore();
+  const uid = useUserStore().user?.uid;
   const [sessions, setSessions] = useState<Session[]>([]);
   const [gymSessions, setGymSessions] = useState<GymSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +21,7 @@ export function useSessionHistory(limitCount = 200): SessionHistory {
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
-    if (!user) {
+    if (!uid) {
       setLoading(false);
       return;
     }
@@ -29,8 +29,8 @@ export function useSessionHistory(limitCount = 200): SessionHistory {
     setLoading(true);
     setError(false);
     Promise.all([
-      getUserSessions(user.uid, limitCount),
-      getUserGymSessions(user.uid, limitCount),
+      getUserSessions(uid, limitCount),
+      getUserGymSessions(uid, limitCount),
     ])
       .then(([s, g]) => {
         setSessions(s);
@@ -38,7 +38,7 @@ export function useSessionHistory(limitCount = 200): SessionHistory {
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [user?.uid, limitCount, tick]);
+  }, [uid, limitCount, tick]);
 
   return { sessions, gymSessions, loading, error, refetch: () => setTick((t) => t + 1) };
 }

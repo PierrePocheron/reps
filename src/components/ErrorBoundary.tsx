@@ -126,23 +126,3 @@ class ErrorBoundary extends Component<Props, State> {
 }
 
 export default ErrorBoundary;
-
-// Export HOC Sentry wrapper (optionnel, pour wrapping spécifique)
-export const withErrorBoundary = <P extends object>(
-  Component: React.ComponentType<P>
-): React.ComponentType<P> => {
-  return Sentry.withErrorBoundary(Component, {
-    fallback: ({ error, resetError }: { error: unknown; resetError: () => void }) => (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="max-w-md space-y-4 text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-600" />
-          <h2 className="text-xl font-bold">Erreur</h2>
-          <p className="text-sm text-gray-600">
-            {error instanceof Error ? error.message : 'Une erreur est survenue'}
-          </p>
-          <Button onClick={resetError}>Réessayer</Button>
-        </div>
-      </div>
-    ),
-  });
-};

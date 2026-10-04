@@ -38,6 +38,9 @@ jobs:
     - name: Type Check
       run: yarn type-check
 
+    - name: Lint
+      run: yarn lint
+
     - name: Build
       run: yarn build
       env:
