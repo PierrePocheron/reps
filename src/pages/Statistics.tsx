@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { plural } from '@/utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -446,7 +447,7 @@ function PeriodRecap({ sessions, gymSessions }: { sessions: Session[]; gymSessio
           {recap.topMuscles[0] && (
             <p className="text-sm">
               Muscle le plus travaillé : <span className="font-semibold">{recap.topMuscles[0].group}</span>
-              <span className="text-muted-foreground"> ({recap.topMuscles[0].sets.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} séries)</span>
+              <span className="text-muted-foreground"> ({plural(Math.round(recap.topMuscles[0].sets * 10) / 10, 'série')})</span>
             </p>
           )}
           <button

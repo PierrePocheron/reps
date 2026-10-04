@@ -66,6 +66,11 @@ export function formatReps(reps: number): string {
   return `${formatNumber(reps)} rep${reps > 1 ? 's' : ''}`;
 }
 
+/** « 1 série », « 1,5 série », « 2 séries » : pluriel à partir de 2 (règle française). */
+export function plural(n: number, word: string): string {
+  return `${formatNumber(n)} ${word}${Math.abs(n) >= 2 ? 's' : ''}`;
+}
+
 /**
  * Formate une date relative (ex: "Il y a 2 jours")
  */

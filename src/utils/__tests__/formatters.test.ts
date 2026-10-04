@@ -6,7 +6,8 @@ import {
   formatDurationLong,
   formatNumber,
   formatReps,
-  formatRelativeDate
+  formatRelativeDate,
+  plural
 } from '../formatters';
 
 describe('Formatters Utils', () => {
@@ -96,5 +97,14 @@ describe('Formatters Utils', () => {
         const d = new Date('2020-01-01');
         expect(formatRelativeDate(d)).toBe('01/01/2020');
       });
+  });
+});
+
+describe('plural', () => {
+  it('pluriel à partir de 2, comme en français', () => {
+    expect(plural(1, 'série')).toBe('1 série');
+    expect(plural(1.5, 'série')).toBe('1,5 série');
+    expect(plural(2, 'série')).toBe('2 séries');
+    expect(plural(0, 'jour')).toBe('0 jour');
   });
 });

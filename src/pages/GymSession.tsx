@@ -39,7 +39,7 @@ import { ToastAction } from '@/components/ui/toast';
 import { exactAlarmDenied, openExactAlarmSettings } from '@/utils/restNotification';
 import { gymCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
 import { gymSummary, comparisonText } from '@/utils/summary';
-import { formatDurationLong } from '@/utils/formatters';
+import { formatDurationLong, plural } from '@/utils/formatters';
 import { SessionSummary, type SummaryStat } from '@/components/SessionSummary';
 import { lastWorkSets, suggestNextWeight, type LoadSuggestion } from '@/utils/progression';
 import { loadPlatePrefs, warmupSets } from '@/utils/plates';
@@ -354,7 +354,7 @@ function GymSession() {
                 onClick={startExecution}
               >
                 <Play className="mr-2 h-5 w-5 fill-current" />
-                Démarrer la séance ({totalSets} séries)
+                Démarrer la séance ({plural(totalSets, 'série')})
               </Button>
             </div>
           </div>
@@ -413,7 +413,7 @@ function GymSession() {
             <h1 className="font-bold text-lg leading-none">En séance</h1>
             <div className="flex items-center gap-1 text-xs text-primary font-medium">
               <Weight className="w-3 h-3" />
-              <span>{completedSets}/{totalSets} séries</span>
+              <span>{completedSets}/{plural(totalSets, 'série')}</span>
             </div>
           </div>
           <Timer startTime={startTime} isActive={phase === 'execute'} />
@@ -428,7 +428,7 @@ function GymSession() {
         aria-valuemin={0}
         aria-valuemax={totalSets}
         aria-valuenow={completedSets}
-        aria-valuetext={`${completedSets} séries sur ${totalSets}`}
+        aria-valuetext={`${plural(completedSets, 'série')} sur ${totalSets}`}
       >
         <div
           className="bg-primary h-1 transition-all duration-500"

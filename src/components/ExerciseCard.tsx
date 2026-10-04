@@ -1,4 +1,5 @@
 import { forwardRef, useEffect, useState } from 'react';
+import { plural } from '@/utils/formatters';
 import { motion } from 'framer-motion';
 import { Plus, Trash2, Undo2 } from 'lucide-react';
 
@@ -98,7 +99,7 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
                   <Button
                     variant="ghost"
                     className="h-11 min-w-11 px-2 gap-0.5 text-xs font-semibold text-muted-foreground"
-                    aria-label={`Annuler l'ajout de ${lastAdded} répétitions`}
+                    aria-label={`Annuler l'ajout de ${plural(lastAdded, 'répétition')}`}
                     onClick={() => { onAddReps(-lastAdded); setLastAdded(null); }}
                     onTouchStart={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
@@ -127,7 +128,7 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
                 <motion.button
                   key={value}
                   type="button"
-                  aria-label={`Ajouter ${value} répétitions`}
+                  aria-label={`Ajouter ${plural(value, 'répétition')}`}
                   whileTap={{ scale: 0.9 }}
                   onTouchStart={(e) => e.stopPropagation()}
                   onMouseDown={(e) => e.stopPropagation()}

@@ -11,7 +11,7 @@ import { ProfilEditForm } from '@/components/ProfilEditForm';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { getUnlockedBadges, getNextBadge } from '@/utils/constants';
-import { formatNumber } from '@/utils/formatters';
+import { formatNumber, plural } from '@/utils/formatters';
 import { Settings, LogOut, Award, Target, Users, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/UserAvatar';
@@ -220,12 +220,12 @@ function Profil() {
                   <p className="text-sm text-muted-foreground">
                     {nextBadge.name} — encore {
                       nextBadge.category === 'total_reps' ? `${formatNumber(nextBadge.threshold - stats!.totalReps)} reps` :
-                      nextBadge.category === 'streak' ? `${nextBadge.threshold - stats!.currentStreak} jours` :
+                      nextBadge.category === 'streak' ? plural(nextBadge.threshold - stats!.currentStreak, 'jour') :
                       nextBadge.category === 'total_calories' ? `${formatNumber(nextBadge.threshold - (stats!.totalCalories || 0))} kcal` :
-                      nextBadge.category === 'time_morning' ? `${nextBadge.threshold - (stats!.morningSessions || 0)} séances` :
-                      nextBadge.category === 'time_lunch' ? `${nextBadge.threshold - (stats!.lunchSessions || 0)} séances` :
-                      nextBadge.category === 'time_night' ? `${nextBadge.threshold - (stats!.nightSessions || 0)} séances` :
-                      `${nextBadge.threshold - stats!.totalSessions} séances`
+                      nextBadge.category === 'time_morning' ? plural(nextBadge.threshold - (stats!.morningSessions || 0), 'séance') :
+                      nextBadge.category === 'time_lunch' ? plural(nextBadge.threshold - (stats!.lunchSessions || 0), 'séance') :
+                      nextBadge.category === 'time_night' ? plural(nextBadge.threshold - (stats!.nightSessions || 0), 'séance') :
+                      plural(nextBadge.threshold - stats!.totalSessions, 'séance')
                     }
                   </p>
                 </div>

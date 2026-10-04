@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { plural } from '@/utils/formatters';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -143,7 +144,7 @@ function Home() {
   const sessionLabel = gymPhase === 'plan'
     ? `Planification · ${gymExercises.length} exo`
     : gymPhase === 'execute'
-    ? `${getCompletedSets()}/${getTotalSets()} séries`
+    ? `${getCompletedSets()}/${plural(getTotalSets(), 'série')}`
     : isActive
     ? `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`
     : '';

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { plural } from '@/utils/formatters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -59,7 +60,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
       if (username !== user.displayName) {
         // 1. Check Rate Limit
         if (!canEditUsername) {
-          throw new Error(`Tu dois attendre ${getDaysBeforeNextChange()} jours avant de changer de pseudo.`);
+          throw new Error(`Tu dois attendre ${plural(getDaysBeforeNextChange(), 'jour')} avant de changer de pseudo.`);
         }
 
         // 2. Check Regex
@@ -172,7 +173,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
         </div>
         {!canEditUsername && (
             <p className="text-xs text-orange-700 dark:text-orange-400">
-                Tu pourras changer de pseudo dans {getDaysBeforeNextChange()} jours.
+                Tu pourras changer de pseudo dans {plural(getDaysBeforeNextChange(), 'jour')}.
             </p>
         )}
         {canEditUsername && (
