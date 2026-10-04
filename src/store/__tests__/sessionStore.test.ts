@@ -272,6 +272,17 @@ describe('sessionStore', () => {
       expect(useSessionStore.getState().isActive).toBe(false);
     });
 
+    it('séance oubliée (#58) : enregistrée à la date et avec la durée saisies, puis oubliée', async () => {
+      const at = Date.now() - 2 * 86_400_000;
+      useSessionStore.setState({ isActive: true, startTime: Date.now() - 5000, exercises: [{ name: 'Pompes', emoji: '🔥', reps: 20 }], totalReps: 20 });
+      useSessionStore.getState().setBackdate({ at, duration: 1800 });
+      await useSessionStore.getState().endSession();
+      const saved = vi.mocked(firebaseModule.createSession).mock.calls[0]![1] as { date: { toDate: () => Date }; duration: number };
+      expect(saved.date.toDate().getTime()).toBe(at);
+      expect(saved.duration).toBe(1800);
+      expect(useSessionStore.getState().backdate).toBeNull();
+    });
+
     it('should throw if no user is connected', async () => {
       
       vi.mocked(userStoreModule.useUserStore.getState).mockReturnValueOnce({ currentUser: null, user: null } as any);

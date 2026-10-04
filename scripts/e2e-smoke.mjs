@@ -152,7 +152,7 @@ const steps = [
     await assertAlive('records');
   }],
 
-  ['séance oubliée : enregistrée à une date passée', async () => {
+  ['séance oubliée muscu et renfo : enregistrée à une date passée', async () => {
     await page.goto(`${BASE}/history`);
     await page.getByRole('tab', { name: /Muscu/ }).click();
     await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
@@ -172,6 +172,23 @@ const steps = [
     await page.goto(`${BASE}/history`);
     await page.getByRole('tab', { name: /Muscu/ }).click();
     await page.getByText('06:12').first().waitFor(); // rangée à sa date dans l'historique
+    // renfo : même chose
+    await page.getByRole('tab', { name: /Renfo/ }).click();
+    await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+    await page.waitForURL(`${BASE}/session`);
+    await page.getByText('+10', { exact: true }).first().click();
+    await page.getByRole('button', { name: /Séance faite plus tôt/ }).click();
+    const d4 = new Date(Date.now() - 4 * 86_400_000);
+    await page.fill('#backdate-at', `${d4.getFullYear()}-${String(d4.getMonth() + 1).padStart(2, '0')}-${String(d4.getDate()).padStart(2, '0')}T05:47`);
+    await page.fill('#backdate-min', '30');
+    await page.getByRole('dialog').getByRole('button', { name: 'Valider' }).click();
+    await page.getByRole('button', { name: /Terminer la séance/ }).click();
+    await page.getByRole('heading', { name: 'Séance terminée !' }).waitFor();
+    await page.getByText('30min 00s').waitFor();
+    await page.getByRole('button', { name: 'Terminer', exact: true }).click();
+    await page.goto(`${BASE}/history`);
+    await page.getByRole('tab', { name: /Renfo/ }).click();
+    await page.getByText('05:47').first().waitFor();
     await assertAlive('séance oubliée');
   }],
 

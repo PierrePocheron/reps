@@ -21,6 +21,7 @@ interface SessionState {
   exercises: SessionExercise[];
   duration: number; // en secondes
   totalReps: number;
+  backdate: { at: number; duration: number } | null; // séance oubliée (#58) : date passée et durée (s)
 
   // Actions
   startSession: () => void;
@@ -29,6 +30,7 @@ interface SessionState {
   removeExercise: (exerciseName: string) => void;
   addReps: (exerciseName: string, reps: number) => void;
   resetSession: () => void;
+  setBackdate: (backdate: { at: number; duration: number } | null) => void;
   loadExercisesFromTemplate: (exerciseIds: string[]) => void;
   loadExercises: (exercises: { name: string; emoji: string }[]) => void;
   loadSessionFromLocal: () => void;
@@ -47,6 +49,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   exercises: [],
   duration: 0,
   totalReps: 0,
+  backdate: null,
 
   /**
    * Démarre une nouvelle session
@@ -81,14 +84,15 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         throw new Error('Aucun utilisateur connecté');
       }
 
-      // Calculer la durée
-      const duration = Math.floor((Date.now() - startTime) / 1000);
+      // Durée réelle, ou celle saisie pour une séance oubliée
+      const { backdate } = get();
+      const duration = backdate ? backdate.duration : Math.floor((Date.now() - startTime) / 1000);
 
       const totalCalories = renfoCalories(user, exercises);
 
       // Créer la session dans Firestore
       await createSession(currentUser.uid, {
-        date: Timestamp.now(),
+        date: backdate ? Timestamp.fromDate(new Date(backdate.at)) : Timestamp.now(),
         duration,
         exercises,
         totalReps,
@@ -200,8 +204,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       exercises: [],
       duration: 0,
       totalReps: 0,
+      backdate: null,
     });
   },
+
+  // Jamais dans le futur : la date est ramenée à maintenant au pire
+  setBackdate: (backdate) => set({ backdate: backdate && { at: Math.min(backdate.at, Date.now()), duration: Math.max(0, backdate.duration) } }),
 
   /**
    * Pré-charge des exercices depuis un template (sans démarrer la session)

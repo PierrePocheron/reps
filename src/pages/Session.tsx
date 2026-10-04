@@ -24,6 +24,8 @@ import { getUserSessions } from '@/firebase/firestore';
 import { comparisonText, deltaPct } from '@/utils/summary';
 import { formatDurationLong } from '@/utils/formatters';
 import { SessionSummary, type SummaryStat } from '@/components/SessionSummary';
+import { BackdateDialog } from '@/components/BackdateDialog';
+import { useSessionStore } from '@/store/sessionStore';
 
 function Session() {
   const navigate = useNavigate();
@@ -53,6 +55,9 @@ function Session() {
   // Récap de fin de séance (#54) et reps de la séance renfo précédente, chargées dès l'ouverture
   const [summary, setSummary] = useState<{ stats: SummaryStat[]; comparison: string | null; card: SessionCard } | null>(null);
   const [previousReps, setPreviousReps] = useState<number | null>(null);
+  const backdate = useSessionStore((st) => st.backdate);
+  const setBackdate = useSessionStore((st) => st.setBackdate);
+  const [showBackdate, setShowBackdate] = useState(false);
   const uid = user?.uid;
   useEffect(() => {
     if (!uid) return;
@@ -87,9 +92,9 @@ function Session() {
 
     setIsEnding(true);
     // Récap et carte de partage figés avant que endSession ne vide le store
-    const duration = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+    const duration = backdate ? backdate.duration : startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
     setSummary({
-      card: renfoCard({ date: new Date(), duration, exercises, totalReps, totalCalories: currentCalories }),
+      card: renfoCard({ date: new Date(backdate?.at ?? Date.now()), duration, exercises, totalReps, totalCalories: currentCalories }),
       comparison: comparisonText(deltaPct(totalReps, previousReps), 'reps'),
       stats: [
         { label: 'Durée', value: formatDurationLong(duration) },
@@ -314,7 +319,16 @@ function Session() {
               {isEnding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Square className="mr-2 h-4 w-4 fill-current" />}
               Terminer la séance
             </Button>
+            {/* Séance oubliée (#58) : la saisir maintenant, l'enregistrer à sa vraie date */}
+            <button type="button" onClick={() => setShowBackdate(true)} className="mx-auto block min-h-11 px-3 text-xs font-medium text-muted-foreground hover:text-primary">
+              {backdate
+                ? `📅 Enregistrée le ${new Date(backdate.at).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })} · ${Math.round(backdate.duration / 60)} min — modifier`
+                : '📅 Séance faite plus tôt ? Changer la date'}
+            </button>
           </div>
+        )}
+        {showBackdate && (
+          <BackdateDialog initial={backdate} onCancel={() => setShowBackdate(false)} onSave={(b) => { setBackdate(b); setShowBackdate(false); }} />
         )}
       </div>
 
