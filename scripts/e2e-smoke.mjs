@@ -365,11 +365,14 @@ const steps = [
   }],
 
   ['importer un CSV Strong (aperçu, import, pas de doublon)', async () => {
-    // date passée unique à chaque exécution : n'interfère ni avec la série ni avec les séances récentes
-    const m = new Date().getMinutes(), h = new Date().getHours();
+    // past date unique per run (one minute slot in 2025 per run minute): duplicate detection is ±1 min, and the
+    // previous HH:MM-only date clashed with any earlier run at the same time of day since the demo was seeded
+    const d = new Date(new Date(2025, 0, 1).getTime() + (Math.floor(Date.now() / 60_000) % (360 * 1440)) * 60_000);
+    const p2 = (n) => String(n).padStart(2, '0');
+    const stamp = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())} ${p2(d.getHours())}:${p2(d.getMinutes())}:00`;
     const csv = ['Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE',
-      `2025-03-15 ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00,Push,0h 45m,Développé couché,1,40,10,,,,,`,
-      `2025-03-15 ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00,Push,0h 45m,Machine inconnue e2e,1,20,12,,,,,`].join('\n');
+      `${stamp},Push,0h 45m,Développé couché,1,40,10,,,,,`,
+      `${stamp},Push,0h 45m,Machine inconnue e2e,1,20,12,,,,,`].join('\n');
     const file = { name: 'strong.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) };
     await page.goto(`${BASE}/settings`);
     const btn = page.getByRole('button', { name: /Importer depuis Strong ou Hevy/ });
@@ -377,7 +380,7 @@ const steps = [
     for (let i = 0; i < 100 && await btn.isDisabled(); i++) await page.waitForTimeout(100); // historique chargé
     await page.locator('input[type=file][accept*=csv]').setInputFiles(file);
     const dialog = page.getByRole('dialog');
-    await dialog.getByText(/1 séance du 15\/03\/2025/).waitFor();
+    await dialog.getByText(`1 séance du ${d.toLocaleDateString('fr-FR')}`, { exact: false }).waitFor();
     await dialog.getByText(/1\/2 exercices reconnus/).waitFor();
     await dialog.getByRole('button', { name: 'Importer' }).click();
     await page.getByText('1 séance importée').first().waitFor();
@@ -440,7 +443,7 @@ for (const [name, run] of steps) {
     console.log(`✓ ${name}`);
   } catch (err) {
     failed = true;
-    console.error(`✗ ${name}\n  ${err.message.split('\n')[0]}`);
+    console.error(`✗ ${name}\n  ${err.message.split('\n').slice(0, 4).join('\n  ')}`); // keep the awaited locator from the call log
     break; // les étapes suivantes dépendent de celle-ci
   }
 }

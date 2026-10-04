@@ -48,7 +48,9 @@ Ce projet utilise des **tests unitaires**, des **tests d'intégration légère**
 | Petit écran (320 px) | Rien ne déborde sur les pages principales, dans le dialogue de suppression du compte, ni en séance (repos ouvert) |
 
 Il échoue si une page lève une erreur JS ou se fige (boucle de rendu), avec un garde-fou global de 6 minutes.
-Les parcours ajoutent des séances à la démo : relancer `yarn dev:demo` repart de données propres.
+Les parcours ajoutent des séances à la démo : relancer `yarn dev:demo` repart de données propres. Après des dizaines
+de passages, l'émulateur Firestore grossit (plusieurs Go) et ralentit jusqu'à faire échouer des parcours : relancer la démo.
+En cas d'échec, le message montre l'élément attendu (journal d'appel Playwright).
 
 ```bash
 yarn dev:demo   # terminal 1 : émulateurs + données de démo
