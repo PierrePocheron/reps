@@ -45,16 +45,19 @@ function MiniChart({ points, unit }: { points: { date: Date; value: number }[]; 
 export function BodyMetrics() {
   const { user, updateProfile } = useUserStore();
   const { toast } = useToast();
-  const [entries, setEntries] = useState<BodyEntry[] | null>(null); // null : chargement
+  // null: not read yet. Never treated as empty: saving would write a one-entry list over the whole history
+  const [entries, setEntries] = useState<BodyEntry[] | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [field, setField] = useState<BodyField>('weight');
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!user?.uid) return;
-    getBodyEntries(user.uid).then(setEntries).catch((err) => { logger.error('Lecture des mesures :', err); setEntries([]); });
-  }, [user?.uid]);
+  const load = (uid: string) => {
+    setLoadFailed(false);
+    getBodyEntries(uid).then(setEntries).catch((err) => { logger.error('Lecture des mesures :', err); setLoadFailed(true); });
+  };
+  useEffect(() => { if (user?.uid) load(user.uid); }, [user?.uid]);
 
   if (!user) return null;
   const list = entries ?? [];
@@ -63,12 +66,13 @@ export function BodyMetrics() {
   const latest = (key: BodyField) => [...list].reverse().find((e) => e[key])?.[key] ?? (key === 'weight' ? user.weight : undefined);
 
   const save = async () => {
+    if (entries === null) return;
     const entry: BodyEntry = { date: form.date || localDay(new Date()) };
     for (const f of BODY_FIELDS) if (Number(form[f.key]) > 0) entry[f.key] = Number(form[f.key]);
     if (Object.keys(entry).length === 1) return;
     setSaving(true);
     try {
-      const next = upsertBodyEntry(list, entry);
+      const next = upsertBodyEntry(entries, entry);
       await saveBodyEntries(user.uid, next);
       setEntries(next);
       // Le poids le plus récent sert aussi au calcul des calories
@@ -90,7 +94,7 @@ export function BodyMetrics() {
         <CardTitle className="flex items-center gap-2 text-lg font-bold">
           <Ruler className="h-5 w-5" /> Poids et mensurations
         </CardTitle>
-        <Button size="sm" variant="outline" className="min-h-11" onClick={() => { setForm({ date: localDay(new Date()) }); setOpen(true); }}>
+        <Button size="sm" variant="outline" className="min-h-11" disabled={entries === null} onClick={() => { setForm({ date: localDay(new Date()) }); setOpen(true); }}>
           <Plus className="h-4 w-4 mr-1" /> Mesure
         </Button>
       </CardHeader>
@@ -107,7 +111,14 @@ export function BodyMetrics() {
             );
           })}
         </div>
-        {entries === null
+        {loadFailed
+          ? (
+            <div className="h-28 rounded-xl bg-muted flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
+              Mesures indisponibles pour l'instant.
+              <Button size="sm" variant="outline" className="min-h-11" onClick={() => load(user.uid)}>Réessayer</Button>
+            </div>
+          )
+          : entries === null
           ? <div className="h-28 rounded-xl bg-muted animate-pulse" aria-label="Chargement des mesures" />
           : <MiniChart points={bodySeries(list, field)} unit={meta.unit} />}
       </CardContent>
