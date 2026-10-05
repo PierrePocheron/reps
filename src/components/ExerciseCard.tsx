@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import { plural } from '@/utils/formatters';
 import { motion } from 'framer-motion';
 import { Plus, Trash2, Undo2 } from 'lucide-react';
@@ -44,19 +44,20 @@ export const ExerciseCard = forwardRef<HTMLDivElement, ExerciseCardProps>(({
     const t = setTimeout(() => setLastAdded(null), 5000);
     return () => clearTimeout(t);
   }, [lastAdded, exercise.reps]);
-  let longPressTimer: NodeJS.Timeout | null = null;
+  // A ref, not a local: the session page re-renders every second and a local would lose the pending timer
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleTouchStart = () => {
-    longPressTimer = setTimeout(() => {
+    longPressTimer.current = setTimeout(() => {
       haptics.impact();
       onLongPress?.();
     }, 500); // 500ms pour le long press
   };
 
   const handleTouchEnd = () => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
     }
   };
 
