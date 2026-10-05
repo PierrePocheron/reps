@@ -482,6 +482,15 @@ describe('calculateUserStats', () => {
     expect(stats.exercisesDistribution[0]!.name).toBe('Pompes');
   });
 
+  it('per-exercise kcal use the weight-based formula of the session total, not 0.1 kcal/rep', async () => {
+    vi.mocked(getDoc).mockResolvedValue(makeDoc({ weight: 90, height: 175, gender: 'male' }) as any);
+    vi.mocked(getDocs).mockResolvedValueOnce(makeSnapshot([
+      makeSessionDoc({ totalReps: 100, exercises: [{ name: 'Burpees', emoji: '💀', reps: 100 }], totalCalories: 84 }),
+    ]) as any);
+    const stats = await calculateUserStats('uid123');
+    expect(stats.exercisesDistribution[0]!.totalCalories).toBe(84); // MET 8, 4 s/rep, 90 kg (was 10)
+  });
+
   it('should throw on Firestore error', async () => {
     vi.mocked(getDocs).mockRejectedValueOnce(new Error('Read failed'));
     await expect(calculateUserStats('uid123')).rejects.toThrow('Read failed');

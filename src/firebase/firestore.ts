@@ -23,13 +23,14 @@ import {
 } from 'firebase/firestore';
 import { db, auth } from './config';
 import type { User, Session, SessionExercise, Exercise, Notification, MotivationalPhrase, UserStats, FriendRequest } from './types';
-import { getUnlockedBadges, DEFAULT_EXERCISES } from '@/utils/constants';
+import { getUnlockedBadges } from '@/utils/constants';
 import { logger } from '@/utils/logger';
 import { trainingStreaks, weeklyStreaks } from '@/utils/streak';
 import { useSettingsStore } from '@/store/settingsStore';
 import { updateWidget, widgetData } from '@/utils/widget';
 import { getUserGymSessions } from './gymSessions';
 import { queuedIfOffline } from './offline';
+import { renfoCalories } from '@/utils/calories';
 
 /**
  * Helpers Firestore pour les opérations CRUD
@@ -483,9 +484,10 @@ export async function deleteExercise(exerciseId: string): Promise<void> {
  */
 export async function calculateUserStats(userId: string): Promise<UserStats> {
   try {
-    const [sessions, gymSessions] = await Promise.all([
+    const [sessions, gymSessions, user] = await Promise.all([
       getUserSessions(userId, 1000), // Récupérer beaucoup de sessions pour les stats
       getUserGymSessions(userId, 1000),
+      getUserDocument(userId), // weight, height, gender for per-exercise kcal
     ]);
 
     const totalReps = sessions.reduce((sum, session) => sum + session.totalReps, 0);
@@ -537,12 +539,7 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
                 const current = exerciseStatsMap.get(ex.name) || { emoji: ex.emoji, reps: 0, calories: 0, count: 0 };
                 current.reps += ex.reps;
                 current.count += 1;
-
-                // Estimation calories (basique via constantes car pas d'historique précis stocké par exercice)
-                const def = DEFAULT_EXERCISES.find(d => d.name === ex.name);
-                // Si pas trouvé (custom), on met une valeur par défaut arbitraire (ex: 0.1 kcal/rep)
-                const calPerRep = def?.caloriesPerRep || 0.1;
-                current.calories += (ex.reps * calPerRep);
+                current.calories += renfoCalories(user, [ex]); // same formula as the session total
 
                 exerciseStatsMap.set(ex.name, current);
             });
