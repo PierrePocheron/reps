@@ -1,4 +1,5 @@
 import { Fragment, useState, useEffect, useRef } from 'react';
+import { ExerciseImage } from '@/components/ExerciseImage';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -892,11 +893,7 @@ function ExecuteExerciseCard({
       )}
       <div className="flex items-center gap-3 p-4 border-b border-border/50">
         <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
-          {exercise.imageUrl ? (
-            <img src={exercise.imageUrl} alt={exercise.name} className="h-full w-full object-cover" />
-          ) : (
-            <span className="text-2xl">{exercise.emoji}</span>
-          )}
+          <ExerciseImage src={exercise.imageUrl} alt={exercise.name} emoji={exercise.emoji} />
         </div>
         <button
           className="flex-1 min-w-0 text-left"

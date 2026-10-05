@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { ExerciseImage } from '@/components/ExerciseImage';
 import { formatDurationLong, formatNumber, frDate } from '@/utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -211,11 +212,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
               return (
                 <div key={i} className="flex items-center gap-3">
                   <div className="h-9 w-9 rounded-lg overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
-                    {imgUrl ? (
-                      <img src={imgUrl} alt={ex.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="text-lg">{ex.emoji}</span>
-                    )}
+                    <ExerciseImage src={imgUrl} alt={ex.name} emoji={ex.emoji} emojiClassName="text-lg" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{ex.supersetId && <span className="text-primary" aria-label="Superset">🔗 </span>}{ex.name}</p>
@@ -265,11 +262,7 @@ function PRCard({ pr, onOpen }: { pr: PersonalRecord; onOpen: () => void }) {
           <div className="flex items-center gap-3">
             {/* Image ou emoji */}
             <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
-              {pr.imageUrl ? (
-                <img src={pr.imageUrl} alt={pr.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-2xl">{pr.emoji}</span>
-              )}
+              <ExerciseImage src={pr.imageUrl} alt={pr.name} emoji={pr.emoji} />
             </div>
 
             <div className="flex-1 min-w-0">

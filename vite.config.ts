@@ -84,6 +84,17 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
+            // Photos des exercices de base (public/exercises, 5,7 Mo : pas en précache) : gardées après le premier
+            // affichage, sinon hors ligne elles manquaient (image cassée)
+            urlPattern: /\/exercises\/[^/]+\.(?:jpg|jpeg|gif|png|webp)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'exercise-photos',
+              expiration: { maxEntries: 250, maxAgeSeconds: 60 * 60 * 24 * 180 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             // Médias de la bibliothèque d'exercices (CDN jsDelivr) :
             // cache-first pour être disponibles hors ligne après consultation
             urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/gh\/hasaneyldrm\/exercises-dataset@.*/i,

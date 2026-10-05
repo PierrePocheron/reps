@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { ExerciseImage } from '@/components/ExerciseImage';
 import { templateExercise } from '@/utils/progression';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -60,11 +61,7 @@ export function GymTemplatePreviewSheet({ template, onClose, onStart }: Props) {
             <div key={idx} className="flex items-center gap-3 py-3 border-b border-border/40 last:border-b-0">
               {/* Image or emoji */}
               <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
-                {ex.imageUrl ? (
-                  <img src={ex.imageUrl} alt={ex.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-2xl">{ex.emoji}</span>
-                )}
+                <ExerciseImage src={ex.imageUrl} alt={ex.name} emoji={ex.emoji} />
               </div>
 
               <div className="flex-1 min-w-0">
