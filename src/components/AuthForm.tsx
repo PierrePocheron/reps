@@ -133,11 +133,13 @@ export function AuthForm() {
     try {
       await signInWithGoogle();
     } catch (error: unknown) {
+      const { code, message } = error as { code?: string; message?: string };
+      // Closing the popup (web) or the account chooser (Android plugin: "...cancelled...") is a choice, not an error
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request' || /cancel/i.test(message ?? '')) return;
       logger.error('Erreur connexion Google:', error);
-      const firebaseError = error as { code?: string; message?: string };
       toast({
         title: 'Erreur',
-        description: `Impossible de se connecter : ${firebaseError.message || 'Erreur inconnue'}`,
+        description: 'Impossible de se connecter avec Google, réessaie.',
         variant: 'destructive',
       });
     } finally {
