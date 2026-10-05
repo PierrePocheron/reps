@@ -1,4 +1,5 @@
 import type { GymSessionExercise, PlannedSet, SetType } from '@/firebase/types';
+import { isTimed } from '@/utils/records';
 
 /** Séance lue dans un export Strong ou Hevy (#61). */
 export interface ImportedSession { date: Date; duration: number; exercises: GymSessionExercise[]; title?: string; note?: string }
@@ -106,6 +107,7 @@ export function parseWorkoutsCsv(text: string, resolve: ResolveExercise): Import
     const seconds = num(r[c.seconds]), reps = num(r[c.reps]);
     const timed = reps === 0 && seconds > 0; // exercice en durée (#55)
     if (timed) ex.timed = true;
+    else if (reps > 0 && isTimed(ex)) ex.timed = false; // timed by default (weighted plank) but logged in reps
     const set: PlannedSet = { reps: timed ? seconds : reps, weight: kg(num(r[c.weight])), completed: true };
     const type = typeOf(r[c.type] ?? ''), rpe = num(r[c.rpe]);
     if (type) set.type = type;

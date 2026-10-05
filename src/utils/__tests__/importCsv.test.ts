@@ -3,6 +3,7 @@ import { parseCsv, parseWorkoutsCsv, newSessionsOnly, exerciseResolver, importSu
 import { sessionsToCsv } from '../exportCsv';
 import type { GymSession } from '@/firebase/types';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
+import { isTimed } from '@/utils/records';
 
 const resolve = exerciseResolver([{ id: 'bench_press', name: 'Développé couché', emoji: '🏋️' }, { id: 'lib_0025', name: 'Barbell Bench Press', emoji: '💪' }]);
 
@@ -76,6 +77,15 @@ describe('parseWorkoutsCsv', () => {
     expect(back[0]!.exercises[0]!.sets).toEqual([{ weight: 62.5, reps: 8, completed: true }]);
     expect(back[0]).toMatchObject({ title: 'Jambes', note: 'bien dormi' }); // titre et note de séance (#64)
     expect(newSessionsOnly(back, [new Date(2026, 9, 2, 18, 5, 30)])).toEqual([]);
+  });
+
+  it('aller-retour : un gainage lesté passé en reps reste en reps', () => {
+    const gym = [{ date: { toDate: () => new Date(2026, 9, 2, 18, 5) }, duration: 600,
+      exercises: [{ exerciseId: 'weighted_plank', name: 'Gainage lesté', emoji: '🪨', timed: false, sets: [{ weight: 20, reps: 12, completed: true }] }] }] as unknown as GymSession[];
+    const plank = exerciseResolver([{ id: 'weighted_plank', name: 'Gainage lesté', emoji: '🪨' }]);
+    const ex = parseWorkoutsCsv(sessionsToCsv(gym, []), plank)[0]!.exercises[0]!;
+    expect(isTimed(ex)).toBe(false);
+    expect(ex.sets).toEqual([{ weight: 20, reps: 12, completed: true }]);
   });
 });
 
