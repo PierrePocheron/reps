@@ -58,6 +58,7 @@ function Challenges() {
   const easyChallenges = availableChallenges.filter(c => c.difficulty === 'easy');
   const mediumChallenges = availableChallenges.filter(c => c.difficulty === 'medium');
   const hardChallenges = availableChallenges.filter(c => c.difficulty === 'hard');
+  const todoChallenges = activeChallenges.filter(c => c.history.length <= getDayIndex(c.startDate, new Date()));
 
   if (isLoading) {
     return (
@@ -78,15 +79,14 @@ function Challenges() {
             <div className="mb-8">
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <Trophy className="w-5 h-5 text-yellow-500" />
-                    En cours <span className="text-muted-foreground text-sm font-normal">({dailyDoneCount}/{activeChallenges.length})</span>
+                    En cours <span className="text-muted-foreground text-sm font-normal">(aujourd'hui&nbsp;: {dailyDoneCount}/{activeChallenges.length})</span>
                 </h2>
 
                 <div className="space-y-4">
                      {/* Todo Challenges */}
+                     {todoChallenges.length > 0 && (
                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {activeChallenges
-                            .filter(c => c.history.length <= getDayIndex(c.startDate, new Date()))
-                            .map(ac => (
+                        {todoChallenges.map(ac => (
                              <ChallengeCard
                                 key={ac.id}
                                 userId={user?.uid || ''}
@@ -96,11 +96,12 @@ function Challenges() {
                             />
                         ))}
                     </div>
+                    )}
 
-                    {/* Collapsible Done Challenges */}
+                    {/* Collapsible Done Challenges: open when nothing is left to do (the validated card vanished) */}
                     {activeChallenges.some(c => c.history.length > getDayIndex(c.startDate, new Date())) && (
-                        <details className="group">
-                            <summary className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors py-2 select-none">
+                        <details className="group" open={todoChallenges.length === 0}>
+                            <summary className="flex items-center gap-2 min-h-11 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none">
                                 <CheckCircle2 className="w-4 h-4" />
                                 <span>Défis validés aujourd'hui</span>
                                 <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
@@ -146,8 +147,8 @@ function Section({ title, challenges, onJoin, isJoining }: { title: string, chal
     return (
         <div>
              <h2 className="text-lg font-semibold mb-3">{title}</h2>
-             {/* cards at least 9.5rem wide: one column at 320 px and with a large system font (titles and badges overflowed) */}
-             <div className="grid grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] gap-3">
+             {/* cards at least 11rem wide: one column on phones (titles were hyphenated and badges stacked), 2-3 on wider screens */}
+             <div className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-3">
                 {challenges.map(challenge => (
                     <ChallengeCard
                         key={challenge.id}

@@ -20,6 +20,8 @@ import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import confetti from 'canvas-confetti';
 import { NumberTicker } from '@/components/ui/NumberTicker';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { formatNumber, formatReps, plural } from '@/utils/formatters';
 
 import { useSound } from '@/hooks/useSound';
 import { useHaptic } from '@/hooks/useHaptic';
@@ -39,6 +41,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isValidating, setIsValidating] = useState(false);
+  const [confirmAbandon, setConfirmAbandon] = useState(false);
   const { play } = useSound();
   const { notification } = useHaptic();
 
@@ -74,7 +77,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
             <div className="bg-background/60 backdrop-blur-sm rounded-lg p-3 border border-border/50 mb-4">
                 <div className="flex items-center gap-3">
                     <div className="text-2xl bg-muted rounded-md w-10 h-10 flex items-center justify-center">
-                        🏃
+                        {findChallengeExercise(randomTemplate.exerciseId)?.emoji ?? '🏃'}
                     </div>
                     <div>
                         <p className="font-semibold">{randomTemplate.title}</p>
@@ -133,12 +136,12 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
   const handleAbandon = async () => {
     if (!activeChallenge) return;
     try {
-        if (!window.confirm("Es-tu sûr de vouloir abandonner ce défi ? (L'historique sera conservé)")) return;
-
         await abandonChallenge(activeChallenge.id);
+        setConfirmAbandon(false);
+        // no challenge history screen exists: only the validated sessions stay
         toast({
-            title: `Défi ${def.title} arrêté`,
-            description: "Le défi a été déplacé dans l'historique.",
+            title: `« ${def.title} » abandonné`,
+            description: "Tes séances déjà validées restent dans ton historique.",
         });
         onUpdate?.();
     } catch (error) {
@@ -170,7 +173,11 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
             disableForReducedMotion: true,
         });
 
-        toast({
+        const finished = stepIndex + 1 >= def.durationDays; // the card leaves « En cours » without a word otherwise
+        toast(finished ? {
+            title: "Défi terminé ! 🏆",
+            description: `« ${def.title} » : ${plural(def.durationDays, 'jour')} validés.`,
+        } : {
             title: isLate ? "Rattrapage réussi ! 💪" : "Bien joué ! 🔥",
             description: `Jour ${stepIndex + 1} validé !`,
         });
@@ -223,18 +230,8 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
        else actionButtonClass = 'bg-red-500/10 border-red-500/20 text-red-800 hover:bg-red-500/20 dark:text-red-400 border';
   }
 
-  // Stack Effect for Late Days
-  let stackClasses = '';
-  if (isActive && isLate) {
-       // Colored stack for "Late" status (Orange/Red theme)
-       stackClasses = 'after:absolute after:w-full after:h-full after:bg-orange-100 dark:after:bg-orange-900/40 after:border after:border-dashed after:border-orange-300 dark:after:border-orange-700/50 after:rounded-xl after:top-1.5 after:left-1.5 after:-z-10';
-       if (lateDays > 1) {
-           stackClasses += ' before:absolute before:w-full before:h-full before:bg-orange-50 dark:before:bg-orange-900/20 before:border before:border-dashed before:border-orange-200 dark:before:border-orange-800/30 before:rounded-xl before:top-3 before:left-3 before:-z-20';
-       }
-  }
-
   return (
-    <Card className={`overflow-visible border-2 ${borderColor} relative transition-all ${stackClasses}`}>
+    <Card className={`overflow-visible border-2 ${borderColor} relative transition-all`}>
       <CardContent className="p-5">
         <div className="flex justify-between items-start mb-2">
             <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -262,14 +259,14 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
 
                             {/* Late Badge */}
                             {isActive && isLate && (
-                                <span className="bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-400 dark:border-orange-500/30 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border">
-                                    Retard&nbsp;: {lateDays}&nbsp;j
+                                <span className="bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-400 dark:border-orange-500/30 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border whitespace-nowrap">
+                                    Retard&nbsp;: {plural(lateDays, 'jour')}
                                 </span>
                             )}
 
                             {/* Active: Progress Badge */}
                             {isActive && (
-                                <span className="bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border">
+                                <span className="bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border whitespace-nowrap">
                                     J {Math.min(dayIndex + 1, def.durationDays)} / {def.durationDays}
                                 </span>
                             )}
@@ -281,7 +278,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                                         {def.durationDays} Jours
                                     </span>
                                     <span className="text-[10px] px-1.5 py-0.5 rounded border bg-background text-foreground font-mono font-bold">
-                                        Σ {totalTargetRepetitions.toLocaleString()}
+                                        Σ {formatNumber(totalTargetRepetitions)}
                                     </span>
                                 </>
                             )}
@@ -292,7 +289,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                 </div>
             </div>
             <div className="flex items-start gap-2">
-                {isDoneToday && (
+                {isDoneToday && !detailed && ( // detailed cards say « Validé » on the button; the pill squeezed the title
                     <div className="bg-green-500 text-white p-1 rounded-full">
                         <CheckCircle2 className="w-5 h-5" />
                     </div>
@@ -305,7 +302,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={handleAbandon} className="text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/20">
+                            <DropdownMenuItem onClick={() => setConfirmAbandon(true)} className="text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-950/20">
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Abandonner le défi
                             </DropdownMenuItem>
@@ -339,8 +336,8 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                         />
                     </div>
                     <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
-                        <span>{activeChallenge!.totalProgress} reps faites</span>
-                        <span>Sur {totalTargetRepetitions} total</span>
+                        <span>{formatReps(activeChallenge!.totalProgress)} faite{activeChallenge!.totalProgress > 1 ? 's' : ''}</span>
+                        <span>sur {formatNumber(totalTargetRepetitions)}</span>
                     </div>
                 </div>
             )
@@ -355,7 +352,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
         <div className={`flex flex-wrap items-center justify-between gap-3 ${detailed ? 'mt-0' : 'mt-4'}`}>
             {isActive ? (
                 <>
-                    <div className={`flex flex-col ${isDoneToday ? 'opacity-50' : ''}`}>
+                    <div className={`flex flex-col ${isDoneToday ? 'opacity-75' : ''}`}>
                         <span className="text-xs font-semibold uppercase text-muted-foreground">
                             {isLate ? "Rattrapage" : "Aujourd'hui"}
                         </span>
@@ -363,7 +360,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                             <span className="text-2xl font-bold">
                                 <NumberTicker value={target} />
                             </span>
-                            <span className="text-xs font-medium">Reps</span>
+                            <span className="text-xs font-medium">reps</span>
                         </div>
                     </div>
 
@@ -373,7 +370,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                             Validé
                         </Button>
                     ) : (
-                        <Button onClick={handleValidate} disabled={isValidating} className={`flex-1 min-w-[7.5rem] px-2 ${isLate ? 'bg-orange-500 hover:bg-orange-600' : ''}`}>
+                        <Button onClick={handleValidate} disabled={isValidating} className={`flex-1 min-w-[7.5rem] px-2 ${isLate ? 'bg-orange-700 hover:bg-orange-800 text-white' : ''}`}>
                             {isValidating ? <LoadingSpinner size="sm"/> : (isLate ? `Rattraper J${dayIndex + 1}` : "Valider")}
                         </Button>
                     )}
@@ -403,6 +400,20 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
 
 
       </CardContent>
+      {isActive && (
+        <Dialog open={confirmAbandon} onOpenChange={setConfirmAbandon}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Abandonner « {def.title} » ?</DialogTitle>
+              <DialogDescription>Tes séances déjà validées restent dans ton historique.</DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={() => setConfirmAbandon(false)}>Annuler</Button>
+              <Button variant="destructive" className="flex-1 basis-28 min-h-11" onClick={() => void handleAbandon()}>Abandonner</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </Card>
   );
 }

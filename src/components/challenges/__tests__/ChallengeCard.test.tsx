@@ -161,7 +161,7 @@ describe('ChallengeCard Component', () => {
         renderCard({ activeChallenge: lateChallenge });
 
         expect(screen.getByText(/Rattraper J1/)).toBeInTheDocument();
-        expect(screen.getByText(/Retard\s*:\s*2\s*j/)).toBeInTheDocument();
+        expect(screen.getByText(/Retard\s*:\s*2\s*jours/)).toBeInTheDocument();
     });
 
     it('shows the step validated today, not the next one', () => {
@@ -181,7 +181,44 @@ describe('ChallengeCard Component', () => {
 
         renderCard({ activeChallenge: { ...mockActiveChallenge, startDate: { toDate: () => new Date(startDate) }, history } });
 
-        expect(screen.getByText(/Retard\s*:\s*1\s*j/)).toBeInTheDocument();
+        expect(screen.getByText(/Retard\s*:\s*1\s*jour$/)).toBeInTheDocument();
         expect(screen.getByText('Rattraper J30')).toBeInTheDocument();
+    });
+
+    it('validating the last step says the challenge is finished (the card just vanished)', async () => {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 29);
+        const history = Array.from({ length: 29 }, () => ({ date: '2026-01-01', amount: 10, completed: true }));
+        vi.mocked(validateChallengeDay).mockResolvedValueOnce({ step: 29, reps: 68 });
+
+        renderCard({ activeChallenge: { ...mockActiveChallenge, startDate: { toDate: () => new Date(startDate) }, history } });
+        fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
+
+        await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Défi terminé ! 🏆' })));
+    });
+
+    it('writes reps in French (« 1 215 », no « 0 reps »)', () => {
+        renderCard({ activeChallenge: { ...mockActiveChallenge, totalProgress: 1215 }, detailed: true });
+        expect(screen.getByText(/^1\s215 reps faites$/)).toBeInTheDocument();
+        expect(screen.getByText(/^sur 1\s170$/)).toBeInTheDocument();
+
+        renderCard({ activeChallenge: mockActiveChallenge, detailed: true });
+        expect(screen.getByText('0 rep faite')).toBeInTheDocument();
+
+        renderCard({ template: { ...mockTemplate, durationDays: 45 } });
+        expect(screen.getByText(/^Σ 2\s430$/)).toBeInTheDocument();
+    });
+
+    it('abandoning asks in the app and does not promise a challenge history', async () => {
+        const confirm = vi.spyOn(window, 'confirm');
+        renderCard({ activeChallenge: mockActiveChallenge, detailed: true });
+
+        fireEvent.keyDown(screen.getByRole('button', { name: 'Options du défi' }), { key: 'Enter' });
+        fireEvent.click(await screen.findByRole('menuitem', { name: /Abandonner le défi/ }));
+        fireEvent.click(await screen.findByRole('button', { name: 'Abandonner' }));
+
+        await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: '« Pompes Débutant » abandonné' })));
+        expect(confirm).not.toHaveBeenCalled();
+        expect(JSON.stringify(toast.mock.calls)).not.toMatch(/déplacé/);
     });
 });

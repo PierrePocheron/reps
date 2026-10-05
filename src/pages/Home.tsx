@@ -221,7 +221,7 @@ function Home() {
                     <div className="flex items-center justify-between">
                          <h2 className="text-lg font-semibold flex items-center gap-2">
                             <Trophy className="w-5 h-5 text-yellow-500" />
-                            Défis en cours <span className="text-muted-foreground text-sm font-normal">({dailyDoneCount}/{activeChallenges.length})</span>
+                            Défis en cours <span className="text-muted-foreground text-sm font-normal">(aujourd'hui&nbsp;: {dailyDoneCount}/{activeChallenges.length})</span>
                         </h2>
                         {activeChallenges.length > 6 && (
                              <Button variant="ghost" size="sm" onClick={() => navigate('/challenges')} className="text-xs h-8">
@@ -231,7 +231,8 @@ function Home() {
                     </div>
 
                     {/* Todo Challenges */}
-                    <div className={`grid gap-3 sm:gap-4 ${todoChallenges.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                    {todoChallenges.length > 0 && (
+                    <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
                         {todoChallenges
                             .slice(0, 6)
                             .map(challenge => (
@@ -243,16 +244,17 @@ function Home() {
                             />
                         ))}
                     </div>
+                    )}
 
-                    {/* Collapsible Done Challenges */}
+                    {/* Collapsible Done Challenges: open when nothing is left to do (the validated card vanished) */}
                     {doneChallenges.length > 0 && (
-                        <details className="group">
-                            <summary className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors py-2 select-none">
+                        <details className="group" open={todoChallenges.length === 0}>
+                            <summary className="flex items-center gap-2 min-h-11 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none">
                                 <CheckCircle2 className="w-4 h-4" />
                                 <span>Défis validés aujourd'hui</span>
                                 <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
                             </summary>
-                            <div className={`grid gap-3 sm:gap-4 mt-3 animate-in slide-in-from-top-2 fade-in duration-200 ${doneChallenges.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                            <div className={`grid gap-3 sm:gap-4 mt-3 animate-in slide-in-from-top-2 fade-in duration-200 grid-cols-1 sm:grid-cols-2`}>
                                 {doneChallenges
                                     .map(challenge => (
                                     <ChallengeCard

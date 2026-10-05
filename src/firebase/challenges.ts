@@ -145,7 +145,7 @@ export const CHALLENGE_TEMPLATES: ChallengeDefinition[] = [
   {
     id: 'c_pullups_extreme',
     exerciseId: 'pullups',
-    title: 'Tractions Elite',
+    title: 'Tractions Élite',
     description: 'Un défi mental et physique hors normes.',
     difficulty: 'extreme',
     logic: 'progressive',
@@ -271,11 +271,12 @@ export const getCustomChallengeParams = (
             case 'extreme': base = 30; inc = 5; break;
         }
 
-        // Adjust for specific exercises (e.g. Pullups/Dips are harder than Pushups/Squats)
-        if (exerciseId === 'pullups' || exerciseId === 'dips') {
-            base = Math.max(1, Math.round(base / 3));
-            inc = Math.max(1, Math.round(inc / 2));
-        }
+    }
+
+    // Adjust for specific exercises (e.g. Pullups/Dips are harder than Pushups/Squats), fixed amounts too
+    if (exerciseId === 'pullups' || exerciseId === 'dips') {
+        base = Math.max(1, Math.round(base / 3));
+        if (inc > 0) inc = Math.max(1, Math.round(inc / 2));
     }
 
     return { base, inc };

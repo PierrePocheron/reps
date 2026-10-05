@@ -25,6 +25,10 @@ describe('Challenge Logic', () => {
              const pullups = getCustomChallengeParams('medium', 'pullups', 'progressive');
              expect(pullups.base).toBeLessThan(pushups.base);
         });
+
+        it('a fixed-amount pull-up challenge is not sized like push-ups (30 a day at « Facile »)', () => {
+             expect(getCustomChallengeParams('easy', 'pullups', 'fixed')).toEqual({ base: 10, inc: 0 });
+        });
     });
 
     describe('getTargetForDay', () => {

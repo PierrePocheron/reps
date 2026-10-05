@@ -13,6 +13,7 @@ import { DEFAULT_EXERCISES } from '@/utils/constants';
 import { createCustomChallenge, ChallengeDifficulty, getCustomChallengeParams, ChallengeLogic } from '@/firebase/challenges';
 import { useUserStore } from '@/store/userStore';
 import { useToast } from '@/hooks/use-toast';
+import { formatNumber } from '@/utils/formatters';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Plus, Calendar, Zap } from 'lucide-react';
 
@@ -80,7 +81,7 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
 
     const getDifficultyText = (diff: ChallengeDifficulty) => {
         const { base, inc } = getDifficultyParams(diff);
-        if (logic === 'fixed') return `${base} répétitions / jour`;
+        if (logic === 'fixed') return `${base} reps / jour`;
         return `Commence à ${base} reps, +${inc} par jour`;
     };
 
@@ -107,7 +108,7 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="py-4 flex-1 min-h-0 overflow-y-auto">
+                <div key={step} className="py-4 flex-1 min-h-0 overflow-y-auto">{/* each step starts at the top */}
                     {/* STEP 1: EXERCISE */}
                     {step === 1 && (
                         <div className="grid grid-cols-2 gap-3">
@@ -198,7 +199,7 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                                     type="button"
                                     aria-pressed={logic === 'progressive'}
                                     onClick={() => setLogic('progressive')}
-                                    className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${logic === 'progressive' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                                    className={`flex-1 min-h-11 text-sm font-medium rounded-md transition-all ${logic === 'progressive' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                                 >
                                     Progressif 📈
                                 </button>
@@ -206,7 +207,7 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                                     type="button"
                                     aria-pressed={logic === 'fixed'}
                                     onClick={() => setLogic('fixed')}
-                                    className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${logic === 'fixed' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                                    className={`flex-1 min-h-11 text-sm font-medium rounded-md transition-all ${logic === 'fixed' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                                 >
                                     Montant fixe 🎯
                                 </button>
@@ -253,7 +254,7 @@ export function CreateChallengeDialog({ onChallengeCreated }: CreateChallengeDia
                                             <div className="text-left">
                                                 <div className="font-bold capitalize">{label}</div>
                                                 <div className="text-xs text-foreground/80 font-medium">{getDifficultyText(diff)}</div>
-                                                <div className="text-xs text-muted-foreground">Total ≈ {total.toLocaleString()} reps</div>
+                                                <div className="text-xs text-muted-foreground">Total ≈ {formatNumber(total)} reps</div>
                                             </div>
                                         </div>
                                         {isSelected && <div className={`h-3 w-3 rounded-full ${dotColor}`} />}

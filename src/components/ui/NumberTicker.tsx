@@ -16,8 +16,9 @@ export function NumberTicker({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const motionValue = useMotionValue(direction === "down" ? value : 0);
+  // critically damped: the right number in under a second (damping 60 took 3 to 5 s to settle)
   const springValue = useSpring(motionValue, {
-    damping: 60,
+    damping: 20,
     stiffness: 100,
   });
   const isInView = useInView(ref, { once: true, margin: "0px" });
@@ -33,7 +34,7 @@ export function NumberTicker({
   useEffect(() => {
     springValue.on("change", (latest) => {
       if (ref.current) {
-        ref.current.textContent = Intl.NumberFormat("en-US", {
+        ref.current.textContent = Intl.NumberFormat("fr-FR", {
           minimumFractionDigits: decimalPlaces,
           maximumFractionDigits: decimalPlaces,
         }).format(Number(latest.toFixed(decimalPlaces)));
