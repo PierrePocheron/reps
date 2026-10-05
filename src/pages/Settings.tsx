@@ -152,6 +152,7 @@ function Settings() {
   };
 
   const handleTimeChange = async (newTime: string) => {
+    if (!newTime) return; // cleared field: keep the saved time (the input is controlled, it shows it again)
     setNotificationTime(newTime);
     if (notificationsEnabled) {
       await scheduleDailyReminder(newTime);

@@ -97,6 +97,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     },
 
     setNotificationTime: (time) => {
+      if (!time) return; // cleared time field: '' was scheduled at midnight
       set({ notificationTime: time });
       get().saveSettings();
     },
@@ -137,7 +138,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     loadSettings: () => {
       const stored = loadFromStorage();
       if (Object.keys(stored).length > 0) {
-        set(stored);
+        set({ ...stored, notificationTime: stored.notificationTime || '18:00' }); // '' saved by older versions
         get().applyTheme();
       }
     },
