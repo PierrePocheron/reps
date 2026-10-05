@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   getDoc,
   getDocs,
+  getDocsFromServer,
   setDoc,
   updateDoc,
   deleteDoc,
@@ -37,6 +38,7 @@ import {
   getRandomMotivationalPhrase,
   updateSession,
 } from '../firestore';
+import { getUserGymSessions } from '../gymSessions';
 
 vi.mock('../config', () => ({ db: {}, auth: { currentUser: null } }));
 
@@ -261,6 +263,13 @@ describe('getUserSessions', () => {
   it('should throw on error', async () => {
     vi.mocked(getDocs).mockRejectedValueOnce(new Error('Failed'));
     await expect(getUserSessions('uid123')).rejects.toThrow('Failed');
+  });
+
+  it('fromServer: offline, rejects instead of returning the partial local cache (renfo and gym)', async () => {
+    const offline = Object.assign(new Error('Failed to get documents from server'), { code: 'unavailable' });
+    vi.mocked(getDocsFromServer).mockRejectedValueOnce(offline).mockRejectedValueOnce(offline);
+    await expect(getUserSessions('uid123', 10, true)).rejects.toBe(offline);
+    await expect(getUserGymSessions('uid123', 10, true)).rejects.toBe(offline);
   });
 });
 

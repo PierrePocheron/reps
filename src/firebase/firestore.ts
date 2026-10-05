@@ -3,6 +3,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  getDocsFromServer,
   setDoc,
   updateDoc,
   arrayUnion,
@@ -368,11 +369,12 @@ export async function getUserSessionsBetween(userId: string, from: Date, to: Dat
   return snapshot.docs.map((d) => ({ sessionId: d.id, ...d.data() })) as Session[];
 }
 
-export async function getUserSessions(userId: string, limitCount = 50): Promise<Session[]> {
+/** fromServer: rejects offline instead of returning only what this device has cached (export, import duplicates). */
+export async function getUserSessions(userId: string, limitCount = 50, fromServer = false): Promise<Session[]> {
   try {
     const sessionsRef = collection(db, 'sessions', userId, 'userSessions');
     const q = query(sessionsRef, orderBy('date', 'desc'), limit(limitCount));
-    const querySnapshot = await getDocs(q);
+    const querySnapshot = await (fromServer ? getDocsFromServer : getDocs)(q);
 
     return querySnapshot.docs.map((sessionDoc) => ({
       sessionId: sessionDoc.id,

@@ -15,7 +15,8 @@ export interface SessionHistory {
 /** The whole history, for the rare reads that must not stop at a page: export and import duplicate check. */
 export async function fetchWholeHistory(uid: string): Promise<{ sessions: Session[]; gymSessions: GymSession[] }> {
   const ALL = 100_000; // Settings used the latest 500: older sessions were missing from « toutes tes données »
-  const [sessions, gymSessions] = await Promise.all([getUserSessions(uid, ALL), getUserGymSessions(uid, ALL)]);
+  // from the server: offline, the cache holds only what this device has read, and the export said « complete »
+  const [sessions, gymSessions] = await Promise.all([getUserSessions(uid, ALL, true), getUserGymSessions(uid, ALL, true)]);
   return { sessions, gymSessions };
 }
 

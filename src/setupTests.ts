@@ -59,6 +59,7 @@ vi.mock('firebase/firestore', () => ({
   doc: vi.fn(() => mockDoc),
   getDoc: vi.fn(() => Promise.resolve(mockDoc)),
   getDocs: vi.fn(() => Promise.resolve({ docs: [], empty: true, forEach: vi.fn() })),
+  getDocsFromServer: vi.fn(() => Promise.resolve({ docs: [], empty: true, forEach: vi.fn() })),
   setDoc: vi.fn(() => Promise.resolve()),
   deleteField: vi.fn(() => '__deleteField__'),
   updateDoc: vi.fn(() => Promise.resolve()),

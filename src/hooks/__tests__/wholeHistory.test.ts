@@ -15,4 +15,10 @@ describe('fetchWholeHistory', () => {
     expect(renfoLimit).toBeGreaterThanOrEqual(100_000); // was 500: older sessions missing from the export
     expect(gymLimit).toBeGreaterThanOrEqual(100_000);
   });
+
+  it('reads from the server: offline, the partial local cache must not pass for the whole history', async () => {
+    await fetchWholeHistory('u1');
+    expect(vi.mocked(getUserSessions)).toHaveBeenLastCalledWith('u1', expect.any(Number), true);
+    expect(vi.mocked(getUserGymSessions)).toHaveBeenLastCalledWith('u1', expect.any(Number), true);
+  });
 });

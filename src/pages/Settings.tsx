@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { buildJsonExport } from '@/utils/exportJson';
 import { getBodyEntries } from '@/firebase/bodyMetrics';
+import { isOffline } from '@/firebase/offline';
 import { getUserTemplates } from '@/firebase/templates';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ColorPicker } from '@/components/ui/color-picker';
@@ -72,7 +73,8 @@ function Settings() {
       setImportPreview({ sessions: fresh, skipped: all.length - fresh.length, exercises: ids.size, known: [...ids].filter((id) => !id.startsWith('import_')).length, pounds: POUNDS_HEADER.test(text.split('\n', 1)[0] ?? '') });
     } catch (err) {
       logger.error('Lecture du CSV :', err);
-      toast({ title: 'Erreur', description: 'Impossible de lire ce fichier', variant: 'destructive' });
+      // the duplicate check reads the whole history from the server
+      toast({ title: 'Erreur', description: isOffline() ? 'Tu es hors ligne\u00a0: reconnecte-toi pour importer ce fichier.' : 'Impossible de lire ce fichier', variant: 'destructive' });
     }
   };
   // Arrivée depuis l'historique vide (lien « Tu viens de Strong ou Hevy ? ») : montrer le bouton d'import
@@ -122,14 +124,15 @@ function Settings() {
       }
       // everything, including body measurements and personal templates (they were missing from « toutes tes données »)
       const [body, templates] = user?.uid
-        ? await Promise.all([getBodyEntries(user.uid).catch(() => []), getUserTemplates(user.uid).catch(() => [])])
+        ? await Promise.all([getBodyEntries(user.uid), getUserTemplates(user.uid)]) // a failed read is an error, not a backup without them
         : [[], []];
       const exportData = buildJsonExport({ user, sessions: all.sessions, gymSessions: all.gymSessions, body, templates });
 
       const done = await saveFile(`reps-export-${day}.json`, JSON.stringify(exportData, null, 2), 'application/json');
       if (done) toast({ title: 'Export prêt', description: 'Toutes tes données au format JSON.' });
     } catch {
-      toast({ title: 'Erreur', description: "Impossible d'exporter les données.", variant: 'destructive' });
+      // offline: the history is read from the server, never from the partial device cache
+      toast({ title: 'Erreur', description: isOffline() ? 'Tu es hors ligne\u00a0: reconnecte-toi pour exporter toutes tes données.' : "Impossible d'exporter les données.", variant: 'destructive' });
     } finally {
       setExporting(false);
     }

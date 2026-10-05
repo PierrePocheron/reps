@@ -2,6 +2,7 @@ import {
   collection,
   addDoc,
   getDocs,
+  getDocsFromServer,
   query,
   orderBy,
   where,
@@ -77,15 +78,17 @@ export async function getLastGymSession(userId: string): Promise<GymSession | nu
 
 /**
  * Récupère les N dernières séances de musculation d'un utilisateur
+ * (fromServer: rejects offline instead of returning only what this device has cached)
  */
 export async function getUserGymSessions(
   userId: string,
-  limitCount = 20
+  limitCount = 20,
+  fromServer = false
 ): Promise<GymSession[]> {
   try {
     const sessionsRef = collection(db, 'gym_sessions', userId, 'userGymSessions');
     const q = query(sessionsRef, orderBy('date', 'desc'), limit(limitCount));
-    const snapshot = await getDocs(q);
+    const snapshot = await (fromServer ? getDocsFromServer : getDocs)(q);
 
     return snapshot.docs.map((docSnap) => ({
       sessionId: docSnap.id,
