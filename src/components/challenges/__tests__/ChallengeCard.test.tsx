@@ -140,4 +140,14 @@ describe('ChallengeCard Component', () => {
         expect(screen.getByText(/Rattraper J1/)).toBeInTheDocument();
         expect(screen.getByText(/Retard\s*:\s*2\s*j/)).toBeInTheDocument();
     });
+
+    it('shows the step validated today, not the next one', () => {
+        const { container } = renderCard({
+            activeChallenge: { ...mockActiveChallenge, history: [{ date: new Date(), reps: 10 }], totalProgress: 10 }
+        });
+
+        expect(screen.getByText('J 1 / 30')).toBeInTheDocument();
+        expect(screen.getByText('10')).toBeInTheDocument(); // day 1 target, not day 2 (12)
+        expect((container.querySelector('[style*="width"]') as HTMLElement).style.width).toBe(`${(1 / 30) * 100}%`);
+    });
 });

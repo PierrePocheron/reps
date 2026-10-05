@@ -109,7 +109,12 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
 
       // Actual Progress based on History Count (Catch-up Model)
       const stepsCompleted = activeChallenge.history.length;
-      dayIndex = stepsCompleted; // The step we are about to do (0-indexed)
+
+      // We are caught up if we have completed up to the current calendar day
+      isDoneToday = stepsCompleted > calendarDayIndex;
+
+      // The step shown (0-indexed): the one validated today, else the next one to do
+      dayIndex = isDoneToday ? stepsCompleted - 1 : stepsCompleted;
 
       // If we finished all days, cap it
       if (dayIndex >= def.durationDays) dayIndex = def.durationDays - 1;
@@ -117,10 +122,6 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
       target = getTargetForDay(def, dayIndex);
       totalTargetRepetitions = calculateChallengeTotalReps(def);
       percentTotal = Math.min(100, Math.round((activeChallenge.totalProgress / totalTargetRepetitions) * 100));
-
-      // We are caught up if we have completed up to the current calendar day
-      const isCaughtUp = stepsCompleted > calendarDayIndex;
-      isDoneToday = isCaughtUp;
 
       lateDays = Math.max(0, calendarDayIndex - stepsCompleted);
       isLate = lateDays > 0;
