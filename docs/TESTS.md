@@ -68,7 +68,8 @@ yarn e2e        # terminal 2
 `scripts/contrast-audit.mjs` calcule le contraste de chaque texte visible (WCAG AA : 4,5:1, 3:1 pour le grand texte)
 sur 8 écrans, en clair et en sombre, avec les fonds réels (transparences comprises), et repère les contrôles sans nom
 accessible (bouton-icône sans `aria-label`, champ sans libellé). Une 3ᵉ passe « grande police » (360 px, police racine
-à 130 % : c'est ce que fait la WebView Android avec la plus grande taille de police, mesuré sur l'émulateur API 33)
+et tailles en px à 130 % : c'est ce que fait la WebView Android avec la plus grande taille de police, mesuré sur
+l'émulateur API 33 — 16 → 20,8 px et 10 → 13 px)
 signale tout texte ou bouton coupé à droite, par l'écran ou par un parent `overflow-hidden`, et tout champ plus étroit
 que sa valeur (une charge de 102,5 kg est saisie pour l'occasion) ; elle simule aussi
 « Supprimer les animations » et signale toute animation encore en cours une fois l'écran posé. Démo lancée, puis `yarn a11y`.
