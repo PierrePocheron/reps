@@ -151,6 +151,11 @@ await test('séances renfo lisibles par un authentifié (feed social)', () => as
 await test('séances renfo non modifiables par autrui', () => assertFails(setDoc(doc(mallory, 'sessions/alice/userSessions/s1'), { totalReps: 0 })));
 await test('séances muscu d\'autrui illisibles', () => assertFails(getDoc(doc(mallory, 'gym_sessions/alice/userGymSessions/g1'))));
 await test('défis d\'autrui illisibles', () => assertFails(getDoc(doc(mallory, 'user_challenges/c1'))));
+// the document the app really writes (joinChallenge / createCustomChallenge): the exercise sits in definitionSnapshot
+const realChallenge = (userId) => ({ id: 'x', userId, challengeId: 'c_pushups_beginner', status: 'active', totalProgress: 0, lastLogDate: null,
+  history: [], startDate: serverTimestamp(), definitionSnapshot: { id: 'c_pushups_beginner', exerciseId: 'pushups', durationDays: 21, baseAmount: 10, increment: 1 } });
+await test('rejoindre un défi (forme réelle du document)', () => assertSucceeds(addDoc(collection(alice, 'user_challenges'), realChallenge('alice'))));
+await test('pas de défi créé au nom d\'un autre (forme réelle)', () => assertFails(addDoc(collection(mallory, 'user_challenges'), realChallenge('alice'))));
 await test('pas de création de défi au nom d\'autrui', () =>
   assertFails(addDoc(collection(mallory, 'user_challenges'), { userId: 'alice', exerciseId: 'hack', history: [] })));
 

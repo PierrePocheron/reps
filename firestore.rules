@@ -100,8 +100,10 @@ service cloud.firestore {
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow create: if isAuthenticated()
         && request.resource.data.userId == request.auth.uid
-        && request.resource.data.exerciseId is string
-        && request.resource.data.exerciseId.size() <= 80
+        // the app keeps the exercise in definitionSnapshot (a top-level exerciseId was required: every join was denied)
+        && request.resource.data.definitionSnapshot is map
+        && request.resource.data.definitionSnapshot.exerciseId is string
+        && request.resource.data.definitionSnapshot.exerciseId.size() <= 80
         && request.resource.data.history is list;
       allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }

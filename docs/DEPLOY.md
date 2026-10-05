@@ -43,7 +43,7 @@ n'existe plus (`src/utils/staleChunk.ts`), au lieu d'afficher l'écran d'erreur.
 Les règles ne sont **pas** déployées par la CI. Toujours les tester avant :
 
 ```bash
-yarn test:rules                                          # 51 invariants sur l'émulateur
+yarn test:rules                                          # 53 invariants sur l'émulateur
 firebase deploy --only firestore:rules --project reps    # règles
 firebase deploy --only firestore:indexes --project reps  # index (si firestore.indexes.json change)
 ```
@@ -51,7 +51,8 @@ firebase deploy --only firestore:indexes --project reps  # index (si firestore.i
 **En attente de déploiement** (prêtes sur `dev`, testées) : kudos sur l'activité des amis (#30) — avec leur
 effacement à la suppression du compte (champ `fromUid`, index de groupe de collections `kudos.fromUid` dans
 `firestore.indexes.json`) —, lecture des modèles d'un ami (#31), **acceptation d'une demande d'ami** (la règle lisait l'état d'avant le batch :
-toute acceptation était refusée, corrigé avec `getAfter`). Déployer **règles et index** avant de publier la
+toute acceptation était refusée, corrigé avec `getAfter`), **rejoindre ou créer un défi** (la règle exigeait un
+`exerciseId` à la racine que l'appli n'écrit pas : tout refusé). Déployer **règles et index** avant de publier la
 version de l'appli qui s'en sert.
 
 ---
