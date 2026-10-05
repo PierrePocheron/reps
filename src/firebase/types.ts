@@ -154,6 +154,7 @@ export interface Notification {
   type: 'reminder' | 'friend_activity' | 'achievement' | 'kudos';
   fromUserId?: string;
   fromName?: string; // nom affiché de l'expéditeur (encouragements)
+  sessionId?: string; // séance encouragée : un kudos retiré ne doit plus s'afficher
   read: boolean;
   createdAt: Timestamp;
 }
