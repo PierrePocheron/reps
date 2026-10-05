@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useUserStore } from '../userStore';
 import * as firebase from '@/firebase';
 import * as themeUtils from '@/utils/theme-colors';
+import { updateWidget } from '@/utils/widget';
 import { ThemeColor } from '@/utils/theme-colors';
 
 // Mock dependencies
@@ -19,6 +20,10 @@ vi.mock('@/firebase', () => ({
 
 vi.mock('@/utils/theme-colors', () => ({
   applyThemeColor: vi.fn(),
+}));
+
+vi.mock('@/utils/widget', () => ({
+  updateWidget: vi.fn(),
 }));
 
 describe('userStore', () => {
@@ -226,6 +231,11 @@ describe('userStore', () => {
         useUserStore.setState({ friendRequests: [{ id: 'x_A', fromUserName: 'alice', toUserId: 'A' } as any] });
         useUserStore.getState().reset();
         expect(useUserStore.getState().friendRequests).toEqual([]);
+    });
+
+    it('reset: the home-screen widget no longer shows the previous account streak', () => {
+        useUserStore.getState().reset();
+        expect(updateWidget).toHaveBeenCalledWith(expect.objectContaining({ streak: 0, weekDone: 0 }));
     });
 
     it('reset : la séance muscu en cours ne passe pas au compte suivant', async () => {

@@ -13,6 +13,7 @@ import {
 import { deleteUserAccount } from '@/firebase/deleteAccount';
 import { applyThemeColor, type ThemeColor } from '@/utils/theme-colors';
 import { logger } from '@/utils/logger';
+import { updateWidget } from '@/utils/widget';
 
 interface UserState {
   // État
@@ -272,6 +273,8 @@ export const useUserStore = create<UserState>((set, get) => ({
   reset: () => {
     stopUserListener?.();
     stopUserListener = null;
+    // Home-screen widget keeps its own copy: blank it, or it shows the signed-out / deleted account's streak
+    updateWidget({ streak: 0, weekly: false, weekDone: 0, weekGoal: 0, validUntil: 0, weekStart: 0 });
     // Nettoyer la session en cours (Zustand + LocalStorage)
     try {
       // Import dynamique pour éviter les dépendances circulaires top-level à l'initialisation
