@@ -26,7 +26,8 @@ function Challenges() {
   const [isJoining, setIsJoining] = useState<string | null>(null);
 
   const handleJoin = async (challengeId: string) => {
-    if (!user) return;
+    // one join at a time: the 6-challenge limit is checked before the write, a second tap slipped past it
+    if (!user || isJoining) return;
     setIsJoining(challengeId);
     try {
         await joinChallenge(user.uid, challengeId);
