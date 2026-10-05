@@ -34,6 +34,12 @@ describe('cartes de partage', () => {
     ]);
   });
 
+  it('poids du corps : la meilleure série est celle qui a le plus de reps', () => {
+    const card = gymCard({ date: new Date(), duration: 600, exercises: [{ exerciseId: 'pullups', name: 'Tractions', emoji: '🧗',
+      sets: [6, 12, 10].map((reps) => ({ weight: 0, reps, completed: true })) }] });
+    expect(card.lines).toEqual([{ name: 'Tractions', detail: '3 × 12 reps' }]);
+  });
+
   it('renfo : exercices sans reps ignorés, au-delà de 6 regroupés', () => {
     const exercises = Array.from({ length: 8 }, (_, i) => ({ name: `Ex ${i}`, emoji: '💪', reps: i === 7 ? 0 : 10 }));
     const card = renfoCard({ date: new Date(), duration: 600, exercises, totalReps: 70, totalCalories: 31.6 });

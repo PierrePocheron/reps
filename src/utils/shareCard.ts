@@ -27,7 +27,8 @@ export function gymCard(s: { date: Date; duration: number; exercises: GymSession
       const w = set.actualWeight ?? set.weight, r = set.actualReps ?? set.reps;
       volume += w * r; sets++;
       if (set.isRecord) records++;
-      if (w > (best.actualWeight ?? best.weight)) best = set;
+      const bw = best.actualWeight ?? best.weight;
+      if (w > bw || (w === bw && r > (best.actualReps ?? best.reps))) best = set; // same load (bodyweight): most reps
     }
     const w = best.actualWeight ?? best.weight;
     return [{ name: ex.name, detail: `${done.length} × ${w > 0 ? `${num(w)} kg` : `${best.actualReps ?? best.reps} reps`}` }];
