@@ -15,17 +15,7 @@ import {
   MoreVertical,
   Trash2
 } from 'lucide-react';
-import {
-  UserChallenge,
-  getChallengeDef,
-  validateChallengeDay,
-  getDayIndex,
-  getTargetForDay,
-  calculateChallengeTotalReps,
-  CHALLENGE_TEMPLATES,
-  ChallengeDefinition,
-  abandonChallenge
-} from '@/firebase/challenges';
+import { UserChallenge, getChallengeDef, validateChallengeDay, getDayIndex, getTargetForDay, calculateChallengeTotalReps, CHALLENGE_TEMPLATES, ChallengeDefinition, abandonChallenge, findChallengeExercise } from '@/firebase/challenges';
 import { useToast } from '@/hooks/use-toast';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import confetti from 'canvas-confetti';
@@ -199,6 +189,8 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
   };
 
   const getEmoji = (id: string) => {
+      const exercise = findChallengeExercise(id); // custom challenges got a wrong emoji for most exercises
+      if (exercise) return exercise.emoji;
       if (id.includes('pushups')) return '💪';
       if (id.includes('pullups')) return '🧗';
       if (id.includes('squats')) return '🦵';

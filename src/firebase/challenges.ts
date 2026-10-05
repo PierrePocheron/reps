@@ -13,7 +13,7 @@ import { db } from './config';
 import { localDay } from '@/utils/formatters';
 import { calculateDynamicCalories } from '@/utils/calories';
 import { User, SessionExercise } from './types';
-import { DEFAULT_EXERCISES, MAX_ACTIVE_CHALLENGES } from '@/utils/constants';
+import { DEFAULT_EXERCISES, MAX_ACTIVE_CHALLENGES, MUSCULATION_EXERCISES } from '@/utils/constants';
 import { updateUserStatsAfterSession } from './firestore';
 import { logger } from '@/utils/logger';
 
@@ -119,7 +119,7 @@ export const CHALLENGE_TEMPLATES: ChallengeDefinition[] = [
   },
   {
     id: 'c_lateral_hard',
-    exerciseId: 'lateral_raises',
+    exerciseId: 'db_lateral_raise',
     title: 'Épaules 3D',
     description: 'Volume maximal pour des épaules larges.',
     difficulty: 'hard',
@@ -190,6 +190,15 @@ export const getDayIndex = (startDate: Timestamp, targetDate: Date = new Date())
 // --- Firestore Functions ---
 
 // 1. Join a Challenge (Standard)
+// Old exercise ids kept by challenges already joined (definitionSnapshot): lateral raises moved to the gym list
+const LEGACY_EXERCISE_IDS: Record<string, string> = { lateral_raises: 'db_lateral_raise' };
+
+/** Exercise of a challenge: bodyweight first, then gym, through old ids (« Épaules 3D » could never be validated). */
+export const findChallengeExercise = (exerciseId: string) => {
+  const id = LEGACY_EXERCISE_IDS[exerciseId] ?? exerciseId;
+  return DEFAULT_EXERCISES.find((e) => e.id === id) ?? MUSCULATION_EXERCISES.find((e) => e.id === id);
+};
+
 export const joinChallenge = async (userId: string, challengeId: string): Promise<string> => {
   const def = getChallengeDef(challengeId);
   if (!def) throw new Error("Challenge template not found");
@@ -373,7 +382,7 @@ export const validateChallengeDay = async (
             }
 
             // C. Create Session (Social + Stats + Leaderboard)
-            const exerciseDef = DEFAULT_EXERCISES.find(e => e.id === def.exerciseId);
+            const exerciseDef = findChallengeExercise(def.exerciseId);
             if (!exerciseDef) throw new Error("Exercise definition not found");
 
             // Correct path: sessions/{userId}/userSessions/{sessionId}

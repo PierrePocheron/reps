@@ -7,7 +7,8 @@ vi.mock('../firestore', () => ({ updateUserStatsAfterSession: vi.fn(async () => 
 const DAY = 86_400_000;
 let challengeUpdate: Record<string, unknown> | undefined;
 
-const setup = (historyLength: number, startedDaysAgo: number) => {
+let sessionWritten: Record<string, unknown> | undefined;
+const setup = (historyLength: number, startedDaysAgo: number, exerciseId = 'pushups') => {
   const history = Array.from({ length: historyLength }, (_, i) => ({ date: `d${i}`, amount: 10, completed: true }));
   const start = new Date(Date.now() - startedDaysAgo * DAY);
   vi.mocked(runTransaction).mockImplementation(async (_db, fn) => fn({
@@ -15,9 +16,9 @@ const setup = (historyLength: number, startedDaysAgo: number) => {
       ? { exists: () => true, data: () => ({ weight: 70 }) }
       : { exists: () => true, data: () => ({
           challengeId: 'pushups_beginner', startDate: { toDate: () => new Date(start) }, history,
-          definitionSnapshot: { id: 'x', exerciseId: 'pushups', durationDays: 21, baseAmount: 10, increment: 1 },
+          definitionSnapshot: { id: 'x', exerciseId, durationDays: 21, baseAmount: 10, increment: 1 },
         }) })),
-    set: vi.fn(),
+    set: vi.fn((_ref: unknown, data: Record<string, unknown>) => { sessionWritten = data; }),
     update: vi.fn((ref: { path?: string }, data: Record<string, unknown>) => { if (!ref?.path?.startsWith('users')) challengeUpdate = data; }),
   } as never) as never);
 };
@@ -48,5 +49,11 @@ describe('validateChallengeDay', () => {
     } finally {
       process.env.TZ = previous;
     }
+  });
+
+  it("« Épaules 3D » se valide : l'exercice des défis déjà rejoints a été déplacé en musculation", async () => {
+    setup(0, 0, 'lateral_raises');
+    await expect(validateChallengeDay('c1', 'u1', 15)).resolves.not.toThrow(); // threw « Exercise definition not found »
+    expect((sessionWritten?.exercises as { name: string }[])[0]!.name).toBe('Élévation latérale');
   });
 });
