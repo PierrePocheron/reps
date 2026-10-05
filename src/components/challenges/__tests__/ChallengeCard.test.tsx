@@ -150,4 +150,15 @@ describe('ChallengeCard Component', () => {
         expect(screen.getByText('10')).toBeInTheDocument(); // day 1 target, not day 2 (12)
         expect((container.querySelector('[style*="width"]') as HTMLElement).style.width).toBe(`${(1 / 30) * 100}%`);
     });
+
+    it('counts the last step as late once the end date has passed', () => {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 35); // 30-day challenge
+        const history = Array.from({ length: 29 }, () => ({ date: '2026-01-01', amount: 10, completed: true }));
+
+        renderCard({ activeChallenge: { ...mockActiveChallenge, startDate: { toDate: () => new Date(startDate) }, history } });
+
+        expect(screen.getByText(/Retard\s*:\s*1\s*j/)).toBeInTheDocument();
+        expect(screen.getByText('Rattraper J30')).toBeInTheDocument();
+    });
 });

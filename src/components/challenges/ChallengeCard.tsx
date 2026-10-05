@@ -104,8 +104,8 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
 
   if (isActive && activeChallenge) {
       const today = new Date();
-      // Calendar Day (Theoretical Position)
-      const calendarDayIndex = Math.min(getDayIndex(activeChallenge.startDate, today), def.durationDays - 1);
+      // Calendar Day (Theoretical Position); after the end date every remaining step is overdue
+      const calendarDayIndex = Math.min(getDayIndex(activeChallenge.startDate, today), def.durationDays);
 
       // Actual Progress based on History Count (Catch-up Model)
       const stepsCompleted = activeChallenge.history.length;
