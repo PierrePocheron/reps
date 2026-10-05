@@ -70,6 +70,8 @@ describe('Home Page', () => {
 
         renderHome();
         expect(screen.queryByText(/Défis en cours/)).not.toBeInTheDocument();
+        // nor the « discover a challenge » card: it flashed before the user's own challenges arrived
+        expect(screen.queryByText('Discovery Card')).not.toBeInTheDocument();
     });
 
     it('should render empty state (Discovery) when no active challenges', () => {

@@ -30,7 +30,7 @@ function Home() {
   const { user, stats } = useUserStore();
   const { isActive, duration } = useSession();
   const { phase: gymPhase, startTime: gymStartTime, exercises: gymExercises, getTotalSets, getCompletedSets } = useGymSessionStore();
-  const { activeChallenges, refreshChallenges } = useChallenges();
+  const { activeChallenges, refreshChallenges, isLoading: challengesLoading } = useChallenges();
   const [sessionRefreshTrigger, setSessionRefreshTrigger] = useState(0);
   const [showPicker, setShowPicker] = useState(false);
   const [gymDuration, setGymDuration] = useState(0);
@@ -266,6 +266,9 @@ function Home() {
                         </details>
                     )}
                 </div>
+            ) : challengesLoading ? (
+                // not the « discover a challenge » card before the user's own challenges are known (it flashed)
+                <div className="h-40 rounded-2xl bg-muted animate-pulse" aria-label="Chargement des défis" />
             ) : (
                 <ChallengeCard userId={user?.uid || ''} />
             )}

@@ -570,7 +570,7 @@ export default function Statistics() {
                 <span className="text-sm font-semibold">Objectif cette semaine</span>
               </div>
               <span className="text-sm font-bold whitespace-nowrap">
-                {Math.min(thisWeekCount, weeklyGoal)}/{weeklyGoal} séances
+                {historyLoading ? '–' : Math.min(thisWeekCount, weeklyGoal)}/{weeklyGoal} séances
               </span>
             </div>
             {/* Barre de progression */}

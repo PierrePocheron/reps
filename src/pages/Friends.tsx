@@ -540,7 +540,7 @@ export default function Friends() {
             {/* Liste d'amis (si pas de recherche active) */}
             {searchTerm.length < 2 && (
               <div className="space-y-3">
-                <h3 className="font-semibold text-sm text-muted-foreground">Mes amis ({friends.length})</h3>
+                <h3 className="font-semibold text-sm text-muted-foreground">Mes amis{isLoadingFriends ? '' : ` (${friends.length})`}</h3>
                 {friendsFailed && !isLoadingFriends ? loadError('tes amis') : isLoadingFriends ? (
                   <div className="flex justify-center py-12">
                     <LoadingSpinner />
