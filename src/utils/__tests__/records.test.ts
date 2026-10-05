@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { estimate1RM, bestE1RMByExercise, bestSecondsByExercise, exerciseHistory, exerciseLog, isWorkSet, markRecords, isTimed } from '../records';
+import { estimate1RM, bestE1RMByExercise, bestSecondsByExercise, exerciseHistory, exerciseLog, isWorkSet, markRecords, isTimed, personalRecordsOf } from '../records';
 import { calculateTotalVolume } from '@/firebase/gymSessions';
 import type { GymSession } from '@/firebase/types';
 
@@ -106,5 +106,17 @@ describe('exerciseLog (#60)', () => {
       { date: new Date(2026, 9, 1), sets: '12 · 10 reps', record: false },
     ]);
     expect(exerciseLog([sess(2, [{ weight: 0, reps: 60, completed: true }], true)], 'bench_press')[0]!.sets).toBe('60 s');
+  });
+});
+
+describe('personalRecordsOf (onglet Records)', () => {
+  it("« Max estimé sur 1 rep » = meilleur 1RM estimé, pas celui de la série au plus gros volume", () => {
+    const session = { date: { toDate: () => new Date(2026, 9, 1) }, exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [
+      { weight: 100, reps: 5, completed: true },
+      { weight: 60, reps: 10, completed: true }, // plus gros volume (600 > 500)
+    ] }] } as unknown as GymSession;
+    const [pr] = personalRecordsOf([session], {});
+    expect(pr).toMatchObject({ bestVolume: 600, bestWeight: 60, bestReps: 10 });
+    expect(Math.round(pr!.bestE1RM)).toBe(117); // Epley 100 × 5, comme les trophées et la courbe
   });
 });

@@ -115,3 +115,69 @@ export function exerciseLog(sessions: GymSession[], exerciseId: string, limit = 
   }
   return out.slice(0, limit);
 }
+
+export interface PersonalRecord {
+  exerciseId: string;
+  name: string;
+  emoji: string;
+  imageUrl?: string;
+  bestWeight: number;
+  bestReps: number;
+  totalSetsCompleted: number;
+  bestVolume: number; // poids × reps sur une seule série
+  bestE1RM: number;   // meilleur 1RM estimé (Epley), toutes séries confondues : pas celui de la série au plus gros volume
+  lastPerformed: Date;
+  timed?: boolean; // exercice en durée : bestReps = meilleure durée en secondes (#55)
+}
+
+/** Records personnels par exercice (onglet Records de l'historique), triés par meilleur volume. */
+export function personalRecordsOf(gymSessions: GymSession[], imageMap: Record<string, string | undefined>): PersonalRecord[] {
+  if (gymSessions.length === 0) return [];
+
+  const map = new Map<string, PersonalRecord>();
+
+  for (const session of gymSessions) {
+    const sessionDate = session.date.toDate();
+    for (const ex of session.exercises) {
+      const existing = map.get(ex.exerciseId);
+      const pr: PersonalRecord = existing ?? {
+        exerciseId: ex.exerciseId,
+        name: ex.name,
+        emoji: ex.emoji,
+        imageUrl: imageMap[ex.exerciseId],
+        bestWeight: 0,
+        bestReps: 0,
+        totalSetsCompleted: 0,
+        bestVolume: 0,
+        bestE1RM: 0,
+        lastPerformed: sessionDate,
+        timed: isTimed(ex), // unité de la séance la plus récente (liste triée du plus récent au plus ancien)
+      };
+
+      if (isTimed(ex) !== pr.timed) { map.set(ex.exerciseId, pr); continue; } // séance dans l'autre unité : ignorée
+      for (const set of ex.sets) {
+        if (!isWorkSet(set)) continue;
+        const w = set.actualWeight ?? set.weight;
+        const r = set.actualReps ?? set.reps;
+        pr.totalSetsCompleted++;
+        if (sessionDate > pr.lastPerformed) pr.lastPerformed = sessionDate;
+        if (pr.timed) { pr.bestReps = Math.max(pr.bestReps, r); continue; } // durée : la meilleure, sans volume ni 1RM
+        const vol = w * r;
+        if (w > 0) pr.bestE1RM = Math.max(pr.bestE1RM, estimate1RM(w, r));
+
+        if (vol > pr.bestVolume) {
+          pr.bestVolume = vol;
+          pr.bestWeight = w;
+          pr.bestReps = r;
+        } else if (w === 0 && pr.bestWeight === 0 && r > pr.bestReps) {
+          pr.bestReps = r;
+        }
+      }
+
+      map.set(ex.exerciseId, pr);
+    }
+  }
+
+  // Trier par meilleur volume décroissant
+  return Array.from(map.values()).sort((a, b) => b.bestVolume - a.bestVolume);
+}

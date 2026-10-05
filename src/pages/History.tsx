@@ -20,7 +20,7 @@ import { logger } from '@/utils/logger';
 import { gymCard, renfoCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
 import type { Session, GymSession } from '@/firebase/types';
 import { ExerciseDetailSheet } from '@/components/gym/ExerciseDetailSheet';
-import { estimate1RM, exerciseHistory, exerciseLog, isWorkSet, markRecords, isTimed } from '@/utils/records';
+import { exerciseHistory, exerciseLog, isWorkSet, markRecords, isTimed, personalRecordsOf, type PersonalRecord } from '@/utils/records';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useUserStore } from '@/store/userStore';
@@ -45,18 +45,6 @@ function formatTime(date: Date): string {
 
 // ─── Types Records ─────────────────────────────────────────────────────────────
 
-interface PersonalRecord {
-  exerciseId: string;
-  name: string;
-  emoji: string;
-  imageUrl?: string;
-  bestWeight: number;
-  bestReps: number;
-  totalSetsCompleted: number;
-  bestVolume: number; // poids × reps sur une seule série
-  lastPerformed: Date;
-  timed?: boolean; // exercice en durée : bestReps = meilleure durée en secondes (#55)
-}
 
 // ─── Renforcement Card ────────────────────────────────────────────────────────
 
@@ -262,7 +250,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
 // ─── PR Card ──────────────────────────────────────────────────────────────────
 
 function PRCard({ pr, onOpen }: { pr: PersonalRecord; onOpen: () => void }) {
-  const oneRepMax = !pr.timed && pr.bestWeight > 0 ? Math.round(estimate1RM(pr.bestWeight, pr.bestReps)) : null;
+  const oneRepMax = !pr.timed && pr.bestE1RM > 0 ? Math.round(pr.bestE1RM) : null; // best of all sets, like trophies and the chart
 
   return (
     <button
@@ -456,54 +444,7 @@ function History() {
   };
 
   // Calcul des records personnels depuis l'historique muscu
-  const personalRecords = useMemo<PersonalRecord[]>(() => {
-    if (gymSessions.length === 0) return [];
-
-    const map = new Map<string, PersonalRecord>();
-
-    for (const session of gymSessions) {
-      const sessionDate = session.date.toDate();
-      for (const ex of session.exercises) {
-        const existing = map.get(ex.exerciseId);
-        const pr: PersonalRecord = existing ?? {
-          exerciseId: ex.exerciseId,
-          name: ex.name,
-          emoji: ex.emoji,
-          imageUrl: imageMap[ex.exerciseId],
-          bestWeight: 0,
-          bestReps: 0,
-          totalSetsCompleted: 0,
-          bestVolume: 0,
-          lastPerformed: sessionDate,
-          timed: isTimed(ex), // unité de la séance la plus récente (liste triée du plus récent au plus ancien)
-        };
-
-        if (isTimed(ex) !== pr.timed) { map.set(ex.exerciseId, pr); continue; } // séance dans l'autre unité : ignorée
-        for (const set of ex.sets) {
-          if (!isWorkSet(set)) continue;
-          const w = set.actualWeight ?? set.weight;
-          const r = set.actualReps ?? set.reps;
-          pr.totalSetsCompleted++;
-          if (sessionDate > pr.lastPerformed) pr.lastPerformed = sessionDate;
-          if (pr.timed) { pr.bestReps = Math.max(pr.bestReps, r); continue; } // durée : la meilleure, sans volume ni 1RM
-          const vol = w * r;
-
-          if (vol > pr.bestVolume) {
-            pr.bestVolume = vol;
-            pr.bestWeight = w;
-            pr.bestReps = r;
-          } else if (w === 0 && pr.bestWeight === 0 && r > pr.bestReps) {
-            pr.bestReps = r;
-          }
-        }
-
-        map.set(ex.exerciseId, pr);
-      }
-    }
-
-    // Trier par meilleur volume décroissant
-    return Array.from(map.values()).sort((a, b) => b.bestVolume - a.bestVolume);
-  }, [gymSessions, imageMap]);
+  const personalRecords = useMemo(() => personalRecordsOf(gymSessions, imageMap), [gymSessions, imageMap]);
 
   return (
     <PageLayout title="HISTORIQUE" backButton>
