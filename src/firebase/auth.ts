@@ -30,6 +30,9 @@ googleProvider.setCustomParameters({
   prompt: 'select_account',
 });
 
+/** Pseudo-safe slug: accents folded (Éloïse → eloise), anything else outside [a-z0-9] dropped */
+const slug = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
 
 
 /**
@@ -74,9 +77,7 @@ export async function signUpWithEmail(
     sendEmailVerification(user).catch((e) =>
       logger.warn('Email de vérification non envoyé', { error: e })
     );
-    const normalizedFirstName = firstName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-    const normalizedLastName = lastName.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-    let displayName = `${normalizedFirstName}${normalizedLastName}`;
+    let displayName = slug(firstName + lastName);
 
     // Fallback si vide ou trop court
     if (displayName.length < 3) {
@@ -169,8 +170,7 @@ export async function handleGoogleSignInResult(user: FirebaseUser, result?: User
         const userDoc = await getUserDocument(user.uid);
         if (!userDoc) {
           // Générer un pseudo valide (lowercase, sans espace)
-          let displayName = user.displayName || 'Utilisateur';
-          displayName = displayName.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+          let displayName = slug(user.displayName || 'Utilisateur');
           if (displayName.length < 3) displayName = `user${Math.floor(Math.random() * 10000)}`;
 
           // Créer le document utilisateur s'il n'existe pas

@@ -135,6 +135,12 @@ describe('firebase/auth', () => {
       expect((call[1] as any).displayName).toMatch(/^user\d+$/);
     });
 
+    it('keeps accented letters as plain letters in the generated pseudo', async () => {
+      vi.mocked(firebaseAuth.createUserWithEmailAndPassword).mockResolvedValueOnce({ user: mockUser } as any);
+      await signUpWithEmail('test@test.com', 'password123', 'Éloïse', 'Lefèvre');
+      expect(vi.mocked(firestoreModule.createUserDocument).mock.calls[0]![1]).toMatchObject({ displayName: 'eloiselefevre' });
+    });
+
     it('should throw on error', async () => {
       vi.mocked(firebaseAuth.createUserWithEmailAndPassword).mockRejectedValueOnce(
         new Error('auth/email-already-in-use')
@@ -231,6 +237,12 @@ describe('firebase/auth', () => {
       await handleGoogleSignInResult(mockUser as any, { some: 'result' } as unknown as import('firebase/auth').UserCredential);
       expect(firestoreModule.createUserDocument).toHaveBeenCalledTimes(1);
       expect(vi.mocked(firestoreModule.createUserDocument).mock.calls[0]![0]).toBe('user123');
+    });
+
+    it('keeps accented letters as plain letters in the generated pseudo', async () => {
+      vi.mocked(firestoreModule.getUserDocument).mockResolvedValueOnce(null);
+      await handleGoogleSignInResult({ ...mockUser, displayName: 'Hélène Dupré' } as any);
+      expect(vi.mocked(firestoreModule.createUserDocument).mock.calls[0]![1]).toMatchObject({ displayName: 'helenedupre' });
     });
 
     it('should fallback to displayName when no profile info', async () => {
