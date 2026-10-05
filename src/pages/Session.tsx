@@ -46,6 +46,9 @@ function Session() {
     addCustomExercise,
   } = useSession();
   useKeepAwake(isActive);
+  // The page saw a live session: if it then ends without a summary, it was the 2-hour auto-finish (page went blank)
+  const wasActive = useRef(false), lastReps = useRef(0);
+  if (isActive) { wasActive.current = true; lastReps.current = totalReps; }
 
   const [removingExercise, setRemovingExercise] = useState<string | null>(null);
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
@@ -200,6 +203,18 @@ function Session() {
   // Si on n'est pas authentifié, on redirige (déjà géré plus haut)
   // Si la session n'est pas active, on affiche un loader en attendant le useEffect
   if (!isActive) {
+    if (!summary && wasActive.current) {
+      return (
+        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 p-6 text-center">
+          <p className="font-semibold">{lastReps.current > 0 ? 'Séance enregistrée automatiquement après 2\u00a0h' : 'Séance fermée après 2\u00a0h sans répétition'}</p>
+          <p className="text-sm text-muted-foreground">{lastReps.current > 0 ? 'Elle est dans ton historique.' : "Rien n'a été enregistré."}</p>
+          <div className="flex flex-wrap justify-center gap-2 pt-2">
+            <Button className="min-h-11" onClick={() => { wasActive.current = false; startSession(); }}>Nouvelle séance</Button>
+            <Button variant="outline" className="min-h-11" onClick={() => navigate('/')}>Retour à l'accueil</Button>
+          </div>
+        </div>
+      );
+    }
     return summary && (
       <SessionSummary
         stats={summary.stats}
