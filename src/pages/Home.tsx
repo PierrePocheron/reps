@@ -142,7 +142,7 @@ function Home() {
   const hasActiveSession = isActive || gymPhase !== 'idle';
 
   const sessionLabel = gymPhase === 'plan'
-    ? `Planification · ${gymExercises.length} exo`
+    ? `Planification · ${plural(gymExercises.length, 'exo')}`
     : gymPhase === 'execute'
     ? `${getCompletedSets()}/${plural(getTotalSets(), 'série')}`
     : isActive

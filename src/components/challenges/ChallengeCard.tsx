@@ -339,7 +339,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                 <div className="bg-background/40 rounded-lg p-3 my-4 border border-border/30">
                     <div className="flex justify-between items-end mb-1">
                         <span className="text-xs font-medium text-muted-foreground">Progression totale</span>
-                        <span className="text-sm font-bold">{percentTotal}%</span>
+                        <span className="text-sm font-bold">{percentTotal}&nbsp;%</span>
                     </div>
                     <div className="h-2.5 bg-background rounded-full overflow-hidden border border-border/20">
                         <div

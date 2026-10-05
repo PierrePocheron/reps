@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { frDate } from '@/utils/formatters';
+import { formatNumber, frDate } from '@/utils/formatters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -538,7 +538,7 @@ export default function Friends() {
                           <div className="min-w-0">
                             <p className="font-medium truncate">{friend.displayName}</p>
                             <p className="text-xs text-muted-foreground truncate">
-                              {friend.totalSessions} séance{friend.totalSessions > 1 ? 's' : ''} • {friend.totalReps} reps
+                              {friend.totalSessions} séance{friend.totalSessions > 1 ? 's' : ''} • {formatNumber(friend.totalReps)} reps
                             </p>
                           </div>
                         </div>

@@ -565,7 +565,7 @@ function History() {
               <div className="bg-orange-500/10 p-4 rounded-full">
                 <Zap className="h-8 w-8 text-orange-500" />
               </div>
-              <p className="font-semibold">Aucune séance renforcement</p>
+              <p className="font-semibold">Aucune séance renfo</p>
               <p className="text-sm text-muted-foreground">Tes séances de renforcement apparaîtront ici.</p>
               <Button size="sm" className="mt-2 rounded-xl active:scale-95 transition-transform" onClick={() => navigate('/session')}>Démarrer une séance renfo</Button>
             </div>

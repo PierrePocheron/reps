@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { plural } from '@/utils/formatters';
 import { templateExercise } from '@/utils/progression';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -79,7 +80,7 @@ function TemplateCard({
           </div>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0 text-muted-foreground">
-          <span className="text-xs">{exerciseCount} exo</span>
+          <span className="text-xs">{plural(exerciseCount, 'exo')}</span>
           <ChevronRight className="h-4 w-4" />
         </div>
       </button>
@@ -168,7 +169,7 @@ function Templates() {
       await remove(templateId);
       toast({ title: 'Modèle supprimé' });
     } catch {
-      toast({ title: 'Erreur', description: 'Impossible de supprimer le template.', variant: 'destructive' });
+      toast({ title: 'Erreur', description: 'Impossible de supprimer le modèle.', variant: 'destructive' });
     }
   };
 

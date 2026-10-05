@@ -145,7 +145,7 @@ const SLIDES = [
     visual: VisualModes,
   },
   {
-    title: '1324 exercices illustrés',
+    title: '1 324 exercices illustrés',
     description: 'Chaque exercice a son animation, ses muscles ciblés et ses instructions en français. Coche tes séries au fil de la séance ; touche le numéro d’une série pour la marquer en échauffement.',
     visual: VisualExercises,
   },

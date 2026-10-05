@@ -98,7 +98,7 @@ export function GymTemplatePreviewSheet({ template, onClose, onStart }: Props) {
             className="w-full h-12 text-base font-semibold"
             onClick={() => onStart(template)}
           >
-            Commencer l'entraînement
+            Démarrer la séance
           </Button>
         </div>
       </div>

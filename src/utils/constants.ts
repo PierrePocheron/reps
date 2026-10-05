@@ -227,7 +227,7 @@ export const BADGES: Badge[] = [
   {
     id: 'mosquito',
     name: "Tié un moustique",
-    description: '1000 reps accomplies',
+    description: '1 000 reps accomplies',
     emoji: '🦟',
     threshold: 1000,
     category: 'total_reps',
@@ -236,7 +236,7 @@ export const BADGES: Badge[] = [
   {
     id: 'tiger',
     name: "Tié un tigre",
-    description: '2000 reps accomplies',
+    description: '2 000 reps accomplies',
     emoji: '🐯',
     threshold: 2000,
     category: 'total_reps',
@@ -245,7 +245,7 @@ export const BADGES: Badge[] = [
   {
     id: 'triple-monster',
     name: 'Triple monstre',
-    description: '3000 reps accomplies',
+    description: '3 000 reps accomplies',
     emoji: '💥',
     threshold: 3000,
     category: 'total_reps',
@@ -254,7 +254,7 @@ export const BADGES: Badge[] = [
   {
     id: 'jaguar',
     name: "C'est pas facile hein",
-    description: '4000 reps accomplies',
+    description: '4 000 reps accomplies',
     emoji: '🐆',
     threshold: 4000,
     category: 'total_reps',
@@ -263,7 +263,7 @@ export const BADGES: Badge[] = [
   {
     id: 'brain',
     name: 'Bah super Nils',
-    description: '5000 reps accomplies',
+    description: '5 000 reps accomplies',
     emoji: '🧠',
     threshold: 5000,
     category: 'total_reps',
@@ -272,7 +272,7 @@ export const BADGES: Badge[] = [
   {
     id: 'zen',
     name: "Oooh là j'suis bieng",
-    description: '6000 reps accomplies',
+    description: '6 000 reps accomplies',
     emoji: '😌',
     threshold: 6000,
     category: 'total_reps',
@@ -281,7 +281,7 @@ export const BADGES: Badge[] = [
   {
     id: 'grandingo',
     name: 'Oh ta grand-mère',
-    description: '7000 reps accomplies',
+    description: '7 000 reps accomplies',
     emoji: '😤',
     threshold: 7000,
     category: 'total_reps',
@@ -368,7 +368,7 @@ export const BADGES: Badge[] = [
   {
     id: 'cal-pizza',
     name: "Pizza Party",
-    description: '1000 kcal brûlées',
+    description: '1 000 kcal brûlées',
     emoji: '🍕',
     threshold: 1000,
     category: 'total_calories',
@@ -377,7 +377,7 @@ export const BADGES: Badge[] = [
   {
     id: 'cal-fire',
     name: "Fournaise",
-    description: '5000 kcal brûlées',
+    description: '5 000 kcal brûlées',
     emoji: '🔥',
     threshold: 5000,
     category: 'total_calories',
@@ -386,7 +386,7 @@ export const BADGES: Badge[] = [
   {
     id: 'cal-nuclear',
     name: "Centrale Nucléaire",
-    description: '10000 kcal brûlées',
+    description: '10 000 kcal brûlées',
     emoji: '☢️',
     threshold: 10000,
     category: 'total_calories',
@@ -397,7 +397,7 @@ export const BADGES: Badge[] = [
   {
     id: 'early_bird',
     name: "L'avenir appartient à...",
-    description: '5 séances entre 7h et 9h',
+    description: '5 séances entre 7 h et 9 h',
     emoji: '🌅',
     threshold: 5,
     category: 'time_morning',
@@ -406,7 +406,7 @@ export const BADGES: Badge[] = [
   {
     id: 'lunch_break',
     name: "Pas le temps de niaiser",
-    description: '5 séances entre 12h et 14h',
+    description: '5 séances entre 12 h et 14 h',
     emoji: '🥪',
     threshold: 5,
     category: 'time_lunch',
@@ -415,7 +415,7 @@ export const BADGES: Badge[] = [
   {
     id: 'night_owl',
     name: "Déterminé",
-    description: '5 séances après 23h',
+    description: '5 séances après 23 h',
     emoji: '🦉',
     threshold: 5,
     category: 'time_night',

@@ -15,9 +15,11 @@ import { cn } from '@/utils/cn';
 const W = 320, H = 110, PX = 8, PY = 12;
 const fmt = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
 
-function MiniChart({ points, unit }: { points: { date: Date; value: number }[]; unit: string }) {
+function MiniChart({ points, unit, hasValue }: { points: { date: Date; value: number }[]; unit: string; hasValue: boolean }) {
   if (points.length < 2) {
-    return <p className="text-xs text-muted-foreground text-center py-6">{points.length ? 'Encore une mesure pour voir la courbe.' : 'Pas encore de mesure.'}</p>;
+    // a value can come from the profile (weight) with no measurement yet: « Pas encore de mesure » contradicted it
+    const hint = points.length ? 'Encore une mesure pour voir la courbe.' : hasValue ? 'Ajoute une mesure pour suivre ta courbe.' : 'Pas encore de mesure.';
+    return <p className="text-xs text-muted-foreground text-center py-6">{hint}</p>;
   }
   const vs = points.map((p) => p.value);
   const lo = Math.min(...vs), hi = Math.max(...vs), span = hi - lo || 1;
@@ -120,7 +122,7 @@ export function BodyMetrics() {
           )
           : entries === null
           ? <div className="h-28 rounded-xl bg-muted animate-pulse" aria-label="Chargement des mesures" />
-          : <MiniChart points={bodySeries(list, field)} unit={meta.unit} />}
+          : <MiniChart points={bodySeries(list, field)} unit={meta.unit} hasValue={!!latest(field)} />}
       </CardContent>
 
       <Dialog open={open} onOpenChange={setOpen}>

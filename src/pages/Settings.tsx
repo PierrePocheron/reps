@@ -400,10 +400,10 @@ function Settings() {
           <CardContent>
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-medium">Feedback haptique</p>
+                <p className="text-sm font-medium">Retour haptique</p>
                 <p className="text-xs text-muted-foreground">Vibrations lors des interactions</p>
               </div>
-              <Switch checked={hapticFeedback} label="Feedback haptique" onCheckedChange={setHapticFeedback} />
+              <Switch checked={hapticFeedback} label="Retour haptique" onCheckedChange={setHapticFeedback} />
             </div>
 
             <div className="flex items-center justify-between gap-3 pt-4 border-t mt-4">
