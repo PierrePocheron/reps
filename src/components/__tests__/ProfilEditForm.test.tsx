@@ -28,4 +28,15 @@ describe('ProfilEditForm', () => {
     fireEvent.change(screen.getByLabelText('Jour de naissance'), { target: { value: '' } });
     expect((await submit()).birthDate).toBe('__deleteField__');
   });
+
+  it('a 🔥 avatar is named after the badge the user owns (« Fournaise », not « Le début »)', () => {
+    render(<ProfilEditForm user={{ ...user, avatarEmoji: '🔥', badges: ['poussin', 'cal-fire'] }} />);
+    expect(screen.getByText('Fournaise')).toBeInTheDocument();
+  });
+
+  it('a new user with only the chick is told how to get more avatars', () => {
+    render(<ProfilEditForm user={user} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Modifier' }));
+    expect(screen.getByText(/Débloque des badges/)).toBeInTheDocument();
+  });
 });

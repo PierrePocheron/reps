@@ -143,6 +143,10 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
     }
   };
 
+  // 🔥 is both « Le début » and « Fournaise »: name the badge the user owns
+  const sameEmoji = BADGES.filter((b) => b.emoji === formData.avatarEmoji);
+  const avatarName = (sameEmoji.find((b) => user.badges?.includes(b.id)) ?? sameEmoji[0])?.name || 'Poussin';
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
@@ -326,7 +330,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
                  <div>
                     <p className="text-sm font-medium">Avatar actuel</p>
                     <p className="text-xs text-muted-foreground">
-                      {BADGES.find(b => b.emoji === formData.avatarEmoji)?.name || "Poussin"}
+                      {avatarName}
                     </p>
                  </div>
              </div>
@@ -377,9 +381,9 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
                 </button>
                 ))}
             </div>
-            {BADGES.filter(b => user.badges?.includes(b.id)).length === 0 && (
+            {BADGES.filter(b => user.badges?.includes(b.id) && b.id !== 'poussin').length === 0 && (
                 <p className="text-xs text-center text-muted-foreground mt-2">
-                Débloque des badges pour obtenir plus d'avatars !
+                Débloque des badges pour obtenir plus d'avatars&nbsp;!
                 </p>
             )}
             </div>
