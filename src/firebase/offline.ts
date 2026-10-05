@@ -11,6 +11,7 @@ export interface LocalSession {
   exercises: Array<{ name: string; emoji: string; reps: number }>;
   duration: number;
   totalReps: number;
+  backdate?: { at: number; duration: number } | null; // séance oubliée (#58)
 }
 
 const STORAGE_KEYS = {

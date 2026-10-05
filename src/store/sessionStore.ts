@@ -227,7 +227,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   // Jamais dans le futur : la date est ramenée à maintenant au pire
-  setBackdate: (backdate) => set({ backdate: backdate && { at: Math.min(backdate.at, Date.now()), duration: Math.max(0, backdate.duration) } }),
+  setBackdate: (backdate) => {
+    set({ backdate: backdate && { at: Math.min(backdate.at, Date.now()), duration: Math.max(0, backdate.duration) } });
+    get().saveSessionToLocal(); // survives an app restart
+  },
 
   /**
    * Pré-charge des exercices depuis un template (sans démarrer la session)
@@ -261,6 +264,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           exercises: localSession.exercises || [],
           duration: localSession.duration || 0,
           totalReps: localSession.totalReps || 0,
+          backdate: localSession.backdate ?? null,
         });
       } else {
         // Session trop ancienne, la supprimer
@@ -273,13 +277,14 @@ export const useSessionStore = create<SessionState>((set, get) => ({
    * Sauvegarde la session dans localStorage
    */
   saveSessionToLocal: () => {
-    const { isActive, startTime, exercises, duration, totalReps } = get();
+    const { isActive, startTime, exercises, duration, totalReps, backdate } = get();
     if (isActive && startTime !== null) {
       const localSession: Partial<LocalSession> = {
         startTime,
         exercises,
         duration,
         totalReps,
+        backdate,
       };
       saveCurrentSessionToLocal(localSession);
     }

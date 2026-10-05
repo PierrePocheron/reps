@@ -31,6 +31,7 @@ const resetStore = () => {
     exercises: [],
     duration: 0,
     totalReps: 0,
+    backdate: null,
   });
 };
 
@@ -235,6 +236,18 @@ describe('sessionStore', () => {
       useSessionStore.getState().loadSessionFromLocal();
       expect(useSessionStore.getState().isActive).toBe(true);
       expect(useSessionStore.getState().exercises).toHaveLength(1);
+    });
+
+    it('séance oubliée (#58) : la date saisie survit à un redémarrage de l’app', () => {
+      const backdate = { at: Date.now() - 86_400_000, duration: 2700 };
+      useSessionStore.setState({ isActive: true, startTime: Date.now() - 60000, exercises: [{ name: 'Pompes', emoji: '🔥', reps: 50 }], totalReps: 50 });
+      useSessionStore.getState().setBackdate(backdate);
+      expect(firebaseModule.saveCurrentSessionToLocal).toHaveBeenLastCalledWith(expect.objectContaining({ backdate }));
+
+      resetStore();
+      vi.mocked(firebaseModule.getCurrentSessionFromLocal).mockReturnValueOnce(vi.mocked(firebaseModule.saveCurrentSessionToLocal).mock.lastCall![0]);
+      useSessionStore.getState().loadSessionFromLocal();
+      expect(useSessionStore.getState().backdate).toEqual(backdate);
     });
 
     it('should not load an expired session (> 24h)', () => {
