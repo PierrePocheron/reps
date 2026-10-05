@@ -2,6 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { gymCard, renfoCard } from '../shareCard';
 
 describe('cartes de partage', () => {
+  it('compte le record de durée (gainage) comme le récap', () => {
+    const card = gymCard({ date: new Date(), duration: 600, exercises: [{ exerciseId: 'weighted_plank', name: 'Gainage lesté', emoji: '🧱', timed: true,
+      sets: [{ reps: 75, weight: 0, completed: true, isRecord: true }] }] });
+    expect(card.stats).toContainEqual({ label: 'Record', value: '🏆 1' });
+  });
+
   it('muscu : volume, séries validées, records, meilleure série par exercice', () => {
     const card = gymCard({
       date: new Date(2026, 9, 3), duration: 3900,
