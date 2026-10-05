@@ -62,7 +62,9 @@ function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymS
   });
 
   const DAY_LABELS = ['Lun', '', 'Mer', '', 'Ven', '', 'Dim'];
-  const activeDays = cells.filter((c) => c.count > 0).length;
+  // the grid starts on a Monday (91 to 97 cells): count the 90 days the title announces
+  const since = new Date(today); since.setDate(today.getDate() - 89); since.setHours(0, 0, 0, 0);
+  const activeDays = cells.filter((c) => c.count > 0 && c.date >= since).length;
 
   const cellColor = (count: number, isSelected: boolean) => {
     if (count === 0) return isSelected ? 'bg-muted-foreground/40' : 'bg-muted';
