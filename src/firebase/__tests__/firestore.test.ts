@@ -89,6 +89,13 @@ describe('createUserDocument', () => {
     expect(setDoc).toHaveBeenCalledTimes(1);
   });
 
+  it('caps names at the 50 characters firestore.rules allow (or the create is denied after sign-up)', async () => {
+    const long = 'a'.repeat(56);
+    await createUserDocument('uid123', { displayName: long, firstName: long, lastName: long });
+    const written = vi.mocked(setDoc).mock.calls[0]![1] as Record<string, string>;
+    for (const k of ['displayName', 'searchName', 'firstName', 'lastName']) expect(written[k]).toHaveLength(50);
+  });
+
   it('should throw on Firestore error', async () => {
     vi.mocked(setDoc).mockRejectedValueOnce(new Error('Firestore error'));
     await expect(createUserDocument('uid123', {})).rejects.toThrow('Firestore error');

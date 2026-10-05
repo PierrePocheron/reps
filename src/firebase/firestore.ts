@@ -134,6 +134,9 @@ export async function createUserDocument(
       userDoc.emailHash = await hashEmail(userData.email);
     }
 
+    // firestore.rules caps names at 50 chars: a longer one was denied after the Auth account existed (lockout)
+    for (const k of ['displayName', 'searchName', 'firstName', 'lastName'] as const) userDoc[k] = userDoc[k]?.slice(0, 50);
+
     // Nettoyage des champs undefined
     Object.keys(userDoc).forEach(key => userDoc[key as keyof typeof userDoc] === undefined && delete userDoc[key as keyof typeof userDoc]);
 
