@@ -99,4 +99,17 @@ describe('useChallenges Hook', () => {
       expect(result.current.isLoading).toBe(false);
       expect(getUserActiveChallenges).toHaveBeenCalledTimes(1);
   });
+
+  it('reloads when the app comes back to the foreground (the day may have changed)', async () => {
+      useUserStore.setState({ user: { uid: 'u1' } as any });
+      (getUserActiveChallenges as any).mockResolvedValue([{ id: 'c1' }]);
+
+      const { result } = renderHook(() => useChallenges());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      act(() => { document.dispatchEvent(new Event('visibilitychange')); });
+
+      await waitFor(() => expect(getUserActiveChallenges).toHaveBeenCalledTimes(2));
+      expect(result.current.isLoading).toBe(false);
+  });
 });

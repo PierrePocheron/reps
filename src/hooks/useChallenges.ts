@@ -28,6 +28,10 @@ export function useChallenges() {
 
   useEffect(() => {
     fetchChallenges(true);
+    // Cards derive "today" at render: reload on return to the app, the day may have changed overnight
+    const onVisible = () => { if (document.visibilityState === 'visible') fetchChallenges(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
   }, [fetchChallenges]);
 
   const refreshChallenges = () => fetchChallenges(false);
