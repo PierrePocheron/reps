@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { useUserStore } from '@/store/userStore';
-import { BADGES, getUnlockedBadges } from '@/utils/constants';
+import { BADGES, getEarnedBadges } from '@/utils/constants';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/utils/cn';
 import { logger } from '@/utils/logger';
@@ -49,7 +49,7 @@ export default function Achievements() {
 
   if (!user || !stats) return null;
 
-  const unlockedBadges = getUnlockedBadges(stats);
+  const unlockedBadges = getEarnedBadges(stats, user.badges);
   const unlockedBadgeIds = unlockedBadges.map(b => b.id);
 
   const totalBadges = BADGES.length;

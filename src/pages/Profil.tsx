@@ -10,7 +10,7 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { ProfilEditForm } from '@/components/ProfilEditForm';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
-import { getUnlockedBadges, getNextBadge } from '@/utils/constants';
+import { getEarnedBadges, getNextBadge } from '@/utils/constants';
 import { formatNumber, plural } from '@/utils/formatters';
 import { Settings, LogOut, Award, Target, Users, Trash2, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -102,8 +102,8 @@ function Profil() {
 
   if (!user) return null;
 
-  const unlockedBadges = stats ? getUnlockedBadges(stats) : [];
-  const nextBadge = stats ? getNextBadge(stats) : null;
+  const unlockedBadges = getEarnedBadges(stats, user.badges);
+  const nextBadge = stats ? getNextBadge(stats, user.badges) : null;
 
   return (
     <PageLayout

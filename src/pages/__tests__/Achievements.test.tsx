@@ -58,6 +58,14 @@ describe('Achievements Page', () => {
         expect(progressElements.length).toBeGreaterThan(0);
     });
 
+    it('keeps a badge earned for good when the streak is broken (stats back to 0)', () => {
+        useUserStore.setState({ user: { uid: 'u1', badges: ['streak-7'], newBadgeIds: [] } as any, stats: { totalReps: 0, currentStreak: 0 } as any });
+        renderPage();
+        // poussin (always unlocked) + streak-7, still usable as avatar
+        expect(screen.getAllByText('Utiliser en avatar')).toHaveLength(2);
+        expect(screen.getByRole('heading', { level: 2, name: /^2\s*\/\s*\d+/ })).toBeInTheDocument();
+    });
+
     it('should show unlocked state', () => {
          const badge = BADGES[0];
          if (!badge) throw new Error('No badges loaded');

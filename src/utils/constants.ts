@@ -471,8 +471,17 @@ export function getUnlockedBadges(stats: UserStats): Badge[] {
 /**
  * Obtenir le prochain badge à débloquer (le plus proche)
  */
-export function getNextBadge(stats: UserStats): Badge | undefined {
-  const unlockedBadges = getUnlockedBadges(stats);
+/**
+ * Badges gagnés : ceux enregistrés sur le profil (acquis pour de bon, même si la série casse ou qu'une séance est
+ * supprimée) plus ceux que les stats du moment atteignent (comptes plus anciens sans liste enregistrée).
+ */
+export function getEarnedBadges(stats: UserStats | null, saved: string[] = []): Badge[] {
+  const live = stats ? getUnlockedBadges(stats) : [];
+  return BADGES.filter((badge) => saved.includes(badge.id) || live.includes(badge));
+}
+
+export function getNextBadge(stats: UserStats, saved: string[] = []): Badge | undefined {
+  const unlockedBadges = getEarnedBadges(stats, saved);
   const lockedBadges = BADGES.filter((badge) => !unlockedBadges.includes(badge));
 
   if (lockedBadges.length === 0) return undefined;
