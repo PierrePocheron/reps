@@ -117,3 +117,7 @@ export function isRealDay(day: string): boolean {
   const date = new Date(y, m - 1, d);
   return d > 0 && date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
 }
+
+/** Jours avant de pouvoir rechanger de pseudo (7 jours pleins) : arrondi du reste, pas du temps écoulé (débloqué à 6 j 1 h). */
+export const daysBeforeUsernameChange = (lastChange: Date, now = new Date()) =>
+  Math.max(0, Math.ceil(7 - (now.getTime() - lastChange.getTime()) / 86_400_000));

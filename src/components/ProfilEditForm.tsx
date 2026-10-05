@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ageFrom, isRealDay, plural } from '@/utils/formatters';
+import { ageFrom, daysBeforeUsernameChange, isRealDay, plural } from '@/utils/formatters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,14 +37,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
   });
   const { toast } = useToast();
 
-  const getDaysBeforeNextChange = () => {
-    if (!user.lastUsernameChange) return 0;
-    const lastChange = user.lastUsernameChange.toDate();
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - lastChange.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(0, 7 - diffDays); // Il faut attendre 7 jours min
-  };
+  const getDaysBeforeNextChange = () => (user.lastUsernameChange ? daysBeforeUsernameChange(user.lastUsernameChange.toDate()) : 0);
 
   const canEditUsername = getDaysBeforeNextChange() <= 0;
 
