@@ -222,6 +222,12 @@ describe('userStore', () => {
         });
     });
 
+    it('reset: pending friend requests do not carry over to the next account', () => {
+        useUserStore.setState({ friendRequests: [{ id: 'x_A', fromUserName: 'alice', toUserId: 'A' } as any] });
+        useUserStore.getState().reset();
+        expect(useUserStore.getState().friendRequests).toEqual([]);
+    });
+
     it('reset : la séance muscu en cours ne passe pas au compte suivant', async () => {
         const { useGymSessionStore } = await import('../gymSessionStore');
         useGymSessionStore.getState().startFreeSession();

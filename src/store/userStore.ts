@@ -295,6 +295,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       user: null,
       currentUser: null,
       stats: null,
+      friendRequests: [],
       isLoading: false,
       isAuthenticated: false,
     });
