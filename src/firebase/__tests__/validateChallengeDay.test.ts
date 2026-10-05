@@ -84,4 +84,10 @@ describe('validateChallengeDay', () => {
     vi.mocked(runTransaction).mockRejectedValueOnce(Object.assign(new Error('client is offline'), { code: 'unavailable' }));
     await expect(validateChallengeDay('c1', 'u1')).rejects.toThrow(/hors ligne/);
   });
+
+  it.each([[0, 3, true], [3, 3, false]])('flags the step as catch-up when it is behind the calendar (%i steps done, started %i days ago)', async (steps, daysAgo, catchUp) => {
+    setup(steps, daysAgo);
+    await validateChallengeDay('c1', 'u1');
+    expect((challengeUpdate?.history as { catchUp: boolean }[])[steps]!.catchUp).toBe(catchUp);
+  });
 });

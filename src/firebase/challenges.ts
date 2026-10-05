@@ -445,7 +445,7 @@ export const validateChallengeDay = async (
             // 3. Update Challenge State
             const newHistory = [
                 ...userChallenge.history,
-                { date: dateStr, amount: reps, completed: true, catchUp: getDayIndex(userChallenge.startDate, validationDate) < getDayIndex(userChallenge.startDate, new Date()) }
+                { date: dateStr, amount: reps, completed: true, catchUp: currentStepIndex < maxAllowedIndex } // the step is behind the calendar (the validation date is always today)
             ];
 
             // Finished when every step is done (catch-up model), not when the calendar reaches the last day:
