@@ -12,7 +12,7 @@ interface LayoutProps {
  * Layout principal de l'application avec gestion du mode offline
  */
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 
@@ -28,6 +28,8 @@ export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const navigationType = useNavigationType();
+  // Decided once: Onboarding writes its key before the questionnaire, so re-reading it on a re-render unmounted the questionnaire
+  const [showOnboarding] = useState(() => !onboardingDone());
 
   // Nouvelle page = en haut (sinon « Refaire » sur une carte basse de l'historique ouvrait la séance au milieu) ;
   // pas au retour arrière, pour ne pas gêner une éventuelle restauration de position
@@ -52,7 +54,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <>
-      {!onboardingDone() && <Suspense fallback={null}><Onboarding /></Suspense>}
+      {showOnboarding && <Suspense fallback={null}><Onboarding /></Suspense>}
 
       {/* Bannière offline */}
       {isOffline && (
