@@ -89,7 +89,8 @@ export default function Friends() {
 
   // Load activity when tab changes to 'activity' and friends are loaded
   useEffect(() => {
-    if (activeTab === 'activity' && user?.friends && user.friends.length > 0) {
+    if (!user?.friends?.length) { setActivities([]); return; } // last friend removed: the old items rendered as a blank area
+    if (activeTab === 'activity') {
       const loadActivity = async () => {
         setIsLoadingActivity(true);
         try {
