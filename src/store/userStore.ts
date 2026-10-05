@@ -130,14 +130,18 @@ export const useUserStore = create<UserState>((set, get) => ({
         set({ user: null, stats: null, isLoading: false });
         return;
       }
+      // Signed out (or switched account) while awaiting: never set the old profile back nor re-attach its listener
+      const stale = () => get().currentUser?.uid !== currentUser.uid;
 
       // Récupérer le profil
       const userProfile = await getCurrentUserProfile();
+      if (stale()) return;
 
       if (userProfile) {
         get().setUser(userProfile);
 
         await get().refreshStats();
+        if (stale()) return;
 
         if (currentUser.uid === userProfile.uid) {
              listenToUser(currentUser.uid, get().setUser);
@@ -147,10 +151,12 @@ export const useUserStore = create<UserState>((set, get) => ({
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         const retryProfile = await getCurrentUserProfile();
+        if (stale()) return;
 
         if (retryProfile) {
            get().setUser(retryProfile);
            await get().refreshStats();
+           if (stale()) return;
 
             listenToUser(currentUser.uid, get().setUser);
            return;
@@ -166,9 +172,11 @@ export const useUserStore = create<UserState>((set, get) => ({
 
           logger.info('[UserStore] Fallback profile created, re-fetching...');
           const newProfile = await getCurrentUserProfile();
+          if (stale()) return;
           if (newProfile) {
             get().setUser(newProfile);
             await get().refreshStats();
+            if (stale()) return;
              listenToUser(currentUser.uid, get().setUser);
           }
         } catch (createError) {
@@ -234,6 +242,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       }
 
       const stats = await calculateUserStats(currentUser.uid);
+      if (get().currentUser?.uid !== currentUser.uid) return; // signed out meanwhile
       set({ stats });
     } catch (error) {
       logger.error('Erreur lors du calcul des stats:', error);

@@ -162,6 +162,39 @@ describe('userStore', () => {
              expect(state.user).toEqual(mockProfile);
         });
 
+        it('sign-out during the stats reload: the old account is not brought back', async () => {
+            let resolveStats!: (s: unknown) => void;
+            (firebase.getCurrentUserProfile as any).mockResolvedValue({ uid: 'A', displayName: 'alice' });
+            (firebase.calculateUserStats as any).mockReturnValue(new Promise((r) => { resolveStats = r; }));
+            (firebase.subscribeToUser as any).mockReturnValue(() => {});
+            useUserStore.setState({ currentUser: { uid: 'A' } as any });
+
+            const loading = useUserStore.getState().loadUserProfile();
+            await vi.waitFor(() => expect(firebase.calculateUserStats).toHaveBeenCalled());
+            useUserStore.getState().reset();
+            resolveStats({ totalReps: 1234 });
+            await loading;
+
+            const state = useUserStore.getState();
+            expect(state.stats).toBeNull();
+            expect(state.user).toBeNull();
+            expect(firebase.subscribeToUser).not.toHaveBeenCalled();
+        });
+
+        it('sign-out during the profile fetch: the old profile is not set', async () => {
+            let resolveProfile!: (p: unknown) => void;
+            (firebase.getCurrentUserProfile as any).mockReturnValue(new Promise((r) => { resolveProfile = r; }));
+            useUserStore.setState({ currentUser: { uid: 'A' } as any });
+
+            const loading = useUserStore.getState().loadUserProfile();
+            useUserStore.getState().reset();
+            resolveProfile({ uid: 'A', displayName: 'alice' });
+            await loading;
+
+            expect(useUserStore.getState().user).toBeNull();
+            expect(useUserStore.getState().isAuthenticated).toBe(false);
+        });
+
         it('should handle profile loading error', async () => {
              useUserStore.setState({ currentUser: { uid: 'u1' } as any });
              (firebase.getCurrentUserProfile as any).mockRejectedValue(new Error('Fail'));
