@@ -431,6 +431,15 @@ describe('calculateUserStats', () => {
     expect(stats.currentStreak).toBe(0);
   });
 
+  it('time-of-day badges count gym sessions too (a muscu-only early bird never got « L\'avenir appartient à... »)', async () => {
+    const at8 = new Date(2026, 9, 1, 8, 0);
+    vi.mocked(getDocs)
+      .mockResolvedValueOnce(makeSnapshot([]) as any) // renfo
+      .mockResolvedValueOnce(makeSnapshot([makeSessionDoc({ date: { toDate: () => new Date(at8) }, exercises: [] })]) as any); // muscu
+    const stats = await calculateUserStats('uid123');
+    expect(stats.morningSessions).toBe(1);
+  });
+
   it('should calculate totals from sessions', async () => {
     const sessions = [
       makeSessionDoc({ totalReps: 30, duration: 120, totalCalories: 50 }),

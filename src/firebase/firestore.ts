@@ -520,25 +520,16 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
     let nightSessions = 0;
     const exerciseStatsMap = new Map<string, { emoji: string; reps: number; calories: number; count: number }>();
 
+    // Créneaux (badges lève-tôt, midi, nuit) : renfo + muscu, comme la série et les « Habitudes » (muscu oubliée avant)
+    for (const date of dates) {
+      const hour = date.getHours();
+      if (hour >= 7 && hour < 9) morningSessions++;  // 7h - 9h
+      if (hour >= 12 && hour < 14) lunchSessions++;  // 12h - 14h
+      if (hour >= 23 || hour < 5) nightSessions++;   // 23h - 5h
+    }
+
     sessions.forEach(session => {
         if (!session.date) return;
-        const date = session.date.toDate();
-        const hour = date.getHours();
-
-        // 7h - 9h
-        if (hour >= 7 && hour < 9) {
-            morningSessions++;
-        }
-
-        // 12h - 14h
-        if (hour >= 12 && hour < 14) {
-            lunchSessions++;
-        }
-
-        // > 23h
-        if (hour >= 23 || hour < 5) {
-            nightSessions++;
-        }
 
         // Stats par exercice
         if (session.exercises) {
