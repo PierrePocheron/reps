@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { updateUserDocument, checkUsernameAvailability } from '@/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/firebase/types';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, deleteField } from 'firebase/firestore';
 import { BADGES } from '@/utils/constants';
 import { logger } from '@/utils/logger';
 
@@ -112,8 +112,8 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
         gender: formData.gender as 'male' | 'female' | 'other',
       };
 
-      // Supprimer les champs undefined pour éviter l'erreur Firestore
-      Object.keys(updates).forEach(key => updates[key as keyof User] === undefined && delete updates[key as keyof User]);
+      // An emptied field is deleted (Firestore refuses undefined, and skipping it kept the old value)
+      Object.keys(updates).forEach(key => { if (updates[key as keyof User] === undefined) (updates as Record<string, unknown>)[key] = deleteField(); });
 
       // Si le pseudo a changé, on met à jour le Timestamp
       if (username !== user.displayName) {
@@ -201,6 +201,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
               className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={formData.birthDate ? parseInt(formData.birthDate.split('-')[2] || '0') || '' : ''}
               onChange={(e) => {
+                if (!e.target.value) return setFormData({ ...formData, birthDate: '' }); // « Jour/Mois/Année » = no birth date
                 const d = e.target.value.padStart(2, '0');
                 const parts = formData.birthDate?.split('-') || ['2000', '01', '01'];
                 const m = parts[1] || '01';
@@ -217,6 +218,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
               className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={formData.birthDate ? parseInt(formData.birthDate.split('-')[1] || '0') || '' : ''}
               onChange={(e) => {
+                if (!e.target.value) return setFormData({ ...formData, birthDate: '' });
                 const m = e.target.value.padStart(2, '0');
                 const parts = formData.birthDate?.split('-') || ['2000', '01', '01'];
                 const d = parts[2] || '01';
@@ -233,6 +235,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
               className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={formData.birthDate ? parseInt(formData.birthDate.split('-')[0] || '0') || '' : ''}
               onChange={(e) => {
+                if (!e.target.value) return setFormData({ ...formData, birthDate: '' });
                 const y = e.target.value;
                 const parts = formData.birthDate?.split('-') || ['2000', '01', '01'];
                 const m = parts[1] || '01';
