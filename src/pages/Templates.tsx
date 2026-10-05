@@ -42,7 +42,8 @@ function TemplateCard({
   onEdit?: () => void;
   suggested?: boolean;
 }) {
-  const exerciseCount = template.exerciseIds?.length ?? template.muscuExercises?.length ?? 0;
+  // by type: a template switched type before the fix still carries the other type's list
+  const exerciseCount = (template.workoutType === 'renforcement' ? template.exerciseIds : template.muscuExercises)?.length ?? 0;
 
   const previewEmojis =
     template.workoutType === 'renforcement'

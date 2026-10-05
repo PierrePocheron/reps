@@ -8,6 +8,7 @@ import {
   query,
   orderBy,
   Timestamp,
+  deleteField,
 } from 'firebase/firestore';
 import { db } from './config';
 import { queuedIfOffline } from './offline';
@@ -70,7 +71,9 @@ export async function deleteUserTemplate(userId: string, templateId: string): Pr
  */
 export async function updateUserTemplate(userId: string, templateId: string, data: CreateTemplateData): Promise<void> {
   try {
-    await queuedIfOffline(updateDoc(doc(db, 'userTemplates', userId, 'templates', templateId), { ...data }));
+    // a type switch drops the other type's list: updateDoc merges, the old one stayed (card showing « 5 exo » for 1)
+    const other = data.workoutType === 'musculation' ? { exerciseIds: deleteField() } : { muscuExercises: deleteField() };
+    await queuedIfOffline(updateDoc(doc(db, 'userTemplates', userId, 'templates', templateId), { ...other, ...data }));
   } catch (error) {
     logger.error('Erreur lors de la mise à jour du template:', error as Error);
     throw error;

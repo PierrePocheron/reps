@@ -60,6 +60,7 @@ vi.mock('firebase/firestore', () => ({
   getDoc: vi.fn(() => Promise.resolve(mockDoc)),
   getDocs: vi.fn(() => Promise.resolve({ docs: [], empty: true, forEach: vi.fn() })),
   setDoc: vi.fn(() => Promise.resolve()),
+  deleteField: vi.fn(() => '__deleteField__'),
   updateDoc: vi.fn(() => Promise.resolve()),
   deleteDoc: vi.fn(() => Promise.resolve()),
   addDoc: vi.fn(() => Promise.resolve({ id: 'new-doc-id' })),

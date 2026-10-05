@@ -40,7 +40,7 @@ export function useUserTemplates() {
     async (templateId: string, data: Omit<WorkoutTemplate, 'id' | 'userId' | 'createdAt'>) => {
       if (!uid) return;
       await updateUserTemplate(uid, templateId, data);
-      setTemplates((prev) => prev.map((t) => (t.id === templateId ? { ...t, ...data } : t)));
+      setTemplates((prev) => prev.map((t) => (t.id === templateId ? { ...t, exerciseIds: undefined, muscuExercises: undefined, ...data } : t)));
     },
     [uid]
   );

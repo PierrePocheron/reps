@@ -50,7 +50,7 @@ export function FriendTemplatesDialog({ friend, onClose }: { friend: User | null
           <ul className="space-y-2 max-h-[50vh] overflow-y-auto">
             {templates.map((t) => {
               const done = copied.includes(t.id);
-              const count = t.exerciseIds?.length ?? t.muscuExercises?.length ?? 0;
+              const count = (t.workoutType === 'renforcement' ? t.exerciseIds : t.muscuExercises)?.length ?? 0;
               return (
                 <li key={t.id} className="flex items-center gap-3 rounded-xl border p-3">
                   <span className="text-2xl" aria-hidden>{t.emoji}</span>
