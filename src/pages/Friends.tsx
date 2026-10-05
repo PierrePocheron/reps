@@ -54,6 +54,10 @@ export default function Friends() {
 
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isLoadingActivity, setIsLoadingActivity] = useState(false);
+  // a failed read is shown as such (it used to look like « no friends » / an empty feed), with a retry
+  const [friendsFailed, setFriendsFailed] = useState(false);
+  const [activityFailed, setActivityFailed] = useState(false);
+  const [retry, setRetry] = useState(0);
 
   const [pendingUid, setPendingUid] = useState<string | null>(null);
   const [pendingRequestId, setPendingRequestId] = useState<string | null>(null);
@@ -71,15 +75,17 @@ export default function Friends() {
       try {
         const friendsList = await getFriendsDetails(user.friends);
         setFriends(friendsList);
+        setFriendsFailed(false);
       } catch (error) {
         logger.error('Error loading friends:', error);
+        setFriendsFailed(true);
       } finally {
         setIsLoadingFriends(false);
       }
     };
 
     loadFriends();
-  }, [user, user?.friends]);
+  }, [user, user?.friends, retry]);
 
   // Load activity when tab changes to 'activity' and friends are loaded
   useEffect(() => {
@@ -89,15 +95,25 @@ export default function Friends() {
         try {
           const sessions = await getFriendsActivity(user.friends);
           setActivities(sessions);
+          setActivityFailed(false);
         } catch (error) {
           logger.error('Error loading activity:', error);
+          setActivityFailed(true);
         } finally {
           setIsLoadingActivity(false);
         }
       };
       loadActivity();
     }
-  }, [activeTab, user?.friends]);
+  }, [activeTab, user?.friends, retry]);
+
+  const loadError = (what: string) => (
+    <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
+      <p className="font-semibold">Impossible de charger {what}</p>
+      <p className="text-sm text-muted-foreground">Vérifie ta connexion puis réessaie.</p>
+      <Button variant="outline" size="sm" className="rounded-xl min-h-11" onClick={() => setRetry((n) => n + 1)}>Réessayer</Button>
+    </div>
+  );
 
   // Debounced search
   useEffect(() => {
@@ -249,7 +265,7 @@ export default function Friends() {
           </TabsList>
 
           <TabsContent value="activity" className="space-y-4 animate-in fade-in-50">
-            {isLoadingActivity ? (
+            {activityFailed && !isLoadingActivity ? loadError("l'activité de tes amis") : isLoadingActivity ? (
               <div className="flex justify-center py-12">
                 <LoadingSpinner />
               </div>
@@ -525,7 +541,7 @@ export default function Friends() {
             {searchTerm.length < 2 && (
               <div className="space-y-3">
                 <h3 className="font-semibold text-sm text-muted-foreground">Mes amis ({friends.length})</h3>
-                {isLoadingFriends ? (
+                {friendsFailed && !isLoadingFriends ? loadError('tes amis') : isLoadingFriends ? (
                   <div className="flex justify-center py-12">
                     <LoadingSpinner />
                   </div>

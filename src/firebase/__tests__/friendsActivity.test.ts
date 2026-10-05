@@ -20,4 +20,9 @@ describe('getFriendsActivity', () => {
     expect(users.has('f11')).toBe(true);
     expect(users.has('f12')).toBe(true);
   });
+
+  it('a read failure is an error, not an empty feed', async () => {
+    vi.mocked(getDocs).mockRejectedValue(new Error('offline'));
+    await expect(getFriendsActivity(['f1'])).rejects.toThrow('offline');
+  });
 });

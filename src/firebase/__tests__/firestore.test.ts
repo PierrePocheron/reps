@@ -344,10 +344,9 @@ describe('getFriendsDetails', () => {
     expect(result).toHaveLength(2);
   });
 
-  it('should return empty array on error', async () => {
+  it('a read failure is an error, not an empty friends list (Social said « no friends » offline)', async () => {
     vi.mocked(getDocs).mockRejectedValueOnce(new Error('Read failed'));
-    const result = await getFriendsDetails(['uid1']);
-    expect(result).toEqual([]);
+    await expect(getFriendsDetails(['f1'])).rejects.toThrow('Read failed');
   });
 });
 

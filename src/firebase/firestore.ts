@@ -1125,7 +1125,7 @@ export async function getFriendsDetails(friendIds: string[]): Promise<User[]> {
     return friends;
   } catch (error) {
     logger.error('Erreur lors de la récupération des amis:', error);
-    return [];
+    throw error; // a failed read is not « no friends »: callers show an error with « Réessayer »
   }
 }
 
@@ -1168,7 +1168,7 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
     return allActivity.slice(0, limitCount);
   } catch (error) {
     logger.error('Erreur lors de la récupération de l\'activité des amis:', error);
-    return [];
+    throw error; // a failed read is not an empty feed
   }
 }
 
