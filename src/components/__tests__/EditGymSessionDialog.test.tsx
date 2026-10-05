@@ -32,4 +32,17 @@ describe('EditGymSessionDialog', () => {
     await waitFor(() => expect(onSave).toHaveBeenCalled());
     expect(onSave.mock.calls[0]![0][0]!.sets[1]).toMatchObject({ reps: 5, actualReps: 4, completed: true });
   });
+
+  it('removing every set of one superset member unlinks the other (no lone « Superset A »)', async () => {
+    const onSave = vi.fn(async (_exercises: GymSessionExercise[]) => {});
+    const pair = { ...session, exercises: [
+      { exerciseId: 'a', name: 'A', emoji: '🏋️', supersetId: 'ss1', sets: [{ reps: 10, weight: 20, completed: true }] },
+      { exerciseId: 'b', name: 'B', emoji: '🏋️', supersetId: 'ss1', sets: [{ reps: 10, weight: 20, completed: true }] },
+    ] } as unknown as GymSession;
+    render(<EditGymSessionDialog session={pair} onCancel={() => {}} onSave={onSave} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer la série 1 de B' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    await waitFor(() => expect(onSave).toHaveBeenCalled());
+    expect(onSave.mock.calls[0]![0]).toEqual([expect.objectContaining({ exerciseId: 'a', supersetId: undefined })]);
+  });
 });

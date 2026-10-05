@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SET_TYPE_META, nextSetType } from '@/utils/setTypes';
 import { isTimed } from '@/utils/records';
+import { dropLoneSupersets } from '@/utils/superset';
 import { cn } from '@/utils/cn';
 import type { GymSession, GymSessionExercise, PlannedSet } from '@/firebase/types';
 
@@ -36,7 +37,7 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
       return { ...ex, sets: [...ex.sets, { reps, weight, actualReps: reps, actualWeight: weight, completed: true }] };
     }));
 
-  const kept = exercises.filter((ex) => ex.sets.some((s) => s.completed));
+  const kept = dropLoneSupersets(exercises.filter((ex) => ex.sets.some((s) => s.completed))); // a removed partner unlinks the other
   const save = async () => {
     setSaving(true);
     try { await onSave(kept); } finally { setSaving(false); }

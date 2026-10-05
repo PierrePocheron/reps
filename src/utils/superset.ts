@@ -1,7 +1,8 @@
 import type { GymSessionExercise } from '@/firebase/types';
 
 /** Retire les « groupes » d'un seul exercice. */
-function normalize(list: GymSessionExercise[]): GymSessionExercise[] {
+/** Un groupe de superset réduit à un seul exercice n'en est plus un. */
+export function dropLoneSupersets(list: GymSessionExercise[]): GymSessionExercise[] {
   const size = new Map<string, number>();
   for (const ex of list) if (ex.supersetId) size.set(ex.supersetId, (size.get(ex.supersetId) ?? 0) + 1);
   return list.map((ex) => (ex.supersetId && size.get(ex.supersetId)! < 2 ? { ...ex, supersetId: undefined } : ex));
@@ -23,7 +24,7 @@ export function toggleSupersetLink(list: GymSessionExercise[], i: number, newId 
     out[i]!.supersetId = id;
     for (let k = i + 1; k < out.length && (k === i + 1 || (bGroup && out[k]!.supersetId === bGroup)); k++) out[k]!.supersetId = id;
   }
-  return normalize(out);
+  return dropLoneSupersets(out);
 }
 
 /**
@@ -43,7 +44,7 @@ export function swapWithNext(list: GymSessionExercise[], i: number): GymSessionE
     prev = id;
     return ex;
   });
-  return normalize(contiguous);
+  return dropLoneSupersets(contiguous);
 }
 
 /**
