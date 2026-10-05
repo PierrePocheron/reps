@@ -352,6 +352,8 @@ export const getUserActiveChallenges = async (userId: string): Promise<UserChall
 
 // 3. Smart Validation (The Magic Sauce)
 const OFFLINE_VALIDATION = 'Tu es hors ligne : valider un défi demande une connexion. Reconnecte-toi puis réessaie.';
+const ALREADY_FINISHED = 'Ce défi est déjà terminé !';
+const UP_TO_DATE = 'Tu es déjà à jour ! Reviens demain pour la suite.';
 
 export const validateChallengeDay = async (
     userChallengeId: string,
@@ -383,10 +385,10 @@ export const validateChallengeDay = async (
 
             // The card can be stale (quick second tap before its refresh): the step and its reps come from here, not from it
             if (userChallenge.status !== 'active' || currentStepIndex >= def.durationDays) {
-               throw new Error("Ce défi est déjà terminé !");
+               throw new Error(ALREADY_FINISHED);
             }
             if (currentStepIndex > maxAllowedIndex) {
-               throw new Error("Tu es déjà à jour ! Reviens demain pour la suite.");
+               throw new Error(UP_TO_DATE);
             }
             const reps = getTargetForDay(def, currentStepIndex);
 
@@ -473,7 +475,9 @@ export const validateChallengeDay = async (
     } catch (e) {
         logger.error("Validation error:", e);
         if ((e as { code?: string }).code === 'unavailable') throw new Error(OFFLINE_VALIDATION);
-        throw e;
+        // The card shows the message: only ours, Firestore and internal errors stay in the logs
+        if (e instanceof Error && [ALREADY_FINISHED, UP_TO_DATE].includes(e.message)) throw e;
+        throw new Error('Impossible de valider le défi, réessaie.');
     }
 };
 

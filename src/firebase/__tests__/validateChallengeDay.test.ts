@@ -85,6 +85,13 @@ describe('validateChallengeDay', () => {
     await expect(validateChallengeDay('c1', 'u1')).rejects.toThrow(/hors ligne/);
   });
 
+  it('never shows a raw English error on the card (it now displays the message)', async () => {
+    vi.mocked(runTransaction).mockRejectedValueOnce(Object.assign(new Error('Missing or insufficient permissions.'), { code: 'permission-denied' }));
+    await expect(validateChallengeDay('c1', 'u1')).rejects.toThrow('Impossible de valider le défi, réessaie.');
+    vi.mocked(runTransaction).mockRejectedValueOnce(new Error('Challenge not found'));
+    await expect(validateChallengeDay('c1', 'u1')).rejects.toThrow('Impossible de valider le défi, réessaie.');
+  });
+
   it.each([[0, 3, true], [3, 3, false]])('flags the step as catch-up when it is behind the calendar (%i steps done, started %i days ago)', async (steps, daysAgo, catchUp) => {
     setup(steps, daysAgo);
     await validateChallengeDay('c1', 'u1');
