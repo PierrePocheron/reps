@@ -72,6 +72,7 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 - Index Firestore du classement par période et des badges déclarés dans le dépôt *(index à déployer)*
 - Image de partage : records de durée comptés ; modèle changé de type : plus d'ancienne liste d'exercices
 - Âge juste aux Antilles, en Guyane et au Québec ; date de naissance impossible (31 février) refusée
+- Badges lève-tôt / midi / nuit : les séances muscu comptent ; un kudos retiré ne s'affiche plus comme encouragement
 
 ### Technique
 - Démo complète hors ligne sur émulateurs (`yarn dev:demo`), parcours e2e, audit de contraste, tests des règles Firestore
