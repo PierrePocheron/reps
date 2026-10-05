@@ -305,10 +305,11 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
         })}
       </div>
 
-      <div className="flex gap-1.5 mt-1.5">
+      <div className="week-labels flex gap-1.5 mt-1.5">
         {buckets.map((b, i) => (
-          <div key={i} className="flex-1 text-center">
-            <span className="text-[10px] text-muted-foreground leading-none">
+          // the last label sits on the right: a wider one (large font) overflows inwards, not off the card
+          <div key={i} className={`flex-1 min-w-0 flex ${i === buckets.length - 1 ? 'justify-end' : 'justify-center'}`}>
+            <span className="text-[10px] text-muted-foreground leading-none whitespace-nowrap">
               {i === buckets.length - 1 ? 'Auj.' : b.start.toLocaleDateString('fr-FR', { day: 'numeric', month: 'numeric' })}
             </span>
           </div>

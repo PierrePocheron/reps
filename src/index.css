@@ -124,3 +124,9 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Weekly chart dates: with a large system font (rem grows) they no longer fit side by side: one in two, the last kept */
+.week-labels { container-type: inline-size; }
+@container (max-width: 15rem) {
+  .week-labels > :nth-child(odd):not(:last-child) > span { visibility: hidden; }
+}

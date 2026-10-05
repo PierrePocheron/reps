@@ -31,7 +31,13 @@ const large = pass === 'large';
 const ctx = await b.newContext({ viewport: large ? { width: 360, height: 780 } : { width: 390, height: 844 }, colorScheme: scheme, isMobile: true, hasTouch: true, reducedMotion: large ? 'reduce' : 'no-preference' });
 await ctx.addInitScript((large) => {
   localStorage.setItem('reps_onboarding_v2', '1');
-  if (large) document.addEventListener('DOMContentLoaded', () => document.documentElement.style.setProperty('font-size', '130%', 'important'));
+  if (large) document.addEventListener('DOMContentLoaded', () => {
+    document.documentElement.style.setProperty('font-size', '130%', 'important');
+    // the WebView scales px font sizes too (10 → 13 px at 130 %, measured): same for Tailwind's text-[Npx]
+    const st = document.createElement('style');
+    st.textContent = Array.from({ length: 13 }, (_, i) => i + 8).map((n) => `.text-\\[${n}px\\]{font-size:${(n * 1.3).toFixed(1)}px!important}`).join('');
+    document.head.append(st);
+  });
 }, large);
 const p = await ctx.newPage();
 await p.goto('http://localhost:5199/login'); await p.fill('#email', DEMO.email); await p.fill('#password', DEMO.password);
