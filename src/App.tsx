@@ -75,6 +75,8 @@ function App() {
           element={
             <ProtectedRoute>
               <Layout>
+                {/* inside the layout: a page that fails keeps the bottom bar, and changing page resets it */}
+                <ErrorBoundary compact key={location.pathname}>
                 <Suspense fallback={<PageFallback />}>
                 <>
                   <Routes location={location} key={location.pathname}>
@@ -182,6 +184,7 @@ function App() {
                   </Routes>
                 </>
                 </Suspense>
+                </ErrorBoundary>
               </Layout>
             </ProtectedRoute>
           }
