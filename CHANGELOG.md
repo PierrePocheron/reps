@@ -73,6 +73,7 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 - Image de partage : records de durée comptés ; modèle changé de type : plus d'ancienne liste d'exercices
 - Âge juste aux Antilles, en Guyane et au Québec ; date de naissance impossible (31 février) refusée
 - Badges lève-tôt / midi / nuit : les séances muscu comptent ; un kudos retiré ne s'affiche plus comme encouragement
+- Passe UI : durée des séances sur une ligne, icône calendrier visible en sombre, nombres à la française (« 3 666 », « 5,0 kcal », « 1 % »), « 5 exos », « Démarrer la séance »
 
 ### Technique
 - Démo complète hors ligne sur émulateurs (`yarn dev:demo`), parcours e2e, audit de contraste, tests des règles Firestore
