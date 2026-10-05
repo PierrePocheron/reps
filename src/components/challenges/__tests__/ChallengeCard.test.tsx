@@ -5,8 +5,9 @@ import { BrowserRouter } from 'react-router-dom';
 import { validateChallengeDay } from '@/firebase/challenges';
 
 // Mocks
+const { toast } = vi.hoisted(() => ({ toast: vi.fn() }));
 vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast: vi.fn() }),
+  useToast: () => ({ toast }),
 }));
 
 vi.mock('@/hooks/useSound', () => ({
@@ -108,6 +109,17 @@ describe('ChallengeCard Component', () => {
 
         await waitFor(() => {
             expect(validateChallengeDay).toHaveBeenCalled();
+        });
+    });
+
+    it('announces the step the server validated, not the one the stale card still shows', async () => {
+        vi.mocked(validateChallengeDay).mockResolvedValue({ step: 1, reps: 12 } as never);
+        renderCard({ activeChallenge: { ...mockActiveChallenge, history: [] } });
+
+        fireEvent.click(screen.getByText('Valider'));
+
+        await waitFor(() => {
+            expect(toast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Jour 2 validé !' }));
         });
     });
 

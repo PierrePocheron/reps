@@ -154,10 +154,8 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
     if (!activeChallenge) return;
     setIsValidating(true);
     try {
-        const stepIndex = activeChallenge.history.length;
-        const targetReps = getTargetForDay(def, stepIndex);
-
-        await validateChallengeDay(activeChallenge.id, userId, targetReps, new Date());
+        // Step and reps from the server: the props are stale until onUpdate's refresh lands
+        const { step: stepIndex, reps: targetReps } = await validateChallengeDay(activeChallenge.id, userId);
 
         // 1. Play Sound + Haptic
         play('success');

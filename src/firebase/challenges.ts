@@ -353,11 +353,10 @@ export const getUserActiveChallenges = async (userId: string): Promise<UserChall
 export const validateChallengeDay = async (
     userChallengeId: string,
     userId: string,
-    reps: number,
     validationDate: Date = new Date()
 ) => {
     try {
-        await runTransaction(db, async (transaction) => {
+        const { step, reps } = await runTransaction(db, async (transaction) => {
             // A. Get Challenge Data
             const challengeRef = doc(db, 'user_challenges', userChallengeId);
             const challengeDoc = await transaction.get(challengeRef);
@@ -377,9 +376,14 @@ export const validateChallengeDay = async (
             const currentStepIndex = userChallenge.history.length;
             const maxAllowedIndex = getDayIndex(userChallenge.startDate, new Date());
 
+            // The card can be stale (quick second tap before its refresh): the step and its reps come from here, not from it
+            if (userChallenge.status !== 'active' || currentStepIndex >= def.durationDays) {
+               throw new Error("Ce défi est déjà terminé !");
+            }
             if (currentStepIndex > maxAllowedIndex) {
                throw new Error("Tu es déjà à jour ! Reviens demain pour la suite.");
             }
+            const reps = getTargetForDay(def, currentStepIndex);
 
             // C. Create Session (Social + Stats + Leaderboard)
             const exerciseDef = findChallengeExercise(def.exerciseId);
@@ -449,6 +453,7 @@ export const validateChallengeDay = async (
                 history: newHistory,
                 status: isFinished ? 'completed' : 'active'
             });
+            return { step: currentStepIndex, reps };
         });
 
         // Trigger Badge Check & Full Stat Recalculation
@@ -459,7 +464,7 @@ export const validateChallengeDay = async (
             // Non-blocking: the challenge is validated anyway
         });
 
-        return { success: true };
+        return { step, reps };
     } catch (e) {
         logger.error("Validation error:", e);
         throw e;
