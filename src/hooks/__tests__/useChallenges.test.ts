@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useChallenges } from '../useChallenges';
 import { useUserStore } from '@/store/userStore';
 import { getUserActiveChallenges } from '@/firebase/challenges';
@@ -84,5 +84,19 @@ describe('useChallenges Hook', () => {
       // Ideally check that isLoading didn't flash to true if we could,
       // but in the hook logic `isLoading` isn't set to true on `refresh` (isInitialLoad=false).
       // So checking final state is good enough, or we could spy on setState if needed.
+  });
+
+  it('keeps the challenges shown when the user doc changes but not the uid', async () => {
+      useUserStore.setState({ user: { uid: 'u1' } as any });
+      (getUserActiveChallenges as any).mockResolvedValue([{ id: 'c1' }]);
+
+      const { result } = renderHook(() => useChallenges());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      // A users/{uid} snapshot (e.g. after a validation) stores a new user object
+      act(() => useUserStore.setState({ user: { uid: 'u1', totalReps: 20 } as any }));
+
+      expect(result.current.isLoading).toBe(false);
+      expect(getUserActiveChallenges).toHaveBeenCalledTimes(1);
   });
 });
