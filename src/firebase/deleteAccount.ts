@@ -22,6 +22,8 @@ import {
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { db, auth } from './config';
+import { nativeGoogleCredential } from './auth';
+import { Capacitor } from '@capacitor/core';
 import { logger } from '@/utils/logger';
 
 /** Limite Firestore : 500 opérations par batch — marge de sécurité. */
@@ -55,10 +57,11 @@ async function reauthenticate(currentUser: FirebaseUser, password?: string): Pro
     return;
   }
 
-  // Compte Google (web : popup ; si la popup échoue — WebView native par
-  // exemple — on remonte une erreur claire SANS avoir rien détruit).
+  // Compte Google : plugin natif sur Android (la popup ne s'ouvre pas dans la WebView : suppression impossible),
+  // popup sur le web. En cas d'échec, erreur claire SANS avoir rien détruit.
   try {
-    await reauthenticateWithPopup(currentUser, new GoogleAuthProvider());
+    if (Capacitor.isNativePlatform()) await reauthenticateWithCredential(currentUser, await nativeGoogleCredential());
+    else await reauthenticateWithPopup(currentUser, new GoogleAuthProvider());
   } catch (err) {
     logger.warn('Ré-authentification Google impossible', { error: err });
     const friendly = new Error(

@@ -32,12 +32,16 @@ vi.mock('firebase/auth', () => ({
   EmailAuthProvider: { credential: vi.fn(() => ({})) },
   GoogleAuthProvider: class {},
 }));
+const env = vi.hoisted(() => ({ native: false, provider: 'password' }));
 vi.mock('../config', () => ({
   db: {},
-  auth: { currentUser: { uid: 'u1', email: 'u1@reps.test', providerData: [{ providerId: 'password' }] } },
+  auth: { get currentUser() { return { uid: 'u1', email: 'u1@reps.test', providerData: [{ providerId: env.provider }] }; } },
 }));
+vi.mock('@capacitor/core', () => ({ Capacitor: { isNativePlatform: () => env.native } }));
+vi.mock('../auth', () => ({ nativeGoogleCredential: vi.fn(async () => ({ providerId: 'google.com', idToken: 'native' })) }));
 
 import { deleteUserAccount } from '../deleteAccount';
+import { reauthenticateWithCredential, reauthenticateWithPopup } from 'firebase/auth';
 
 describe('deleteUserAccount', () => {
   beforeEach(() => {
@@ -67,5 +71,17 @@ describe('deleteUserAccount', () => {
       { path: 'users/f1', data: { friends: { arrayRemove: 'u1' } } },
       { path: 'users/f2', data: { friends: { arrayRemove: 'u1' } } },
     ]);
+  });
+
+  it('a Google account re-authenticates natively on Android (the popup cannot open in the WebView)', async () => {
+    env.native = true; env.provider = 'google.com';
+    try {
+      vi.mocked(reauthenticateWithCredential).mockClear(); vi.mocked(reauthenticateWithPopup).mockClear();
+      await deleteUserAccount('u1');
+      expect(reauthenticateWithCredential).toHaveBeenCalledWith(expect.anything(), { providerId: 'google.com', idToken: 'native' });
+      expect(reauthenticateWithPopup).not.toHaveBeenCalled();
+    } finally {
+      env.native = false; env.provider = 'password';
+    }
   });
 });

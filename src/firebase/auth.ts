@@ -102,30 +102,26 @@ export async function signUpWithEmail(
 }
 
 /**
+ * Identifiant Google obtenu par le plugin natif (Android) : la popup du web ne s'ouvre pas dans la WebView.
+ * Sert à la connexion et à la ré-authentification (suppression du compte).
+ */
+export async function nativeGoogleCredential() {
+  const res = await SocialLogin.login({ provider: 'google', options: { scopes: ['email', 'profile'] } });
+  // Vérifier qu'on a une réponse en mode "online" avec idToken
+  if (res.result.responseType === 'offline') throw new Error('Google login configured in offline mode, but idToken is required');
+  const idToken = res.result.idToken;
+  if (!idToken) throw new Error('No idToken received from Google login');
+  return GoogleAuthProvider.credential(idToken);
+}
+
+/**
  * Connexion avec Google
  */
 export async function signInWithGoogle(): Promise<FirebaseUser | undefined> {
   try {
     if (Capacitor.isNativePlatform()) {
       // Sur mobile, on utilise le plugin natif qui gère le flux Google Sign-In correctement
-      const res = await SocialLogin.login({
-        provider: 'google',
-        options: {
-          scopes: ['email', 'profile'],
-        },
-      });
-
-      // Vérifier qu'on a une réponse en mode "online" avec idToken
-      if (res.result.responseType === 'offline') {
-        throw new Error('Google login configured in offline mode, but idToken is required');
-      }
-
-      const idToken = res.result.idToken;
-      if (!idToken) {
-        throw new Error('No idToken received from Google login');
-      }
-
-      const credential = GoogleAuthProvider.credential(idToken);
+      const credential = await nativeGoogleCredential();
 
       const result = await signInWithCredential(auth, credential);
       return handleGoogleSignInResult(result.user, result);
