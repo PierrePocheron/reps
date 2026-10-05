@@ -20,6 +20,16 @@ describe('platesPerSide', () => {
   });
 });
 
+describe('platesPerSide : charge aberrante', () => {
+  it('reste instantané sur une faute de frappe (10 000 000 kg gelait la séance)', () => {
+    const t0 = performance.now();
+    const r = platesPerSide(1e7, 20, DEFAULT_PLATES);
+    expect(performance.now() - t0).toBeLessThan(200);
+    expect(r.total).toBeLessThan(1100); // au plus proche du maximum géré, affiché tel quel par le calculateur
+    expect(() => platesPerSide(Number('1e400'), 20, DEFAULT_PLATES)).not.toThrow(); // Infinity
+  });
+});
+
 describe('warmupSets', () => {
   it('barre de 20 kg, 100 kg de travail : 40 / 60 / 80 kg arrondis aux disques', () => {
     expect(warmupSets(100, { bar: 20, plates: DEFAULT_PLATES })).toEqual([

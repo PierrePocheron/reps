@@ -1,5 +1,7 @@
 export const DEFAULT_PLATES = [25, 20, 15, 10, 5, 2.5, 1.25];
 const UNIT = 0.25; // kg — plus petit pas géré
+// 500 kg per side, beyond any real load: the DP below is O(weight), a typo (10 000 000 kg) froze the session page
+const MAX_WANT = Math.round(500 / UNIT);
 
 /**
  * Disques à mettre de chaque côté de la barre pour approcher `target` au plus près (paires illimitées).
@@ -7,7 +9,7 @@ const UNIT = 0.25; // kg — plus petit pas géré
  */
 export function platesPerSide(target: number, bar: number, available: number[]): { plates: number[]; total: number } {
   const units = available.map((p) => Math.round(p / UNIT)).filter((u) => u > 0);
-  const want = Math.max(0, Math.round((target - bar) / 2 / UNIT));
+  const want = Math.min(MAX_WANT, Math.max(0, Math.round((target - bar) / 2 / UNIT))); // min also absorbs Infinity
   if (units.length === 0 || want === 0) return { plates: [], total: bar };
 
   const limit = want + Math.max(...units);
