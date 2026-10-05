@@ -179,7 +179,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
         logger.error('Challenge validation failed', error as Error);
         toast({
             title: "Erreur",
-            description: "Impossible de valider le défi.",
+            description: (error as Error).message || "Impossible de valider le défi.", // offline, already up to date…
             variant: "destructive"
         });
     } finally {

@@ -123,6 +123,17 @@ describe('ChallengeCard Component', () => {
         });
     });
 
+    it('shows why the validation failed (e.g. offline)', async () => {
+        vi.mocked(validateChallengeDay).mockRejectedValue(new Error('Tu es hors ligne.'));
+        renderCard({ activeChallenge: mockActiveChallenge });
+
+        fireEvent.click(screen.getByText('Valider'));
+
+        await waitFor(() => {
+            expect(toast).toHaveBeenCalledWith(expect.objectContaining({ description: 'Tu es hors ligne.', variant: 'destructive' }));
+        });
+    });
+
     it('should show "Validé" if done today', () => {
         // Mock history has one entry (today)
         // Adjust startDate/history logic to simulate "Done Today"

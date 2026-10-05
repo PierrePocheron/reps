@@ -4,6 +4,7 @@ import { createUserTemplate, deleteUserTemplate, updateUserTemplate } from '../t
 import { saveBodyEntries } from '../bodyMetrics';
 import { updateGymSession, deleteGymSession, importGymSessions } from '../gymSessions';
 import { updateSession, deleteSession, updateUserDocument } from '../firestore';
+import { joinChallenge, createCustomChallenge, abandonChallenge } from '../challenges';
 
 // Offline, Firestore only settles a write once the server acknowledges it: the UI must not wait forever
 const never = () => new Promise<never>(() => {});
@@ -31,6 +32,9 @@ describe('user-data writes while offline (no server ack)', () => {
     ['updateSession', () => updateSession('u1', 's1', [], 0)],
     ['deleteSession', () => deleteSession('u1', 's1')],
     ['updateUserDocument', () => updateUserDocument('u1', { weeklyGoal: 3 } as never)],
+    ['joinChallenge', () => joinChallenge('u1', 'c_squats_easy')],
+    ['createCustomChallenge', () => createCustomChallenge('u1', 'pushups', 30, 'easy')],
+    ['abandonChallenge', () => abandonChallenge('c1')],
   ];
 
   it.each(cases)('%s settles without waiting for the network', async (_, run) => {

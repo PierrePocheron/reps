@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { runTransaction, Timestamp } from 'firebase/firestore';
 import { validateChallengeDay } from '../challenges';
 
@@ -25,6 +25,7 @@ const setup = (historyLength: number, startedDaysAgo: number, exerciseId = 'push
 
 describe('validateChallengeDay', () => {
   beforeEach(() => { challengeUpdate = undefined; sessionWritten = undefined; vi.spyOn(Timestamp, 'now').mockReturnValue({ toDate: () => new Date() } as never); });
+  afterEach(() => { vi.restoreAllMocks(); });
 
   it('does not close a challenge whose steps are not all done (catch-up model)', async () => {
     setup(10, 25); // 21-day challenge, day 26 on the calendar, only 10 steps validated
@@ -69,5 +70,18 @@ describe('validateChallengeDay', () => {
     await expect(validateChallengeDay('c1', 'u1')).rejects.toThrow(/terminé/);
     expect(challengeUpdate).toBeUndefined();
     expect(sessionWritten).toBeUndefined();
+  });
+
+  it('fails at once with a clear message offline (a transaction needs the network)', async () => {
+    setup(0, 0);
+    vi.mocked(runTransaction).mockClear();
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    await expect(validateChallengeDay('c1', 'u1')).rejects.toThrow(/hors ligne/);
+    expect(runTransaction).not.toHaveBeenCalled(); // no 6-second spinner before the error
+  });
+
+  it('gives the same message when the server cannot be reached', async () => {
+    vi.mocked(runTransaction).mockRejectedValueOnce(Object.assign(new Error('client is offline'), { code: 'unavailable' }));
+    await expect(validateChallengeDay('c1', 'u1')).rejects.toThrow(/hors ligne/);
   });
 });

@@ -16,6 +16,7 @@ import { User, SessionExercise } from './types';
 import { DEFAULT_EXERCISES, MAX_ACTIVE_CHALLENGES, MUSCULATION_EXERCISES } from '@/utils/constants';
 import { updateUserStatsAfterSession } from './firestore';
 import { logger } from '@/utils/logger';
+import { isOffline, queuedIfOffline } from './offline';
 
 // --- Types ---
 
@@ -240,7 +241,7 @@ export const joinChallenge = async (userId: string, challengeId: string): Promis
     history: []
   };
 
-  await setDoc(newChallengeRef, userChallenge);
+  await queuedIfOffline(setDoc(newChallengeRef, userChallenge)); // offline: queued, sent on reconnection
   return newChallengeRef.id;
 };
 
@@ -332,7 +333,7 @@ export const createCustomChallenge = async (
         history: []
     };
 
-    await setDoc(newChallengeRef, userChallenge);
+    await queuedIfOffline(setDoc(newChallengeRef, userChallenge));
     return newChallengeRef.id;
 };
 
@@ -350,11 +351,15 @@ export const getUserActiveChallenges = async (userId: string): Promise<UserChall
 };
 
 // 3. Smart Validation (The Magic Sauce)
+const OFFLINE_VALIDATION = 'Tu es hors ligne : valider un défi demande une connexion. Reconnecte-toi puis réessaie.';
+
 export const validateChallengeDay = async (
     userChallengeId: string,
     userId: string,
     validationDate: Date = new Date()
 ) => {
+    // A transaction needs the server (no offline queue): say so at once, not with a generic error after ~6 s
+    if (isOffline()) throw new Error(OFFLINE_VALIDATION);
     try {
         const { step, reps } = await runTransaction(db, async (transaction) => {
             // A. Get Challenge Data
@@ -381,7 +386,7 @@ export const validateChallengeDay = async (
                throw new Error("Ce défi est déjà terminé !");
             }
             if (currentStepIndex > maxAllowedIndex) {
-               throw new Error("Tu es déjà à jour ! Reviens demain pour la suite.");
+               throw new Error("Tu es déjà à jour ! Reviens demain pour la suite.");
             }
             const reps = getTargetForDay(def, currentStepIndex);
 
@@ -467,10 +472,11 @@ export const validateChallengeDay = async (
         return { step, reps };
     } catch (e) {
         logger.error("Validation error:", e);
+        if ((e as { code?: string }).code === 'unavailable') throw new Error(OFFLINE_VALIDATION);
         throw e;
     }
 };
 
 export const abandonChallenge = async (userChallengeId: string) => {
-    await setDoc(doc(db, 'user_challenges', userChallengeId), { status: 'abandoned' }, { merge: true });
+    await queuedIfOffline(setDoc(doc(db, 'user_challenges', userChallengeId), { status: 'abandoned' }, { merge: true }));
 };
