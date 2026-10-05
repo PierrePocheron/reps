@@ -65,6 +65,11 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 - Statistiques et badges à jour juste après une séance muscu, un jour de défi ou un changement d'objectif
 - Modèles enregistrés depuis une séance : vrais noms et images des exercices de la bibliothèque ou importés
 - Modifier une séance garde les séries ratées (la suggestion de charge ne croit plus à tort que tout est réussi)
+- Rappel quotidien remis en place au lancement s'il avait été perdu ; effacer l'heure ne le programme plus à minuit
+- Badges gagnés qui restent débloqués quand la série casse ; « Max estimé sur 1 rep » juste dans les Records
+- Trophées en direct recalculés quand on corrige une série validée ; repos de superset juste avec des échauffements
+- Classement : plus de chiffres d'un autre onglet ni de rang sauté ; calculateur de disques qui ne gèle plus l'appli
+- Index Firestore du classement par période et des badges déclarés dans le dépôt *(index à déployer)*
 
 ### Technique
 - Démo complète hors ligne sur émulateurs (`yarn dev:demo`), parcours e2e, audit de contraste, tests des règles Firestore
