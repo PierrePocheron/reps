@@ -251,7 +251,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
                     {getEmoji(def.exerciseId)}
                 </div>
                 <div className="min-w-0 flex-1">
-                    <h3 className="font-bold text-lg leading-tight flex items-center gap-2 break-words">
+                    <h3 className="font-bold text-lg leading-tight break-words hyphens-auto">
                         {def.title}
                     </h3>
 

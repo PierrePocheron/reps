@@ -130,3 +130,6 @@
 @container (max-width: 15rem) {
   .week-labels > :nth-child(odd):not(:last-child) > span { visibility: hidden; }
 }
+
+/* Native controls (date / time pickers, scrollbars) follow the dark theme: the calendar icon was black on near-black */
+.dark { color-scheme: dark; }

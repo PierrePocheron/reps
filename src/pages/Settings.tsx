@@ -385,7 +385,7 @@ function Settings() {
                   type="time"
                   value={notificationTime}
                   onChange={(e) => handleTimeChange(e.target.value)}
-                  className="h-11 dark:[color-scheme:dark]"
+                  className="h-11"
                 />
               </div>
             )}
@@ -428,16 +428,16 @@ function Settings() {
             >
               <div className="flex items-center gap-3">
                 {exporting ? (
-                  <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+                  <Loader2 className="h-5 w-5 shrink-0 text-muted-foreground animate-spin" />
                 ) : (
-                  <Download className="h-5 w-5 text-muted-foreground" />
+                  <Download className="h-5 w-5 shrink-0 text-muted-foreground" />
                 )}
-                <div className="text-left">
+                <div className="min-w-0 text-left">
                   <p className="font-medium text-sm">Exporter mes données (JSON)</p>
                   <p className="text-xs text-muted-foreground">Sauvegarde complète : profil, séances, mensurations, modèles</p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
             </button>
             <button
               onClick={() => handleExportData('csv')}
@@ -446,16 +446,16 @@ function Settings() {
             >
               <div className="flex items-center gap-3">
                 {exporting ? (
-                  <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+                  <Loader2 className="h-5 w-5 shrink-0 text-muted-foreground animate-spin" />
                 ) : (
-                  <Download className="h-5 w-5 text-muted-foreground" />
+                  <Download className="h-5 w-5 shrink-0 text-muted-foreground" />
                 )}
-                <div className="text-left">
+                <div className="min-w-0 text-left">
                   <p className="font-medium text-sm">Exporter mes séances (CSV)</p>
                   <p className="text-xs text-muted-foreground">Une ligne par série, pour Excel, Sheets, Strong ou Hevy</p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
             </button>
             <button
               id="import"
@@ -464,13 +464,13 @@ function Settings() {
               className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 active:bg-muted transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
               <div className="flex items-center gap-3">
-                {importing ? <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" /> : <Upload className="h-5 w-5 text-muted-foreground" />}
-                <div className="text-left">
+                {importing ? <Loader2 className="h-5 w-5 shrink-0 text-muted-foreground animate-spin" /> : <Upload className="h-5 w-5 shrink-0 text-muted-foreground" />}
+                <div className="min-w-0 text-left">
                   <p className="font-medium text-sm">Importer depuis Strong ou Hevy (CSV)</p>
                   <p className="text-xs text-muted-foreground">Reprends tout ton historique de musculation</p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
             </button>
             <input ref={csvInput} type="file" accept=".csv,text/csv" className="hidden" aria-hidden tabIndex={-1}
               onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void onPickCsv(f); }} />
@@ -479,13 +479,13 @@ function Settings() {
               className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 active:bg-muted transition-colors rounded-b-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
               <div className="flex items-center gap-3">
-                <Shield className="h-5 w-5 text-muted-foreground" />
-                <div className="text-left">
+                <Shield className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 text-left">
                   <p className="font-medium text-sm">Politique de confidentialité</p>
                   <p className="text-xs text-muted-foreground">Tes données et tes droits</p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
             </button>
           </CardContent>
         </Card>
