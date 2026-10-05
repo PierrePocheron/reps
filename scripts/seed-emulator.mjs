@@ -129,7 +129,7 @@ fr.set(db.doc('friend_requests/noa_demo'), { fromUserId: 'noa', toUserId: 'demo'
 // Défi en cours : pompes, démarré il y a 6 jours, à jour (J7 à faire aujourd'hui)
 const def = { id: 'c_pushups_medium', exerciseId: 'pushups', title: 'Pompes Intermédiaire', description: '21 jours pour progresser aux pompes.', difficulty: 'medium', logic: 'progressive', durationDays: 21, baseAmount: 15, increment: 2 };
 const history = Array.from({ length: 6 }, (_, i) => ({ date: new Date(now - (6 - i) * DAY).toISOString().slice(0, 10), amount: 15 + 2 * i, completed: true }));
-fr.set(db.doc('user_challenges/demo_pushups'), { id: 'demo_pushups', userId: 'demo', challengeId: def.id, definitionSnapshot: def, startDate: at(6, 8), lastLogDate: at(1, 19), totalProgress: 6, status: 'active', history });
+fr.set(db.doc('user_challenges/demo_pushups'), { id: 'demo_pushups', userId: 'demo', challengeId: def.id, definitionSnapshot: def, startDate: at(6, 8), lastLogDate: at(1, 19), totalProgress: history.reduce((sum, h) => sum + h.amount, 0), status: 'active', history });
 
 // Modèle perso de Léa (copiable par ses amis)
 fr.set(db.doc('userTemplates/lea/templates/lea_haut'), {
