@@ -8,6 +8,7 @@ import {
   addDoc,
   onSnapshot,
   writeBatch,
+  where,
 } from 'firebase/firestore';
 import {
   createUserDocument,
@@ -368,6 +369,13 @@ describe('searchUsers', () => {
     vi.mocked(getDocs).mockResolvedValue(makeSnapshot(users) as any);
     const results = await searchUsers('Pierre');
     expect(results.length).toBeGreaterThan(0);
+  });
+
+  it('a pseudo typed as the app shows it (« @jeandupont ») searches the pseudo, not an e-mail', async () => {
+    await searchUsers('@jeandupont');
+    expect(where).toHaveBeenCalledWith('searchName', '>=', 'jeandupont');
+    expect(where).toHaveBeenCalledWith('displayName', '>=', 'jeandupont');
+    expect(where).not.toHaveBeenCalledWith('emailHash', '==', expect.anything());
   });
 
   it('should return empty array on complete failure', async () => {

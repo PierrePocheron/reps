@@ -765,7 +765,9 @@ export async function getRandomMotivationalPhrase(): Promise<MotivationalPhrase 
  */
 export async function searchUsers(searchTerm: string, limitCount = 10): Promise<User[]> {
   try {
-    if (!searchTerm || searchTerm.length < 2) return [];
+    // The app shows pseudos as « @pseudo »: a leading @ is not part of the pseudo (nor an e-mail)
+    const raw = searchTerm.trim().replace(/^@/, '');
+    if (raw.length < 2) return [];
 
     const usersRef = collection(db, 'users');
     // Note: Firestore ne supporte pas nativement la recherche "contains" ou "fuzzy".
@@ -773,7 +775,7 @@ export async function searchUsers(searchTerm: string, limitCount = 10): Promise<
     // Pour une vraie recherche, il faudrait utiliser Algolia ou Meilisearch.
     // Astuce pour le préfixe: startAt(term) et endAt(term + '\uf8ff')
 
-    const term = searchTerm.toLowerCase();
+    const term = raw.toLowerCase();
     const results = new Map<string, User>();
 
     // 1. Recherche par email (exacte, via hash — l'email en clair n'est pas stocké)
@@ -798,8 +800,8 @@ export async function searchUsers(searchTerm: string, limitCount = 10): Promise<
     const displayNameQuery = query(
       usersRef,
       orderBy('displayName'),
-      where('displayName', '>=', searchTerm),
-      where('displayName', '<=', searchTerm + '\uf8ff'),
+      where('displayName', '>=', raw),
+      where('displayName', '<=', raw + '\uf8ff'),
       limit(limitCount)
     );
 
