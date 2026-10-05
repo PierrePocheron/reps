@@ -84,6 +84,7 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 - Compte : plus de retour de l'ancien compte après une déconnexion rapide, widget et demandes d'ami vidés à la déconnexion, noms très longs qui ne bloquent plus l'inscription, pseudo généré qui garde les lettres accentuées (é → e), plus d'erreur en anglais quand on ferme le choix du compte Google
 - Profil : questionnaire de départ qui ne disparaît plus, poids / taille / date de naissance vraiment effaçables, recherche d'ami avec « @pseudo », avatar 🔥 nommé d'après le badge obtenu
 - Export / import : types de séries (dégressive, échec) et charge des exercices en durée gardés, gainage lesté en reps qui reste en reps, séances Hevy nommées « Renforcement » importées, export complet refusé hors ligne au lieu d'un fichier incomplet ; image de partage avec la meilleure série au poids du corps
+- Écran Défis : une colonne sur téléphone à l'accueil (titres coupés lettre par lettre), « Défi terminé ! » au dernier jour, nombres à la française et compteur qui s'affiche tout de suite, abandon confirmé dans l'appli, « Retard : 2 jours », compteur « aujourd'hui : x/y », défis validés dépliés quand il n'y a plus rien à faire, bouton « Rattraper » lisible, défis perso de tractions / dips au montant fixe à la bonne taille
 
 ### Technique
 - Démo complète hors ligne sur émulateurs (`yarn dev:demo`), parcours e2e, audit de contraste, tests des règles Firestore
