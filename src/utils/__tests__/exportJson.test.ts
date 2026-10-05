@@ -43,7 +43,14 @@ describe('buildJsonExport', () => {
       { weight: 50, reps: 10, type: 'warmup' },
       { weight: 80, reps: 9, rpe: 8, isRecord: true },
     ]); // validated sets only, actual values
-    expect(s!.exercises[1]!.sets).toEqual([{ seconds: 60 }]);
+    expect(s!.exercises[1]!.sets).toEqual([{ weight: 0, seconds: 60 }]);
+  });
+
+  it('keeps the load of a timed set (weighted plank)', () => {
+    const out = buildJsonExport({ user: null, sessions: [], body: [], templates: [], gymSessions: [{
+      ...gymSession, exercises: [{ exerciseId: 'weighted_plank', name: 'Gainage lesté', emoji: '🧱', sets: [{ reps: 60, weight: 20, completed: true }] }],
+    }] as never });
+    expect(out.gymSessions[0]!.exercises[0]!.sets).toEqual([{ weight: 20, seconds: 60 }]);
   });
 
   it('exports the profile but not internal fields', () => {

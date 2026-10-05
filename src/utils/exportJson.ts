@@ -56,7 +56,8 @@ export function buildJsonExport({ user, sessions, gymSessions, body, templates, 
         sets: ex.sets.filter((set) => set.completed).map((set) => {
           const reps = set.actualReps ?? set.reps;
           return {
-            ...(isTimed(ex) ? { seconds: reps } : { weight: set.actualWeight ?? set.weight, reps }),
+            weight: set.actualWeight ?? set.weight, // timed sets too: a weighted plank keeps its load
+            ...(isTimed(ex) ? { seconds: reps } : { reps }),
             ...(set.type ? { type: set.type } : {}),
             ...(set.rpe ? { rpe: set.rpe } : {}),
             ...(set.isRecord ? { isRecord: true } : {}),
