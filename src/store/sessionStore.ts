@@ -44,6 +44,9 @@ let ending: Promise<void> | null = null; // endSession in flight
 /**
  * Store Zustand pour la gestion de la session d'entraînement
  */
+/** Fin automatique d'une séance renfo restée ouverte, et durée maximale enregistrée (2 h). */
+export const AUTO_END_SECONDS = 7200;
+
 export const useSessionStore = create<SessionState>((set, get) => ({
   // État initial
   isActive: false,
@@ -96,15 +99,16 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           throw new Error('Aucun utilisateur connecté');
         }
 
-        // Durée réelle, ou celle saisie pour une séance oubliée
+        // Durée réelle, ou celle saisie pour une séance oubliée. Plafonnée à l'auto-fin (2 h) : une séance oubliée la nuit,
+        // finie au premier tick après réouverture (timers en pause appli fermée), partait avec 13 h datées du matin
         const { backdate } = get();
-        const duration = backdate ? backdate.duration : Math.floor((Date.now() - startTime) / 1000);
+        const duration = backdate ? backdate.duration : Math.min(AUTO_END_SECONDS, Math.floor((Date.now() - startTime) / 1000));
 
         const totalCalories = renfoCalories(user, exercises);
 
         // Créer la session dans Firestore
         await createSession(currentUser.uid, {
-          date: backdate ? Timestamp.fromDate(new Date(backdate.at)) : Timestamp.now(),
+          date: Timestamp.fromDate(backdate ? new Date(backdate.at) : new Date(startTime + duration * 1000)), // when it ended
           duration,
           exercises,
           totalReps,

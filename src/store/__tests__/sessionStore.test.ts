@@ -283,6 +283,18 @@ describe('sessionStore', () => {
       expect(useSessionStore.getState().isActive).toBe(false);
     });
 
+    it('a session forgotten overnight is saved with 2 h at most, dated when it ended, not 13 h dated at reopening', async () => {
+      const start = Date.now() - 13 * 3_600_000; // started last evening, app reopened this morning
+      useSessionStore.setState({
+        isActive: true, startTime: start,
+        exercises: [{ name: 'Pompes', emoji: '🔥', reps: 120 }], totalReps: 120, duration: 46_800,
+      });
+      await useSessionStore.getState().endSession();
+      const saved = vi.mocked(firebaseModule.createSession).mock.calls[0]![1] as { duration: number; date: { toDate: () => Date } };
+      expect(saved.duration).toBe(7200);
+      expect(saved.date.toDate().getTime()).toBe(start + 7_200_000);
+    });
+
     it('saves once even when called again while the first save is in flight (auto-finish ticks every second)', async () => {
       let release!: (id: string) => void;
       vi.mocked(firebaseModule.createSession).mockReturnValueOnce(new Promise((r) => { release = r; }) as never);

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useSessionStore } from '@/store/sessionStore';
+import { AUTO_END_SECONDS, useSessionStore } from '@/store/sessionStore';
 import { DEFAULT_EXERCISES } from '@/utils/constants';
 import type { Exercise } from '@/firebase/types';
 
@@ -37,8 +37,8 @@ export function useSession() {
     const interval = setInterval(() => {
       const newDuration = Math.floor((Date.now() - startTime) / 1000);
 
-      // Auto-finish après 2h (7200 secondes)
-      if (newDuration >= 7200) {
+      // Auto-finish après 2h
+      if (newDuration >= AUTO_END_SECONDS) {
         endSession();
         return;
       }
