@@ -29,6 +29,8 @@ export default function Leaderboard() {
 
   useEffect(() => {
     if (!user) return;
+    // a slower request of the previous tab must not overwrite this one (stats, loading flag, error toast)
+    let cancelled = false;
 
     const fetchStats = async () => {
       setIsLoading(true);
@@ -41,6 +43,7 @@ export default function Leaderboard() {
           // Pour "Toujours", on utilise les données du profil utilisateur directement
           // On doit récupérer les détails des amis pour avoir leur totalReps à jour
           const details = await getFriendsDetails(friendIds);
+          if (cancelled) return;
           setFriendsDetails(details);
 
           const leaderboardData = [
@@ -56,28 +59,30 @@ export default function Leaderboard() {
           leaderboardData.sort((a, b) => b.totalReps - a.totalReps);
           setStats(leaderboardData);
         } else {
-          // Pour les autres périodes, on calcule via les sessions
-          // On a quand même besoin des détails pour l'affichage (nom, photo)
-          if (friendsDetails.length === 0) {
-             const details = await getFriendsDetails(friendIds);
-             setFriendsDetails(details);
-          }
-
-          const periodStats = await getLeaderboardStats(allIds, activeTab as 'daily' | 'weekly' | 'monthly');
-          periodStats.sort((a, b) => b.totalReps - a.totalReps);
-          setStats(periodStats);
+          // Pour les autres périodes, on calcule via les sessions ; détails relus à chaque fois (ami ajouté entre-temps)
+          const [details, periodStats] = await Promise.all([
+            getFriendsDetails(friendIds),
+            getLeaderboardStats(allIds, activeTab as 'daily' | 'weekly' | 'monthly'),
+          ]);
+          if (cancelled) return;
+          setFriendsDetails(details);
+          // only players that can be shown: a friend with no profile (deleted account) took a rank while hidden
+          const known = new Set([...details.map((d) => d.uid), user.uid]);
+          setStats(periodStats.filter((s) => known.has(s.userId)).sort((a, b) => b.totalReps - a.totalReps));
         }
       } catch (error) {
+        if (cancelled) return;
         logger.error('Erreur chargement classement:', error);
         setStats([]);
         toast({ title: 'Classement indisponible', description: 'Impossible de charger le classement. Vérifie ta connexion et réessaie.', variant: 'destructive' });
       } finally {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
     fetchStats();
-  }, [user, activeTab, friendsDetails.length, toast]);
+    return () => { cancelled = true; };
+  }, [user, activeTab, toast]);
 
   const getUserDetails = (userId: string) => {
     if (user?.uid === userId) return user;
