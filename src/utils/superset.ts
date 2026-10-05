@@ -53,10 +53,12 @@ export function swapWithNext(list: GymSessionExercise[], i: number): GymSessionE
 export function restAfterSet(list: GymSessionExercise[], exerciseId: string): boolean {
   const ex = list.find((e) => e.exerciseId === exerciseId);
   if (!ex?.supersetId) return true;
-  const done = ex.sets.filter((s) => s.completed).length; // tour qui vient d'être fait
+  // rounds count work sets only: warm-ups (« Échauffement » on one exercise) made it rest mid-round
+  const work = (e: GymSessionExercise) => e.sets.filter((s) => s.type !== 'warmup');
+  const done = work(ex).filter((s) => s.completed).length; // tour qui vient d'être fait (0 après un échauffement)
   return list
     .filter((e) => e.supersetId === ex.supersetId && e.exerciseId !== exerciseId)
-    .every((e) => e.sets.length < done || e.sets.filter((s) => s.completed).length >= done);
+    .every((e) => work(e).length < done || work(e).filter((s) => s.completed).length >= done);
 }
 
 /** Lettre affichée par groupe, dans l'ordre d'apparition (Superset A, B…). */

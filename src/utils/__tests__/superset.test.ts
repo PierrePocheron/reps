@@ -28,6 +28,14 @@ describe('supersets', () => {
     expect(restAfterSet([ex('a', 1)], 'a')).toBe(true);
   });
 
+  it("les échauffements ne comptent pas comme des tours (repos au milieu du tour sinon)", () => {
+    const warm = (completed: boolean) => ({ reps: 8, weight: 40, completed, type: 'warmup' as const });
+    const a = (workDone: number) => ({ ...ex('a', 0, 2, 'g'), sets: [warm(true), warm(true), ...ex('a', workDone, 2, 'g').sets] });
+    expect(restAfterSet([a(1), ex('b', 0, 2, 'g')], 'a')).toBe(false); // A1 fait, B1 attend
+    expect(restAfterSet([a(1), ex('b', 1, 2, 'g')], 'b')).toBe(true);  // tour 1 fini
+    expect(restAfterSet([a(2), ex('b', 1, 2, 'g')], 'a')).toBe(false); // A2 fait, B2 attend
+  });
+
   it('lettres A, B par groupe', () => {
     expect(supersetLetters([ex('a', 0, 1, 'x'), ex('b', 0, 1, 'x'), ex('c', 0, 1), ex('d', 0, 1, 'y')])).toEqual({ x: 'A', y: 'B' });
   });

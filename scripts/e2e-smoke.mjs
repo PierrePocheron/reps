@@ -224,8 +224,9 @@ const steps = [
     // superset entre les deux premiers exercices
     await page.getByRole('button', { name: /^Faire un superset avec/ }).first().click();
     assert.equal(await page.getByText(/^Superset A/).count(), 2, 'deux cartes « Superset A »');
-    // pas de repos au milieu du tour, repos à la fin du tour
-    await cards.nth(0).getByRole('button', { name: /^Valider la série 1/ }).click();
+    // pas de repos au milieu du tour, repos à la fin du tour (tours = séries de travail : on passe les échauffements)
+    const warmups = await cards.nth(0).getByRole('button', { name: /: échauffement/ }).count();
+    await cards.nth(0).getByRole('button', { name: new RegExp(`^Valider la série ${warmups + 1}`) }).click();
     assert.equal(await page.getByRole('switch', { name: /Repos auto/ }).count(), 0, 'pas de repos après A1');
     await cards.nth(1).getByRole('button', { name: /^Valider la série 1/ }).click();
     await page.getByRole('switch', { name: /Repos auto/ }).waitFor();
