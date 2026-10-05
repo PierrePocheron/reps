@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { plural } from '@/utils/formatters';
+import { ageFrom, isRealDay, plural } from '@/utils/formatters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -97,13 +97,8 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
 
       // Validation Age
       if (formData.birthDate) {
-         const birthDate = new Date(formData.birthDate);
-         const today = new Date();
-         let age = today.getFullYear() - birthDate.getFullYear();
-         const m = today.getMonth() - birthDate.getMonth();
-         if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-             age--;
-         }
+         if (!isRealDay(formData.birthDate)) throw new Error("Cette date n'existe pas 🤔"); // 31 février…
+         const age = ageFrom(formData.birthDate);
 
          if (age < 5) {
              throw new Error("T'es un peu jeune non ? 👶");

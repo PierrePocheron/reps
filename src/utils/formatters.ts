@@ -101,3 +101,19 @@ export function localDay(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
+
+/**
+ * Âge en années révolues pour une date « AAAA-MM-JJ », au jour local. `new Date('AAAA-MM-JJ')` est minuit UTC :
+ * à l'ouest de l'UTC (Martinique, Québec) le nouvel âge s'affichait la veille de l'anniversaire.
+ */
+export function ageFrom(birthDate: string, today = new Date()): number {
+  const t = localDay(today);
+  return Number(t.slice(0, 4)) - Number(birthDate.slice(0, 4)) - (t.slice(5) < birthDate.slice(5) ? 1 : 0);
+}
+
+/** « AAAA-MM-JJ » qui existe au calendrier (pas de 31 février, ni de 29 février hors année bissextile). */
+export function isRealDay(day: string): boolean {
+  const [y = 0, m = 0, d = 0] = day.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  return d > 0 && date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
+}

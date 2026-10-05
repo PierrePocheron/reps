@@ -11,7 +11,7 @@ import { ProfilEditForm } from '@/components/ProfilEditForm';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserStore } from '@/store/userStore';
 import { getEarnedBadges, getNextBadge } from '@/utils/constants';
-import { formatNumber, plural } from '@/utils/formatters';
+import { ageFrom, formatNumber, plural } from '@/utils/formatters';
 import { Settings, LogOut, Award, Target, Users, Trash2, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { UserAvatar } from '@/components/UserAvatar';
@@ -147,15 +147,7 @@ function Profil() {
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Âge</p>
                 <p className="font-semibold">
-                  {user.birthDate
-                    ? `${(() => {
-                        const b = new Date(user.birthDate);
-                        const t = new Date();
-                        let a = t.getFullYear() - b.getFullYear();
-                        if (t.getMonth() < b.getMonth() || (t.getMonth() === b.getMonth() && t.getDate() < b.getDate())) a--;
-                        return a;
-                      })()} ans`
-                    : '-'}
+                  {user.birthDate ? `${ageFrom(user.birthDate)} ans` : '-'}
                 </p>
               </div>
               <div className="text-center border-l border-r">

@@ -8,7 +8,9 @@ import {
   formatNumber,
   formatReps,
   formatRelativeDate,
-  plural
+  plural,
+  ageFrom,
+  isRealDay,
 } from '../formatters';
 
 describe('Formatters Utils', () => {
@@ -120,5 +122,23 @@ describe('frDate', () => {
     expect(frDate(new Date(2026, 9, 11), { day: 'numeric', month: 'long' })).toBe('11 octobre');
     expect(frDate(new Date(2026, 9, 21), { day: 'numeric', month: 'long' })).toBe('21 octobre');
     expect(frDate(new Date(2026, 9, 1), { day: 'numeric', month: 'numeric' })).toBe('01/10');
+  });
+});
+
+describe('date de naissance', () => {
+  it("l'âge change le jour de l'anniversaire, aussi à l'ouest de l'UTC (Martinique, Québec)", () => {
+    const previous = process.env.TZ;
+    process.env.TZ = 'America/Martinique';
+    try {
+      expect(ageFrom('2000-10-05', new Date(2026, 9, 4, 22))).toBe(25); // la veille au soir : pas encore 26
+      expect(ageFrom('2000-10-05', new Date(2026, 9, 5, 8))).toBe(26);
+    } finally {
+      process.env.TZ = previous;
+    }
+  });
+
+  it("refuse une date qui n'existe pas (31 février, 29 février hors bissextile)", () => {
+    expect([isRealDay('2000-02-31'), isRealDay('2001-02-29'), isRealDay('2000-04-31'), isRealDay('2000-02-29'), isRealDay('1990-12-31')])
+      .toEqual([false, false, false, true, true]);
   });
 });
