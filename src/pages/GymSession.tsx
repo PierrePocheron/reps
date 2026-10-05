@@ -27,7 +27,7 @@ import {
   type LibraryExercise,
 } from '@/utils/exerciseLibrary';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
-import { estimate1RM, bestE1RMByExercise, bestSecondsByExercise, exerciseHistory, exerciseLog, isTimed } from '@/utils/records';
+import { estimate1RM, exerciseHistory, exerciseLog, isTimed, markRecords } from '@/utils/records';
 import {
   Plus, Play, Square, Dumbbell, CheckCircle2, Timer as TimerIcon,
   Clock, Weight, ArrowLeft, X, Trash2, Info, Loader2, Trophy,
@@ -128,9 +128,6 @@ function GymSession() {
     if (!isAuthenticated) navigate('/');
   }, [isAuthenticated, navigate]);
 
-  // Records de référence (meilleur 1RM estimé par exercice) — ref : lecture synchrone au tap
-  const bestsRef = useRef<Record<string, number>>({});
-  const bestSecsRef = useRef<Record<string, number>>({}); // meilleure durée, exercices en durée (#59)
   const [gymHistory, setGymHistory] = useState<GymSessionData[]>([]);
   const historyLoad = useRef<Promise<GymSessionData[]>>(Promise.resolve([])); // awaited by the recap (see handleEndSession)
   // Récap affiché après la fin de séance (#54) ; posé avant endSession pour devancer le retour à l'accueil
@@ -144,8 +141,6 @@ function GymSession() {
     const load = getUserGymSessions(uid, 200);
     historyLoad.current = load.catch(() => []);
     load.then((sessions) => {
-      bestsRef.current = bestE1RMByExercise(sessions);
-      bestSecsRef.current = bestSecondsByExercise(sessions);
       setGymHistory(sessions);
       const defaults: Record<string, { reps: number; weight: number }> = {};
       // Parcourir les sessions du plus récent au plus ancien
@@ -233,21 +228,26 @@ function GymSession() {
   // ─── Handlers Exécution ────────────────────────────────────────────────
 
 
+  // Trophies follow the current values, same rule as History edits (markRecords): a corrected typo or a set switched
+  // to warm-up re-rates the exercise. A best raised at validation and never lowered kept false trophies and hid the
+  // real record. Returns the exercise's sets as rated
+  const syncRecords = (exerciseId: string) => {
+    const ex = useGymSessionStore.getState().exercises.find((e) => e.exerciseId === exerciseId);
+    if (!ex) return [];
+    const rated = markRecords([ex], gymHistory)[0]!.sets;
+    rated.forEach((st, i) => { if (!!ex.sets[i]?.isRecord !== st.isRecord) updateSet(exerciseId, i, { isRecord: st.isRecord }); });
+    return rated;
+  };
+
   const handleCompleteSet = (exerciseId: string, setIndex: number, reps: number, weight: number) => {
     completeSetAt(exerciseId, setIndex, reps, weight);
     // Comme Strong : repos à chaque série… sauf au milieu d'un tour de superset
     if (autoRest && completedSets + 1 < totalSets && restAfterSet(useGymSessionStore.getState().exercises, exerciseId)) startRestTimer(exerciseId);
+    // Pas d'historique sur l'exercice = pas de « record » (évite le faux positif de la 1re séance) ; jamais sur un échauffement
+    if (!syncRecords(exerciseId)[setIndex]?.isRecord) return;
     const exercise = exercises.find((ex) => ex.exerciseId === exerciseId);
     const timed = !!exercise && isTimed(exercise); // en durée : record = meilleure durée (#59)
-    const bests = timed ? bestSecsRef : bestsRef;
-    const best = bests.current[exerciseId];
     const e1rm = estimate1RM(weight, reps);
-    const score = timed ? reps : e1rm;
-    const warmup = exercise?.sets[setIndex]?.type === 'warmup';
-    // Pas d'historique sur l'exercice = pas de « record » (évite le faux positif de la 1re séance) ; jamais sur un échauffement
-    if (warmup || best === undefined || score <= best) return;
-    bests.current[exerciseId] = score;
-    updateSet(exerciseId, setIndex, { isRecord: true });
     haptics.notification();
     confetti({ particleCount: 50, spread: 55, origin: { y: 0.7 }, disableForReducedMotion: true });
     const name = exercises.find((ex) => ex.exerciseId === exerciseId)?.name ?? 'Exercice';
@@ -493,10 +493,11 @@ function GymSession() {
             supersetLabel={exercise.supersetId ? `Superset ${letters[exercise.supersetId]}` : undefined}
             onCompleteSet={handleCompleteSet}
             onRpe={showRpe ? (exerciseId, setIndex, rpe) => updateSet(exerciseId, setIndex, { rpe }) : undefined}
-            onType={(exerciseId, setIndex, type) => updateSet(exerciseId, setIndex, { type, ...(type === 'warmup' ? { isRecord: false } : {}) })}
-            onUpdateSet={(exerciseId, setIndex, reps, weight) =>
-              updateSet(exerciseId, setIndex, { actualReps: reps, actualWeight: weight })
-            }
+            onType={(exerciseId, setIndex, type) => { updateSet(exerciseId, setIndex, { type }); syncRecords(exerciseId); }}
+            onUpdateSet={(exerciseId, setIndex, reps, weight) => {
+              updateSet(exerciseId, setIndex, { actualReps: reps, actualWeight: weight });
+              if (exercise.sets[setIndex]?.completed) syncRecords(exerciseId); // validated set corrected: re-rate
+            }}
             onShowDetail={(id) => setDetailExerciseId(id)}
             lastNote={lastNotes[exercise.exerciseId]}
             isBarbell={infoMap[exercise.exerciseId]?.equipment === 'barbell'}
