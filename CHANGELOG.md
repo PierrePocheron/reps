@@ -76,6 +76,9 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 - Passe UI : durée des séances sur une ligne, icône calendrier visible en sombre, nombres à la française (« 3 666 », « 5,0 kcal », « 1 % »), « 5 exos », « Démarrer la séance »
 - Une page en erreur ne bloque plus l'appli (barre du bas gardée, « Réessayer » qui recharge, message hors ligne) ; un échec de chargement Social s'affiche comme tel
 - Photos d'exercices : emoji à la place d'une image cassée hors ligne, et gardées en cache ; plus de faux zéros pendant les chargements
+- Rejoindre ou créer un défi fonctionne *(règles Firestore à déployer)* ; défi « Épaules 3D » de nouveau validable
+- Séance renfo oubliée : enregistrée avec 2 h au plus, à son jour (elle durait parfois 13 h et passait au lendemain), et l'écran l'explique au lieu de rester vide
+- Comptes Google : suppression du compte possible dans l'appli Android (la ré-authentification ne s'ouvrait pas)
 
 ### Technique
 - Démo complète hors ligne sur émulateurs (`yarn dev:demo`), parcours e2e, audit de contraste, tests des règles Firestore
