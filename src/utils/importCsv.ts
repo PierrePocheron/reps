@@ -88,7 +88,7 @@ export function parseWorkoutsCsv(text: string, resolve: ResolveExercise): Import
   for (const r of rows) {
     const date = dateOf(r[c.start] ?? '');
     const exName = (r[c.exercise] ?? '').trim();
-    if (!date || !exName || (r[c.workout] ?? '') === 'Renforcement') continue;
+    if (!date || !exName || (!hevy && r[c.workout] === 'Renforcement')) continue; // REPS renfo rows (never in a Hevy file)
     const key = `${r[c.start]}|${r[c.workout] ?? ''}`;
     let s = sessions.get(key);
     if (!s) {

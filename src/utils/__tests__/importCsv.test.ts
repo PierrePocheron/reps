@@ -62,6 +62,14 @@ describe('parseWorkoutsCsv', () => {
       exercises: [{ exerciseId: 'bench_press', sets: [{ weight: 80, reps: 5 }, { weight: 81.25, reps: 4, type: 'failure', rpe: 9 }] }] });
   });
 
+  it('export Hevy : une séance intitulée « Renforcement » est importée (seul l’export REPS a des lignes renfo)', () => {
+    const csv = [
+      '"title","start_time","end_time","description","exercise_title","superset_id","exercise_notes","set_index","set_type","weight_kg","reps","distance_km","duration_seconds","rpe"',
+      '"Renforcement","3 Oct 2026, 09:00","3 Oct 2026, 10:00","","Bench Press (Barbell)","","","0","normal","60","8","","",""',
+    ].join('\n');
+    expect(parseWorkoutsCsv(csv, resolve)).toMatchObject([{ title: 'Renforcement', exercises: [{ sets: [{ weight: 60, reps: 8 }] }] }]);
+  });
+
   it('export Hevy en livres : charges converties en kg (pas lues comme 0)', () => {
     const csv = [
       '"title","start_time","end_time","description","exercise_title","superset_id","exercise_notes","set_index","set_type","weight_lbs","reps","distance_miles","duration_seconds","rpe"',
