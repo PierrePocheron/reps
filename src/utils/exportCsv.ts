@@ -1,5 +1,5 @@
 import { isTimed } from '@/utils/records';
-import type { GymSession, Session } from '@/firebase/types';
+import type { GymSession, Session, SetType } from '@/firebase/types';
 
 // Colonnes de l'export Strong (en-têtes anglais) : format importable par Hevy et la plupart des carnets
 const HEADER = ['Date', 'Workout Name', 'Duration', 'Exercise Name', 'Set Order', 'Weight', 'Reps', 'Distance', 'Seconds', 'Notes', 'Workout Notes', 'RPE'];
@@ -11,6 +11,7 @@ const cell = (v: string | number) => {
 const pad = (n: number) => String(n).padStart(2, '0');
 const stamp = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 const duration = (s: number) => `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
+const SET_ORDER: Record<SetType, string> = { warmup: 'W', drop: 'D', failure: 'F' };
 
 /** Une ligne par série validée (muscu) ou par exercice (renfo : reps du jour, sans charge), du plus ancien au plus récent. */
 export function sessionsToCsv(gymSessions: GymSession[], sessions: Session[]): string {
@@ -18,9 +19,9 @@ export function sessionsToCsv(gymSessions: GymSession[], sessions: Session[]): s
   for (const s of gymSessions) {
     const at = s.date.toDate();
     for (const ex of s.exercises) {
-      let n = 0; // les échauffements sont marqués « W » (comme l'export Strong) et ne sont pas numérotés
+      let n = 0; // warm-up, drop and failure sets get the Strong letters W / D / F (read back by the import), not a number
       ex.sets.filter((set) => set.completed).forEach((set, i) => rows.push({
-        at, cells: [stamp(at), s.title || 'Musculation', duration(s.duration), ex.name, set.type === 'warmup' ? 'W' : ++n, set.actualWeight ?? set.weight,
+        at, cells: [stamp(at), s.title || 'Musculation', duration(s.duration), ex.name, set.type ? SET_ORDER[set.type] : ++n, set.actualWeight ?? set.weight,
           isTimed(ex) ? '' : set.actualReps ?? set.reps, '', isTimed(ex) ? set.actualReps ?? set.reps : '', i === 0 ? ex.note ?? '' : '', s.note ?? '', set.rpe ?? ''],
       }));
     }

@@ -24,6 +24,16 @@ describe('sessionsToCsv', () => {
     expect(lines).toHaveLength(4); // la série non validée n'est pas exportée
   });
 
+  it('séries dégressive et à l’échec marquées D et F (relues par l’import), pas numérotées', () => {
+    const gym = [{ date: ts(new Date(2026, 9, 3, 9, 0, 0)), duration: 600,
+      exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [
+        { weight: 60, reps: 8, completed: true },
+        { weight: 40, reps: 10, completed: true, type: 'drop' },
+        { weight: 60, reps: 3, completed: true, type: 'failure' },
+      ] }] }] as GymSession[];
+    expect(sessionsToCsv(gym, []).split('\n').slice(1).map((l) => l.split(',')[4])).toEqual(['1', 'D', 'F']);
+  });
+
   it('exercice en durée (#55) : secondes dans la colonne Seconds, pas dans Reps', () => {
     const gym = [{ date: ts(new Date(2026, 9, 3, 9, 0, 0)), duration: 600,
       exercises: [{ exerciseId: 'plank', name: 'Gainage', emoji: '🧱', timed: true, sets: [{ weight: 0, reps: 60, completed: true }] }] }] as GymSession[];
