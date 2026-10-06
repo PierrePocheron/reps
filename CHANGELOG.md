@@ -26,7 +26,7 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 - Page historique (muscu / renfo / records), filtre par exercice, séances plus anciennes chargées à la demande
 - Refaire, modifier, supprimer une séance ; l'enregistrer comme modèle
 - Export CSV (format Strong) et JSON complet (mensurations, modèles, notes, RPE, types de séries), import Strong (ancien et nouveau format) / Hevy sans doublon, charges en livres converties en kg, exercices reconnus (grands mouvements Strong / Hevy reliés aux exercices de base de REPS, variantes distinctes gardées à part, les autres à la bibliothèque), aperçu qui signale les livres converties
-- Hors ligne : séances, modèles, mensurations, modifications et import enregistrés sans réseau, envoyés au retour de la connexion
+- Hors ligne : séances, modèles, mensurations et modifications enregistrés sans réseau, envoyés au retour de la connexion (l'import CSV demande une connexion pour écarter les doublons, voir #84)
 
 ### Progrès et statistiques
 - Courbe de progression par exercice (1RM estimé, charge, volume, durée) et dernières séances détaillées
@@ -90,6 +90,7 @@ Tout ce qui est arrivé sur `dev` depuis la v1.10.0 (19/02/2026).
 - Recherche d'exercices : sans accents (« developpe »), par le muscle affiché en français (« abdominaux »), avec plusieurs mots (« curl haltère »)
 - Appli : le retour ne renvoie plus à l'écran de connexion, bouton retour Android qui quitte l'appli depuis le premier écran, barre d'état Android lisible selon le thème choisi, lien inconnu → accueil au lieu d'une page blanche, onglet actif retapé sans effet ; appli Android sans service worker web (la 1ʳᵉ ouverture après une mise à jour Play Store montrait l'ancienne version) ; sons disponibles hors ligne sur la PWA
 - Sécurité *(règles Firestore à déployer)* : impossible d'écrire des séances, badges ou défis au nom d'un autre compte, de notifier un inconnu via une demande d'ami, ou de bloquer le fil d'un ami avec un document mal formé ; supprimer une séance efface aussi ses kudos
+- Relecture des correctifs : abandon d'un défi qui attend son enregistrement (« Annuler » abandonnait quand même hors ligne), défi abandonné ailleurs « plus en cours » et carte rafraîchie, suppression d'une séance qui n'attend plus ~12 s sur un réseau mort, courbe en reps gardée avec une séance lestée, filtre d'historique qui ne revient plus tout seul, recherche « Essentiels » mot par mot, bouton central sans entrée d'historique en double, anciens caches vidés sur Android
 
 ### Technique
 - Démo complète hors ligne sur émulateurs (`yarn dev:demo`), parcours e2e, audit de contraste, tests des règles Firestore
