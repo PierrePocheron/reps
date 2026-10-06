@@ -801,7 +801,7 @@ function SetExecuteRow({
           }}
           onFocus={onFocusSel}
           aria-label={`${timed ? 'Durée en secondes' : 'Répétitions'}, série ${setIndex + 1}`}
-          className="h-8 w-0 flex-1 max-w-14 min-w-[calc(3ch_+_0.75rem)] text-sm p-1 text-center"
+          className="h-11 -my-1.5 w-0 flex-1 max-w-14 min-w-[calc(3ch_+_0.75rem)] text-sm p-1 text-center"
         />
         <UnitToggle timed={timed} onToggle={onToggleTimed} />
       </div>
@@ -819,7 +819,7 @@ function SetExecuteRow({
           }}
           onFocus={onFocusSel}
           aria-label={`Charge en kg, série ${setIndex + 1}`}
-          className="h-8 w-0 flex-1 max-w-16 min-w-[calc(5ch_+_0.75rem)] text-sm p-1 text-center"
+          className="h-11 -my-1.5 w-0 flex-1 max-w-16 min-w-[calc(5ch_+_0.75rem)] text-sm p-1 text-center"
         />
         <span className="text-xs text-muted-foreground">kg</span>
       </div>
@@ -1145,6 +1145,7 @@ function InlineRestTimer({
   const pct = durationSeconds > 0 ? Math.min(100, (remaining / durationSeconds) * 100) : 0;
 
   return (
+    // 44 px targets; negative margins spend the gaps so the panel keeps its height
     <div className="bg-card border rounded-xl p-3 space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -1159,12 +1160,12 @@ function InlineRestTimer({
             role="switch"
             aria-checked={autoRest}
             onClick={onToggleAutoRest}
-            className={cn('min-h-9 px-2.5 rounded-full text-xs font-medium border transition-colors',
+            className={cn('min-h-11 -my-1 px-2.5 rounded-full text-xs font-medium border transition-colors',
               autoRest ? 'bg-primary/10 border-primary/30 text-primary' : 'border-border text-muted-foreground')}
           >
             Repos auto {autoRest ? '✓' : ''}
           </button>
-          <button onClick={onDismiss} className="p-2.5 -m-2.5 rounded-lg text-muted-foreground hover:text-foreground" aria-label="Fermer le minuteur de repos">
+          <button onClick={onDismiss} className="h-11 w-11 -my-3.5 -ml-2.5 -mr-3.5 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground" aria-label="Fermer le minuteur de repos">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -1172,7 +1173,7 @@ function InlineRestTimer({
 
       <div className="flex items-center gap-2">
         <button type="button" onClick={() => onAdjust(-15)} aria-label="Raccourcir le repos de 15 secondes"
-          className="min-h-9 px-2.5 rounded-lg bg-muted text-xs font-medium tabular-nums active:scale-95">−15 s</button>
+          className="min-h-11 -my-1 px-2.5 rounded-lg bg-muted text-xs font-medium tabular-nums active:scale-95">−15 s</button>
         <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
           <div
             className="h-full bg-primary rounded-full transition-all duration-1000"
@@ -1180,7 +1181,7 @@ function InlineRestTimer({
           />
         </div>
         <button type="button" onClick={() => onAdjust(15)} aria-label="Allonger le repos de 15 secondes"
-          className="min-h-9 px-2.5 rounded-lg bg-muted text-xs font-medium tabular-nums active:scale-95">+15 s</button>
+          className="min-h-11 -my-1 px-2.5 rounded-lg bg-muted text-xs font-medium tabular-nums active:scale-95">+15 s</button>
       </div>
 
       <div className="flex gap-1">
@@ -1189,7 +1190,7 @@ function InlineRestTimer({
             key={p.value}
             onClick={() => onChangeDuration(p.value)}
             className={cn(
-              'flex-1 py-2 min-h-9 rounded-lg text-xs font-medium transition-colors active:scale-95',
+              'flex-1 py-2 min-h-11 -my-1 rounded-lg text-xs font-medium transition-colors active:scale-95',
               durationSeconds === p.value
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-muted-foreground hover:bg-muted/80'
