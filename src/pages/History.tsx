@@ -105,21 +105,15 @@ function RenforcementCard({ session, onRedo, onShare, onDelete, onEdit }: { sess
         <div className="flex-1 min-w-0 p-4 space-y-3">
           {/* Header */}
           <div className="flex items-center justify-between gap-2">
-            <div className="min-w-0">
+            <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold">{formatDate(date)}</p>
               <p className="text-xs text-muted-foreground">{formatTime(date)}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex shrink-0 items-center gap-1 whitespace-nowrap bg-muted px-2 py-1 rounded-lg">
-                <Clock className="h-3 w-3 text-muted-foreground" />
-                <span className="text-xs font-medium">{formatDurationLong(session.duration)}</span>
-              </div>
-              <CardMenu date={date} onEdit={onEdit} onDelete={onDelete} />
-            </div>
+            <CardMenu date={date} onEdit={onEdit} onDelete={onDelete} />
           </div>
 
-          {/* Stats */}
-          <div className="flex items-center gap-3">
+          {/* Stats: wrap, with the duration, so a large font does not clip a pill nor stack the date */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <div className="flex items-center gap-1.5 bg-orange-500/10 px-2.5 py-1 rounded-lg">
               <Activity className="h-3.5 w-3.5 text-orange-500" />
               <span className="text-sm font-bold">{session.totalReps}</span>
@@ -132,6 +126,10 @@ function RenforcementCard({ session, onRedo, onShare, onDelete, onEdit }: { sess
                 <span className="text-xs text-muted-foreground">kcal</span>
               </div>
             )}
+            <div className="flex shrink-0 items-center gap-1 whitespace-nowrap bg-muted px-2 py-1 rounded-lg">
+              <Clock className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs font-medium">{formatDurationLong(session.duration)}</span>
+            </div>
           </div>
 
           {/* Exercises */}
@@ -168,23 +166,17 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
         <div className="w-1.5 bg-blue-500/70" />
         <div className="flex-1 min-w-0 p-4 space-y-3">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="min-w-0">
-              {session.title && <p className="text-sm font-bold truncate">{session.title}</p>}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex-1 min-w-0">
+              {session.title && <p className="text-sm font-bold line-clamp-2 break-words">{session.title}</p>}
               <p className={session.title ? 'text-xs text-muted-foreground' : 'text-sm font-semibold'}>{formatDate(date)}</p>
               <p className="text-xs text-muted-foreground">{formatTime(date)}</p>
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className="flex shrink-0 items-center gap-1 whitespace-nowrap bg-muted px-2 py-1 rounded-lg">
-                <Clock className="h-3 w-3 text-muted-foreground" />
-                <span className="text-xs font-medium">{formatDurationLong(session.duration)}</span>
-              </div>
-              <CardMenu date={date} onEdit={onEdit} onSaveTemplate={onSaveTemplate} onDelete={onDelete} />
-            </div>
+            <CardMenu date={date} onEdit={onEdit} onSaveTemplate={onSaveTemplate} onDelete={onDelete} />
           </div>
 
-          {/* Stats */}
-          <div className="flex items-center gap-3">
+          {/* Stats: wrap, with the duration, so a large font does not clip a pill nor squeeze the title */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <div className="flex items-center gap-1.5 bg-blue-500/10 px-2.5 py-1 rounded-lg">
               <Weight className="h-3.5 w-3.5 text-blue-500" />
               <span className="text-sm font-bold">{session.totalVolume.toLocaleString('fr-FR')}</span>
@@ -194,6 +186,10 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
               <Dumbbell className="h-3.5 w-3.5 text-muted-foreground" />
               <span className="text-sm font-bold">{completedSets}</span>
               <span className="text-xs text-muted-foreground">série{completedSets > 1 ? 's' : ''}</span>
+            </div>
+            <div className="flex shrink-0 items-center gap-1 whitespace-nowrap bg-muted px-2 py-1 rounded-lg">
+              <Clock className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs font-medium">{formatDurationLong(session.duration)}</span>
             </div>
           </div>
 
