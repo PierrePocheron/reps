@@ -39,4 +39,10 @@ describe('ProfilEditForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Modifier' }));
     expect(screen.getByText(/Débloque des badges/)).toBeInTheDocument();
   });
+
+  it('a weight typed with the French comma is kept (« 72,5 » is not 72)', async () => {
+    render(<ProfilEditForm user={user} onSuccess={() => {}} />);
+    fireEvent.change(screen.getByLabelText('Poids (kg)'), { target: { value: '72,5' } });
+    expect((await submit()).weight).toBe(72.5);
+  });
 });

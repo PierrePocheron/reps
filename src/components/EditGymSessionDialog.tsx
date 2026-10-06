@@ -3,6 +3,7 @@ import { Plus, Trash2, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DecimalInput } from '@/components/ui/decimal-input';
 import { SET_TYPE_META, nextSetType } from '@/utils/setTypes';
 import { isTimed } from '@/utils/records';
 import { dropLoneSupersets } from '@/utils/superset';
@@ -72,9 +73,9 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
                     aria-label={`Répétitions, série ${j + 1} de ${ex.name}`}
                     onChange={(e) => patch(i, j, { actualReps: Math.max(0, Math.round(Number(e.target.value) || 0)) })} />
                   <span className="text-xs text-muted-foreground">{isTimed(ex) ? 's' : 'reps'}</span>
-                  <Input type="number" min={0} step="0.5" inputMode="decimal" value={s.actualWeight || ''} placeholder="0" className={NUM}
+                  <DecimalInput value={s.actualWeight ?? 0} placeholder="0" className={NUM}
                     aria-label={`Charge en kg, série ${j + 1} de ${ex.name}`}
-                    onChange={(e) => patch(i, j, { actualWeight: Math.max(0, Number(e.target.value) || 0) })} />
+                    onValue={(actualWeight) => patch(i, j, { actualWeight })} />
                   <span className="text-xs text-muted-foreground">kg</span>
                   <button type="button" onClick={() => removeSet(i, j)} aria-label={`Retirer la série ${j + 1} de ${ex.name}`}
                     className="ml-auto h-11 w-11 -mr-2 flex items-center justify-center rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10">

@@ -3,6 +3,7 @@ import { templateExercise } from '@/utils/progression';
 import { isTimed } from '@/utils/records';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DecimalInput } from '@/components/ui/decimal-input';
 
 const NUM_INPUT = 'text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
 const onFocusSelect = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
@@ -283,8 +284,11 @@ export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) 
                     <span className="flex-1 text-sm font-medium">{m.name}</span>
                     <span className="text-xs text-muted-foreground">{m.sets.length} série{m.sets.length > 1 ? 's' : ''}</span>
                     <button
+                      type="button"
                       onClick={() => setExpandedEx(expandedEx === m.exerciseId ? null : m.exerciseId)}
-                      className="text-muted-foreground hover:text-foreground"
+                      aria-label={`Séries de ${m.name}`}
+                      aria-expanded={expandedEx === m.exerciseId}
+                      className="h-11 w-11 -my-2 flex items-center justify-center text-muted-foreground hover:text-foreground"
                     >
                       {expandedEx === m.exerciseId ? (
                         <ChevronUp className="w-4 h-4" />
@@ -293,8 +297,10 @@ export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) 
                       )}
                     </button>
                     <button
+                      type="button"
                       onClick={() => removeMuscuExercise(m.exerciseId)}
-                      className="text-muted-foreground hover:text-destructive"
+                      aria-label={`Retirer ${m.name}`}
+                      className="h-11 w-11 -my-2 -mr-2 flex items-center justify-center text-muted-foreground hover:text-destructive"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -309,18 +315,19 @@ export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) 
                           <div className="flex items-center gap-1 flex-1">
                             <Input
                               type="number"
+                              inputMode="numeric"
                               value={s.reps}
                               min={1}
+                              aria-label={`${isTimed(m) ? 'Durée en secondes' : 'Répétitions'}, série ${i + 1} de ${m.name}`}
                               onChange={(e) => updateSet(m.exerciseId, i, 'reps', Number(e.target.value))}
                               onFocus={onFocusSelect}
                               className={`h-8 text-sm w-16 ${NUM_INPUT}`}
                             />
                             <span className="text-xs text-muted-foreground">{isTimed(m) ? 's' : 'reps'}</span>
-                            <Input
-                              type="number"
+                            <DecimalInput
                               value={s.weight}
-                              min={0}
-                              onChange={(e) => updateSet(m.exerciseId, i, 'weight', Number(e.target.value))}
+                              aria-label={`Charge en kg, série ${i + 1} de ${m.name}`}
+                              onValue={(weight) => updateSet(m.exerciseId, i, 'weight', weight)}
                               onFocus={onFocusSelect}
                               className={`h-8 text-sm w-20 ${NUM_INPUT}`}
                             />

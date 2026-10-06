@@ -67,4 +67,13 @@ describe('EditGymSessionDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Retirer la série 1 de A' }));
     expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeDisabled();
   });
+
+  it('a load typed with the French comma is kept (« 82,5 » became 825 or 0)', async () => {
+    const onSave = vi.fn(async (_exercises: GymSessionExercise[]) => {});
+    render(<EditGymSessionDialog session={session} onCancel={() => {}} onSave={onSave} />);
+    fireEvent.change(screen.getByRole('textbox', { name: 'Charge en kg, série 1 de Squat barre' }), { target: { value: '82,5' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    await waitFor(() => expect(onSave).toHaveBeenCalled());
+    expect(onSave.mock.calls[0]![0][0]!.sets[0]).toMatchObject({ actualWeight: 82.5 });
+  });
 });

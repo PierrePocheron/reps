@@ -25,4 +25,17 @@ describe('CreateTemplateDialog', () => {
     expect(screen.getByText('Exercices (1)')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Enregistrer le modèle' })).toBeEnabled();
   });
+
+  it('a load typed with the French comma is kept (« 82,5 »)', async () => {
+    const onSave = vi.fn(async () => {});
+    const gym = { ...template, muscuExercises: [{ exerciseId: 'barbell_squat', name: 'Squat barre', emoji: '🦵', sets: [{ reps: 5, weight: 80 }] }] };
+    render(<CreateTemplateDialog open onClose={() => {}} onSave={onSave} initial={gym} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Séries de Squat barre' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Charge en kg, série 1 de Squat barre' }), { target: { value: '82,5' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer le modèle' }));
+    await waitFor(() => expect(onSave).toHaveBeenCalled());
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({
+      muscuExercises: [expect.objectContaining({ sets: [expect.objectContaining({ weight: 82.5 })] })],
+    }));
+  });
 });

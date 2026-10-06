@@ -27,4 +27,15 @@ describe('BodyMetrics', () => {
     await waitFor(() => expect(addButton()).toBeEnabled());
     expect(store.save).not.toHaveBeenCalled();
   });
+
+  it('accepte la virgule décimale (« 72,5 » donnait 725 ou rien)', async () => {
+    store.get.mockResolvedValue([]);
+    render(<BodyMetrics />);
+    await waitFor(() => expect(addButton()).toBeEnabled());
+    fireEvent.click(addButton());
+    fireEvent.change(screen.getByLabelText(/Poids/), { target: { value: '72,5' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    await waitFor(() => expect(store.save).toHaveBeenCalled());
+    expect(JSON.stringify(store.save.mock.calls[0])).toContain('72.5');
+  });
 });

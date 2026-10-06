@@ -1,32 +1,12 @@
-import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { ExerciseImage } from '@/components/ExerciseImage';
-import { Input, type InputProps } from '@/components/ui/input';
+import { DecimalInput } from '@/components/ui/decimal-input';
 import type { GymSessionExercise, PlannedSet } from '@/firebase/types';
 import { isTimed } from '@/utils/records';
-import { decimalInput, parseDecimal } from '@/utils/formatters';
 import { UnitToggle } from './UnitToggle';
 
 const NUM_INPUT = 'text-center text-sm p-1';
 const onFocusSelect = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
-
-/** Number field written the French way (« 82,5 »): keeps what is being typed (« 82, ») and follows a value changed elsewhere. */
-function DecimalInput({ value, onValue, ...props }: Omit<InputProps, 'value' | 'onChange' | 'type'> & { value: number; onValue: (n: number) => void }) {
-  const [text, setText] = useState(() => decimalInput(value));
-  return (
-    <Input
-      {...props}
-      type="text"
-      value={parseDecimal(text) === value ? text : decimalInput(value)}
-      onChange={(e) => {
-        const n = parseDecimal(e.target.value);
-        if (n === null) return;
-        setText(e.target.value);
-        onValue(n);
-      }}
-    />
-  );
-}
 
 interface GymExerciseCardProps {
   exercise: GymSessionExercise;

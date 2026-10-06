@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ageFrom, daysBeforeUsernameChange, isRealDay, plural } from '@/utils/formatters';
+import { ageFrom, daysBeforeUsernameChange, isRealDay, plural, decimalInput, parseDecimal } from '@/utils/formatters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,7 +31,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
     lastName: user.lastName || '',
     birthDate: user.birthDate || '',
     avatarEmoji: user.avatarEmoji || '🐥',
-    weight: user.weight?.toString() || '',
+    weight: user.weight ? decimalInput(user.weight) : '', // « 72,5 »
     height: user.height?.toString() || '',
     gender: user.gender || 'male',
   });
@@ -74,8 +74,8 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
 
       // Validation Poids
       if (formData.weight) {
-        const weight = parseFloat(formData.weight);
-        if (isNaN(weight)) throw new Error("C'est pas un chiffre ça...");
+        const weight = parseDecimal(formData.weight); // parseFloat read « 72,5 » as 72
+        if (weight === null) throw new Error("C'est pas un chiffre ça...");
         if (weight < 20) throw new Error("Mange encore un peu 🍔");
         if (weight > 300) throw new Error("T'as pas ajouté un 0 en trop ? 👀");
       }
@@ -107,7 +107,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
         lastName: formData.lastName,
         avatarEmoji: formData.avatarEmoji,
         birthDate: formData.birthDate || undefined,
-        weight: formData.weight ? parseFloat(formData.weight) : undefined,
+        weight: formData.weight ? parseDecimal(formData.weight) ?? undefined : undefined,
         height: formData.height ? parseInt(formData.height) : undefined,
         gender: formData.gender as 'male' | 'female' | 'other',
       };
@@ -301,10 +301,10 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
           <Label htmlFor="weight">Poids (kg)</Label>
           <Input
             id="weight"
-            type="number"
-            step="0.1"
+            type="text"
+            inputMode="decimal"
             value={formData.weight}
-            onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+            onChange={(e) => parseDecimal(e.target.value) !== null && setFormData({ ...formData, weight: e.target.value })}
             placeholder="kg"
           />
         </div>
@@ -313,6 +313,7 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
           <Input
             id="height"
             type="number"
+            inputMode="numeric"
             value={formData.height}
             onChange={(e) => setFormData({ ...formData, height: e.target.value })}
             placeholder="cm"

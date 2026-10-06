@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUserStore } from '@/store/userStore';
 import { getBodyEntries, saveBodyEntries } from '@/firebase/bodyMetrics';
 import { BODY_FIELDS, bodySeries, upsertBodyEntry, type BodyEntry, type BodyField } from '@/utils/body';
-import { localDay, frDate } from '@/utils/formatters';
+import { localDay, frDate, parseDecimal } from '@/utils/formatters';
 import { logger } from '@/utils/logger';
 import { cn } from '@/utils/cn';
 
@@ -70,7 +70,7 @@ export function BodyMetrics() {
   const save = async () => {
     if (entries === null) return;
     const entry: BodyEntry = { date: form.date || localDay(new Date()) };
-    for (const f of BODY_FIELDS) if (Number(form[f.key]) > 0) entry[f.key] = Number(form[f.key]);
+    for (const f of BODY_FIELDS) { const n = parseDecimal(form[f.key] ?? '') ?? 0; if (n > 0) entry[f.key] = n; } // « 72,5 »
     if (Object.keys(entry).length === 1) return;
     setSaving(true);
     try {
@@ -140,12 +140,12 @@ export function BodyMetrics() {
               {BODY_FIELDS.map((f) => (
                 <label key={f.key} className="block text-sm">
                   {f.label} ({f.unit})
-                  <Input type="number" inputMode="decimal" min={0} step={0.1} value={form[f.key] ?? ''}
-                    onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} className="mt-1" />
+                  <Input type="text" inputMode="decimal" value={form[f.key] ?? ''}
+                    onChange={(e) => parseDecimal(e.target.value) !== null && setForm({ ...form, [f.key]: e.target.value })} className="mt-1" />
                 </label>
               ))}
             </div>
-            <Button className="w-full min-h-11" onClick={save} disabled={saving || !BODY_FIELDS.some((f) => Number(form[f.key]) > 0)}>
+            <Button className="w-full min-h-11" onClick={save} disabled={saving || !BODY_FIELDS.some((f) => (parseDecimal(form[f.key] ?? '') ?? 0) > 0)}>
               {saving ? 'Enregistrement…' : 'Enregistrer'}
             </Button>
           </div>

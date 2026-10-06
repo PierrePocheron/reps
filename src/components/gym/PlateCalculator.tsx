@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { cn } from '@/utils/cn';
 import { DEFAULT_PLATES, loadPlatePrefs, platesPerSide, savePlatePrefs } from '@/utils/plates';
+import { decimalInput, parseDecimal } from '@/utils/formatters';
 
 const BARS = [20, 15, 10];
 // Couleurs olympiques usuelles, pour reconnaître les disques d'un coup d'œil
@@ -16,17 +17,18 @@ export function PlateCalculator({ open, onOpenChange, weight, exerciseName }: {
   weight: number;
   exerciseName: string;
 }) {
-  const [target, setTarget] = useState(String(weight));
+  const [target, setTarget] = useState(decimalInput(weight));
   const [prefs, setPrefs] = useState(loadPlatePrefs);
 
-  useEffect(() => { if (open) setTarget(String(weight)); }, [open, weight]);
+  useEffect(() => { if (open) setTarget(decimalInput(weight)); }, [open, weight]);
   const save = (next: typeof prefs) => {
     setPrefs(next);
     savePlatePrefs(next);
   };
 
-  const { plates, total } = platesPerSide(Number(target) || 0, prefs.bar, prefs.plates);
-  const exact = Math.abs(total - (Number(target) || 0)) < 0.01;
+  const want = parseDecimal(target) ?? 0; // « 82,5 »
+  const { plates, total } = platesPerSide(want, prefs.bar, prefs.plates);
+  const exact = Math.abs(total - want) < 0.01;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -38,7 +40,7 @@ export function PlateCalculator({ open, onOpenChange, weight, exerciseName }: {
 
         <label className="flex items-center gap-2 text-sm">
           Charge visée
-          <Input type="number" inputMode="decimal" min={0} step={0.5} value={target} onChange={(e) => setTarget(e.target.value)} className="w-24" />
+          <Input type="text" inputMode="decimal" value={target} onChange={(e) => parseDecimal(e.target.value) !== null && setTarget(e.target.value)} className="w-24" />
           kg
         </label>
 
