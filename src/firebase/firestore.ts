@@ -1096,11 +1096,8 @@ export function subscribeToFriendRequests(userId: string, callback: (requests: F
   return onSnapshot(q, (snapshot) => {
     const requests: FriendRequest[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as FriendRequest));
     // Tri côté client (plus robuste si l'index n'est pas encore prêt)
-    requests.sort((a: FriendRequest, b: FriendRequest) => {
-      const timeA = a.createdAt.seconds;
-      const timeB = b.createdAt.seconds;
-      return timeB - timeA;
-    });
+    // The rules do not require createdAt: one request without it threw here and hid every pending request
+    requests.sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0));
     callback(requests);
   }, (error) => {
     logger.error("ERREUR CRITIQUE lors de l'écoute des demandes d'amis:", error);

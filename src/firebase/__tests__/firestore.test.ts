@@ -33,6 +33,7 @@ import {
   markBadgesAsSeen,
   markNotificationAsRead,
   declineFriendRequest,
+  subscribeToFriendRequests,
   getFriendsDetails,
   searchUsers,
   getRandomMotivationalPhrase,
@@ -346,6 +347,17 @@ describe('declineFriendRequest', () => {
   it('should throw on error', async () => {
     vi.mocked(updateDoc).mockRejectedValueOnce(new Error('Update failed'));
     await expect(declineFriendRequest('request-id')).rejects.toThrow('Update failed');
+  });
+});
+
+describe('subscribeToFriendRequests', () => {
+  it('still lists the pending requests when one has no createdAt', () => {
+    const callback = vi.fn();
+    subscribeToFriendRequests('me', callback);
+    const onNext = vi.mocked(onSnapshot).mock.calls[0]![1] as unknown as (s: unknown) => void;
+    const req = (id: string, createdAt?: { seconds: number }) => ({ id, data: () => ({ fromUserId: id, status: 'pending', createdAt }) });
+    onNext({ docs: [req('old', { seconds: 1 }), req('bad'), req('new', { seconds: 2 })] });
+    expect(callback.mock.calls[0]![0].map((r: { id: string }) => r.id)).toEqual(['new', 'old', 'bad']);
   });
 });
 
