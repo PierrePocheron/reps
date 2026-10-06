@@ -45,6 +45,7 @@ export interface ExercisePoint {
   bestWeight: number;  // charge max soulevée
   volume: number;      // Σ poids × reps des séries validées
   bestSeconds: number; // meilleure durée (exercice en durée, #55)
+  bestReps: number;    // most reps in a set: the curve of a bodyweight exercise
 }
 
 /** Une entrée par séance où l'exercice a des séries validées, triée chronologiquement. */
@@ -55,16 +56,17 @@ export function exerciseHistory(sessions: GymSession[], exerciseId: string): Exe
     const sets = exs.flatMap((ex) => ex.sets.filter(isWorkSet));
     if (sets.length === 0) continue;
     const timed = exs.some(isTimed); // en durée : seule la meilleure durée a un sens
-    let e1rm = 0, bestWeight = 0, volume = 0, bestSeconds = 0;
+    let e1rm = 0, bestWeight = 0, volume = 0, bestSeconds = 0, bestReps = 0;
     for (const s of sets) {
       const w = s.actualWeight ?? s.weight;
       const r = s.actualReps ?? s.reps;
       if (timed) { bestSeconds = Math.max(bestSeconds, r); continue; }
       e1rm = Math.max(e1rm, estimate1RM(w, r));
       bestWeight = Math.max(bestWeight, w);
+      bestReps = Math.max(bestReps, r);
       volume += w * r;
     }
-    points.push({ date: session.date.toDate(), e1rm, bestWeight, volume, bestSeconds });
+    points.push({ date: session.date.toDate(), e1rm, bestWeight, volume, bestSeconds, bestReps });
   }
   return points.sort((a, b) => a.date.getTime() - b.date.getTime());
 }

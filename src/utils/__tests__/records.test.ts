@@ -77,7 +77,7 @@ describe('exerciseHistory en durée (#55)', () => {
   it('meilleure durée par séance, sans 1RM ni volume', () => {
     const s = { date: { toDate: () => new Date(2026, 9, 1) }, exercises: [{ exerciseId: 'plank', name: 'Gainage', emoji: '🧱', timed: true,
       sets: [{ weight: 10, reps: 45, completed: true }, { weight: 10, reps: 70, completed: true }] }] } as unknown as GymSession;
-    expect(exerciseHistory([s], 'plank')).toEqual([{ date: new Date(2026, 9, 1), e1rm: 0, bestWeight: 0, volume: 0, bestSeconds: 70 }]);
+    expect(exerciseHistory([s], 'plank')).toEqual([{ date: new Date(2026, 9, 1), e1rm: 0, bestWeight: 0, volume: 0, bestSeconds: 70, bestReps: 0 }]);
   });
 });
 

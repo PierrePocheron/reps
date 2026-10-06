@@ -5,10 +5,11 @@ import { cn } from '@/utils/cn';
 import type { ExercisePoint } from '@/utils/records';
 
 const METRICS = [
-  { key: 'e1rm', label: '1RM estimé', unit: 'kg' },
-  { key: 'bestWeight', label: 'Charge max', unit: 'kg' },
-  { key: 'volume', label: 'Volume', unit: 'kg' },
-  { key: 'bestSeconds', label: 'Meilleure durée', unit: 's' }, // exercice en durée (#55)
+  { key: 'e1rm', label: '1RM estimé', unit: 'kg', kind: 'load' },
+  { key: 'bestWeight', label: 'Charge max', unit: 'kg', kind: 'load' },
+  { key: 'volume', label: 'Volume', unit: 'kg', kind: 'load' },
+  { key: 'bestReps', label: 'Reps max', unit: 'reps', kind: 'bodyweight' }, // no load in the period
+  { key: 'bestSeconds', label: 'Meilleure durée', unit: 's', kind: 'time' }, // exercice en durée (#55)
 ] as const;
 const PERIODS = [
   { key: '3m', label: '3 mois', days: 91 },
@@ -22,13 +23,17 @@ const dayMonth = (d: Date) => frDate(d, { day: 'numeric', month: 'short' });
 
 /** Courbe de progression d'un exercice (Strong / Hevy : graphique par exercice). */
 export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint[]; timed?: boolean }) {
-  const metrics = METRICS.filter((m) => (m.key === 'bestSeconds') === !!timed);
-  const [metric, setMetric] = useState<(typeof METRICS)[number]['key']>(timed ? 'bestSeconds' : 'e1rm');
+  const [chosen, setMetric] = useState<(typeof METRICS)[number]['key']>(timed ? 'bestSeconds' : 'e1rm');
   const [period, setPeriod] = useState<(typeof PERIODS)[number]['key']>('3m');
 
   const days = PERIODS.find((p) => p.key === period)!.days;
   const since = Date.now() - days * 86_400_000;
-  const shown = points.filter((p) => p.date.getTime() >= since && p[metric] > 0);
+  const inPeriod = points.filter((p) => p.date.getTime() >= since);
+  // at bodyweight, 1RM, load and volume are all 0: the curve shows reps (it said « aucune séance » otherwise)
+  const kind = timed ? 'time' : inPeriod.some((p) => p.bestWeight > 0) ? 'load' : 'bodyweight';
+  const metrics = METRICS.filter((m) => m.kind === kind);
+  const metric = metrics.some((m) => m.key === chosen) ? chosen : metrics[0]!.key;
+  const shown = inPeriod.filter((p) => p[metric] > 0);
   const values = shown.map((p) => p[metric]);
 
   const header = (
