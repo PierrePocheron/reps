@@ -14,6 +14,7 @@ import type { Session, GymSession } from '@/firebase/types';
 import { setsByMuscle, MUSCLE_GROUPS, REPS_PER_SET } from '@/utils/muscles';
 import { periodRecap, recapCard, recapRange, type RecapKind } from '@/utils/recap';
 import { shareSessionCard } from '@/utils/shareCard';
+import { useToast } from '@/hooks/use-toast';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -396,6 +397,7 @@ function MuscleDistribution({ sessions, gymSessions }: { sessions: Session[]; gy
 // ─── Récap du mois / de l'année (Hevy, Strava) ───────────────────────────────
 
 function PeriodRecap({ sessions, gymSessions }: { sessions: Session[]; gymSessions: GymSession[] }) {
+  const { toast } = useToast();
   const [kind, setKind] = useState<RecapKind>('month');
   const [offset, setOffset] = useState(0);
   const { from, to, label } = recapRange(kind, offset);
@@ -458,7 +460,7 @@ function PeriodRecap({ sessions, gymSessions }: { sessions: Session[]; gymSessio
             </p>
           )}
           <button
-            onClick={() => void shareSessionCard(recapCard(recap, label, from)).catch(() => {})}
+            onClick={() => void shareSessionCard(recapCard(recap, label, from)).catch(() => toast({ title: 'Partage impossible', description: "L'image n'a pas pu être créée.", variant: 'destructive' }))}
             className="w-full min-h-11 flex items-center justify-center gap-2 rounded-xl border text-sm font-medium hover:bg-muted"
           >
             <Share2 className="w-4 h-4" /> Partager mon récap
