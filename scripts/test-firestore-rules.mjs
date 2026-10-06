@@ -80,6 +80,13 @@ await test('anonyme ne lit PAS un profil', () => assertFails(getDoc(doc(anon, 'u
 await test('authentifié lit un profil (recherche/leaderboard)', () => assertSucceeds(getDoc(doc(mallory, 'users/alice'))));
 await test('personne ne modifie le profil d\'autrui', () => assertFails(updateDoc(doc(mallory, 'users/alice'), { displayName: 'PWNED' })));
 await test('le propriétaire modifie son profil', () => assertSucceeds(updateDoc(doc(alice, 'users/alice'), { displayName: 'Alice B' })));
+// the lists the app writes in the public doc, downloaded by every search and friends list, are capped
+await test('mise à jour des stats et badges (forme réelle)', () => assertSucceeds(updateDoc(doc(alice, 'users/alice'), {
+  totalReps: 120, totalSessions: 4, totalCalories: 50, badges: ['poussin'], newBadgeIds: ['poussin'], repButtons: [5, 10],
+  exercisesDistribution: [{ name: 'Pompes', emoji: '💪', totalReps: 120, totalCalories: 50, count: 4 }], updatedAt: serverTimestamp() })));
+await test('newBadgeIds borné', () => assertFails(updateDoc(doc(alice, 'users/alice'), { newBadgeIds: Array.from({ length: 301 }, (_, i) => `b${i}`) })));
+await test('exercisesDistribution borné', () => assertFails(updateDoc(doc(alice, 'users/alice'), { exercisesDistribution: Array.from({ length: 501 }, () => ({ name: 'x' })) })));
+await test('repButtons borné', () => assertFails(updateDoc(doc(alice, 'users/alice'), { repButtons: Array.from({ length: 21 }, (_, i) => i + 1) })));
 await test('les champs sensibles sont INTERDITS dans le doc public (weight)', () =>
   assertFails(updateDoc(doc(alice, 'users/alice'), { weight: 70 })));
 await test('les champs sensibles sont INTERDITS dans le doc public (email, fcmToken)', () =>
