@@ -334,7 +334,7 @@ function GymSession() {
             <button
             onClick={() => (exercises.length > 0 ? setShowCancelConfirm(true) : handleCancel())}
             aria-label="Quitter la planification"
-            className="h-11 w-11 -ml-2 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            className="h-11 w-11 -ml-2 shrink-0 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -457,7 +457,7 @@ function GymSession() {
           <button
             onClick={() => navigate('/')}
             aria-label="Retour à l'accueil"
-            className="h-11 w-11 -ml-2 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+            className="h-11 w-11 -ml-2 shrink-0 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -945,12 +945,13 @@ function ExecuteExerciseCard({
       {supersetLabel && (
         <p className="px-4 pt-2 text-[11px] font-semibold uppercase tracking-wide text-primary">{supersetLabel} · repos après le dernier exercice</p>
       )}
-      <div className="flex items-center gap-3 p-4 border-b border-border/50">
+      {/* Wraps: with a large font « Disques » goes under the name instead of crushing it to a letter per line */}
+      <div className="flex flex-wrap items-center gap-3 p-4 border-b border-border/50">
         <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
           <ExerciseImage src={exercise.imageUrl} alt={exercise.name} emoji={exercise.emoji} />
         </div>
         <button
-          className="flex-1 min-w-0 text-left"
+          className="flex-1 min-w-[7rem] text-left"
           onClick={() => onShowDetail(exercise.exerciseId)}
           aria-label={`${exercise.name} : voir la fiche et ta progression`}
         >
