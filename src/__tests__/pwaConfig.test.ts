@@ -17,4 +17,20 @@ describe('PWA config', () => {
   it('injects no registration script: it ran in the Android app too (src/utils/serviceWorker.ts registers on the web)', () => {
     expect(pwa.options.injectRegister).toBeNull();
   });
+
+  it('keeps the sound effects once played, so a session validated offline still makes its sound', () => {
+    const url = 'https://pedro-reps.web.app/sounds/success.mp3';
+    const route = pwa.options.workbox?.runtimeCaching?.find((r) => r.urlPattern instanceof RegExp && r.urlPattern.test(url));
+    expect(route?.handler).toBe('CacheFirst');
+  });
+
+  it('fetches the whole sound file: <audio> asks for a range, and a 206 answer cannot be cached', async () => {
+    const url = 'https://pedro-reps.web.app/sounds/success.mp3';
+    const route = pwa.options.workbox?.runtimeCaching?.find((r) => r.urlPattern instanceof RegExp && r.urlPattern.test(url));
+    const willFetch = route?.options?.plugins?.find((p) => p.requestWillFetch)?.requestWillFetch;
+    const request = new Request(url, { headers: { Range: 'bytes=0-' } });
+    const sent = await willFetch?.({ request, event: new Event('fetch') as never, state: {} });
+    expect(sent?.url).toBe(url);
+    expect(sent?.headers.has('Range')).toBe(false);
+  });
 });

@@ -97,6 +97,18 @@ export default defineConfig({
             },
           },
           {
+            // Sound effects (1.3 MB, not precached): kept once played, otherwise silent offline
+            urlPattern: /\/sounds\/[^/]+\.mp3$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'sounds',
+              cacheableResponse: { statuses: [0, 200] },
+              rangeRequests: true, // <audio> asks for byte ranges: served from the cached file
+              // ...but the network answers a range with a 206, which cannot be cached: fetch the whole file
+              plugins: [{ requestWillFetch: async ({ request }) => new Request(request.url) }],
+            },
+          },
+          {
             // Médias de la bibliothèque d'exercices (CDN jsDelivr) :
             // cache-first pour être disponibles hors ligne après consultation
             urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/gh\/hasaneyldrm\/exercises-dataset@.*/i,
