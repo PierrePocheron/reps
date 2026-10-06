@@ -117,17 +117,17 @@ export function searchLibrary(
   equipment?: string,
   lang: Language = 'fr'
 ): LibraryExercise[] {
-  // Every word must appear somewhere: « curl haltère » finds « Curl … aux haltères »
-  const words = normalize(query).split(/\s+/).filter(Boolean);
   return library.filter((ex) => {
     if (category !== 'all' && ex.category !== category) return false;
     if (equipment && ex.equipment !== equipment) return false;
-    if (!words.length) return true;
-    const hay = normalize(
-      `${ex.name} ${ex.target} ${targetLabel(ex.target, lang)} ${equipmentLabel(ex.equipment, lang)}`
-    );
-    return words.every((w) => hay.includes(w));
+    return matchesQuery(`${ex.name} ${ex.target} ${targetLabel(ex.target, lang)} ${equipmentLabel(ex.equipment, lang)}`, query);
   });
+}
+
+/** Every word of the query appears somewhere, accents and case aside: « curl haltère » finds « Curl … aux haltères » */
+export function matchesQuery(text: string, query: string): boolean {
+  const hay = normalize(text);
+  return normalize(query).split(/\s+/).filter(Boolean).every((w) => hay.includes(w));
 }
 
 /** Minuscules + suppression des accents pour une recherche tolérante */

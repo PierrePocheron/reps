@@ -11,7 +11,7 @@ import { equipmentLabel } from '@/utils/exerciseLabels';
 import {
   loadExerciseLibrary,
   searchLibrary,
-  normalize,
+  matchesQuery,
   toExercise,
   libraryImageUrl,
   LIBRARY_ID_PREFIX,
@@ -85,7 +85,7 @@ export function AddGymExerciseDialog({
 
   const filtered = exercises.filter((ex) => {
     const matchesCategory = selectedCategory === 'all' || ex.category === selectedCategory;
-    const matchesSearch = normalize(ex.name).includes(normalize(search));
+    const matchesSearch = matchesQuery(ex.name, search); // same word matching as the library
     return matchesCategory && matchesSearch;
   });
 

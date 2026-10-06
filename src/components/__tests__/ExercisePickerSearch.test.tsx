@@ -22,4 +22,10 @@ describe('Essentiels search in the exercise pickers', () => {
     type('pompes declinees');
     expect(screen.getByText('Pompes déclinées')).toBeInTheDocument();
   });
+
+  it('words match in any order, as in the library (« couche developpe » finds « Développé couché »)', () => {
+    render(<AddGymExerciseDialog open onOpenChange={() => {}} onAdd={() => {}} hasExercise={() => false} />);
+    type('couche developpe');
+    expect(screen.getByText('Développé couché')).toBeInTheDocument();
+  });
 });
