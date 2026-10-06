@@ -62,6 +62,14 @@ describe('History', () => {
     expect(createUserTemplate).toHaveBeenCalledTimes(1);
   });
 
+  it('Records says which set it keeps and names the estimate « 1RM estimé », like the progress sheet', () => {
+    GYM = [gym('A', 3, ['bench'])]; // 5 × 100 kg → ~117 kg estimated
+    render(<MemoryRouter><History /></MemoryRouter>);
+    fireEvent.click(screen.getByRole('tab', { name: /Records/ }));
+    expect(screen.getByText(/^Ta série au plus gros volume \(charge × reps\) par exercice\./)).toBeInTheDocument();
+    expect(screen.getByText('1RM estimé')).toBeInTheDocument();
+  });
+
   it('a library exercise keeps its photo in History and Records, and its how-to in the sheet', async () => {
     const lib = { exerciseId: 'lib_0001', name: 'Relevé de buste 3/4', emoji: '💪', imageUrl: 'https://cdn.example/lib_0001.jpg', sets: [{ reps: 15, weight: 0, completed: true }] };
     GYM = [{ ...gym('A', 3, []), exercises: [lib] }];

@@ -293,7 +293,7 @@ function PRCard({ pr, onOpen }: { pr: PersonalRecord; onOpen: () => void }) {
           {/* 1RM estimé */}
           {oneRepMax !== null && oneRepMax > pr.bestWeight && (
             <div className="mt-3 pt-3 border-t flex items-center justify-between">
-              <p className="text-xs text-muted-foreground">Max estimé sur 1 rep</p>
+              <p className="text-xs text-muted-foreground">1RM estimé</p>
               <p className="text-xs font-semibold">~{formatNumber(oneRepMax)} kg</p>
             </div>
           )}
@@ -609,7 +609,7 @@ function History() {
           ) : (
             <div className="space-y-3">
               <p className="text-xs text-muted-foreground px-1">
-                Meilleure série (poids × reps) par exercice sur l'ensemble de tes séances. Touche un exercice pour voir ta courbe.
+                Ta série au plus gros volume (charge × reps) par exercice. Touche un exercice pour voir ta courbe.
               </p>
               {personalRecords.map((pr) => (
                 <PRCard key={pr.exerciseId} pr={pr} onOpen={() => setDetailPr(pr)} />
