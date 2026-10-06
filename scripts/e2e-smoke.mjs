@@ -98,7 +98,7 @@ const steps = [
     for (const tab of [/Muscu/, /Renfo/]) {
       await page.goto(`${BASE}/history`);
       await page.getByRole('tab', { name: tab }).click();
-      await page.getByRole('button', { name: 'Actions de la séance' }).first().click();
+      await page.getByRole('button', { name: /^Actions de la séance du / }).first().click();
       await page.getByRole('menuitem', { name: 'Supprimer' }).click();
       await page.getByRole('dialog').getByRole('button', { name: 'Supprimer', exact: true }).click();
       await page.getByText('Séance supprimée').first().waitFor();
@@ -108,7 +108,7 @@ const steps = [
 
   ['séance muscu : refaire, note, repos auto, terminer', async () => {
     await page.goto(`${BASE}/history`);
-    await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+    await page.getByRole('button', { name: /^Refaire la séance du / }).first().click();
     await page.waitForURL(`${BASE}/gym`);
     const note = `e2e ${Date.now()}`;
     await page.getByRole('textbox', { name: /^Note pour/ }).first().fill(note);
@@ -140,12 +140,12 @@ const steps = [
   }],
 
   ['séance renfo : refaire, compter, terminer', async () => {
-    await page.getByRole('tab', { name: /Renfo/ }).click();
+    await page.getByRole('tab', { name: /Renfo/ }).click(); await page.getByRole('tab', { name: /Renfo/, selected: true }).waitFor();
     // slow network + ending right away: the recap still compares (previous session was loaded asynchronously)
     const cdp = await ctx.newCDPSession(page);
     await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 1500, downloadThroughput: -1, uploadThroughput: -1 });
     try {
-      await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+      await page.getByRole('button', { name: /^Refaire la séance du / }).first().click();
       await page.waitForURL(`${BASE}/session`);
       await page.getByText('+10', { exact: true }).first().click();
       await page.getByRole('button', { name: /Terminer la séance/ }).click();
@@ -163,7 +163,7 @@ const steps = [
   ['séance terminée hors ligne (salle sans réseau)', async () => {
     // hors ligne, l'écriture Firestore n'est acquittée qu'au retour du réseau : « Terminer » restait bloqué
     await page.goto(`${BASE}/history`);
-    await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+    await page.getByRole('button', { name: /^Refaire la séance du / }).first().click();
     await page.waitForURL(`${BASE}/gym`);
     await page.getByRole('textbox', { name: 'Titre de la séance' }).fill('Hors ligne e2e');
     await page.getByRole('button', { name: 'Valider la série 1' }).first().click();
@@ -191,7 +191,7 @@ const steps = [
     // deletion offline too: must not spin forever, and must stick once back online
     await ctx.setOffline(true);
     try {
-      await page.getByRole('button', { name: 'Actions de la séance' }).first().click();
+      await page.getByRole('button', { name: /^Actions de la séance du / }).first().click();
       await page.getByRole('menuitem', { name: 'Supprimer' }).click();
       await page.getByRole('dialog').getByRole('button', { name: 'Supprimer', exact: true }).click();
       await page.getByText('Séance supprimée').first().waitFor({ timeout: 10_000 });
@@ -200,15 +200,15 @@ const steps = [
     }
     await page.waitForTimeout(2000); // queued delete reaches the emulator
     await page.goto(`${BASE}/history`);
-    await page.getByRole('button', { name: 'Refaire cette séance' }).first().waitFor();
+    await page.getByRole('button', { name: /^Refaire la séance du / }).first().waitFor();
     assert.equal(await page.getByText('Hors ligne e2e').count(), 0, 'séance supprimée hors ligne revenue');
     await assertAlive('séance hors ligne');
   }],
 
   ['séance muscu : échauffement, superset et repos, annulation', async () => {
     await page.goto(`${BASE}/history`);
-    await page.getByRole('tab', { name: /Muscu/ }).click();
-    await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+    await page.getByRole('tab', { name: /Muscu/ }).click(); await page.getByRole('tab', { name: /Muscu/, selected: true }).waitFor();
+    await page.getByRole('button', { name: /^Refaire la séance du / }).first().click();
     await page.waitForURL(`${BASE}/gym`);
     const cards = page.locator('div.rounded-2xl.border-2');
     // échauffement (séries É en tête)
@@ -279,7 +279,7 @@ const steps = [
 
   ['records : courbe de progression', async () => {
     await page.goto(`${BASE}/history`);
-    await page.getByRole('tab', { name: /Records/ }).click();
+    await page.getByRole('tab', { name: /Records/ }).click(); await page.getByRole('tab', { name: /Records/, selected: true }).waitFor();
     await page.getByRole('button', { name: /voir ta progression/ }).first().click();
     await page.getByText('Ta progression').waitFor();
     await page.locator('svg[role=img]').last().waitFor();
@@ -296,8 +296,8 @@ const steps = [
 
   ['séance oubliée muscu et renfo : enregistrée à une date passée', async () => {
     await page.goto(`${BASE}/history`);
-    await page.getByRole('tab', { name: /Muscu/ }).click();
-    await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+    await page.getByRole('tab', { name: /Muscu/ }).click(); await page.getByRole('tab', { name: /Muscu/, selected: true }).waitFor();
+    await page.getByRole('button', { name: /^Refaire la séance du / }).first().click();
     await page.waitForURL(`${BASE}/gym`);
     await page.getByRole('button', { name: /^Valider la série 1/ }).first().click();
     await page.getByRole('button', { name: /Séance faite plus tôt/ }).click();
@@ -312,11 +312,11 @@ const steps = [
     await page.getByText('45 min').waitFor(); // durée saisie, pas le chrono
     await page.getByRole('button', { name: 'Terminer', exact: true }).click();
     await page.goto(`${BASE}/history`);
-    await page.getByRole('tab', { name: /Muscu/ }).click();
+    await page.getByRole('tab', { name: /Muscu/ }).click(); await page.getByRole('tab', { name: /Muscu/, selected: true }).waitFor();
     await page.getByText('06:12').first().waitFor(); // rangée à sa date dans l'historique
     // renfo : même chose
-    await page.getByRole('tab', { name: /Renfo/ }).click();
-    await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+    await page.getByRole('tab', { name: /Renfo/ }).click(); await page.getByRole('tab', { name: /Renfo/, selected: true }).waitFor();
+    await page.getByRole('button', { name: /^Refaire la séance du / }).first().click();
     await page.waitForURL(`${BASE}/session`);
     await page.getByText('+10', { exact: true }).first().click();
     await page.getByRole('button', { name: /Séance faite plus tôt/ }).click();
@@ -329,24 +329,24 @@ const steps = [
     await page.getByText('30 min').waitFor();
     await page.getByRole('button', { name: 'Terminer', exact: true }).click();
     await page.goto(`${BASE}/history`);
-    await page.getByRole('tab', { name: /Renfo/ }).click();
+    await page.getByRole('tab', { name: /Renfo/ }).click(); await page.getByRole('tab', { name: /Renfo/, selected: true }).waitFor();
     await page.getByText('05:47').first().waitFor();
     await assertAlive('séance oubliée');
   }],
 
   ['modifier une séance muscu et renfo (cartes à jour)', async () => {
     await page.goto(`${BASE}/history`);
-    await page.getByRole('tab', { name: /Muscu/ }).click();
-    await page.getByRole('button', { name: 'Actions de la séance' }).first().click();
+    await page.getByRole('tab', { name: /Muscu/ }).click(); await page.getByRole('tab', { name: /Muscu/, selected: true }).waitFor();
+    await page.getByRole('button', { name: /^Actions de la séance du / }).first().click();
     await page.getByRole('menuitem', { name: 'Modifier' }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel(/^Charge en kg, série 1 de /).first().fill('123');
     await dialog.getByRole('button', { name: 'Enregistrer' }).click();
     await page.getByText('Séance modifiée').first().waitFor();
-    await page.getByText(/× 123 kg/).first().waitFor(); // carte mise à jour sans rechargement
+    await page.getByText(/123 kg max/).first().waitFor(); // carte mise à jour sans rechargement (« N séries · X kg max »)
     // renfo : reps corrigées
-    await page.getByRole('tab', { name: /Renfo/ }).click();
-    await page.getByRole('button', { name: 'Actions de la séance' }).first().click();
+    await page.getByRole('tab', { name: /Renfo/ }).click(); await page.getByRole('tab', { name: /Renfo/, selected: true }).waitFor();
+    await page.getByRole('button', { name: /^Actions de la séance du / }).first().click();
     await page.getByRole('menuitem', { name: 'Modifier' }).click();
     await page.getByRole('dialog').getByRole('spinbutton', { name: /^Répétitions de / }).first().fill('77');
     await page.getByRole('dialog').getByRole('button', { name: 'Enregistrer' }).click();
@@ -357,8 +357,8 @@ const steps = [
 
   ['supprimer une séance (confirmation, liste mise à jour)', async () => {
     await page.goto(`${BASE}/history`);
-    await page.getByRole('tab', { name: /Muscu/ }).click();
-    const menus = page.getByRole('button', { name: 'Actions de la séance' });
+    await page.getByRole('tab', { name: /Muscu/ }).click(); await page.getByRole('tab', { name: /Muscu/, selected: true }).waitFor();
+    const menus = page.getByRole('button', { name: /^Actions de la séance du / });
     await menus.first().waitFor();
     const before = await menus.count();
     await menus.first().click();
@@ -372,19 +372,21 @@ const steps = [
 
   ['filtrer l\'historique par exercice', async () => {
     await page.goto(`${BASE}/history`);
-    await page.getByRole('tab', { name: /Muscu/ }).click();
+    await page.getByRole('tab', { name: /Muscu/ }).click(); await page.getByRole('tab', { name: /Muscu/, selected: true }).waitFor();
     const filter = page.getByRole('combobox', { name: 'Filtrer les séances par exercice' });
-    const cards = page.getByRole('button', { name: 'Actions de la séance' });
+    const cards = page.getByRole('button', { name: /^Actions de la séance du / });
     await cards.first().waitFor();
     const all = await cards.count();
     const values = await filter.locator('option').evaluateAll((os) => os.map((o) => o.value));
     await filter.selectOption(values[values.length - 1]); // l'exercice le plus rare
+    for (let i = 0; i < 30 && (await cards.count()) === all; i++) await page.waitForTimeout(100); // the filter lives in the URL: one render later
     const some = await cards.count();
     assert.ok(some > 0 && some < all, `filtre : ${some} séance(s) sur ${all}`);
     await filter.selectOption('');
+    for (let i = 0; i < 30 && (await cards.count()) !== all; i++) await page.waitForTimeout(100);
     assert.equal(await cards.count(), all, 'filtre effacé');
     // « Refaire » sur une carte basse : la séance s'ouvre en haut, pas au milieu
-    const low = page.getByRole('button', { name: 'Refaire cette séance' }).nth(3);
+    const low = page.getByRole('button', { name: /^Refaire la séance du / }).nth(3);
     await low.scrollIntoViewIfNeeded();
     await low.click();
     await page.waitForURL(`${BASE}/gym`);
@@ -418,7 +420,7 @@ const steps = [
     await page.getByText('1 séance importée').first().waitFor();
     // the imported data itself: units read from the headers, « Bench Press (Barbell) » on the base exercise
     await page.goto(`${BASE}/history`);
-    await page.getByRole('tab', { name: /Muscu/ }).click();
+    await page.getByRole('tab', { name: /Muscu/ }).click(); await page.getByRole('tab', { name: /Muscu/, selected: true }).waitFor();
     const filter = page.getByRole('combobox').first();
     await filter.locator('option', { hasText: 'Machine inconnue e2e' }).first().waitFor({ state: 'attached' });
     const label = (await filter.locator('option').allInnerTexts()).find((o) => o.startsWith('Machine inconnue e2e'));
@@ -428,7 +430,7 @@ const steps = [
     await card.waitFor();
     const text = await card.innerText();
     assert.match(text, /Développé couché/, `import : exercice de base attendu\n${text}`);
-    assert.match(text, /1 × 40 kg/, `import : charge attendue\n${text}`);
+    assert.match(text, /1 série · 40 kg max/, `import : charge attendue\n${text}`);
     await page.goto(`${BASE}/settings`);
     await btn.waitFor();
     for (let i = 0; i < 100 && await btn.isDisabled(); i++) await page.waitForTimeout(100); // historique rechargé
@@ -469,8 +471,8 @@ const steps = [
     await page.keyboard.press('Escape');
     // séance muscu, repos ouvert : lignes de série dans leur carte, bas de liste encore atteignable
     await page.goto(`${BASE}/history`);
-    await page.getByRole('tab', { name: /Muscu/ }).click();
-    await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+    await page.getByRole('tab', { name: /Muscu/ }).click(); await page.getByRole('tab', { name: /Muscu/, selected: true }).waitFor();
+    await page.getByRole('button', { name: /^Refaire la séance du / }).first().click();
     await page.waitForURL(`${BASE}/gym`);
     await page.locator('div.rounded-2xl.border-2').nth(0).getByRole('button', { name: /^Valider la série 1/ }).click();
     await page.getByRole('switch', { name: /Repos auto/ }).waitFor();
@@ -485,8 +487,8 @@ const steps = [
   ['déconnexion puis reconnexion (séance en cours non transmise)', async () => {
     // a gym session in progress must not survive sign-out (the next account on the device got it)
     await page.goto(`${BASE}/history`);
-    await page.getByRole('tab', { name: /Muscu/ }).click();
-    await page.getByRole('button', { name: 'Refaire cette séance' }).first().click();
+    await page.getByRole('tab', { name: /Muscu/ }).click(); await page.getByRole('tab', { name: /Muscu/, selected: true }).waitFor();
+    await page.getByRole('button', { name: /^Refaire la séance du / }).first().click();
     await page.waitForURL(`${BASE}/gym`);
     const consoleErrors = [];
     page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text().slice(0, 200)); });

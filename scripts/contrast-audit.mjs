@@ -100,7 +100,7 @@ for (const path of ['/', '/statistics', '/history', '/profil', '/settings', '/ch
   await p.goto('http://localhost:5199' + path); await p.waitForTimeout(2200);
   const r = await run(); failures += r.length; if (r.length) console.log(`\n== ${pass} ${path}\n` + r.join('\n'));
 }
-await p.goto('http://localhost:5199/history'); await p.getByRole('button', { name: 'Refaire cette séance' }).first().click(); await p.waitForURL(/gym$/);
+await p.goto('http://localhost:5199/history'); await p.getByRole('button', { name: /^Refaire la séance du / }).first().click(); await p.waitForURL(/gym$/);
 p.setDefaultTimeout(10_000); // une action introuvable échoue vite au lieu d'épuiser le délai global
 const card = p.locator('div.rounded-2xl.border-2').first();
 // 3 séries de types différents (É, D, !) : la dernière séance de la démo peut n'en avoir qu'une
