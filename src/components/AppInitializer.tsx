@@ -1,4 +1,6 @@
 import { useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 import { useUserStore } from '@/store/userStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { subscribeToFriendRequests } from '@/firebase/firestore';
@@ -29,6 +31,17 @@ export function AppInitializer() {
     const { notificationsEnabled, notificationTime } = useSettingsStore.getState();
     void restoreDailyReminder(notificationsEnabled, notificationTime); // mobile: reminder lost by older versions
   }, [initializeAuth, loadSettings]);
+
+  // Android back: with no listener, @capacitor/app only goes back in the WebView and swallows the press on the
+  // first page; leave the app there, as Android does
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const sub = App.addListener('backButton', ({ canGoBack }) => {
+      if (canGoBack) window.history.back();
+      else void App.minimizeApp();
+    });
+    return () => { void sub.then((h) => h.remove()); };
+  }, []);
 
   // Theme: the profile's colour when signed in, otherwise the local setting
   useEffect(() => {
