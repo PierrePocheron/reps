@@ -193,6 +193,21 @@ function GymSession() {
     if (phase === 'idle' && !summary) navigate('/', { replace: true });
   }, [phase, summary, navigate]);
 
+  // Leaving an empty session (back arrow, Android back, tab bar) discards it, as planning does: it showed as
+  // « Séance en cours · 0/0 » and blocked templates. Checked after the unmount settles: StrictMode's dev
+  // unmount/remount would otherwise discard every new free session
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      setTimeout(() => {
+        const s = useGymSessionStore.getState();
+        if (!mounted.current && s.phase === 'execute' && s.exercises.length === 0) s.cancelSession();
+      });
+    };
+  }, []);
+
   if (phase === 'idle') {
     return summary && (
       <SessionSummary
@@ -622,7 +637,7 @@ function GymSession() {
             </Button>
 
             <button
-              onClick={() => setShowCancelConfirm(true)}
+              onClick={() => (exercises.length > 0 ? setShowCancelConfirm(true) : handleCancel())}
               aria-label="Annuler la séance"
               className="flex items-center justify-center min-w-11 px-3 py-2.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive/20 active:scale-95 transition-all"
             >

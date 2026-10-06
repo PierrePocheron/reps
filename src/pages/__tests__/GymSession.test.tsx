@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { StrictMode } from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import GymSession from '@/pages/GymSession';
@@ -68,6 +69,39 @@ describe('GymSession — chrono d\'un exercice en durée', () => {
     fireEvent.click(chrono);
     expect(sets()[0]).toMatchObject({ completed: true, actualReps: 1 });
     expect(useGymSessionStore.getState().chrono).toBeNull();
+  });
+});
+
+describe('GymSession — séance vide', () => {
+  const tick = () => act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+  it('est abandonnée quand on quitte la page (retour, barre de navigation), pas une séance commencée', async () => {
+    const view = await setup([]);
+    view.unmount();
+    await tick();
+    expect(useGymSessionStore.getState().phase).toBe('idle');
+
+    const started = await setup([bench([{ reps: 8, weight: 60 }])]);
+    started.unmount();
+    await tick();
+    expect(useGymSessionStore.getState().phase).toBe('execute');
+  });
+
+  it('survit au double montage du mode strict de React', async () => {
+    vi.mocked(gs.getUserGymSessions).mockResolvedValue([]);
+    useGymSessionStore.setState({ phase: 'execute', startTime: Date.now(), exercises: [], showRestTimer: false });
+    const view = render(<StrictMode><MemoryRouter><GymSession /></MemoryRouter></StrictMode>);
+    await tick();
+    expect(useGymSessionStore.getState().phase).toBe('execute');
+    view.unmount();
+    await tick(); // its deferred discard must not land in the next test
+  });
+
+  it('la poubelle l\'annule sans demander de confirmation', async () => {
+    await setup([]);
+    fireEvent.click(screen.getByLabelText('Annuler la séance'));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(useGymSessionStore.getState().phase).toBe('idle');
   });
 });
 
