@@ -13,6 +13,7 @@ import { targetLabel } from '@/utils/exerciseLabels';
 import {
   loadExerciseLibrary,
   searchLibrary,
+  normalize,
   toExercise,
   libraryImageUrl,
   LIBRARY_ID_PREFIX,
@@ -123,7 +124,7 @@ export function AddExerciseDialog({
 
   const filteredExercises = DEFAULT_EXERCISES.filter((ex) => {
     const matchesCategory = selectedCategory === 'all' || ex.category === selectedCategory;
-    const matchesSearch = ex.name.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = normalize(ex.name).includes(normalize(search));
     return matchesCategory && matchesSearch;
   });
 

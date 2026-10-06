@@ -131,7 +131,7 @@ export function searchLibrary(
 }
 
 /** Minuscules + suppression des accents pour une recherche tolérante */
-function normalize(s: string): string {
+export function normalize(s: string): string {
   return s
     .trim()
     .toLowerCase()
