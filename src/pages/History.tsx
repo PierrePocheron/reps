@@ -262,22 +262,22 @@ function PRCard({ pr, onOpen }: { pr: PersonalRecord; onOpen: () => void }) {
       <div className="flex items-stretch">
         <div className="w-1.5 bg-yellow-500/70" />
         <div className="flex-1 min-w-0 p-4">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {/* Image ou emoji */}
             <div className="h-12 w-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
               <ExerciseImage src={pr.imageUrl} alt={pr.name} emoji={pr.emoji} />
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate">{pr.name}</p>
+              <p className="text-sm font-semibold line-clamp-2 break-words">{pr.name}</p>
               <p className="text-xs text-muted-foreground">
                 {pr.totalSetsCompleted} série{pr.totalSetsCompleted > 1 ? 's' : ''} au total
               </p>
             </div>
 
-            {/* Badge PR */}
+            {/* Badge PR: under the name below 360 px, where it squeezed the name to « S.. » */}
             {(pr.bestWeight > 0 || pr.bestReps > 0) && (
-              <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+              <div className="flex flex-col items-end gap-0.5 flex-shrink-0 max-[359px]:basis-full max-[359px]:items-start max-[359px]:pl-[3.75rem]">
                 <div className="flex items-center gap-1 bg-yellow-500/10 px-2.5 py-1 rounded-lg">
                   <Trophy className="h-3.5 w-3.5 text-yellow-500" />
                   <span className="text-sm font-bold text-yellow-700 dark:text-yellow-400">
