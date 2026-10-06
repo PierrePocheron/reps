@@ -170,6 +170,15 @@ await test('rejoindre un défi (forme réelle du document)', () => assertSucceed
 await test('pas de défi créé au nom d\'un autre (forme réelle)', () => assertFails(addDoc(collection(mallory, 'user_challenges'), realChallenge('alice'))));
 await test('pas de création de défi au nom d\'autrui', () =>
   assertFails(addDoc(collection(mallory, 'user_challenges'), { userId: 'alice', exerciseId: 'hack', history: [] })));
+// the owner keeps validating and abandoning, but cannot hand the challenge over (it filled the other's 6 slots)
+const malloryChallenge = await addDoc(collection(mallory, 'user_challenges'), realChallenge('mallory'));
+await test('valider un jour de défi (mise à jour réelle)', () => assertSucceeds(updateDoc(malloryChallenge, {
+  lastLogDate: serverTimestamp(), totalProgress: 10, history: [{ date: '2026-10-06', amount: 10, completed: true, catchUp: false }], status: 'active' })));
+await test('pas de transfert de défi à un autre', () => assertFails(updateDoc(malloryChallenge, { userId: 'alice' })));
+await test('abandonner son défi (setDoc merge)', () => assertSucceeds(setDoc(malloryChallenge, { status: 'abandoned' }, { merge: true })));
+const malloryExercise = await addDoc(collection(mallory, 'exercises'), { name: 'Burpees', emoji: '🔥', category: 'cardio', userId: 'mallory', createdAt: serverTimestamp() });
+await test('pas de transfert d\'exercice perso à un autre', () => assertFails(updateDoc(malloryExercise, { userId: 'alice' })));
+await test('supprimer son exercice perso', () => assertSucceeds(deleteDoc(malloryExercise)));
 
 console.log('\n─ Notifications ─');
 await test('pas de notification forgée vers un inconnu', () =>

@@ -107,7 +107,10 @@ service cloud.firestore {
         && request.resource.data.definitionSnapshot.exerciseId is string
         && request.resource.data.definitionSnapshot.exerciseId.size() <= 80
         && request.resource.data.history is list;
-      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // userId stays the owner's: a challenge handed to another account filled their 6 active slots
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     // ─── friend_requests ─────────────────────────────────────────────────────
@@ -196,7 +199,9 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.name is string
         && request.resource.data.name.size() <= 80;
-      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     // ─── default_exercises (héritage, lecture seule) ────────────────────────
