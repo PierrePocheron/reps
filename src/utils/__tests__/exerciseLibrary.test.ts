@@ -14,7 +14,10 @@ import {
   type LibraryExercise,
 } from '../exerciseLibrary';
 import { resolveLanguage } from '@/hooks/useLanguage';
-import { targetLabel, equipmentLabel } from '../exerciseLabels';
+import { targetLabel, equipmentLabel, TARGET_FR } from '../exerciseLabels';
+import libraryFr from '@/data/exerciseLibrary.fr.json';
+import libraryEn from '@/data/exerciseLibrary.en.json';
+import exerciseDetails from '@/data/exerciseDetails.json';
 
 const LIB: LibraryExercise[] = [
   {
@@ -143,5 +146,11 @@ describe('labels bilingues', () => {
 
   it('retombe sur la valeur brute capitalisée si inconnue', () => {
     expect(targetLabel('mystery muscle', 'fr')).toBe('Mystery muscle');
+  });
+
+  it('chaque muscle des données a un libellé français (« Ankle stabilizers » restait en anglais)', () => {
+    const muscles = [...libraryFr, ...libraryEn, ...Object.values(exerciseDetails)]
+      .flatMap((ex) => [ex.target, ...ex.secondaryMuscles]);
+    expect([...new Set(muscles)].filter((m) => !(m in TARGET_FR))).toEqual([]);
   });
 });

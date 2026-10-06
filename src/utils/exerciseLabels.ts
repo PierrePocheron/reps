@@ -1,7 +1,7 @@
 import type { Language } from '@/hooks/useLanguage';
 
 /** Traductions FR des groupes musculaires du dataset (clés = valeurs brutes EN) */
-const TARGET_FR: Record<string, string> = {
+export const TARGET_FR: Record<string, string> = {
   abs: 'Abdominaux',
   abductors: 'Abducteurs',
   adductors: 'Adducteurs',
@@ -54,6 +54,13 @@ const TARGET_FR: Record<string, string> = {
   'trapezius': 'Trapèzes',
   'deltoids': 'Deltoïdes',
   'erector spinae': 'Érecteurs du rachis',
+  'rear deltoids': 'Deltoïdes postérieurs',
+  'ankle stabilizers': 'Stabilisateurs de la cheville',
+  'upper chest': 'Haut des pectoraux',
+  abdominals: 'Abdominaux',
+  hands: 'Mains',
+  'grip muscles': 'Préhension',
+  shins: 'Tibias',
 };
 
 /** Traductions FR des équipements du dataset */
