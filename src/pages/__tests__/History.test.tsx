@@ -71,6 +71,16 @@ describe('History', () => {
     expect(await screen.findByRole('textbox', { name: 'Nom du modèle' })).toHaveValue('Push A');
   });
 
+  it('a saved template opens on the Muscu tab of the Templates page', async () => {
+    GYM = [gym('A', 3, ['bench'])];
+    localStorage.removeItem('reps_templates_tab'); // Templates then opens on Renfo, where the new template is not
+    vi.mocked(createUserTemplate).mockResolvedValueOnce(undefined as never);
+    render(<MemoryRouter><History /></MemoryRouter>);
+    await openMenu('Enregistrer comme modèle');
+    await act(async () => { fireEvent.click(await screen.findByRole('button', { name: 'Enregistrer' })); });
+    expect(localStorage.getItem('reps_templates_tab')).toBe('musculation');
+  });
+
   it('the card sums up an exercise with its heaviest set (longest when timed), not the first one', () => {
     const done = (reps: number, weight: number, type?: 'warmup') => ({ reps, weight, completed: true, type });
     GYM = [{ ...gym('A', 3, []), exercises: [

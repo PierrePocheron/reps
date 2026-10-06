@@ -433,6 +433,8 @@ function History() {
     setSavingTemplate(true);
     try {
       await createUserTemplate(user.uid, templateFromSession(saveAsTemplate, templateName));
+      // Templates opens on its last tab (Renfo by default) and looked empty: show the muscu one (key read in Templates.tsx)
+      try { localStorage.setItem('reps_templates_tab', 'musculation'); } catch { /* stockage indisponible */ }
       toast({ title: 'Modèle enregistré', description: `« ${templateName.trim()} » est dans tes modèles.` });
       setSaveAsTemplate(null);
     } catch {
