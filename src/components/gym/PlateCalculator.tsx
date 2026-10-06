@@ -46,7 +46,7 @@ export function PlateCalculator({ open, onOpenChange, weight, exerciseName }: {
           <div className="flex items-center justify-center gap-1 h-20" aria-hidden>
             <div className="h-2 w-10 rounded-l bg-zinc-400" />
             {plates.map((p, i) => (
-              <div key={i} className={cn('w-3 rounded-sm border border-black/20', PLATE_COLOR[p] ?? 'bg-primary')} style={{ height: `${36 + p * 1.6}px` }} />
+              <div key={i} className={cn('w-3 rounded-sm border border-black/20 dark:border-white/40', PLATE_COLOR[p] ?? 'bg-primary')} style={{ height: `${36 + p * 1.6}px` }} />
             ))}
             <div className="h-2 w-6 rounded-r bg-zinc-400" />
           </div>
