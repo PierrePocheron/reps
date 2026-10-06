@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { templateExercise } from '@/utils/progression';
+import { isTimed } from '@/utils/records';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -16,6 +17,7 @@ interface MuscuExercise {
   name: string;
   emoji: string;
   imageUrl?: string;
+  timed?: boolean;
   sets: { reps: number; weight: number }[];
 }
 
@@ -149,6 +151,7 @@ export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) 
           : {
               muscuExercises: muscuExercises.map((m) => ({
                 exerciseId: m.exerciseId, name: m.name, emoji: m.emoji, ...(m.imageUrl ? { imageUrl: m.imageUrl } : {}),
+                ...(m.timed !== undefined ? { timed: m.timed } : {}),
                 sets: m.sets,
               })),
             }),
@@ -311,7 +314,7 @@ export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) 
                               onFocus={onFocusSelect}
                               className={`h-8 text-sm w-16 ${NUM_INPUT}`}
                             />
-                            <span className="text-xs text-muted-foreground">reps</span>
+                            <span className="text-xs text-muted-foreground">{isTimed(m) ? 's' : 'reps'}</span>
                             <Input
                               type="number"
                               value={s.weight}

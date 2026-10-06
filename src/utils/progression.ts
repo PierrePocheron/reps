@@ -61,6 +61,7 @@ export function templateFromSession(session: Pick<GymSession, 'exercises'>, name
       const done = work.filter((s) => s.completed);
       return {
         exerciseId: ex.exerciseId, name: ex.name, emoji: ex.emoji, ...(ex.imageUrl ? { imageUrl: ex.imageUrl } : {}),
+        ...(ex.timed !== undefined ? { timed: ex.timed } : {}),
         sets: (done.length ? done : work).map((s) => ({ reps: s.actualReps ?? s.reps, weight: s.actualWeight ?? s.weight })),
       };
     })
@@ -88,5 +89,5 @@ export function redoExercises(session: Pick<GymSession, 'exercises'>) {
 /** Exercice d'un modèle prêt à afficher : catalogue de base, sinon nom / emoji / image gardés dans le modèle, sinon l'id. */
 export function templateExercise(me: NonNullable<WorkoutTemplate['muscuExercises']>[number]) {
   const ex = MUSCULATION_EXERCISES.find((e) => e.id === me.exerciseId);
-  return { exerciseId: me.exerciseId, name: ex?.name ?? me.name ?? me.exerciseId, emoji: ex?.emoji ?? me.emoji ?? '🏋️', imageUrl: ex?.imageUrl ?? me.imageUrl };
+  return { exerciseId: me.exerciseId, name: ex?.name ?? me.name ?? me.exerciseId, emoji: ex?.emoji ?? me.emoji ?? '🏋️', imageUrl: ex?.imageUrl ?? me.imageUrl, timed: me.timed };
 }

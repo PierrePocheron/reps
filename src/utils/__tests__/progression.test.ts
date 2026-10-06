@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { suggestNextWeight, incrementFor, lastWorkSets, templateFromSession, redoExercises, isLoadSet, templateExercise } from '../progression';
+import { isTimed } from '../records';
 import type { GymSession, PlannedSet } from '@/firebase/types';
 
 const session = (exerciseId: string, sets: PlannedSet[]) =>
@@ -85,6 +86,16 @@ describe('modèle enregistré depuis une séance (bibliothèque, import)', () =>
       ['Développé couché', undefined],
     ]);
     expect(t.muscuExercises[1]).not.toHaveProperty('imageUrl'); // Firestore refuses undefined fields
+  });
+
+  it('keeps the unit chosen in session: a plank in seconds stays timed, a weighted plank in reps stays in reps', () => {
+    const t = templateFromSession({ exercises: [
+      { exerciseId: 'lib_0464', name: 'Planche', emoji: '🧘', timed: true, sets: [done(0, 60)] },
+      { exerciseId: 'weighted_plank', name: 'Gainage lesté', emoji: '🧘', timed: false, sets: [done(10, 12)] },
+      ...s.exercises,
+    ] }, 'Core');
+    expect(t.muscuExercises.map(templateExercise).map(isTimed)).toEqual([true, false, false, false, false]);
+    expect(t.muscuExercises[2]).not.toHaveProperty('timed'); // Firestore refuses undefined fields
   });
 
   it('ancien modèle sans nom gardé : identifiant en dernier recours', () => {

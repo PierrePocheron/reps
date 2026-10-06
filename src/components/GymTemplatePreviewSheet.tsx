@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { ExerciseImage } from '@/components/ExerciseImage';
 import { templateExercise } from '@/utils/progression';
+import { isTimed } from '@/utils/records';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { WorkoutTemplate } from '@/firebase/types';
@@ -69,7 +70,7 @@ export function GymTemplatePreviewSheet({ template, onClose, onStart }: Props) {
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {ex.sets.length} série{ex.sets.length > 1 ? 's' : ''}
                   {ex.sets[0] && (
-                    <span> · {ex.sets[0].reps} reps{ex.sets[0].weight > 0 ? ` à ${ex.sets[0].weight.toLocaleString('fr-FR')} kg` : ''}</span>
+                    <span> · {ex.sets[0].reps} {isTimed(ex) ? 's' : 'reps'}{ex.sets[0].weight > 0 ? ` à ${ex.sets[0].weight.toLocaleString('fr-FR')} kg` : ''}</span>
                   )}
                 </p>
               </div>
@@ -78,7 +79,7 @@ export function GymTemplatePreviewSheet({ template, onClose, onStart }: Props) {
               <div className="flex flex-wrap gap-1 justify-end max-w-[96px]">
                 {ex.sets.slice(0, 4).map((s, i) => (
                   <span key={i} className="text-xs bg-muted px-1.5 py-0.5 rounded-md font-mono text-muted-foreground">
-                    {s.reps}×{s.weight > 0 ? s.weight.toLocaleString('fr-FR') : 'PDC'}
+                    {s.reps}{isTimed(ex) ? '\u00a0s' : ''}×{s.weight > 0 ? s.weight.toLocaleString('fr-FR') : 'PDC'}
                   </span>
                 ))}
                 {ex.sets.length > 4 && (

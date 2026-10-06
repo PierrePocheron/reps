@@ -211,6 +211,7 @@ export interface WorkoutTemplate {
     name?: string;
     emoji?: string;
     imageUrl?: string;
+    timed?: boolean; // unit chosen in session: « reps » are seconds (see GymSessionExercise.timed)
     sets: { reps: number; weight: number }[];
   }[];
   // Champs présents uniquement sur les templates utilisateur (Firestore)
