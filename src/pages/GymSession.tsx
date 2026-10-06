@@ -42,7 +42,7 @@ import { ToastAction } from '@/components/ui/toast';
 import { exactAlarmDenied, openExactAlarmSettings } from '@/utils/restNotification';
 import { gymCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
 import { gymSummary, comparisonText } from '@/utils/summary';
-import { formatDurationLong, plural, frDate } from '@/utils/formatters';
+import { formatDurationLong, plural, frDate, parseDecimal, decimalInput } from '@/utils/formatters';
 import { SessionSummary, type SummaryStat } from '@/components/SessionSummary';
 import { BackdateDialog } from '@/components/BackdateDialog';
 import { isLoadSet, lastWorkSets, suggestNextWeight, type LoadSuggestion } from '@/utils/progression';
@@ -50,7 +50,6 @@ import { loadPlatePrefs, warmupSets } from '@/utils/plates';
 import { restAfterSet, supersetLetters } from '@/utils/superset';
 import { cn } from '@/utils/cn';
 
-const NUM_CLS = 'text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
 const onFocusSel = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
 
 function GymSession() {
@@ -732,12 +731,13 @@ function SetExecuteRow({
   const [reps, setReps] = useState(String(set.actualReps ?? set.reps));
   // Validée ailleurs (chrono d'un exercice en durée) : afficher la valeur réalisée
   useEffect(() => { if (set.completed) setReps(String(set.actualReps ?? set.reps)); }, [set.completed, set.actualReps, set.reps]);
-  const [weight, setWeight] = useState(String(set.actualWeight ?? set.weight));
+  const [weight, setWeight] = useState(decimalInput(set.actualWeight ?? set.weight));
   const { play } = useSound();
   const haptics = useHaptic();
+  const num = (s: string) => parseDecimal(s) ?? 0; // the fields only ever hold accepted input
 
   // Colonne « Précédent » de Hevy / Strong, sans colonne de plus : rappel seulement quand on s'écarte de la dernière fois
-  const changed = previous && (Number(reps) !== previous.reps || (!timed && Number(weight) !== previous.weight));
+  const changed = previous && (num(reps) !== previous.reps || (!timed && num(weight) !== previous.weight));
   return (
     <div>
     <div className={cn(
@@ -758,26 +758,36 @@ function SetExecuteRow({
 
       <div className="flex items-center gap-1 flex-1">
         <Input
-          type="number"
+          type="text"
+          inputMode="numeric"
           value={reps}
-          onChange={(e) => { setReps(e.target.value); onUpdate(exerciseId, setIndex, Number(e.target.value) || 0, Number(weight) || 0); }}
+          onChange={(e) => {
+            const n = parseDecimal(e.target.value);
+            if (n === null) return;
+            setReps(e.target.value);
+            onUpdate(exerciseId, setIndex, n, num(weight));
+          }}
           onFocus={onFocusSel}
           aria-label={`${timed ? 'Durée en secondes' : 'Répétitions'}, série ${setIndex + 1}`}
-          className={`h-8 w-0 flex-1 max-w-14 min-w-[calc(3ch_+_0.75rem)] text-sm p-1 ${NUM_CLS}`}
-          min={0}
+          className="h-8 w-0 flex-1 max-w-14 min-w-[calc(3ch_+_0.75rem)] text-sm p-1 text-center"
         />
         <UnitToggle timed={timed} onToggle={onToggleTimed} />
       </div>
 
       <div className="flex items-center gap-1 flex-1">
         <Input
-          type="number"
+          type="text"
+          inputMode="decimal"
           value={weight}
-          onChange={(e) => { setWeight(e.target.value); onUpdate(exerciseId, setIndex, Number(reps) || 0, Number(e.target.value) || 0); }}
+          onChange={(e) => {
+            const n = parseDecimal(e.target.value);
+            if (n === null) return;
+            setWeight(e.target.value);
+            onUpdate(exerciseId, setIndex, num(reps), n);
+          }}
           onFocus={onFocusSel}
           aria-label={`Charge en kg, série ${setIndex + 1}`}
-          className={`h-8 w-0 flex-1 max-w-16 min-w-[calc(5ch_+_0.75rem)] text-sm p-1 ${NUM_CLS}`}
-          min={0}
+          className="h-8 w-0 flex-1 max-w-16 min-w-[calc(5ch_+_0.75rem)] text-sm p-1 text-center"
         />
         <span className="text-xs text-muted-foreground">kg</span>
       </div>
@@ -799,7 +809,7 @@ function SetExecuteRow({
             if (set.completed) return;
             haptics.impact();
             play('success');
-            onComplete(exerciseId, setIndex, Number(reps) || 0, Number(weight) || 0);
+            onComplete(exerciseId, setIndex, num(reps), num(weight));
           }}
           aria-label={set.completed ? `Série ${setIndex + 1} validée` : `Valider la série ${setIndex + 1}`}
           className={cn(

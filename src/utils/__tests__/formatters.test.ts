@@ -11,6 +11,8 @@ import {
   plural,
   ageFrom,
   isRealDay,
+  parseDecimal,
+  decimalInput,
 } from '../formatters';
 
 describe('Formatters Utils', () => {
@@ -140,5 +142,17 @@ describe('date de naissance', () => {
   it("refuse une date qui n'existe pas (31 février, 29 février hors bissextile)", () => {
     expect([isRealDay('2000-02-31'), isRealDay('2001-02-29'), isRealDay('2000-04-31'), isRealDay('2000-02-29'), isRealDay('1990-12-31')])
       .toEqual([false, false, false, true, true]);
+  });
+});
+
+describe('parseDecimal / decimalInput (champs de charge et de reps)', () => {
+  it('lit la virgule française comme le point, vide = 0, refuse ce qui n\'est pas un nombre', () => {
+    expect([parseDecimal('82,5'), parseDecimal('82.5'), parseDecimal('82,'), parseDecimal(''), parseDecimal(','), parseDecimal(' 12 ')])
+      .toEqual([82.5, 82.5, 82, 0, 0, 12]);
+    expect([parseDecimal('8a'), parseDecimal('-5'), parseDecimal('1e3'), parseDecimal('8,5,5')]).toEqual([null, null, null, null]);
+  });
+
+  it('affiche la virgule française, sans séparateur de milliers', () => {
+    expect([decimalInput(82.5), decimalInput(1000), decimalInput(0)]).toEqual(['82,5', '1000', '0']);
   });
 });

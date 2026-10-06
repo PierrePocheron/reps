@@ -1,12 +1,32 @@
+import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { ExerciseImage } from '@/components/ExerciseImage';
-import { Input } from '@/components/ui/input';
+import { Input, type InputProps } from '@/components/ui/input';
 import type { GymSessionExercise, PlannedSet } from '@/firebase/types';
 import { isTimed } from '@/utils/records';
+import { decimalInput, parseDecimal } from '@/utils/formatters';
 import { UnitToggle } from './UnitToggle';
 
-const NUM_INPUT = 'text-center text-sm p-1 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none';
+const NUM_INPUT = 'text-center text-sm p-1';
 const onFocusSelect = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
+
+/** Number field written the French way (« 82,5 »): keeps what is being typed (« 82, ») and follows a value changed elsewhere. */
+function DecimalInput({ value, onValue, ...props }: Omit<InputProps, 'value' | 'onChange' | 'type'> & { value: number; onValue: (n: number) => void }) {
+  const [text, setText] = useState(() => decimalInput(value));
+  return (
+    <Input
+      {...props}
+      type="text"
+      value={parseDecimal(text) === value ? text : decimalInput(value)}
+      onChange={(e) => {
+        const n = parseDecimal(e.target.value);
+        if (n === null) return;
+        setText(e.target.value);
+        onValue(n);
+      }}
+    />
+  );
+}
 
 interface GymExerciseCardProps {
   exercise: GymSessionExercise;
@@ -65,14 +85,13 @@ export function GymExerciseCard({
             <span className="text-xs font-bold text-muted-foreground w-6 flex-shrink-0">S{i + 1}</span>
 
             <div className="flex items-center gap-1 flex-1">
-              <Input
-                type="number"
+              <DecimalInput
+                inputMode="numeric"
                 value={set.reps}
-                onChange={(e) => onUpdateSet(i, { reps: parseInt(e.target.value, 10) || 0 })}
+                onValue={(reps) => onUpdateSet(i, { reps })}
                 onFocus={onFocusSelect}
                 aria-label={`${isTimed(exercise) ? 'Durée visée en secondes' : 'Répétitions visées'}, série ${i + 1}`}
                 className={`h-8 w-14 ${NUM_INPUT}`}
-                min={1}
               />
               {onToggleTimed
                 ? <UnitToggle timed={isTimed(exercise)} onToggle={onToggleTimed} />
@@ -80,14 +99,13 @@ export function GymExerciseCard({
             </div>
 
             <div className="flex items-center gap-1 flex-1">
-              <Input
-                type="number"
+              <DecimalInput
+                inputMode="decimal"
                 value={set.weight}
-                onChange={(e) => onUpdateSet(i, { weight: parseFloat(e.target.value) || 0 })}
+                onValue={(weight) => onUpdateSet(i, { weight })}
                 onFocus={onFocusSelect}
                 aria-label={`Charge en kg, série ${i + 1}`}
                 className={`h-8 w-16 ${NUM_INPUT}`}
-                min={0}
               />
               <span className="text-xs text-muted-foreground">kg</span>
             </div>

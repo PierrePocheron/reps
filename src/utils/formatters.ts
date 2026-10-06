@@ -52,6 +52,13 @@ export function formatDurationLong(seconds: number): string {
   }
 }
 
+/** Number typed in a field: « 82,5 » like « 82.5 » (French keypads), empty → 0, anything else → null (reject the keystroke). */
+export const parseDecimal = (s: string): number | null =>
+  /^\d*[.,]?\d*$/.test(s.trim()) ? Number(s.trim().replace(',', '.')) || 0 : null;
+
+/** Number shown in a field: French comma, no thousands separator so it parses back (« 82,5 »). */
+export const decimalInput = (n: number): string => String(n).replace('.', ',');
+
 /**
  * Formate un nombre avec des séparateurs de milliers
  */
