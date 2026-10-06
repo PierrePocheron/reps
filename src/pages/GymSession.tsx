@@ -776,7 +776,7 @@ function SetExecuteRow({
     // Scroll margins: below the sticky header, above the floating bar with the rest panel open (list's pb-[23.5rem])
     <div data-set={`${exerciseId}:${setIndex}`} data-pending={set.completed ? undefined : 'true'} className="scroll-mt-24 scroll-mb-[24rem]">
     <div className={cn(
-      'flex flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2 rounded-xl transition-colors', // wraps only with a very large font
+      'flex items-center gap-x-1.5 px-2 py-2 rounded-xl transition-colors',
       set.completed ? 'bg-green-500/10' : 'bg-muted/30'
     )}>
       <button
@@ -791,6 +791,8 @@ function SetExecuteRow({
           : set.type ? SET_TYPE_META[set.type].short : `S${number}`}
       </button>
 
+      {/* Only the fields wrap (very large font, narrow phone): the set badge and the check stay on the first line */}
+      <div className="flex flex-1 min-w-0 flex-wrap items-center gap-x-1.5 gap-y-3">
       <div className="flex items-center gap-1 flex-1">
         <Input
           type="text"
@@ -825,6 +827,7 @@ function SetExecuteRow({
           className="h-11 -my-1.5 w-0 flex-1 max-w-16 min-w-[calc(5ch_+_0.75rem)] text-sm p-1 text-center"
         />
         <span className="text-xs text-muted-foreground">kg</span>
+      </div>
       </div>
 
       {onRpe && set.completed ? (
@@ -861,7 +864,7 @@ function SetExecuteRow({
       )}
     </div>
     {changed && (
-      <p className="px-3 pt-0.5 text-[11px] text-muted-foreground tabular-nums">
+      <p className="px-2 pt-0.5 text-[11px] text-muted-foreground tabular-nums">
         Précédent : {timed ? `${previous.reps} s` : `${previous.reps} × ${previous.weight.toLocaleString('fr-FR')} kg`}
       </p>
     )}
@@ -981,7 +984,7 @@ function ExecuteExerciseCard({
         <PlateCalculator open={showPlates} onOpenChange={setShowPlates} weight={nextWeight} exerciseName={exercise.name} />
       )}
 
-      <div className="p-3 space-y-2">
+      <div className="p-2 space-y-2">
         {/* Surcharge progressive : proposée tant qu'une série de travail reste sous la charge suggérée */}
         {suggestion && exercise.sets.some((st) => !st.completed && isLoadSet(st) && (st.actualWeight ?? st.weight) < suggestion.to) && (
           <div className="flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2">
