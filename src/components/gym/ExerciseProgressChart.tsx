@@ -17,7 +17,7 @@ const PERIODS = [
   { key: 'all', label: 'Tout', days: Infinity },
 ] as const;
 
-const W = 320, H = 150, PL = 38, PR = 10, PT = 14, PB = 24;
+const W = 320, H = 150, PL = 44, PR = 10, PT = 14, PB = 24;
 const fmt = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 1 }); // 77,5 kg, not 78
 
 /** Courbe de progression d'un exercice (Strong / Hevy : graphique par exercice). */
@@ -44,7 +44,7 @@ export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint
   const values = shown.map((p) => p[metric]);
 
   const header = (
-    <div className="flex items-center justify-between gap-2">
+    <div className="flex flex-wrap items-center justify-between gap-2">
       <h3 className="text-sm font-semibold flex items-center gap-1.5">
         <TrendingUp className="h-4 w-4 text-primary" /> Ta progression
       </h3>
@@ -55,7 +55,7 @@ export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint
             type="button"
             aria-pressed={period === p.key}
             onClick={() => setPeriod(p.key)}
-            className={cn('px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors',
+            className={cn('min-h-11 whitespace-nowrap px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors',
               period === p.key ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}
           >
             {p.label}
@@ -102,7 +102,7 @@ export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint
             type="button"
             aria-pressed={metric === m.key}
             onClick={() => setMetric(m.key)}
-            className={cn('flex-1 py-2 rounded-lg text-xs font-semibold transition-colors',
+            className={cn('flex-1 min-h-11 py-2 rounded-lg text-xs font-semibold transition-colors',
               metric === m.key ? 'bg-background shadow-sm text-foreground ring-1 ring-border' : 'text-muted-foreground')}
           >
             {m.label}
@@ -130,7 +130,7 @@ export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint
         {[hi, (hi + lo) / 2, lo].map((v) => (
           <g key={v}>
             <line x1={PL} x2={W - PR} y1={y(v)} y2={y(v)} className="stroke-border" strokeDasharray="3 4" />
-            <text x={PL - 6} y={y(v) + 3.5} textAnchor="end" className="fill-muted-foreground" fontSize="10">{tick(v)}</text>
+            <text x={PL - 6} y={y(v) + 4} textAnchor="end" className="fill-muted-foreground" fontSize="12">{tick(v)}</text>
           </g>
         ))}
         {coords.length > 1 && (
@@ -142,9 +142,10 @@ export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint
             ? <circle key={i} cx={cx} cy={cy} r="5.5" fill="#F59E0B" stroke="hsl(var(--background))" strokeWidth="2" />
             : <circle key={i} cx={cx} cy={cy} r="3" fill="currentColor" />
         ))}
-        <text x={PL} y={H - 6} className="fill-muted-foreground" fontSize="10">{shortDate(shown[0]!.date)}</text>
+        {/* a single session is drawn in the middle: its date goes under it, not under the axis */}
+        <text x={shown.length > 1 ? PL : x(t0)} y={H - 6} textAnchor={shown.length > 1 ? 'start' : 'middle'} className="fill-muted-foreground" fontSize="12">{shortDate(shown[0]!.date)}</text>
         {shown.length > 1 && (
-          <text x={W - PR} y={H - 6} textAnchor="end" className="fill-muted-foreground" fontSize="10">{shortDate(shown[shown.length - 1]!.date)}</text>
+          <text x={W - PR} y={H - 6} textAnchor="end" className="fill-muted-foreground" fontSize="12">{shortDate(shown[shown.length - 1]!.date)}</text>
         )}
       </svg>
       {shown.length === 1 && (
