@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { gymCard, renfoCard } from '../shareCard';
+import { fitText, gymCard, renfoCard } from '../shareCard';
 
 describe('cartes de partage', () => {
   it('compte le record de durée (gainage) comme le récap', () => {
@@ -46,5 +46,31 @@ describe('cartes de partage', () => {
     expect(card.lines).toHaveLength(6);
     expect(card.more).toBe(1);
     expect(card.stats.map((s) => s.value)).toEqual(['10min 00s', '70', '32 kcal']);
+  });
+
+  describe('fitText', () => {
+    // Fake canvas: every glyph is half the font size wide
+    const ctx = () => ({ font: '', measureText(t: string) { return { width: (t.length * parseInt(this.font, 10)) / 2 } as TextMetrics; } });
+    const font = (size: number) => `${size}px X`;
+
+    it('keeps text that fits at the base size', () => {
+      const g = ctx();
+      expect(fitText(g, 'Squat', font, 40, 30, 200)).toBe('Squat');
+      expect(g.font).toBe('40px X');
+    });
+
+    it('shrinks the font before cutting (no squashed glyphs)', () => {
+      const g = ctx();
+      expect(fitText(g, '0123456789', font, 40, 20, 160)).toBe('0123456789'); // 10 chars fit at 32 px
+      expect(g.font).toBe('32px X');
+    });
+
+    it('ellipsizes at the floor size, never below it', () => {
+      const g = ctx();
+      const out = fitText(g, 'Développé incliné prise marteau sur swiss ball aux haltères', font, 42, 30, 300);
+      expect(g.font).toBe('30px X');
+      expect(out.endsWith('…')).toBe(true);
+      expect(g.measureText(out).width).toBeLessThanOrEqual(300);
+    });
   });
 });

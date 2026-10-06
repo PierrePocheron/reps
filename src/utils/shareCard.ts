@@ -53,6 +53,17 @@ export function renfoCard(s: { date: Date; duration: number; exercises: SessionE
   return { title: 'Séance renfo', date: s.date, stats, lines: lines.slice(0, MAX_LINES), more: Math.max(0, lines.length - MAX_LINES) };
 }
 
+/**
+ * Sets the largest font from `size` down to `min` (steps of 4 px) where `text` fits `maxWidth`, then ellipsizes as a last resort.
+ * Replaces fillText's maxWidth, which squashed long exercise names to half their width.
+ */
+export function fitText(g: Pick<CanvasRenderingContext2D, 'font' | 'measureText'>, text: string, font: (size: number) => string, size: number, min: number, maxWidth: number): string {
+  g.font = font(size);
+  while (size > min && g.measureText(text).width > maxWidth) g.font = font((size = Math.max(min, size - 4)));
+  while (text.length > 1 && g.measureText(text).width > maxWidth) text = `${text.slice(0, -2)}…`;
+  return text;
+}
+
 /** Carte 1080 × 1350 (format portrait Instagram, passe aussi en story), aux couleurs de l'appli. */
 export async function renderCard(card: SessionCard): Promise<string> {
   await document.fonts?.ready;
@@ -67,14 +78,9 @@ export async function renderCard(card: SessionCard): Promise<string> {
   g.fillStyle = '#FFFFFF'; g.textBaseline = 'alphabetic';
   g.font = font(600, 40); g.globalAlpha = 0.8;
   g.fillText(card.subtitle ?? frDate(card.date, { weekday: 'long', day: 'numeric', month: 'long' }), P, 150);
-  // Titles go up to 60 characters and ran off the card at 96 px: shrink to fit, then ellipsis as a last resort
+  // Titles go up to 60 characters and ran off the card at 96 px
   g.globalAlpha = 1;
-  let size = 96;
-  g.font = font(800, size);
-  while (size > 56 && g.measureText(card.title).width > W - 2 * P) g.font = font(800, (size -= 4));
-  let title = card.title;
-  while (title.length > 1 && g.measureText(title).width > W - 2 * P) title = `${title.slice(0, -2)}…`;
-  g.fillText(title, P, 260);
+  g.fillText(fitText(g, card.title, (s) => font(800, s), 96, 56, W - 2 * P), P, 260);
 
   // Statistiques en tuiles
   const tileW = (W - 2 * P - 30 * (card.stats.length - 1)) / card.stats.length;
@@ -84,17 +90,16 @@ export async function renderCard(card: SessionCard): Promise<string> {
     g.beginPath();
     if (g.roundRect) g.roundRect(x, y, tileW, 170, 28); else g.rect(x, y, tileW, 170); // vieilles WebView
     g.fill();
-    g.fillStyle = '#FFFFFF'; g.font = font(800, card.stats.length > 3 ? 46 : 56);
-    g.fillText(st.value, x + 28, y + 92, tileW - 56);
+    g.fillStyle = '#FFFFFF';
+    g.fillText(fitText(g, st.value, (s) => font(800, s), card.stats.length > 3 ? 46 : 56, 32, tileW - 56), x + 28, y + 92);
     g.globalAlpha = 0.75; g.font = font(600, 30); g.fillText(st.label, x + 28, y + 140); g.globalAlpha = 1;
   });
 
   // Exercices
-  g.font = font(600, 42);
   card.lines.forEach((l, i) => {
     const y = 610 + i * 92;
-    g.globalAlpha = 1; g.textAlign = 'left'; g.fillText(l.name, P, y, 620);
-    g.globalAlpha = 0.8; g.textAlign = 'right'; g.fillText(l.detail, W - P, y);
+    g.globalAlpha = 1; g.textAlign = 'left'; g.fillText(fitText(g, l.name, (s) => font(600, s), 42, 30, 620), P, y);
+    g.globalAlpha = 0.8; g.textAlign = 'right'; g.font = font(600, 42); g.fillText(l.detail, W - P, y);
   });
   g.textAlign = 'left'; g.globalAlpha = 0.7; g.font = font(600, 34);
   if (card.more > 0) g.fillText(`+ ${card.more} exercice${card.more > 1 ? 's' : ''}`, P, 610 + card.lines.length * 92);
