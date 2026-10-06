@@ -25,7 +25,7 @@ export function SessionSummary({ stats, comparison, onShare, onDone }: {
           {stats.map((s) => (
             <div key={s.label} className="rounded-2xl border bg-card p-4">
               <dt className="text-xs text-muted-foreground">{s.label}</dt>
-              <dd className="text-2xl font-bold tabular-nums">{s.value}</dd>
+              <dd className="whitespace-nowrap text-xl min-[360px]:text-2xl font-bold tabular-nums">{s.value}</dd>
             </div>
           ))}
         </dl>
