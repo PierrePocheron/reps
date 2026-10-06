@@ -507,7 +507,7 @@ function History() {
             <Dumbbell className="h-4 w-4 text-blue-500 max-[359px]:hidden" />
             Muscu
             {gymSessions.length > 0 && (
-              <span className="text-xs bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full font-semibold">
+              <span className="text-xs bg-blue-500/10 text-blue-800 dark:text-blue-400 px-1.5 py-0.5 rounded-full font-semibold">
                 {gymSessions.length}{moreGym && '+'}
               </span>
             )}
