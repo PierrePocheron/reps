@@ -119,4 +119,18 @@ describe('personalRecordsOf (onglet Records)', () => {
     expect(pr).toMatchObject({ bestVolume: 600, bestWeight: 60, bestReps: 10 });
     expect(Math.round(pr!.bestE1RM)).toBe(117); // Epley 100 × 5, comme les trophées et la courbe
   });
+
+  it('skips exercises with no work set: no « 0 série au total », and a skipped timed attempt keeps the reps record', () => {
+    const at = (day: number, exercises: unknown[]) => ({ date: { toDate: () => new Date(2026, 9, day) }, exercises }) as unknown as GymSession;
+    const prs = personalRecordsOf([
+      at(2, [
+        { exerciseId: 'bench_press', name: 'DC', emoji: '🏋️', sets: [{ weight: 100, reps: 5, completed: true }] },
+        { exerciseId: 'cable_fly', name: 'Fly', emoji: '🦋', sets: [{ weight: 20, reps: 12, completed: false }] },
+        { exerciseId: 'plank', name: 'Planche', emoji: '🧱', timed: true, sets: [{ weight: 0, reps: 60, completed: false }] },
+      ]),
+      at(1, [{ exerciseId: 'plank', name: 'Planche', emoji: '🧱', sets: [{ weight: 0, reps: 20, completed: true }] }]),
+    ], {});
+    expect(prs.map((p) => [p.exerciseId, p.timed, p.bestReps])).toEqual([['bench_press', false, 5], ['plank', false, 20]]);
+  });
 });
+

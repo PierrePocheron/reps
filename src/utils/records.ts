@@ -139,6 +139,7 @@ export function personalRecordsOf(gymSessions: GymSession[], imageMap: Record<st
   for (const session of gymSessions) {
     const sessionDate = session.date.toDate();
     for (const ex of session.exercises) {
+      if (!ex.sets.some(isWorkSet)) continue; // skipped (kept for « Refaire »): no record, and its unit must not win
       const existing = map.get(ex.exerciseId);
       const pr: PersonalRecord = existing ?? {
         exerciseId: ex.exerciseId,
