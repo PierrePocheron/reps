@@ -166,6 +166,8 @@ service cloud.firestore {
         allow create: if isAuthenticated()
           && request.auth.uid == fromId
           && fromId != userId
+          // on an existing session only: account deletion finds received kudos through the owner's sessions
+          && exists(/databases/$(database)/documents/sessions/$(userId)/userSessions/$(sessionId))
           && get(/databases/$(database)/documents/users/$(userId)).data.friends.hasAny([request.auth.uid])
           && request.resource.data.keys().hasOnly(['createdAt', 'fromUid'])
           && request.resource.data.fromUid == fromId

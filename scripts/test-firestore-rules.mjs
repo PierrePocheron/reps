@@ -230,6 +230,11 @@ console.log('\n─ Encouragements (kudos) ─');
 // (bob s'est retiré des amis d'alice plus haut ; bob a toujours alice en ami)
 const kudo = (ctx, from) => doc(ctx, `sessions/bob/userSessions/b1/kudos/${from}`);
 const k = (from) => ({ createdAt: serverTimestamp(), fromUid: from });
+await env.withSecurityRulesDisabled(async (ctx) => {
+  for (const id of ['b1', 'b2', 'b3']) await setDoc(doc(ctx.firestore(), `sessions/bob/userSessions/${id}`), { userId: 'bob', totalReps: 10, exercises: [] });
+});
+// account deletion walks the existing sessions only: a kudos on a missing one stayed behind
+await test('pas de réaction à une séance inexistante', () => assertFails(setDoc(doc(alice, 'sessions/bob/userSessions/nope/kudos/alice'), k('alice'))));
 await test('un ami encourage une séance', () => assertSucceeds(setDoc(kudo(alice, 'alice'), k('alice'))));
 await test('une seule réaction par personne (pas de réécriture)', () => assertFails(setDoc(kudo(alice, 'alice'), k('alice'))));
 await test('pas de réaction au nom d\'un autre', () => assertFails(setDoc(kudo(alice, 'mallory'), k('mallory'))));
