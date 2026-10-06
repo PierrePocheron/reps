@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation, useNavigationType } from 'react-router-dom';
 import History from '@/pages/History';
 import { useUserStore } from '@/store/userStore';
 import { useSettingsStore } from '@/store/settingsStore';
@@ -14,10 +14,11 @@ const gym = (id: string, day: number, exerciseIds: string[]) => ({
 });
 let GYM: object[] = []; // loose: tests add fields (timed, title…) the builder does not set
 let RENFO: object[] = [];
+let LIMIT = 0;
 const toast = vi.fn();
 
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast }) }));
-vi.mock('@/hooks/useSessionHistory', () => ({ useSessionHistory: () => ({ sessions: RENFO, gymSessions: GYM, loading: false, error: false, refetch: () => {} }) }));
+vi.mock('@/hooks/useSessionHistory', () => ({ useSessionHistory: (n: number) => { LIMIT = n; return { sessions: RENFO, gymSessions: GYM, loading: false, error: false, refetch: () => {} }; } }));
 vi.mock('@/firebase/firestore', () => ({ onUserStatsComputed: vi.fn(), deleteSession: vi.fn(), updateSession: vi.fn(), updateUserStatsAfterSession: vi.fn(() => Promise.resolve()) }));
 vi.mock('@/firebase/gymSessions', () => ({ deleteGymSession: vi.fn(() => Promise.resolve()), updateGymSession: vi.fn() }));
 vi.mock('@/firebase/templates', () => ({ createUserTemplate: vi.fn() }));
@@ -27,6 +28,10 @@ const openMenu = async (item: string) => {
   fireEvent.pointerDown(screen.getAllByRole('button', { name: /^Actions de la séance du / })[0]!, { button: 0, ctrlKey: false, pointerType: 'mouse' });
   fireEvent.click(await screen.findByText(item));
 };
+
+function Url() {
+  return <output data-testid="url">{useNavigationType()} {useLocation().search}</output>;
+}
 
 describe('History', () => {
   beforeEach(() => {
@@ -114,6 +119,28 @@ describe('History', () => {
     render(<MemoryRouter><History /></MemoryRouter>);
     expect(screen.getByRole('button', { name: 'Actions de la séance du samedi 3 octobre 2026 à 00:00' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Refaire la séance du vendredi 2 octobre 2026 à 00:00' })).toBeInTheDocument();
+  });
+
+  it('restores the tab, filter and loaded count from the URL (back, reload)', () => {
+    GYM = [gym('A', 3, ['bench']), gym('B', 2, ['bench']), gym('C', 1, ['squat'])];
+    const { unmount } = render(<MemoryRouter initialEntries={['/history?ex=squat&n=300']}><History /></MemoryRouter>);
+    expect(screen.getByLabelText('Filtrer les séances par exercice')).toHaveValue('squat');
+    expect(cards()).toHaveLength(1);
+    expect(LIMIT).toBe(300);
+    unmount();
+    render(<MemoryRouter initialEntries={['/history?tab=records']}><History /></MemoryRouter>);
+    expect(screen.getByRole('tab', { name: /Records/ })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('writes the tab, filter and loaded count to the URL without stacking history entries', () => {
+    GYM = Array.from({ length: 100 }, (_, i) => gym(`G${i}`, 1, [i ? 'bench' : 'squat']));
+    render(<MemoryRouter initialEntries={['/history']}><History /><Url /></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText('Filtrer les séances par exercice'), { target: { value: 'squat' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Voir les séances plus anciennes' }));
+    fireEvent.click(screen.getByRole('tab', { name: /Records/ }));
+    expect(screen.getByTestId('url')).toHaveTextContent('REPLACE ?ex=squat&n=200&tab=records');
+    fireEvent.click(screen.getByRole('tab', { name: /Muscu/ }));
+    expect(screen.getByTestId('url')).toHaveTextContent(/^REPLACE \?ex=squat&n=200$/); // the default tab stays out of the URL
   });
 
   it('the card sums up an exercise with its heaviest set (longest when timed), not the first one', () => {

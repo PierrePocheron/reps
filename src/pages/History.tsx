@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { ExerciseImage } from '@/components/ExerciseImage';
 import { formatDurationLong, formatNumber, frDate, plural } from '@/utils/formatters';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
 import { useSessionHistory } from '@/hooks/useSessionHistory';
@@ -323,8 +323,18 @@ function LoadOlder({ loading, onClick }: { loading: boolean; onClick: () => void
 const PAGE = 100;
 
 function History() {
-  const [activeTab, setActiveTab] = useState<Tab>('musculation');
-  const [limit, setLimit] = useState(PAGE); // past the latest 100 sessions, older ones were unreachable (#71)
+  // Tab, filter and loaded count live in the URL, replaced (no extra back step): back and reload no longer reset them
+  const [params, setParams] = useSearchParams();
+  const setParam = useCallback((key: 'tab' | 'ex' | 'n', value: string) => setParams((p) => {
+    const next = new URLSearchParams(p);
+    if (value) next.set(key, value); else next.delete(key);
+    return next;
+  }, { replace: true }), [setParams]);
+  const tabParam = params.get('tab');
+  const activeTab: Tab = tabParam === 'renforcement' || tabParam === 'records' ? tabParam : 'musculation';
+  const setActiveTab = (tab: Tab) => setParam('tab', tab === 'musculation' ? '' : tab);
+  const n = Number(params.get('n'));
+  const limit = Number.isInteger(n) && n > PAGE ? n : PAGE; // past the latest 100 sessions, older ones were unreachable (#71)
   const history = useSessionHistory(limit);
   const { loading, error, refetch } = history;
   // a full page means older sessions are not loaded yet: counts then read « 100+ », not a total
@@ -344,7 +354,7 @@ function History() {
     .map((s) => (edits[s.sessionId] ? { ...s, ...edits[s.sessionId] } : s)), [history.gymSessions, deletedIds, edits]);
   const [toEdit, setToEdit] = useState<GymSession | null>(null);
   // Filtre par exercice (#63, Strong) : exercices de l'historique, du plus fréquent au plus rare
-  const [exerciseFilter, setExerciseFilter] = useState('');
+  const exParam = params.get('ex') ?? '';
   const exerciseOptions = useMemo(() => {
     const seen = new Map<string, { name: string; count: number }>();
     for (const s of gymSessions) for (const ex of s.exercises) {
@@ -355,8 +365,11 @@ function History() {
     return [...seen].sort((a, b) => b[1].count - a[1].count);
   }, [gymSessions]);
   // a filtered exercise whose last session was deleted or edited away no longer filters (blank list otherwise),
-  // and stays dropped when older sessions of it load (adjusting state during render, as React recommends)
-  if (exerciseFilter && !exerciseOptions.some(([id]) => id === exerciseFilter)) setExerciseFilter('');
+  // and stays dropped when older sessions of it load; kept while the list loads (reload, back)
+  const exerciseFilter = exerciseOptions.some(([id]) => id === exParam) ? exParam : '';
+  useEffect(() => {
+    if (exParam && !exerciseFilter && !loading && !error) setParam('ex', '');
+  }, [exParam, exerciseFilter, loading, error, setParam]);
   const shownGymSessions = exerciseFilter ? gymSessions.filter((s) => s.exercises.some((ex) => ex.exerciseId === exerciseFilter)) : gymSessions;
   const { imageMap, infoMap } = useExerciseImages();
   const navigate = useNavigate();
@@ -567,7 +580,7 @@ function History() {
               {exerciseOptions.length > 1 && (
                 <select
                   value={exerciseFilter}
-                  onChange={(e) => setExerciseFilter(e.target.value)}
+                  onChange={(e) => setParam('ex', e.target.value)}
                   aria-label="Filtrer les séances par exercice"
                   className="w-full min-h-11 rounded-xl border bg-card px-3 text-sm"
                 >
@@ -584,7 +597,7 @@ function History() {
                   onDelete={() => setToDelete({ kind: 'gym', id: s.sessionId })}
                   onEdit={() => setToEdit(s)} />
               ))}
-              {moreGym && <LoadOlder loading={loading} onClick={() => setLimit((l) => l + PAGE)} />}
+              {moreGym && <LoadOlder loading={loading} onClick={() => setParam('n', String(limit + PAGE))} />}
             </div>
           )
         ) : activeTab === 'renforcement' ? (
@@ -605,7 +618,7 @@ function History() {
                   onDelete={() => setToDelete({ kind: 'renfo', id: s.sessionId })}
                   onEdit={() => setToEditRenfo(s)} />
               ))}
-              {moreRenfo && <LoadOlder loading={loading} onClick={() => setLimit((l) => l + PAGE)} />}
+              {moreRenfo && <LoadOlder loading={loading} onClick={() => setParam('n', String(limit + PAGE))} />}
             </div>
           )
         ) : (
