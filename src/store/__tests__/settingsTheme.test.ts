@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { Capacitor } from '@capacitor/core';
 import { useSettingsStore } from '../settingsStore';
+
+const statusBar = vi.hoisted(() => ({ setStyle: vi.fn(async (_options: { style: string }) => {}) }));
+vi.mock('@capacitor/status-bar', () => ({ StatusBar: statusBar, Style: { Dark: 'DARK', Light: 'LIGHT', Default: 'DEFAULT' } }));
 
 // Like a browser: every matchMedia() call returns a new object, the OS change reaches all of their listeners.
 // Hoisted: the store applies the theme as soon as it is imported.
@@ -42,5 +46,19 @@ describe('theme', () => {
     useSettingsStore.getState().applyTheme();
     useSettingsStore.getState().applyTheme();
     expect(listeners.size).toBe(1);
+  });
+
+  it('on Android, the status bar icons follow the app theme, not the phone one (unreadable when they differ)', () => {
+    vi.spyOn(Capacitor, 'isNativePlatform').mockReturnValue(true);
+    const lastStyle = () => statusBar.setStyle.mock.lastCall?.[0];
+
+    useSettingsStore.getState().setTheme('dark'); // phone in light mode
+    expect(lastStyle()).toEqual({ style: 'DARK' }); // light icons on the dark app
+    useSettingsStore.getState().setTheme('light');
+    expect(lastStyle()).toEqual({ style: 'LIGHT' });
+    useSettingsStore.getState().setTheme('system');
+    osTurns(true);
+    expect(lastStyle()).toEqual({ style: 'DARK' });
+    vi.restoreAllMocks();
   });
 });

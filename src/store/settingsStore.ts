@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { Capacitor } from '@capacitor/core';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import type { ThemeColor } from '@/utils/theme-colors';
 import { logger } from '@/utils/logger';
 
@@ -39,6 +41,14 @@ const STORAGE_KEY = 'reps_settings';
 // OS dark-mode listener for the « Système » theme (one at a time)
 let systemQuery: MediaQueryList | null = null;
 let systemListener: ((e: MediaQueryListEvent) => void) | null = null;
+
+function setDark(dark: boolean) {
+  document.documentElement.classList.toggle('dark', dark);
+  // Android draws the status bar icons for the phone's theme, not the app's: unreadable when the two differ
+  if (Capacitor.isNativePlatform()) {
+    StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light }).catch((error) => logger.warn('Barre d\'état non mise à jour', { error }));
+  }
+}
 
 /**
  * Store Zustand pour la gestion des paramètres de l'application
@@ -175,7 +185,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
      */
     applyTheme: () => {
       const { theme } = get();
-      const root = document.documentElement;
       // matchMedia() returns a new object on each call: the listener must be kept, and removed, on one object.
       // The old code never found it again — listeners piled up and « Clair » still followed the OS at sunset.
       if (systemListener) systemQuery?.removeEventListener('change', systemListener);
@@ -183,11 +192,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
 
       if (theme === 'system') {
         systemQuery ??= window.matchMedia('(prefers-color-scheme: dark)');
-        root.classList.toggle('dark', systemQuery.matches);
-        systemListener = (e: MediaQueryListEvent) => root.classList.toggle('dark', e.matches);
+        setDark(systemQuery.matches);
+        systemListener = (e: MediaQueryListEvent) => setDark(e.matches);
         systemQuery.addEventListener('change', systemListener);
       } else {
-        root.classList.toggle('dark', theme === 'dark');
+        setDark(theme === 'dark');
       }
     },
   };
