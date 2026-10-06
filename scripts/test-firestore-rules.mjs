@@ -94,7 +94,10 @@ await test('autrui n\'écrit PAS users/{uid}/private', () => assertFails(setDoc(
 
 console.log('\n─ Demandes d\'amis ─');
 await test('création d\'une demande en son propre nom (ID déterministe)', () =>
-  assertSucceeds(setDoc(doc(mallory, 'friend_requests/mallory_bob'), { fromUserId: 'mallory', toUserId: 'bob', status: 'pending', fromDisplayName: 'Mallory', fromAvatarEmoji: '😈' })));
+  assertSucceeds(setDoc(doc(mallory, 'friend_requests/mallory_bob'), { fromUserId: 'mallory', toUserId: 'bob', status: 'pending', fromDisplayName: 'Mallory', fromAvatarEmoji: '😈', createdAt: serverTimestamp() })));
+// the recipient's listener sorts by createdAt.seconds: one request without it hid all the others
+await test('demande refusée sans createdAt serveur', () =>
+  assertFails(setDoc(doc(mallory, 'friend_requests/mallory_carol'), { fromUserId: 'mallory', toUserId: 'carol', status: 'pending', fromDisplayName: 'Mallory' })));
 await test('refusée si l\'ID du doc ne correspond pas à from_to', () =>
   assertFails(setDoc(doc(mallory, 'friend_requests/whatever'), { fromUserId: 'mallory', toUserId: 'bob', status: 'pending', fromDisplayName: 'Mallory' })));
 await test('pas de création d\'une demande AU NOM d\'autrui', () =>
