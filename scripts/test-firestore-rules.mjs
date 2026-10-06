@@ -164,6 +164,19 @@ await test('séance ancienne sans userId modifiable (updateSession)', () =>
 await test('pas de séance réattribuée à un autre', () => assertFails(updateDoc(doc(alice, 'sessions/alice/userSessions/s1'), { userId: 'bob' })));
 await test('événement de badge (forme réelle)', () => assertSucceeds(addDoc(collection(alice, 'users/alice/userEvents'), badgeEvent('alice'))));
 await test('événement au nom d\'un autre refusé', () => assertFails(addDoc(collection(mallory, 'users/mallory/userEvents'), badgeEvent('alice'))));
+// friends' feed sorts sessions and events by createdAt and lists the exercises: one wrong type broke it for all of them
+await test('séance de défi validée (forme réelle)', () => assertSucceeds(addDoc(collection(alice, 'sessions/alice/userSessions'),
+  { ...appSession('alice'), category: 'challenge', challengeId: 'c_pushups_beginner', createdAt: Timestamp.now() })));
+await test('séance avec createdAt non daté refusée', () =>
+  assertFails(addDoc(collection(alice, 'sessions/alice/userSessions'), { ...appSession('alice'), createdAt: 'zzz' })));
+await test('séance avec exercises hors liste refusée', () =>
+  assertFails(addDoc(collection(alice, 'sessions/alice/userSessions'), { ...appSession('alice'), exercises: 'x' })));
+await test('séance avec totalReps non numérique refusée', () =>
+  assertFails(addDoc(collection(alice, 'sessions/alice/userSessions'), { ...appSession('alice'), totalReps: '10' })));
+await test('pas de createdAt non daté glissé par une modification', () =>
+  assertFails(updateDoc(doc(alice, 'sessions/alice/userSessions/s1'), { createdAt: { a: 1 } })));
+await test('événement avec createdAt non daté refusé', () =>
+  assertFails(addDoc(collection(alice, 'users/alice/userEvents'), { ...badgeEvent('alice'), createdAt: 'zzz' })));
 await test('séances muscu d\'autrui illisibles', () => assertFails(getDoc(doc(mallory, 'gym_sessions/alice/userGymSessions/g1'))));
 await test('défis d\'autrui illisibles', () => assertFails(getDoc(doc(mallory, 'user_challenges/c1'))));
 // the document the app really writes (joinChallenge / createCustomChallenge): the exercise sits in definitionSnapshot

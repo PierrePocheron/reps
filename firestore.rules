@@ -24,6 +24,14 @@ service cloud.firestore {
                 && getAfter(/databases/$(database)/documents/friend_requests/$(b + '_' + a)).data.status in statuses);
     }
 
+    // Friends' feed sorts sessions and events by createdAt and lists their exercises: one value of the wrong
+    // type threw for every friend. Checked when present only (legacy docs may lack them).
+    function feedFieldsTyped(d) {
+      return d.get('createdAt', request.time) is timestamp
+        && d.get('exercises', []) is list
+        && d.get('totalReps', 0) is number;
+    }
+
     // ─── users ──────────────────────────────────────────────────────────────
     // Le doc public ne doit contenir AUCUNE donnée sensible : les champs
     // privés (email, fcmToken, poids, taille, date de naissance, genre)
@@ -85,7 +93,8 @@ service cloud.firestore {
       match /userEvents/{eventId} {
         allow read: if isAuthenticated();
         // the feed attributes an event to its userId field: it may only name the path owner
-        allow create, update: if isOwner(userId) && request.resource.data.get('userId', userId) == userId;
+        allow create, update: if isOwner(userId) && request.resource.data.get('userId', userId) == userId
+          && feedFieldsTyped(request.resource.data);
         allow delete: if isOwner(userId);
       }
     }
@@ -142,7 +151,8 @@ service cloud.firestore {
     match /sessions/{userId}/userSessions/{sessionId} {
       allow read: if isAuthenticated();
       // the feed and the leaderboards attribute a session to its userId field: it may only name the path owner
-      allow create, update: if isOwner(userId) && request.resource.data.get('userId', userId) == userId;
+      allow create, update: if isOwner(userId) && request.resource.data.get('userId', userId) == userId
+        && feedFieldsTyped(request.resource.data);
       allow delete: if isOwner(userId);
 
       // Encouragements (kudos, comme Strava) : l'ID du document est celui de l'ami qui encourage
