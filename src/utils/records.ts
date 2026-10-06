@@ -147,7 +147,7 @@ export function personalRecordsOf(gymSessions: GymSession[], imageMap: Record<st
         exerciseId: ex.exerciseId,
         name: ex.name,
         emoji: ex.emoji,
-        imageUrl: imageMap[ex.exerciseId],
+        imageUrl: imageMap[ex.exerciseId] ?? ex.imageUrl, // library exercises are not in imageMap
         bestWeight: 0,
         bestReps: 0,
         totalSetsCompleted: 0,

@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import History from '@/pages/History';
 import { useUserStore } from '@/store/userStore';
+import { useSettingsStore } from '@/store/settingsStore';
 import { createUserTemplate } from '@/firebase/templates';
 
 const ts = (d: Date) => ({ toDate: () => d, toMillis: () => d.getTime() });
@@ -49,4 +50,17 @@ describe('History', () => {
     fireEvent.click(save);
     expect(createUserTemplate).toHaveBeenCalledTimes(1);
   });
+
+  it('a library exercise keeps its photo in History and Records, and its how-to in the sheet', async () => {
+    const lib = { exerciseId: 'lib_0001', name: 'Relevé de buste 3/4', emoji: '💪', imageUrl: 'https://cdn.example/lib_0001.jpg', sets: [{ reps: 15, weight: 0, completed: true }] };
+    GYM = [{ ...gym('A', 3, []), exercises: [lib] }];
+    useSettingsStore.setState({ language: 'fr' });
+    render(<MemoryRouter><History /></MemoryRouter>);
+    expect(screen.getByRole('img', { name: lib.name })).toHaveAttribute('src', lib.imageUrl);
+    fireEvent.click(screen.getByRole('tab', { name: /Records/ }));
+    expect(screen.getByRole('img', { name: lib.name })).toHaveAttribute('src', lib.imageUrl);
+    fireEvent.click(screen.getByRole('button', { name: `${lib.name} : voir ta progression` }));
+    expect(await screen.findByText(/Allonge-toi sur le dos/)).toBeInTheDocument();
+  });
 });
+

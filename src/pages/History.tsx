@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ExerciseImage } from '@/components/ExerciseImage';
 import { formatDurationLong, formatNumber, frDate } from '@/utils/formatters';
 import { useNavigate } from 'react-router-dom';
@@ -27,6 +27,8 @@ import { Input } from '@/components/ui/input';
 import { useUserStore } from '@/store/userStore';
 import { createUserTemplate } from '@/firebase/templates';
 import { templateFromSession, redoExercises } from '@/utils/progression';
+import { useLanguage } from '@/hooks/useLanguage';
+import { getLibraryExercise, libraryGifUrl, type LibraryExercise } from '@/utils/exerciseLibrary';
 
 type Tab = 'musculation' | 'renforcement' | 'records';
 
@@ -198,7 +200,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
           <div className="space-y-1.5">
             {(expanded ? session.exercises : session.exercises.slice(0, 3)).map((ex, i) => {
               const completedSetsList = ex.sets.filter(isWorkSet);
-              const imgUrl = imageMap[ex.exerciseId];
+              const imgUrl = imageMap[ex.exerciseId] ?? ex.imageUrl; // library exercises are not in imageMap
               const firstSet = completedSetsList[0];
               const w = firstSet ? (firstSet.actualWeight ?? firstSet.weight) : 0;
               const rpes = completedSetsList.map((st) => st.rpe ?? 0).filter(Boolean);
@@ -350,6 +352,19 @@ function History() {
   const { imageMap, infoMap } = useExerciseImages();
   const navigate = useNavigate();
   const [detailPr, setDetailPr] = useState<PersonalRecord | null>(null);
+  const lang = useLanguage();
+  const [libDetail, setLibDetail] = useState<LibraryExercise | null>(null);
+  // library exercises are not in infoMap: their how-to comes from the library, as in a live session
+  useEffect(() => {
+    let cancelled = false;
+    setLibDetail(null);
+    if (detailPr) {
+      getLibraryExercise(detailPr.exerciseId, lang)
+        .then((d) => { if (!cancelled) setLibDetail(d); })
+        .catch(() => {}); // offline: the sheet shows without the how-to
+    }
+    return () => { cancelled = true; };
+  }, [detailPr, lang]);
   const { phase: gymPhase, startFreeSession, loadGymTemplate, startExecution } = useGymSessionStore();
   const { isActive: renfoActive, loadExercises } = useSessionStore();
   const { toast } = useToast();
@@ -607,11 +622,11 @@ function History() {
           exerciseId={detailPr.exerciseId}
           name={detailPr.name}
           emoji={detailPr.emoji}
-          imageUrl={infoMap[detailPr.exerciseId]?.gifUrl ?? detailPr.imageUrl ?? null}
+          imageUrl={infoMap[detailPr.exerciseId]?.gifUrl ?? (libDetail ? libraryGifUrl(libDetail) : null) ?? detailPr.imageUrl ?? null}
           description={infoMap[detailPr.exerciseId]?.description ?? null}
-          steps={infoMap[detailPr.exerciseId]?.steps}
-          target={infoMap[detailPr.exerciseId]?.target}
-          secondaryMuscles={infoMap[detailPr.exerciseId]?.secondaryMuscles}
+          steps={infoMap[detailPr.exerciseId]?.steps ?? libDetail?.steps}
+          target={infoMap[detailPr.exerciseId]?.target ?? libDetail?.target}
+          secondaryMuscles={infoMap[detailPr.exerciseId]?.secondaryMuscles ?? libDetail?.secondaryMuscles}
           history={exerciseHistory(gymSessions, detailPr.exerciseId)}
           log={exerciseLog(gymSessions, detailPr.exerciseId)}
           timed={detailPr.timed}
