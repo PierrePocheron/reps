@@ -132,6 +132,24 @@ describe('GymSession — série validée par erreur', () => {
   });
 });
 
+describe('GymSession — retirer pendant la séance', () => {
+  it('« − » retire la dernière série tant qu\'elle n\'est pas validée', async () => {
+    await setup([bench([{ reps: 8, weight: 60 }, { reps: 8, weight: 60 }])]);
+    fireEvent.click(screen.getByLabelText('Retirer la dernière série'));
+    expect(sets()).toHaveLength(1);
+    fireEvent.click(screen.getByLabelText('Valider la série 1'));
+    expect(screen.queryByLabelText('Retirer la dernière série')).toBeNull(); // validée : on ne la perd pas d'un appui
+  });
+
+  it('la fiche de l\'exercice permet de le retirer de la séance', async () => {
+    await setup([bench([{ reps: 8, weight: 60 }]), { ...bench([{ reps: 10, weight: 20 }]), exerciseId: 'barbell_curl', name: 'Curl barre' }]);
+    fireEvent.click(screen.getByLabelText('Développé couché : voir la fiche et ta progression'));
+    fireEvent.click(screen.getByRole('button', { name: /Retirer de la séance/ }));
+    expect(useGymSessionStore.getState().exercises.map((e) => e.exerciseId)).toEqual(['barbell_curl']);
+    expect(screen.queryByRole('button', { name: /Retirer de la séance/ })).toBeNull(); // fiche refermée
+  });
+});
+
 describe('GymSession — repos automatique', () => {
   it('démarre aussi après la seule série (ou la dernière) de la séance, quand on ajoute les séries une à une', async () => {
     await setup([bench([{ reps: 8, weight: 60 }])], { autoRest: true });

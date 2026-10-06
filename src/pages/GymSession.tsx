@@ -36,6 +36,7 @@ import {
   TrendingUp,
   Link2,
   ArrowUpDown,
+  Minus,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ToastAction } from '@/components/ui/toast';
@@ -527,6 +528,7 @@ function GymSession() {
               if (!set.completed && isLoadSet(set) && (set.actualWeight ?? set.weight) < s.to) updateSet(exercise.exerciseId, i, { weight: s.to, actualWeight: s.to }); // a planned drop set keeps its lighter load
             })}
             onNoteChange={(note) => setExerciseNote(exercise.exerciseId, note)}
+            onRemoveLastSet={() => removeSet(exercise.exerciseId, exercise.sets.length - 1)}
             onAddSet={(exerciseId) => {
               const ex = exercises.find((e) => e.exerciseId === exerciseId);
               const last = ex?.sets[ex.sets.length - 1];
@@ -711,6 +713,7 @@ function GymSession() {
             log={exerciseLog(gymHistory, ex.exerciseId)}
             timed={isTimed(ex)}
             onReplace={() => { setReplaceTarget(ex.exerciseId); setDetailExerciseId(null); setShowExerciseDialog(true); }}
+            onRemove={() => { removeExercise(ex.exerciseId); setDetailExerciseId(null); }}
             onClose={() => setDetailExerciseId(null)}
           />
         );
@@ -860,6 +863,7 @@ function ExecuteExerciseCard({
   onUncompleteSet,
   onUpdateSet,
   onAddSet,
+  onRemoveLastSet,
   onShowDetail,
   lastNote,
   onNoteChange,
@@ -878,6 +882,7 @@ function ExecuteExerciseCard({
   onUncompleteSet: (exerciseId: string, setIndex: number) => void;
   onUpdateSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
   onAddSet: (exerciseId: string) => void;
+  onRemoveLastSet: () => void;
   onShowDetail: (exerciseId: string) => void;
   lastNote?: string;
   onNoteChange: (note: string) => void;
@@ -1024,6 +1029,17 @@ function ExecuteExerciseCard({
             <Plus className="h-3.5 w-3.5" />
             Série {exercise.sets.filter((st) => st.type !== 'warmup').length + 1}
           </button>
+          {/* Set added by mistake: removable while not validated (a validated one is un-validated first) */}
+          {exercise.sets.length > 0 && !exercise.sets[exercise.sets.length - 1]!.completed && (
+            <button
+              type="button"
+              onClick={onRemoveLastSet}
+              aria-label="Retirer la dernière série"
+              className="min-h-11 min-w-11 flex items-center justify-center rounded-xl border border-dashed border-border hover:border-destructive/50 hover:bg-destructive/5 text-muted-foreground hover:text-destructive transition-all"
+            >
+              <Minus className="h-3.5 w-3.5" aria-hidden />
+            </button>
+          )}
           {warmups.length > 0 && (
             <button
               onClick={() => onAddWarmup(warmups)}
