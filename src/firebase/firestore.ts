@@ -1154,11 +1154,11 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
       Promise.all(chunks.map((ids) => recent('userEvents', ids))), // badges
     ]);
 
-    const sessions = sessionSnaps.flatMap((snap) => snap.docs).map(doc => ({
-      type: 'session',
-      sessionId: doc.id,
-      ...doc.data()
-    }));
+    // The rules do not type-check sessions or events: one malformed doc must not break every friend's feed
+    const sessions = sessionSnaps.flatMap((snap) => snap.docs).map(doc => {
+      const data = doc.data();
+      return { type: 'session', sessionId: doc.id, ...data, exercises: Array.isArray(data.exercises) ? data.exercises : [] };
+    });
 
     const events = eventSnaps.flatMap((snap) => snap.docs).map(doc => ({
       id: doc.id,
@@ -1166,7 +1166,7 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
     }));
 
     // Fusionner et trier
-    const allActivity = [...sessions, ...events].sort((a: ActivityItem, b: ActivityItem) => {
+    const allActivity = [...sessions, ...events].filter((a: ActivityItem) => typeof a.createdAt?.toDate === 'function').sort((a: ActivityItem, b: ActivityItem) => {
       const dateA = a.createdAt?.toDate() || new Date(0);
       const dateB = b.createdAt?.toDate() || new Date(0);
       return dateB.getTime() - dateA.getTime();
