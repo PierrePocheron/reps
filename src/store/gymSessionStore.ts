@@ -52,6 +52,7 @@ interface GymSessionState {
   // Actions — Exécution
   startExecution: () => void;
   completeSetAt: (exerciseId: string, setIndex: number, actualReps: number, actualWeight: number) => void;
+  uncompleteSet: (exerciseId: string, setIndex: number) => void;
   startRestTimer: (exerciseId?: string) => void;
   dismissRestTimer: () => void;
   setChrono: (chrono: { exerciseId: string; startedAt: number } | null) => void;
@@ -231,6 +232,15 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
             }
           : ex
       ),
+    }));
+  },
+
+  // Validated by mistake (Strong, Hevy: tap the check again): back to do, typed values kept
+  uncompleteSet: (exerciseId: string, setIndex: number) => {
+    set((state) => ({
+      exercises: state.exercises.map((ex) => (ex.exerciseId !== exerciseId ? ex : {
+        ...ex, sets: ex.sets.map((s, i) => (i === setIndex ? { ...s, completed: false } : s)),
+      })),
     }));
   },
 

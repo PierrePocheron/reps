@@ -134,6 +134,20 @@ describe('gymSessionStore — chrono d\'un exercice en durée (#59)', () => {
   });
 });
 
+describe('gymSessionStore — dé-valider une série', () => {
+  it('remet la série à faire en gardant les valeurs saisies', () => {
+    useGymSessionStore.setState({ exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [
+      { weight: 60, reps: 8, completed: true, actualWeight: 62.5, actualReps: 7, rpe: 8 },
+      { weight: 60, reps: 8, completed: true },
+    ] }] });
+    useGymSessionStore.getState().uncompleteSet('bench_press', 0);
+    expect(useGymSessionStore.getState().exercises[0]!.sets).toEqual([
+      { weight: 60, reps: 8, completed: false, actualWeight: 62.5, actualReps: 7, rpe: 8 },
+      { weight: 60, reps: 8, completed: true },
+    ]);
+  });
+});
+
 describe('gymSessionStore — séance libre', () => {
   it('ne remplace pas une séance déjà en cours (exécution ou planification)', () => {
     const bench = { exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [{ weight: 60, reps: 8, completed: true }] };

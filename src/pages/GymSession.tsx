@@ -98,6 +98,7 @@ function GymSession() {
     getTotalSets,
     getCompletedSets,
     completeSetAt,
+    uncompleteSet,
     startRestTimer,
   } = useGymSessionStore();
   useKeepAwake(phase === 'execute');
@@ -508,6 +509,7 @@ function GymSession() {
             exercise={exercise}
             supersetLabel={exercise.supersetId ? `Superset ${letters[exercise.supersetId]}` : undefined}
             onCompleteSet={handleCompleteSet}
+            onUncompleteSet={(exerciseId, setIndex) => { uncompleteSet(exerciseId, setIndex); syncRecords(exerciseId); }}
             onRpe={showRpe ? (exerciseId, setIndex, rpe) => updateSet(exerciseId, setIndex, { rpe }) : undefined}
             onType={(exerciseId, setIndex, type) => { updateSet(exerciseId, setIndex, { type }); syncRecords(exerciseId); }}
             onUpdateSet={(exerciseId, setIndex, reps, weight) => {
@@ -724,6 +726,7 @@ function SetExecuteRow({
   setIndex,
   exerciseId,
   onComplete,
+  onUncomplete,
   onUpdate,
   onRpe,
   onType,
@@ -736,6 +739,7 @@ function SetExecuteRow({
   setIndex: number;
   exerciseId: string;
   onComplete: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
+  onUncomplete: () => void;
   onUpdate: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
   onRpe?: (rpe: number | undefined) => void; // présent seulement si le réglage « RPE par série » est actif
   onType: (type: SetType | undefined) => void;
@@ -809,25 +813,27 @@ function SetExecuteRow({
       </div>
 
       {onRpe && set.completed ? (
-        // Série validée : le RPE remplace la coche (la ligne verte indique déjà la validation)
+        // Série validée : le RPE remplace la coche (la ligne verte indique déjà la validation) ; son menu offre
+        // donc aussi l'annulation de la validation, à la place du second appui sur la coche
         <select
           value={set.rpe ?? ''}
-          onChange={(e) => onRpe(e.target.value ? Number(e.target.value) : undefined)}
+          onChange={(e) => (e.target.value === UNDO ? onUncomplete() : onRpe(e.target.value ? Number(e.target.value) : undefined))}
           aria-label={`RPE (effort ressenti), série ${setIndex + 1}`}
           className="h-11 w-11 -my-1.5 -mr-1.5 ml-auto flex-shrink-0 appearance-none rounded-lg bg-transparent text-center text-xs font-semibold text-green-700 dark:text-green-400 border border-green-500/30"
         >
           <option value="">RPE</option>
           {RPE_VALUES.map((v) => <option key={v} value={v}>{v.toLocaleString('fr-FR')}</option>)}
+          <option value={UNDO}>Annuler la validation</option>
         </select>
       ) : (
         <button
           onClick={() => {
-            if (set.completed) return;
+            if (set.completed) { onUncomplete(); return; }
             haptics.impact();
             play('success');
             onComplete(exerciseId, setIndex, num(reps), num(weight));
           }}
-          aria-label={set.completed ? `Série ${setIndex + 1} validée` : `Valider la série ${setIndex + 1}`}
+          aria-label={set.completed ? `Annuler la validation de la série ${setIndex + 1}` : `Valider la série ${setIndex + 1}`}
           className={cn(
             'h-11 w-11 -my-1.5 -mr-1.5 ml-auto flex items-center justify-center rounded-lg transition-all active:scale-95 flex-shrink-0',
             set.completed
@@ -851,6 +857,7 @@ function SetExecuteRow({
 function ExecuteExerciseCard({
   exercise,
   onCompleteSet,
+  onUncompleteSet,
   onUpdateSet,
   onAddSet,
   onShowDetail,
@@ -868,6 +875,7 @@ function ExecuteExerciseCard({
 }: {
   exercise: GymSessionExercise;
   onCompleteSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
+  onUncompleteSet: (exerciseId: string, setIndex: number) => void;
   onUpdateSet: (exerciseId: string, setIndex: number, reps: number, weight: number) => void;
   onAddSet: (exerciseId: string) => void;
   onShowDetail: (exerciseId: string) => void;
@@ -997,6 +1005,7 @@ function ExecuteExerciseCard({
             setIndex={i}
             exerciseId={exercise.exerciseId}
             onComplete={onCompleteSet}
+            onUncomplete={() => onUncompleteSet(exercise.exerciseId, i)}
             onUpdate={onUpdateSet}
             onRpe={onRpe && ((rpe) => onRpe(exercise.exerciseId, i, rpe))}
             onType={(type) => onType(exercise.exerciseId, i, type)}
@@ -1046,6 +1055,7 @@ function ExecuteExerciseCard({
 
 const EXACT_ALARM_ASKED = 'reps_exact_alarm_asked';
 const RPE_VALUES = [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
+const UNDO = 'undo'; // RPE menu entry that un-validates the set
 
 /** Échange un exercice et le suivant (réordonner, #53) — boutons plutôt que glisser-déposer : accessible. */
 function SwapButton({ upper, lower, onSwap }: { upper: string; lower: string; onSwap: () => void }) {

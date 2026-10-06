@@ -105,6 +105,33 @@ describe('GymSession — séance vide', () => {
   });
 });
 
+describe('GymSession — série validée par erreur', () => {
+  it('retoucher la coche la dé-valide, valeurs gardées, et lui retire son trophée', async () => {
+    const history = [{ id: 'old', userId: 'u1', date: { toDate: () => new Date(2026, 9, 1), toMillis: () => 0 }, duration: 3000, totalVolume: 500, totalSets: 1,
+      exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [{ reps: 5, weight: 100, completed: true }] }] }];
+    vi.mocked(gs.getUserGymSessions).mockResolvedValue(history as never);
+    useUserStore.setState({ user: { uid: 'u1', displayName: 'P' } as never });
+    useGymSessionStore.setState({ phase: 'execute', startTime: Date.now(), autoRest: false, showRpe: false, suggestLoad: false, exercises: [bench([{ reps: 5, weight: 110 }])] } as never);
+    render(<MemoryRouter><GymSession /></MemoryRouter>);
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+    fireEvent.change(screen.getByLabelText('Répétitions, série 1'), { target: { value: '6' } });
+    fireEvent.click(screen.getByLabelText('Valider la série 1'));
+    expect(sets()[0]).toMatchObject({ completed: true, isRecord: true });
+    fireEvent.click(screen.getByLabelText('Annuler la validation de la série 1'));
+    expect(sets()[0]).toMatchObject({ completed: false, isRecord: false, actualReps: 6, actualWeight: 110 });
+    expect((screen.getByLabelText('Répétitions, série 1') as HTMLInputElement).value).toBe('6');
+  });
+
+  it('avec le RPE, le choix « Annuler la validation » du menu RPE fait de même', async () => {
+    await setup([bench([{ reps: 8, weight: 60 }])], { showRpe: true });
+    fireEvent.click(screen.getByLabelText('Valider la série 1'));
+    fireEvent.change(screen.getByLabelText('RPE (effort ressenti), série 1'), { target: { value: 'undo' } });
+    expect(sets()[0]).toMatchObject({ completed: false, actualReps: 8, actualWeight: 60 });
+    expect(screen.getByLabelText('Valider la série 1')).toBeInTheDocument();
+  });
+});
+
 describe('GymSession — repos automatique', () => {
   it('démarre aussi après la seule série (ou la dernière) de la séance, quand on ajoute les séries une à une', async () => {
     await setup([bench([{ reps: 8, weight: 60 }])], { autoRest: true });
