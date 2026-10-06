@@ -18,6 +18,11 @@ describe('suggestNextWeight', () => {
     expect(suggestNextWeight([session('bench_press', [done(80, 8), { weight: 80, reps: 8, completed: false }])], 'bench_press')).toBeNull();
   });
 
+  it('work sets at different loads → no suggestion (the summary and "Apply" would lie: 65 → 72.5 kg)', () => {
+    expect(suggestNextWeight([session('bench_press', [done(70, 8), done(65, 8)])], 'bench_press')).toBeNull();
+    expect(suggestNextWeight([session('bench_press', [{ ...done(40, 10), type: 'warmup' }, done(70, 8), done(70, 8)])], 'bench_press')?.to).toBe(72.5);
+  });
+
   it('une série dégressive ne compte pas pour la charge (ni dans le résumé, ni ratée)', () => {
     const h = [session('bench_press', [done(100, 5), done(100, 5), done(100, 5), { ...done(60, 12, 8), type: 'drop' }])];
     expect(suggestNextWeight(h, 'bench_press')).toMatchObject({ from: 100, to: 102.5, summary: '3 × 5 à 100 kg' });

@@ -33,8 +33,10 @@ export function suggestNextWeight(history: GymSession[], exerciseId: string): Lo
     const work = ex.sets.filter(isLoadSet);
     if (work.length === 0) continue;
     const allHit = work.every((s) => s.completed && (s.actualReps ?? s.reps) >= s.reps);
-    const from = Math.max(...work.map((s) => s.actualWeight ?? s.weight));
-    if (!allHit || from <= 0) return null; // charge à confirmer, ou exercice au poids du corps
+    const loads = new Set(work.map((s) => s.actualWeight ?? s.weight));
+    const [from = 0] = loads;
+    // Mixed loads (pyramid, back-off): "N × reps at max" would misdescribe it and "Apply" would jump the lighter sets
+    if (!allHit || loads.size > 1 || from <= 0) return null; // charge à confirmer, ou exercice au poids du corps
     const reps = Math.min(...work.map((s) => s.actualReps ?? s.reps));
     return { from, to: from + incrementFor(exerciseId), summary: `${work.length} × ${reps} à ${from.toLocaleString('fr-FR')} kg` };
   }
