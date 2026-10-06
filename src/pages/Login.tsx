@@ -11,7 +11,7 @@ export default function Login() {
 
   useEffect(() => {
     if (user && !isLoading) {
-      navigate('/');
+      navigate('/', { replace: true }); // back from Home must not land on the login screen, which redirected again
     }
   }, [user, isLoading, navigate]);
 
