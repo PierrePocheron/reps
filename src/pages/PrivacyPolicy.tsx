@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
 // Identité de l'éditeur : injectée au build (.env), jamais versionnée (repo public)
@@ -7,13 +7,16 @@ const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL ?? '';
 
 export default function PrivacyPolicy() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
-            onClick={() => navigate(-1)}
+            // opened directly (store listing, new tab): no previous page in the app, so lead into it
+            onClick={() => (location.key === 'default' ? navigate('/') : navigate(-1))}
+            aria-label="Retour"
             className="p-2 rounded-full hover:bg-muted transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
