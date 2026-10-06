@@ -23,7 +23,7 @@ describe('cartes de partage', () => {
     });
     // toLocaleString('fr-FR') sépare les milliers par une espace insécable fine
     expect(card.stats.map((st) => ({ ...st, value: st.value.replace(/\s/g, ' ') }))).toEqual([
-      { label: 'Durée', value: '1h 5min' },
+      { label: 'Durée', value: '1 h 05' },
       { label: 'Volume', value: '1 180 kg' },
       { label: 'Séries', value: '3' },
       { label: 'Record', value: '🏆 1' },
@@ -45,7 +45,7 @@ describe('cartes de partage', () => {
     const card = renfoCard({ date: new Date(), duration: 600, exercises, totalReps: 70, totalCalories: 31.6 });
     expect(card.lines).toHaveLength(6);
     expect(card.more).toBe(1);
-    expect(card.stats.map((s) => s.value)).toEqual(['10min 00s', '70', '32 kcal']);
+    expect(card.stats.map((s) => s.value)).toEqual(['10\u00a0min', '70', '32 kcal']);
   });
 
   describe('fitText', () => {

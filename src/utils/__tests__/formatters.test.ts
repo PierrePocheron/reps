@@ -47,14 +47,18 @@ describe('Formatters Utils', () => {
   });
 
   describe('formatDurationLong', () => {
+    // French style with no-break spaces: « 45 s », « 47 min », « 1 h 07 » (« 1h 0min », « 47min 04s » before)
     it('should format seconds only', () => {
-      expect(formatDurationLong(45)).toBe('45s');
+      expect(formatDurationLong(45)).toBe('45\u00a0s');
     });
-    it('should format minutes and seconds', () => {
-      expect(formatDurationLong(125)).toBe('2min 05s');
+    it('should format minutes, seconds dropped', () => {
+      expect(formatDurationLong(125)).toBe('2\u00a0min');
+      expect(formatDurationLong(2824)).toBe('47\u00a0min');
     });
-    it('should format hours and minutes', () => {
-      expect(formatDurationLong(3665)).toBe('1h 1min');
+    it('should format hours and two-digit minutes', () => {
+      expect(formatDurationLong(3665)).toBe('1\u00a0h\u00a001');
+      expect(formatDurationLong(3600)).toBe('1\u00a0h\u00a000');
+      expect(formatDurationLong(4020)).toBe('1\u00a0h\u00a007');
     });
   });
 

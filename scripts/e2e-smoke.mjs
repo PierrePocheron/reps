@@ -309,7 +309,7 @@ const steps = [
     await page.getByRole('button', { name: /^📅 Enregistrée le / }).waitFor();
     await page.getByRole('button', { name: /^Terminer/ }).click();
     await page.getByRole('heading', { name: 'Séance terminée !' }).waitFor();
-    await page.getByText('45min 00s').waitFor(); // durée saisie, pas le chrono
+    await page.getByText('45 min').waitFor(); // durée saisie, pas le chrono
     await page.getByRole('button', { name: 'Terminer', exact: true }).click();
     await page.goto(`${BASE}/history`);
     await page.getByRole('tab', { name: /Muscu/ }).click();
@@ -326,7 +326,7 @@ const steps = [
     await page.getByRole('dialog').getByRole('button', { name: 'Valider' }).click();
     await page.getByRole('button', { name: /Terminer la séance/ }).click();
     await page.getByRole('heading', { name: 'Séance terminée !' }).waitFor();
-    await page.getByText('30min 00s').waitFor();
+    await page.getByText('30 min').waitFor();
     await page.getByRole('button', { name: 'Terminer', exact: true }).click();
     await page.goto(`${BASE}/history`);
     await page.getByRole('tab', { name: /Renfo/ }).click();

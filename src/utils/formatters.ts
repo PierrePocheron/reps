@@ -35,21 +35,13 @@ export function formatDuration(seconds: number): string {
   return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-/**
- * Formate une durée en format lisible (ex: "1h 30min")
- */
+/** Durée à la française, espaces insécables : « 1 h 07 », « 47 min », « 45 s » (les secondes ne comptent plus au-delà d'une minute). */
 export function formatDurationLong(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = seconds % 60;
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}min`;
-  } else if (minutes > 0) {
-    return `${minutes}min ${remainingSeconds.toString().padStart(2, '0')}s`;
-  } else {
-    return `${remainingSeconds}s`;
-  }
+  if (hours > 0) return `${hours}\u00a0h\u00a0${String(minutes).padStart(2, '0')}`;
+  if (minutes > 0) return `${minutes}\u00a0min`;
+  return `${seconds % 60}\u00a0s`;
 }
 
 /** Number typed in a field: « 82,5 » like « 82.5 » (French keypads), empty → 0, anything else → null (reject the keystroke). */
