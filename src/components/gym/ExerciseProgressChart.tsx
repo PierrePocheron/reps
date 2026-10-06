@@ -18,7 +18,7 @@ const PERIODS = [
 ] as const;
 
 const W = 320, H = 150, PL = 38, PR = 10, PT = 14, PB = 24;
-const fmt = (n: number) => Math.round(n).toLocaleString('fr-FR');
+const fmt = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 1 }); // 77,5 kg, not 78
 const dayMonth = (d: Date) => frDate(d, { day: 'numeric', month: 'short' });
 
 /** Courbe de progression d'un exercice (Strong / Hevy : graphique par exercice). */
@@ -81,12 +81,13 @@ export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint
   const hi = min === max ? max * 1.1 : max + (max - min) * 0.15;
   const t0 = shown[0]!.date.getTime(), t1 = shown[shown.length - 1]!.date.getTime();
   const x = (t: number) => (t1 === t0 ? (PL + W - PR) / 2 : PL + ((t - t0) / (t1 - t0)) * (W - PL - PR));
+  const tick = (v: number) => v.toLocaleString('fr-FR', { maximumFractionDigits: hi - lo < 10 ? 1 : 0 }); // decimal only on a narrow scale
   const y = (v: number) => PT + (1 - (v - lo) / (hi - lo)) * (H - PT - PB);
   const coords = shown.map((p) => [x(p.date.getTime()), y(p[metric])] as const);
   const line = coords.map(([cx, cy], i) => `${i ? 'L' : 'M'}${cx.toFixed(1)} ${cy.toFixed(1)}`).join(' ');
   const recordIdx = values.indexOf(max);
   const first = values[0]!, last = values[values.length - 1]!;
-  const delta = last - first;
+  const delta = Math.round((last - first) * 10) / 10; // as shown: a change that rounds to 0 is « stable », not « −0 kg »
 
   return (
     <div className="space-y-3">
@@ -111,8 +112,8 @@ export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint
           <Trophy className="h-4 w-4 text-amber-500" /> Record : {fmt(max)} {unit}
         </span>
         {shown.length > 1 && (
-          <span className={cn('text-xs font-semibold', delta >= 0 ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground')}>
-            {delta >= 0 ? '+' : '−'}{fmt(Math.abs(delta))} {unit} sur la période
+          <span className={cn('text-xs font-semibold', delta > 0 ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground')}>
+            {delta === 0 ? 'stable' : `${delta > 0 ? '+' : '−'}${fmt(Math.abs(delta))} ${unit}`} sur la période
           </span>
         )}
       </div>
@@ -126,7 +127,7 @@ export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint
         {[hi, (hi + lo) / 2, lo].map((v) => (
           <g key={v}>
             <line x1={PL} x2={W - PR} y1={y(v)} y2={y(v)} className="stroke-border" strokeDasharray="3 4" />
-            <text x={PL - 6} y={y(v) + 3.5} textAnchor="end" className="fill-muted-foreground" fontSize="10">{fmt(v)}</text>
+            <text x={PL - 6} y={y(v) + 3.5} textAnchor="end" className="fill-muted-foreground" fontSize="10">{tick(v)}</text>
           </g>
         ))}
         {coords.length > 1 && (
