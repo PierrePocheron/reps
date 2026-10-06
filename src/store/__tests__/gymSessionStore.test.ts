@@ -118,6 +118,17 @@ describe('gymSessionStore — remplacer un exercice (#62)', () => {
   });
 });
 
+describe('gymSessionStore — chrono d\'un exercice en durée (#59)', () => {
+  it('est sauvegardé avec la séance et oublié quand elle se termine', () => {
+    useGymSessionStore.getState().setChrono({ exerciseId: 'plank', startedAt: 789 });
+    const saved = JSON.parse(localStorage.getItem('reps_gym_session') ?? '{}').state;
+    expect(saved.chrono).toEqual({ exerciseId: 'plank', startedAt: 789 });
+
+    useGymSessionStore.getState().cancelSession();
+    expect(useGymSessionStore.getState().chrono).toBeNull();
+  });
+});
+
 describe('gymSessionStore — séance libre', () => {
   it('ne remplace pas une séance déjà en cours (exécution ou planification)', () => {
     const bench = { exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [{ weight: 60, reps: 8, completed: true }] };

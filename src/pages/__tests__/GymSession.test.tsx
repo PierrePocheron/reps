@@ -55,6 +55,22 @@ describe('GymSession — saisie des charges', () => {
   });
 });
 
+describe('GymSession — chrono d\'un exercice en durée', () => {
+  it('continue de tourner quand on quitte la page puis qu\'on y revient', async () => {
+    const plank = { ...bench([{ reps: 30, weight: 0 }]), exerciseId: 'plank', name: 'Gainage', timed: true };
+    const view = await setup([plank]);
+    fireEvent.click(screen.getByLabelText('Lancer le chrono de la série 1'));
+    view.unmount();
+
+    await setup([plank], { chrono: useGymSessionStore.getState().chrono });
+    const chrono = screen.getByLabelText('Arrêter le chrono et valider la série 1');
+    expect(chrono).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(chrono);
+    expect(sets()[0]).toMatchObject({ completed: true, actualReps: 1 });
+    expect(useGymSessionStore.getState().chrono).toBeNull();
+  });
+});
+
 describe('GymSession — repos automatique', () => {
   it('démarre aussi après la seule série (ou la dernière) de la séance, quand on ajoute les séries une à une', async () => {
     await setup([bench([{ reps: 8, weight: 60 }])], { autoRest: true });

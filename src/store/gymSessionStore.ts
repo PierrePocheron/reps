@@ -26,6 +26,7 @@ interface GymSessionState {
   restEndsAt: number | null; // horodatage de fin du repos (le décompte en dérive)
   restExerciseId: string | null; // exercice dont le repos est en cours (null : repos lancé à la main)
   restByExercise: Record<string, number>; // durée retenue par exercice, comme Hevy (préférence, persistée)
+  chrono: { exerciseId: string; startedAt: number } | null; // running chrono of a timed exercise (#59), saved like the rest
   autoRest: boolean; // lancer le repos quand une série est validée (préférence, persistée)
   showRpe: boolean; // saisir le RPE des séries validées (préférence, persistée)
   suggestLoad: boolean; // proposer la charge suivante quand tout a été réussi (préférence, persistée)
@@ -53,6 +54,7 @@ interface GymSessionState {
   completeSetAt: (exerciseId: string, setIndex: number, actualReps: number, actualWeight: number) => void;
   startRestTimer: (exerciseId?: string) => void;
   dismissRestTimer: () => void;
+  setChrono: (chrono: { exerciseId: string; startedAt: number } | null) => void;
   setRestDuration: (seconds: number) => void;
   adjustRest: (deltaSeconds: number) => void;
   setAutoRest: (on: boolean) => void;
@@ -94,6 +96,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   restEndsAt: null,
   restExerciseId: null,
   restByExercise: {},
+  chrono: null,
   autoRest: true,
   showRpe: false,
   suggestLoad: true,
@@ -245,6 +248,8 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     if (restEndsAt && Date.now() < restEndsAt) cancelRestEnd();
   },
 
+  setChrono: (chrono) => set({ chrono }),
+
   setRestDuration: (seconds: number) => {
     const { showRestTimer, restExerciseId: id } = get();
     // Pendant le repos d'un exercice : durée retenue pour lui ; sinon durée par défaut
@@ -315,6 +320,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
       duration: 0,
       showRestTimer: false,
       restEndsAt: null,
+      chrono: null,
       backdate: null,
       title: '',
       sessionNote: '',
@@ -378,6 +384,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     showRestTimer: s.showRestTimer,
     restEndsAt: s.restEndsAt,
     restExerciseId: s.restExerciseId,
+    chrono: s.chrono,
     restDuration: s.restDuration,
     restByExercise: s.restByExercise,
     autoRest: s.autoRest,

@@ -870,8 +870,11 @@ function ExecuteExerciseCard({
 }) {
   const completedCount = exercise.sets.filter((s) => s.completed).length;
   const [showPlates, setShowPlates] = useState(false);
-  // Chrono d'un exercice en durée (#59) : mesure la prochaine série, l'arrêter la remplit et la valide
-  const [chronoStart, setChronoStart] = useState<number | null>(null);
+  // Chrono d'un exercice en durée (#59) : mesure la prochaine série, l'arrêter la remplit et la valide.
+  // In the store, so leaving the page or a reload does not lose the time already held
+  const chronoStart = useGymSessionStore((s) => (s.chrono?.exerciseId === exercise.exerciseId ? s.chrono.startedAt : null));
+  const setChronoStart = (startedAt: number | null) =>
+    useGymSessionStore.getState().setChrono(startedAt === null ? null : { exerciseId: exercise.exerciseId, startedAt });
   const [now, setNow] = useState(Date.now());
   const chronoHaptics = useHaptic();
   const { play: chronoPlay } = useSound();
