@@ -75,16 +75,23 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
                   >
                     {s.type ? SET_TYPE_META[s.type].short : `S${n}`}
                   </button>
-                  <Input type="number" min={0} inputMode="numeric" value={s.actualReps || ''} placeholder="0" className={NUM}
-                    aria-label={`Répétitions, ${label} de ${ex.name}`}
-                    onChange={(e) => patch(i, j, { actualReps: Math.max(0, Math.round(Number(e.target.value) || 0)) })} />
-                  <span className="text-xs text-muted-foreground">{isTimed(ex) ? 's' : 'reps'}</span>
-                  <DecimalInput value={s.actualWeight ?? 0} placeholder="0" className={NUM}
-                    aria-label={`Charge en kg, ${label} de ${ex.name}`}
-                    onValue={(actualWeight) => patch(i, j, { actualWeight })} />
-                  <span className="text-xs text-muted-foreground">kg</span>
+                  {/* Only the fields wrap (narrow phone, large font), like the session rows: the remove button stays in reach */}
+                  <div className="flex flex-1 min-w-0 flex-wrap items-center gap-x-2 gap-y-2">
+                    <div className="flex items-center gap-1">
+                      <Input type="number" min={0} inputMode="numeric" value={s.actualReps || ''} placeholder="0" className={NUM}
+                        aria-label={`Répétitions, ${label} de ${ex.name}`}
+                        onChange={(e) => patch(i, j, { actualReps: Math.max(0, Math.round(Number(e.target.value) || 0)) })} />
+                      <span className="text-xs text-muted-foreground">{isTimed(ex) ? 's' : 'reps'}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <DecimalInput value={s.actualWeight ?? 0} placeholder="0" className={NUM}
+                        aria-label={`Charge en kg, ${label} de ${ex.name}`}
+                        onValue={(actualWeight) => patch(i, j, { actualWeight })} />
+                      <span className="text-xs text-muted-foreground">kg</span>
+                    </div>
+                  </div>
                   <button type="button" onClick={() => removeSet(i, j)} aria-label={`Retirer ${warmup ? "l'" : 'la '}${label} de ${ex.name}`}
-                    className="ml-auto h-11 w-11 -mr-2 flex items-center justify-center rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10">
+                    className="h-11 w-11 -mr-2 shrink-0 flex items-center justify-center rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
