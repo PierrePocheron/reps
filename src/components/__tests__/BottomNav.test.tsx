@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { BottomNav } from '../BottomNav';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
+import { useGymSessionStore } from '@/store/gymSessionStore';
 
 // Mock navigation
 const mockNavigate = vi.fn();
@@ -48,6 +49,14 @@ describe('BottomNav Component', () => {
         render(<MemoryRouter initialEntries={['/statistics']}><BottomNav /></MemoryRouter>);
         fireEvent.click(screen.getByText('Stats'));
         expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it('the central button does not stack entries when the running session is already shown', () => {
+        useGymSessionStore.setState({ phase: 'execute' } as never);
+        render(<MemoryRouter initialEntries={['/gym']}><BottomNav /></MemoryRouter>);
+        fireEvent.click(screen.getByRole('button', { name: 'Reprendre la séance en cours' }));
+        expect(mockNavigate).not.toHaveBeenCalled();
+        useGymSessionStore.setState({ phase: 'idle' } as never);
     });
 
     it('should show notification dot for new badges on Home', () => {

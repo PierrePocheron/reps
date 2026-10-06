@@ -81,7 +81,11 @@ export function BottomNav() {
         {/* Bouton central — séance en cours → la reprendre, sinon choisir le type de séance */}
         <div className="flex flex-1 h-full items-center justify-center">
           <button
-            onClick={() => hasActiveSession ? navigate(gymPhase !== 'idle' ? '/gym' : '/session') : setShowPicker(true)}
+            onClick={() => {
+              if (!hasActiveSession) return setShowPicker(true);
+              const target = gymPhase !== 'idle' ? '/gym' : '/session';
+              if (location.pathname !== target) navigate(target); // already there: no extra history entry (like the tabs)
+            }}
             aria-label={hasActiveSession ? 'Reprendre la séance en cours' : 'Nouvelle séance'}
             className={cn(
               'relative flex items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md',

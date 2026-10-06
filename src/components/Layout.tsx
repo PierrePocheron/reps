@@ -40,7 +40,7 @@ export function Layout({ children }: LayoutProps) {
   // Widget d'écran d'accueil (#36) : un tap ouvre l'appli sur l'accueil
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
-    const sub = App.addListener('appUrlOpen', ({ url }) => { if (url.endsWith('://home')) navigate('/'); });
+    const sub = App.addListener('appUrlOpen', ({ url }) => { if (url.endsWith('://home') && window.location.pathname !== '/') navigate('/'); });
     return () => { void sub.then((h) => h.remove()); };
   }, [navigate]);
 
