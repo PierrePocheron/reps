@@ -114,7 +114,7 @@ const steps = [
     await page.getByRole('textbox', { name: /^Note pour/ }).first().fill(note);
     await page.getByRole('textbox', { name: 'Titre de la séance' }).fill('Haut du corps e2e'); // titre (#64)
     // valeur précédente (#65) : rappel dès qu'on s'écarte de la dernière fois, puis valeur remise
-    const kg = page.getByRole('spinbutton', { name: /^Charge en kg, série 1/ }).first();
+    const kg = page.getByLabel(/^Charge en kg, série 1/).first();
     const original = await kg.inputValue();
     await kg.fill(String(Number(original) + 1));
     await page.getByText(/^Précédent : /).first().waitFor();
@@ -240,9 +240,9 @@ const steps = [
     assert.ok(after >= before + 13, `+15 s ajoute 15 s au repos (${before} → ${after})`);
     // exercice en durée (#55) : l'unité « reps » bascule en secondes pour tout l'exercice
     await cards.nth(0).getByRole('button', { name: /^Unité : répétitions/ }).first().click();
-    await cards.nth(0).getByRole('spinbutton', { name: /^Durée en secondes, série/ }).first().waitFor();
+    await cards.nth(0).getByLabel(/^Durée en secondes, série/).first().waitFor();
     // chrono (#59) : l'arrêter remplit et valide la prochaine série
-    const validated = () => cards.nth(0).getByRole('button', { name: /validée$/ }).count();
+    const validated = () => cards.nth(0).getByRole('button', { name: /^Annuler la validation de la série/ }).count(); // a validated set's check now un-validates it
     const validatedBefore = await validated();
     await cards.nth(0).getByRole('button', { name: /^Lancer le chrono/ }).click();
     await page.waitForTimeout(1200);
@@ -340,7 +340,7 @@ const steps = [
     await page.getByRole('button', { name: 'Actions de la séance' }).first().click();
     await page.getByRole('menuitem', { name: 'Modifier' }).click();
     const dialog = page.getByRole('dialog');
-    await dialog.getByRole('spinbutton', { name: /^Charge en kg, série 1 de / }).first().fill('123');
+    await dialog.getByLabel(/^Charge en kg, série 1 de /).first().fill('123');
     await dialog.getByRole('button', { name: 'Enregistrer' }).click();
     await page.getByText('Séance modifiée').first().waitFor();
     await page.getByText(/× 123 kg/).first().waitFor(); // carte mise à jour sans rechargement

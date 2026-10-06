@@ -107,7 +107,7 @@ const card = p.locator('div.rounded-2xl.border-2').first();
 const typeBtns = card.getByRole('button', { name: /^Série \d+ : / });
 while (await typeBtns.count() < 4) await card.getByRole('button', { name: /^Série \d+$/ }).click();
 for (let i = 1; i <= 3; i++) for (let k = 0; k < i; k++) await typeBtns.nth(i).click();
-await card.getByRole('spinbutton', { name: /^Charge en kg, série 1/ }).fill('102.5'); // decimal load: widest common value
+await card.getByLabel(/^Charge en kg, série 1/).fill('102,5'); // decimal load typed the French way: widest common value
 await card.getByRole('button', { name: /^Valider la série 1/ }).click(); // minuteur de repos (±15 s, préréglages)
 await p.waitForTimeout(500); const g = await run(); failures += g.length; if (g.length) console.log(`\n== ${pass} /gym\n` + g.join('\n'));
 await p.getByRole('button', { name: 'Annuler la séance' }).click(); // confirmation sheet (long button label)
