@@ -86,6 +86,21 @@ describe('History', () => {
     expect(screen.queryByText('Pompes')).not.toBeInTheDocument();
   });
 
+  it('the filter counts sessions with a French plural', () => {
+    GYM = [gym('A', 3, ['bench', 'squat'])];
+    render(<MemoryRouter><History /></MemoryRouter>);
+    expect(screen.getByRole('option', { name: 'Tous les exercices (1 séance)' })).toBeInTheDocument();
+  });
+
+  it('counts capped by the loaded page say there are more (« 100+ »)', () => {
+    GYM = Array.from({ length: 100 }, (_, i) => gym(`G${i}`, 1, [i ? 'bench' : 'squat']));
+    RENFO = Array.from({ length: 100 }, (_, i) => ({ sessionId: `R${i}`, userId: 'u1', date: ts(new Date(2026, 9, 1)), duration: 60, totalReps: 1, exercises: [] }));
+    render(<MemoryRouter><History /></MemoryRouter>);
+    expect(screen.getByRole('tab', { name: /Muscu/ })).toHaveTextContent('100+');
+    expect(screen.getByRole('tab', { name: /Renfo/ })).toHaveTextContent('100+');
+    expect(screen.getByRole('option', { name: 'Tous les exercices (100+ séances)' })).toBeInTheDocument();
+  });
+
   it('Records says which set it keeps and names the estimate « 1RM estimé », like the progress sheet', () => {
     GYM = [gym('A', 3, ['bench'])]; // 5 × 100 kg → ~117 kg estimated
     render(<MemoryRouter><History /></MemoryRouter>);

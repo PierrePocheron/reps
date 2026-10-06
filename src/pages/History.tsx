@@ -324,6 +324,9 @@ function History() {
   const [limit, setLimit] = useState(PAGE); // past the latest 100 sessions, older ones were unreachable (#71)
   const history = useSessionHistory(limit);
   const { loading, error, refetch } = history;
+  // a full page means older sessions are not loaded yet: counts then read « 100+ », not a total
+  const moreGym = history.gymSessions.length >= limit;
+  const moreRenfo = history.sessions.length >= limit;
   // Séances supprimées (#56) : retirées tout de suite, sans recharger la liste (pas de clignotement)
   const [deletedIds, setDeletedIds] = useState<string[]>([]);
   const [renfoEdits, setRenfoEdits] = useState<Record<string, Pick<Session, 'exercises' | 'totalReps' | 'totalCalories'>>>({});
@@ -484,7 +487,7 @@ function History() {
             Muscu
             {gymSessions.length > 0 && (
               <span className="text-xs bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full font-semibold">
-                {gymSessions.length}
+                {gymSessions.length}{moreGym && '+'}
               </span>
             )}
           </button>
@@ -502,7 +505,7 @@ function History() {
             Renfo
             {sessions.length > 0 && (
               <span className="text-xs bg-orange-500/10 text-orange-800 dark:text-orange-400 px-1.5 py-0.5 rounded-full font-semibold">
-                {sessions.length}
+                {sessions.length}{moreRenfo && '+'}
               </span>
             )}
           </button>
@@ -560,7 +563,7 @@ function History() {
                   aria-label="Filtrer les séances par exercice"
                   className="w-full min-h-11 rounded-xl border bg-card px-3 text-sm"
                 >
-                  <option value="">Tous les exercices ({gymSessions.length} séances)</option>
+                  <option value="">Tous les exercices ({moreGym ? `${formatNumber(gymSessions.length)}+ séances` : plural(gymSessions.length, 'séance')})</option>
                   {exerciseOptions.map(([id, o]) => (
                     <option key={id} value={id}>{o.name} ({o.count})</option>
                   ))}
@@ -573,7 +576,7 @@ function History() {
                   onDelete={() => setToDelete({ kind: 'gym', id: s.sessionId })}
                   onEdit={() => setToEdit(s)} />
               ))}
-              {history.gymSessions.length >= limit && <LoadOlder loading={loading} onClick={() => setLimit((l) => l + PAGE)} />}
+              {moreGym && <LoadOlder loading={loading} onClick={() => setLimit((l) => l + PAGE)} />}
             </div>
           )
         ) : activeTab === 'renforcement' ? (
@@ -594,7 +597,7 @@ function History() {
                   onDelete={() => setToDelete({ kind: 'renfo', id: s.sessionId })}
                   onEdit={() => setToEditRenfo(s)} />
               ))}
-              {history.sessions.length >= limit && <LoadOlder loading={loading} onClick={() => setLimit((l) => l + PAGE)} />}
+              {moreRenfo && <LoadOlder loading={loading} onClick={() => setLimit((l) => l + PAGE)} />}
             </div>
           )
         ) : (
