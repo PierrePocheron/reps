@@ -54,3 +54,11 @@ describe('GymSession — saisie des charges', () => {
     expect(sets()[0]).toMatchObject({ completed: true, actualWeight: 85.5, actualReps: 8 });
   });
 });
+
+describe('GymSession — repos automatique', () => {
+  it('démarre aussi après la seule série (ou la dernière) de la séance, quand on ajoute les séries une à une', async () => {
+    await setup([bench([{ reps: 8, weight: 60 }])], { autoRest: true });
+    fireEvent.click(screen.getByLabelText('Valider la série 1'));
+    expect(useGymSessionStore.getState()).toMatchObject({ showRestTimer: true, restExerciseId: 'bench_press' });
+  });
+});

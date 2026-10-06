@@ -241,8 +241,9 @@ function GymSession() {
 
   const handleCompleteSet = (exerciseId: string, setIndex: number, reps: number, weight: number) => {
     completeSetAt(exerciseId, setIndex, reps, weight);
-    // Comme Strong : repos à chaque série… sauf au milieu d'un tour de superset
-    if (autoRest && completedSets + 1 < totalSets && restAfterSet(useGymSessionStore.getState().exercises, exerciseId)) startRestTimer(exerciseId);
+    // Like Strong: rest after every set, the last one too (sets are often added one at a time; Terminer stops it)…
+    // except in the middle of a superset round
+    if (autoRest && restAfterSet(useGymSessionStore.getState().exercises, exerciseId)) startRestTimer(exerciseId);
     // Pas d'historique sur l'exercice = pas de « record » (évite le faux positif de la 1re séance) ; jamais sur un échauffement
     if (!syncRecords(exerciseId)[setIndex]?.isRecord) return;
     const exercise = exercises.find((ex) => ex.exerciseId === exerciseId);
