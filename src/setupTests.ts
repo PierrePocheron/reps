@@ -23,6 +23,11 @@ if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
   });
 }
 
+// 1c. scrollIntoView (absent de jsdom, utilisé par la séance muscu pour montrer la série suivante)
+if (typeof Element !== 'undefined' && typeof Element.prototype.scrollIntoView !== 'function') {
+  Element.prototype.scrollIntoView = vi.fn();
+}
+
 // 2. Mock Firebase
 vi.mock('firebase/app', () => ({
   initializeApp: vi.fn(() => ({ name: '[DEFAULT]' })),

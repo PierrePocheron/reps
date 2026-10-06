@@ -256,8 +256,15 @@ function GymSession() {
     return rated;
   };
 
+  // The set to do next goes above the floating bar (the rest panel covers ~40 % of the screen), once React has rendered
+  const revealSet = (pick: (rows: HTMLElement[]) => HTMLElement | undefined) => requestAnimationFrame(() => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    pick([...document.querySelectorAll<HTMLElement>('[data-set]')])?.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+  });
+
   const handleCompleteSet = (exerciseId: string, setIndex: number, reps: number, weight: number) => {
     completeSetAt(exerciseId, setIndex, reps, weight);
+    revealSet((rows) => rows.slice(rows.findIndex((r) => r.dataset.set === `${exerciseId}:${setIndex}`) + 1).find((r) => r.dataset.pending));
     // Like Strong: rest after every set, the last one too (sets are often added one at a time; Terminer stops it)…
     // except in the middle of a superset round
     if (autoRest && restAfterSet(useGymSessionStore.getState().exercises, exerciseId)) startRestTimer(exerciseId);
@@ -685,6 +692,7 @@ function GymSession() {
           const last = lastWorkSets(gymHistory, exercise.id);
           if (last.length) last.forEach((set) => addSet(exercise.id, set));
           else addSet(exercise.id, historyDefaults[exercise.id] ?? { reps: 10, weight: 0 });
+          revealSet((rows) => rows.find((r) => r.dataset.set === `${exercise.id}:0`));
         }}
         hasExercise={(id) => exercises.some((ex) => ex.exerciseId === id)}
         enrichedExercises={MUSCULATION_EXERCISES.map((ex) => ({ ...ex, imageUrl: imageMap[ex.id] }))}
@@ -762,7 +770,8 @@ function SetExecuteRow({
   // Colonne « Précédent » de Hevy / Strong, sans colonne de plus : rappel seulement quand on s'écarte de la dernière fois
   const changed = previous && (num(reps) !== previous.reps || (!timed && num(weight) !== previous.weight));
   return (
-    <div>
+    // Scroll margins: below the sticky header, above the floating bar with the rest panel open (list's pb-[23.5rem])
+    <div data-set={`${exerciseId}:${setIndex}`} data-pending={set.completed ? undefined : 'true'} className="scroll-mt-24 scroll-mb-[24rem]">
     <div className={cn(
       'flex flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2 rounded-xl transition-colors', // wraps only with a very large font
       set.completed ? 'bg-green-500/10' : 'bg-muted/30'

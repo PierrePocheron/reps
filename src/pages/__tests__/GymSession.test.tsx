@@ -12,7 +12,7 @@ const toast = vi.fn();
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast }) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ isAuthenticated: true }) }));
 vi.mock('@/hooks/useKeepAwake', () => ({ useKeepAwake: () => {} }));
-vi.mock('@/hooks/useHaptic', () => ({ useHaptic: () => ({ impact: vi.fn(), notification: vi.fn() }) }));
+vi.mock('@/hooks/useHaptic', () => ({ useHaptic: () => ({ impact: vi.fn(), notification: vi.fn(), selection: vi.fn() }) }));
 vi.mock('@/hooks/useSound', () => ({ useSound: () => ({ play: vi.fn() }) }));
 vi.mock('canvas-confetti', () => ({ default: vi.fn() }));
 vi.mock('@/utils/restNotification', () => ({ scheduleRestEnd: vi.fn(), cancelRestEnd: vi.fn(), exactAlarmDenied: () => Promise.resolve(false), openExactAlarmSettings: vi.fn() }));
@@ -147,6 +147,31 @@ describe('GymSession — retirer pendant la séance', () => {
     fireEvent.click(screen.getByRole('button', { name: /Retirer de la séance/ }));
     expect(useGymSessionStore.getState().exercises.map((e) => e.exerciseId)).toEqual(['barbell_curl']);
     expect(screen.queryByRole('button', { name: /Retirer de la séance/ })).toBeNull(); // fiche refermée
+  });
+});
+
+describe('GymSession — la prochaine série reste visible au-dessus de la barre de repos', () => {
+  const scrolled: string[] = [];
+  const frame = () => act(async () => { await new Promise((r) => requestAnimationFrame(() => r(null))); });
+  beforeEach(async () => {
+    await frame(); // a scroll queued by an earlier test's validation must not land here
+    scrolled.length = 0;
+    Element.prototype.scrollIntoView = vi.fn(function (this: HTMLElement) { scrolled.push(this.dataset.set ?? ''); });
+  });
+
+  it('après « Valider », fait défiler jusqu\'à la série suivante à faire', async () => {
+    await setup([bench([{ reps: 8, weight: 60 }, { reps: 8, weight: 60 }, { reps: 8, weight: 60 }])]);
+    fireEvent.click(screen.getByLabelText('Valider la série 2'));
+    await frame();
+    expect(scrolled).toEqual(['bench_press:2']);
+  });
+
+  it('après l\'ajout d\'un exercice, fait défiler jusqu\'à sa première série', async () => {
+    await setup([bench([{ reps: 8, weight: 60 }])]);
+    fireEvent.click(screen.getByRole('button', { name: /Ajouter un exercice/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Développé incliné/ }));
+    await frame();
+    expect(scrolled).toEqual(['incline_bench:0']);
   });
 });
 
