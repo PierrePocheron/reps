@@ -346,7 +346,7 @@ export async function getLastSession(userId: string): Promise<Session | null> {
 /** Modifier une séance renfo passée (#57) : reps par exercice ; total de reps recalculé, calories fournies. */
 export async function updateSession(userId: string, sessionId: string, exercises: SessionExercise[], totalCalories: number) {
   // min=0 on the inputs does not stop typing « -10 »
-  const clean = exercises.map(({ name, emoji, reps }) => ({ name, emoji, reps: Number.isFinite(reps) && reps > 0 ? reps : 0 }));
+  const clean = exercises.map(({ name, emoji, reps, met }) => ({ name, emoji, reps: Number.isFinite(reps) && reps > 0 ? reps : 0, ...(met ? { met } : {}) }));
   const fields = {
     exercises: clean,
     totalReps: clean.reduce((n, ex) => n + ex.reps, 0),

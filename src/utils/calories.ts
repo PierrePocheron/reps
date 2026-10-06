@@ -53,6 +53,6 @@ export const calculateDynamicCalories = (
   return parseFloat(totalCalories.toFixed(2));
 };
 
-/** Calories d'une séance renfo ; exercice perso (absent des défauts) → valeurs de repli du calcul. */
+/** Calories d'une séance renfo ; exercice bibliothèque → MET de sa catégorie ; exercice perso → valeurs de repli du calcul. */
 export const renfoCalories = (user: User | null, exercises: SessionExercise[]): number =>
-  exercises.reduce((sum, ex) => sum + calculateDynamicCalories(user, DEFAULT_EXERCISES.find((e) => e.name === ex.name) ?? ({} as Exercise), ex.reps), 0);
+  exercises.reduce((sum, ex) => sum + calculateDynamicCalories(user, DEFAULT_EXERCISES.find((e) => e.name === ex.name) ?? ({ met: ex.met } as Exercise), ex.reps), 0);

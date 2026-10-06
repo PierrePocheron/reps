@@ -95,6 +95,20 @@ describe('sessionStore', () => {
       expect(useSessionStore.getState().exercises).toHaveLength(1);
     });
 
+    it('a library exercise keeps its category MET: the saved kcal use it, not the 4.0 fallback', async () => {
+      useSessionStore.setState({ isActive: true, startTime: Date.now() - 5000 });
+      useSessionStore.getState().addExercise({ id: 'lib_0001', name: 'Sauts écartés', emoji: '🏃', met: 7, timePerRep: 2 } as any);
+      useSessionStore.getState().addReps('Sauts écartés', 100);
+      await useSessionStore.getState().endSession();
+      // 70 kg, 175 cm: MET 7 → 28.6 kcal (the 4.0 fallback gave 16)
+      expect(vi.mocked(firebaseModule.createSession).mock.calls[0]![1]).toMatchObject({ totalCalories: 29 });
+    });
+
+    it('« Refaire » keeps the MET of a library exercise', () => {
+      useSessionStore.getState().loadExercises([{ name: 'Sauts écartés', emoji: '🏃', met: 7 }]);
+      expect(useSessionStore.getState().exercises[0]).toEqual({ name: 'Sauts écartés', emoji: '🏃', met: 7, reps: 0 });
+    });
+
     it('should add multiple different exercises', () => {
       useSessionStore.getState().addExercise({ id: 'pushups', name: 'Pompes', emoji: '🔥' } as any);
       useSessionStore.getState().addExercise({ id: 'squats', name: 'Squats', emoji: '🦵' } as any);

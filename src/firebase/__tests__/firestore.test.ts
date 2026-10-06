@@ -655,4 +655,9 @@ describe('updateSession (renfo edit)', () => {
     expect(fields.exercises.map((e) => e.reps)).toEqual([0, 20]);
     expect(fields.totalReps).toBe(20);
   });
+
+  it('keeps the MET of a library exercise, so its kcal stay right in the stats', async () => {
+    const fields = await updateSession('uid', 's1', [{ name: 'Sauts écartés', emoji: '🏃', reps: 100, met: 7 }, { name: 'Pompes', emoji: '💪', reps: 20 }], 0);
+    expect(fields.exercises).toEqual([{ name: 'Sauts écartés', emoji: '🏃', reps: 100, met: 7 }, { name: 'Pompes', emoji: '💪', reps: 20 }]);
+  });
 });

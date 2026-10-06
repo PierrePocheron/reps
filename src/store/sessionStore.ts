@@ -32,7 +32,7 @@ interface SessionState {
   resetSession: () => void;
   setBackdate: (backdate: { at: number; duration: number } | null) => void;
   loadExercisesFromTemplate: (exerciseIds: string[]) => void;
-  loadExercises: (exercises: { name: string; emoji: string }[]) => void;
+  loadExercises: (exercises: Pick<SessionExercise, 'name' | 'emoji' | 'met'>[]) => void;
   loadSessionFromLocal: () => void;
   saveSessionToLocal: () => void;
   getExerciseReps: (exerciseName: string) => number;
@@ -156,6 +156,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       name: exercise.name,
       emoji: exercise.emoji,
       reps: 0,
+      ...(exercise.met ? { met: exercise.met } : {}),
     };
 
     set({
@@ -244,7 +245,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   /** Prépare une séance avec ces exercices, compteurs à zéro (modèle ou séance refaite) */
   loadExercises: (exercises) => {
-    set({ exercises: exercises.map(({ name, emoji }) => ({ name, emoji, reps: 0 })), isActive: false, startTime: null, duration: 0, totalReps: 0 });
+    set({ exercises: exercises.map(({ name, emoji, met }) => ({ name, emoji, ...(met ? { met } : {}), reps: 0 })), isActive: false, startTime: null, duration: 0, totalReps: 0 });
   },
 
   /**

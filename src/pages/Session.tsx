@@ -14,9 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSound } from '@/hooks/useSound';
 import confetti from 'canvas-confetti';
 import { useHaptic } from '@/hooks/useHaptic';
-import { calculateDynamicCalories } from '@/utils/calories';
-import { DEFAULT_EXERCISES } from '@/utils/constants';
-import type { Exercise } from '@/firebase/types';
+import { renfoCalories } from '@/utils/calories';
 import { logger } from '@/utils/logger';
 import { useKeepAwake } from '@/hooks/useKeepAwake';
 import { renfoCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
@@ -143,7 +141,8 @@ function Session() {
             const exerciseToAdd = {
               id: ex.name.toLowerCase().replace(/\s+/g, '_'),
               name: ex.name,
-              emoji: ex.emoji
+              emoji: ex.emoji,
+              met: ex.met,
             };
             addExercise(exerciseToAdd);
           }
@@ -226,10 +225,7 @@ function Session() {
   }
 
   // Calculer les calories en temps réel
-  const currentCalories = exercises.reduce((sum, sessionEx) => {
-    const defaultEx = DEFAULT_EXERCISES.find(e => e.name === sessionEx.name) || {} as Exercise;
-    return sum + calculateDynamicCalories(user, defaultEx, sessionEx.reps);
-  }, 0);
+  const currentCalories = renfoCalories(user, exercises); // same formula as the saved session
 
   return (
     <div className="bg-background pb-[calc(6rem+env(safe-area-inset-bottom))]">

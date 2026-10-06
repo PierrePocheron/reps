@@ -120,6 +120,7 @@ export interface SessionExercise {
   name: string;
   emoji: string;
   reps: number;
+  met?: number; // library exercise (category MET): its name is not in DEFAULT_EXERCISES
 }
 
 // Type pour une session d'entraînement
