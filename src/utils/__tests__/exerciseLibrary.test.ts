@@ -84,6 +84,12 @@ describe('searchLibrary', () => {
     expect(searchLibrary(LIB, 'pectoraux', 'all', undefined, 'fr').map((e) => e.id)).toEqual(['0025', '0662']);
     expect(searchLibrary(LIB, 'chest', 'all', undefined, 'en').map((e) => e.id)).toEqual(['0025', '0662']);
   });
+
+  it('plusieurs mots : chacun doit apparaître, pas forcément côte à côte', () => {
+    expect(searchLibrary(LIB, 'developpe barre').map((e) => e.id)).toEqual(['0025']);
+    expect(searchLibrary(LIB, 'tirage poulie').map((e) => e.id)).toEqual(['0198']);
+    expect(searchLibrary(LIB, 'tirage barre')).toEqual([]);
+  });
 });
 
 describe('toExercise', () => {
