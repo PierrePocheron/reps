@@ -34,16 +34,19 @@ type Tab = 'musculation' | 'renforcement' | 'records';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+const LONG_DATE: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+
 function formatDate(date: Date): string {
-  const s = frDate(date, {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  });
+  const s = frDate(date, LONG_DATE);
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function formatTime(date: Date): string {
   return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
+
+/** « la séance du samedi 3 octobre 2026 à 18:30 »: every card's buttons had the same names for screen readers. */
+const sessionName = (date: Date) => `la séance du ${frDate(date, LONG_DATE)} à ${formatTime(date)}`;
 
 
 // ─── Types Records ─────────────────────────────────────────────────────────────
@@ -52,11 +55,11 @@ function formatTime(date: Date): string {
 // ─── Renforcement Card ────────────────────────────────────────────────────────
 
 /** Actions d'une carte de l'historique, regroupées comme chez Hevy : modifier (#57), modèle (#48), supprimer (#56). */
-function CardMenu({ onEdit, onSaveTemplate, onDelete }: { onEdit?: () => void; onSaveTemplate?: () => void; onDelete: () => void }) {
+function CardMenu({ date, onEdit, onSaveTemplate, onDelete }: { date: Date; onEdit?: () => void; onSaveTemplate?: () => void; onDelete: () => void }) {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <button type="button" aria-label="Actions de la séance"
+        <button type="button" aria-label={`Actions de ${sessionName(date)}`}
           className="h-11 w-11 -my-2 -mr-2 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted">
           <MoreVertical className="h-4 w-4" />
         </button>
@@ -80,10 +83,10 @@ function CardMenu({ onEdit, onSaveTemplate, onDelete }: { onEdit?: () => void; o
   );
 }
 
-function CardActions({ onRedo, onShare }: { onRedo: () => void; onShare: () => void }) {
+function CardActions({ date, onRedo, onShare }: { date: Date; onRedo: () => void; onShare: () => void }) {
   return (
     <div className="flex flex-wrap gap-2">
-      <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={onRedo} aria-label="Refaire cette séance">
+      <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={onRedo} aria-label={`Refaire ${sessionName(date)}`}>
         <RotateCcw className="h-4 w-4 mr-2" /> Refaire
       </Button>
       <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={onShare}>
@@ -111,7 +114,7 @@ function RenforcementCard({ session, onRedo, onShare, onDelete, onEdit }: { sess
                 <Clock className="h-3 w-3 text-muted-foreground" />
                 <span className="text-xs font-medium">{formatDurationLong(session.duration)}</span>
               </div>
-              <CardMenu onEdit={onEdit} onDelete={onDelete} />
+              <CardMenu date={date} onEdit={onEdit} onDelete={onDelete} />
             </div>
           </div>
 
@@ -143,7 +146,7 @@ function RenforcementCard({ session, onRedo, onShare, onDelete, onEdit }: { sess
               </div>
             ))}
           </div>
-          <CardActions onRedo={onRedo} onShare={onShare} />
+          <CardActions date={date} onRedo={onRedo} onShare={onShare} />
         </div>
       </div>
     </div>
@@ -176,7 +179,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
                 <Clock className="h-3 w-3 text-muted-foreground" />
                 <span className="text-xs font-medium">{formatDurationLong(session.duration)}</span>
               </div>
-              <CardMenu onEdit={onEdit} onSaveTemplate={onSaveTemplate} onDelete={onDelete} />
+              <CardMenu date={date} onEdit={onEdit} onSaveTemplate={onSaveTemplate} onDelete={onDelete} />
             </div>
           </div>
 
@@ -241,7 +244,7 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
               </div>
             )}
           </div>
-          <CardActions onRedo={onRedo} onShare={onShare} />
+          <CardActions date={date} onRedo={onRedo} onShare={onShare} />
         </div>
       </div>
     </div>

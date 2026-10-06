@@ -22,9 +22,9 @@ vi.mock('@/firebase/firestore', () => ({ onUserStatsComputed: vi.fn(), deleteSes
 vi.mock('@/firebase/gymSessions', () => ({ deleteGymSession: vi.fn(() => Promise.resolve()), updateGymSession: vi.fn() }));
 vi.mock('@/firebase/templates', () => ({ createUserTemplate: vi.fn() }));
 
-const cards = () => screen.queryAllByRole('button', { name: 'Refaire cette séance' });
+const cards = () => screen.queryAllByRole('button', { name: /^Refaire la séance du / });
 const openMenu = async (item: string) => {
-  fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Actions de la séance' })[0]!, { button: 0, ctrlKey: false, pointerType: 'mouse' });
+  fireEvent.pointerDown(screen.getAllByRole('button', { name: /^Actions de la séance du / })[0]!, { button: 0, ctrlKey: false, pointerType: 'mouse' });
   fireEvent.click(await screen.findByText(item));
 };
 
@@ -107,6 +107,13 @@ describe('History', () => {
     await openMenu('Modifier');
     await act(async () => { fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Enregistrer' })); });
     expect(toast.mock.calls.map(([t]) => t.title)).toEqual(['Séance supprimée', 'Séance modifiée']);
+  });
+
+  it('each card names its session on the menu and « Refaire » buttons', () => {
+    GYM = [gym('A', 3, ['bench']), gym('B', 2, ['bench'])];
+    render(<MemoryRouter><History /></MemoryRouter>);
+    expect(screen.getByRole('button', { name: 'Actions de la séance du samedi 3 octobre 2026 à 00:00' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Refaire la séance du vendredi 2 octobre 2026 à 00:00' })).toBeInTheDocument();
   });
 
   it('the card sums up an exercise with its heaviest set (longest when timed), not the first one', () => {
