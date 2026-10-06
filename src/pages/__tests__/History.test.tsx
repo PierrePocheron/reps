@@ -11,7 +11,7 @@ const gym = (id: string, day: number, exerciseIds: string[]) => ({
   sessionId: id, userId: 'u1', date: ts(new Date(2026, 9, day)), duration: 3000, totalVolume: 500, totalSets: 1,
   exercises: exerciseIds.map((e) => ({ exerciseId: e, name: e.toUpperCase(), emoji: '🏋️', sets: [{ reps: 5, weight: 100, completed: true }] })),
 });
-let GYM: ReturnType<typeof gym>[] = [];
+let GYM: object[] = []; // loose: tests add fields (timed, title…) the builder does not set
 
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@/hooks/useSessionHistory', () => ({ useSessionHistory: () => ({ sessions: [], gymSessions: GYM, loading: false, error: false, refetch: () => {} }) }));
@@ -60,6 +60,19 @@ describe('History', () => {
     fireEvent.click(save);
     fireEvent.click(save);
     expect(createUserTemplate).toHaveBeenCalledTimes(1);
+  });
+
+  it('the card sums up an exercise with its heaviest set (longest when timed), not the first one', () => {
+    const done = (reps: number, weight: number, type?: 'warmup') => ({ reps, weight, completed: true, type });
+    GYM = [{ ...gym('A', 3, []), exercises: [
+      { exerciseId: 'bench', name: 'BENCH', emoji: '🏋️', sets: [done(10, 40, 'warmup'), done(8, 60), done(5, 82.5)] },
+      { exerciseId: 'plank', name: 'PLANK', emoji: '🧘', timed: true, sets: [done(60, 0), done(75, 0)] },
+      { exerciseId: 'dips', name: 'DIPS', emoji: '💪', sets: [done(12, 0)] },
+    ] }];
+    render(<MemoryRouter><History /></MemoryRouter>);
+    expect(screen.getByText('2 séries · 82,5 kg max · 1 échauff.')).toBeInTheDocument();
+    expect(screen.getByText('2 séries · 75 s max')).toBeInTheDocument();
+    expect(screen.getByText('1 série · poids du corps')).toBeInTheDocument();
   });
 
   it('Records says which set it keeps and names the estimate « 1RM estimé », like the progress sheet', () => {

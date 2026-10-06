@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { ExerciseImage } from '@/components/ExerciseImage';
-import { formatDurationLong, formatNumber, frDate } from '@/utils/formatters';
+import { formatDurationLong, formatNumber, frDate, plural } from '@/utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { Button } from '@/components/ui/button';
@@ -201,13 +201,14 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
             {(expanded ? session.exercises : session.exercises.slice(0, 3)).map((ex, i) => {
               const completedSetsList = ex.sets.filter(isWorkSet);
               const imgUrl = imageMap[ex.exerciseId] ?? ex.imageUrl; // library exercises are not in imageMap
-              const firstSet = completedSetsList[0];
-              const w = firstSet ? (firstSet.actualWeight ?? firstSet.weight) : 0;
+              const timed = isTimed(ex);
+              // heaviest set (longest when timed): the first one hid the top set, and « 2 × 60 kg » read as reps × load elsewhere
+              const top = Math.max(0, ...completedSetsList.map((st) => (timed ? st.actualReps ?? st.reps : st.actualWeight ?? st.weight)));
               const rpes = completedSetsList.map((st) => st.rpe ?? 0).filter(Boolean);
               const warmups = ex.sets.filter((st) => st.completed && st.type === 'warmup').length;
               const setsSummary = completedSetsList.length === 0
                 ? (warmups ? `${warmups} échauff.` : 'aucune série validée') // planned sets are kept for « Refaire » but were not done
-                : `${completedSetsList.length} × ${isTimed(ex) ? `${firstSet!.actualReps ?? firstSet!.reps} s` : w > 0 ? `${formatNumber(w)} kg` : 'poids du corps'}`
+                : `${plural(completedSetsList.length, 'série')} · ${timed ? `${formatNumber(top)} s max` : top > 0 ? `${formatNumber(top)} kg max` : 'poids du corps'}`
                   + (rpes.length ? ` · RPE ${formatNumber(Math.max(...rpes))}` : '')
                   + (warmups ? ` · ${warmups} échauff.` : '');
 
@@ -218,9 +219,10 @@ function MuscuCard({ session, imageMap, onRedo, onShare, onSaveTemplate, onDelet
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{ex.supersetId && <span className="text-primary" aria-label="Superset">🔗 </span>}{ex.name}</p>
+                    {/* under the name, not beside it: at 320 px the summary squeezed the name to nothing */}
+                    <p className="text-xs text-muted-foreground">{setsSummary}</p>
                     {ex.note && <p className="text-xs italic text-muted-foreground truncate">«&nbsp;{ex.note}&nbsp;»</p>}
                   </div>
-                  <p className="text-xs text-muted-foreground flex-shrink-0">{setsSummary}</p>
                 </div>
               );
             })}
