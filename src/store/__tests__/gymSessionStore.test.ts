@@ -5,18 +5,21 @@ import { cancelRestEnd } from '@/utils/restNotification';
 vi.mock('@/utils/restNotification', () => ({ scheduleRestEnd: vi.fn(), cancelRestEnd: vi.fn() }));
 
 describe('gymSessionStore — persistance de la séance en cours', () => {
-  it('sauvegarde séries et chrono, sans l\'affichage du minuteur de repos', () => {
+  it('sauvegarde séries, chrono et repos en cours (rechargement ou WebView arrêtée en plein repos)', () => {
     useGymSessionStore.setState({
       phase: 'execute',
       startTime: 123,
       showRestTimer: true,
+      restEndsAt: 456,
+      restExerciseId: 'bench_press',
       exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [{ weight: 60, reps: 8, completed: true }] }],
     });
     const saved = JSON.parse(localStorage.getItem('reps_gym_session') ?? '{}').state;
     expect(saved.phase).toBe('execute');
     expect(saved.startTime).toBe(123);
     expect(saved.exercises[0].sets[0].completed).toBe(true);
-    expect(saved).not.toHaveProperty('showRestTimer');
+    expect(saved).toMatchObject({ showRestTimer: true, restEndsAt: 456, restExerciseId: 'bench_press' });
+    expect(saved).not.toHaveProperty('duration'); // recomputed from startTime every second
   });
 });
 

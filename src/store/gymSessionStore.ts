@@ -374,6 +374,10 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     currentExerciseIndex: s.currentExerciseIndex,
     currentSetIndex: s.currentSetIndex,
     startTime: s.startTime,
+    // Rest in progress: back after a reload or a WebView kill (an end time already past closes it on display)
+    showRestTimer: s.showRestTimer,
+    restEndsAt: s.restEndsAt,
+    restExerciseId: s.restExerciseId,
     restDuration: s.restDuration,
     restByExercise: s.restByExercise,
     autoRest: s.autoRest,
