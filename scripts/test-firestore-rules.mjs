@@ -14,7 +14,7 @@ import {
   assertSucceeds,
   assertFails,
 } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp, arrayRemove, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp, arrayRemove, writeBatch, Timestamp } from 'firebase/firestore';
 
 const PROJECT = 'reps-rules-test';
 let passed = 0, failed = 0;
@@ -131,6 +131,7 @@ await test("acceptation en un seul batch depuis une demande en attente (comme l'
   b.update(doc(ivy, 'friend_requests/jack_ivy'), { status: 'accepted' });
   b.update(doc(ivy, 'users/ivy'), { friends: ['jack'] });
   b.update(doc(ivy, 'users/jack'), { friends: ['ivy'] });
+  b.set(doc(collection(ivy, 'users/ivy/userEvents')), { type: 'new_friend', userId: 'ivy', friendId: 'jack', friendName: 'jack', createdAt: serverTimestamp() });
   return assertSucceeds(b.commit());
 });
 await test("pas d'écriture croisée dans un batch qui laisse la demande en attente", () => {
@@ -149,6 +150,17 @@ await test('on ne retire pas un autre que soi', () =>
 console.log('\n─ Séances / défis / templates ─');
 await test('séances renfo lisibles par un authentifié (feed social)', () => assertSucceeds(getDoc(doc(bob, 'sessions/alice/userSessions/s1'))));
 await test('séances renfo non modifiables par autrui', () => assertFails(setDoc(doc(mallory, 'sessions/alice/userSessions/s1'), { totalReps: 0 })));
+// the feed and the leaderboards attribute a session or an event to its userId field, not to its path
+const appSession = (uid) => ({ date: Timestamp.now(), duration: 60, exercises: [{ name: 'Pompes', emoji: '💪', reps: 10 }],
+  totalReps: 10, totalCalories: 5, userId: uid, createdAt: serverTimestamp() });
+const badgeEvent = (uid) => ({ type: 'badge_unlocked', userId: uid, badgeId: 'poussin', badgeName: 'Poussin', badgeEmoji: '🐥', createdAt: serverTimestamp() });
+await test('séance renfo créée (forme réelle)', () => assertSucceeds(addDoc(collection(alice, 'sessions/alice/userSessions'), appSession('alice'))));
+await test('séance au nom d\'un autre refusée', () => assertFails(addDoc(collection(mallory, 'sessions/mallory/userSessions'), appSession('alice'))));
+await test('séance ancienne sans userId modifiable (updateSession)', () =>
+  assertSucceeds(updateDoc(doc(alice, 'sessions/alice/userSessions/s1'), { exercises: [], totalReps: 0, totalCalories: 0 })));
+await test('pas de séance réattribuée à un autre', () => assertFails(updateDoc(doc(alice, 'sessions/alice/userSessions/s1'), { userId: 'bob' })));
+await test('événement de badge (forme réelle)', () => assertSucceeds(addDoc(collection(alice, 'users/alice/userEvents'), badgeEvent('alice'))));
+await test('événement au nom d\'un autre refusé', () => assertFails(addDoc(collection(mallory, 'users/mallory/userEvents'), badgeEvent('alice'))));
 await test('séances muscu d\'autrui illisibles', () => assertFails(getDoc(doc(mallory, 'gym_sessions/alice/userGymSessions/g1'))));
 await test('défis d\'autrui illisibles', () => assertFails(getDoc(doc(mallory, 'user_challenges/c1'))));
 // the document the app really writes (joinChallenge / createCustomChallenge): the exercise sits in definitionSnapshot

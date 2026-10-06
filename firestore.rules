@@ -91,7 +91,9 @@ service cloud.firestore {
       // lisibles par les authentifiés (feed social, voir collection group).
       match /userEvents/{eventId} {
         allow read: if isAuthenticated();
-        allow write: if isOwner(userId);
+        // the feed attributes an event to its userId field: it may only name the path owner
+        allow create, update: if isOwner(userId) && request.resource.data.get('userId', userId) == userId;
+        allow delete: if isOwner(userId);
       }
     }
 
@@ -141,7 +143,9 @@ service cloud.firestore {
     // (contenu : reps/durée/exercices — pas de PII).
     match /sessions/{userId}/userSessions/{sessionId} {
       allow read: if isAuthenticated();
-      allow write: if isOwner(userId);
+      // the feed and the leaderboards attribute a session to its userId field: it may only name the path owner
+      allow create, update: if isOwner(userId) && request.resource.data.get('userId', userId) == userId;
+      allow delete: if isOwner(userId);
 
       // Encouragements (kudos, comme Strava) : l'ID du document est celui de l'ami qui encourage
       // → une seule réaction par personne et par séance ; pas sur sa propre séance ; amis uniquement.
