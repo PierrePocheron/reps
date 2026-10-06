@@ -6,6 +6,7 @@ import GymSession from '@/pages/GymSession';
 import { useGymSessionStore } from '@/store/gymSessionStore';
 import { useUserStore } from '@/store/userStore';
 import * as gs from '@/firebase/gymSessions';
+import { shareSessionCard } from '@/utils/shareCard';
 import type { GymSessionExercise } from '@/firebase/types';
 
 const toast = vi.fn();
@@ -17,7 +18,8 @@ vi.mock('@/hooks/useSound', () => ({ useSound: () => ({ play: vi.fn() }) }));
 vi.mock('canvas-confetti', () => ({ default: vi.fn() }));
 vi.mock('@/utils/restNotification', () => ({ scheduleRestEnd: vi.fn(), cancelRestEnd: vi.fn(), exactAlarmDenied: () => Promise.resolve(false), openExactAlarmSettings: vi.fn() }));
 vi.mock('@/firebase/firestore', () => ({ onUserStatsComputed: vi.fn(), updateUserStatsAfterSession: vi.fn(() => Promise.resolve()) }));
-vi.mock('@/firebase/gymSessions', async (orig) => ({ ...(await orig<typeof import('@/firebase/gymSessions')>()), getUserGymSessions: vi.fn() }));
+vi.mock('@/firebase/gymSessions', async (orig) => ({ ...(await orig<typeof import('@/firebase/gymSessions')>()), getUserGymSessions: vi.fn(), createGymSession: vi.fn(() => Promise.resolve('id')) }));
+vi.mock('@/utils/shareCard', async (orig) => ({ ...(await orig<typeof import('@/utils/shareCard')>()), shareSessionCard: vi.fn() }));
 
 const bench = (sets: { reps: number; weight: number; completed?: boolean }[]): GymSessionExercise =>
   ({ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: sets.map((s) => ({ completed: false, ...s })) });
@@ -193,6 +195,29 @@ describe('GymSession — textes de progression', () => {
     fireEvent.click(screen.getAllByLabelText('Valider la série 3')[0]!);
     expect(screen.getByText(/Toutes les séries validées/).textContent).toBe('Toutes les séries validées\u00a0!');
     expect(screen.getByText(/^Terminer/).textContent).toBe('Terminer\u00a0!');
+  });
+});
+
+describe('GymSession — partage depuis le récap', () => {
+  const finish = async () => {
+    useUserStore.setState({ currentUser: { uid: 'u1' } as never });
+    await setup([bench([{ reps: 8, weight: 60, completed: true }])]);
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Terminer/ })); });
+    toast.mockClear();
+  };
+
+  it('signale un partage impossible, comme l\'historique', async () => {
+    await finish();
+    vi.mocked(shareSessionCard).mockRejectedValueOnce(new Error('canvas'));
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Partager ma séance/ })); });
+    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Partage impossible', variant: 'destructive' }));
+  });
+
+  it('se tait quand on ferme simplement la feuille de partage', async () => {
+    await finish();
+    vi.mocked(shareSessionCard).mockResolvedValueOnce(false); // annulé : saveFile résout false
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Partager ma séance/ })); });
+    expect(toast).not.toHaveBeenCalled();
   });
 });
 

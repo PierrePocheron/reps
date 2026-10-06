@@ -215,7 +215,8 @@ function GymSession() {
       <SessionSummary
         stats={summary.stats}
         comparison={summary.comparison}
-        onShare={() => void shareSessionCard(summary.card).catch(() => {})}
+        onShare={() => void shareSessionCard(summary.card)
+          .catch(() => toast({ title: 'Partage impossible', description: "L'image n'a pas pu être créée.", variant: 'destructive' }))}
         onDone={() => navigate('/', { replace: true })}
       />
     );
