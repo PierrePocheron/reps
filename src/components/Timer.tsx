@@ -37,8 +37,9 @@ export function Timer({ startTime, isActive, className }: TimerProps) {
   };
 
   return (
-    <div className={cn('flex items-center gap-2', className)}>
-      <Clock className="h-5 w-5 text-muted-foreground" />
+    // never squeezed: at 320 px with a large font the header cut it (« 00:0 »); the clock icon goes first on small screens
+    <div className={cn('flex shrink-0 items-center gap-2', className)}>
+      <Clock className="hidden min-[360px]:block h-5 w-5 text-muted-foreground" aria-hidden />
       <span className="text-2xl font-mono font-semibold">{formatTime(duration)}</span>
     </div>
   );

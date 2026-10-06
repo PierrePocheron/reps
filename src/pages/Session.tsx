@@ -231,10 +231,10 @@ function Session() {
     <div className="bg-background pb-[calc(6rem+env(safe-area-inset-bottom))]">
       {/* Header Fixe */}
       <div className="sticky top-[calc(env(safe-area-inset-top)+var(--offline-h,0px))] z-10 bg-background/80 backdrop-blur-md border-b">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
           <BackButton to="/" />
-          <div className="flex flex-col items-center">
-              <h1 className="font-bold text-lg leading-none">Renforcement</h1>
+          <div className="flex min-w-0 flex-col items-center">
+              <h1 className="max-w-full truncate font-bold text-lg leading-none">Renforcement</h1>
               <div className="flex items-center gap-1 text-xs text-orange-700 dark:text-orange-400 font-medium animate-in fade-in slide-in-from-bottom-1">
                   <Flame className="w-3 h-3 fill-current" />
                   <span>{Math.round(currentCalories)} kcal</span>

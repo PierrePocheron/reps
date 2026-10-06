@@ -331,7 +331,7 @@ function GymSession() {
       <div className="bg-background pb-44 min-h-screen">
         {/* Header */}
         <div className="sticky top-[calc(env(safe-area-inset-top)+var(--offline-h,0px))] z-10 bg-background/80 backdrop-blur-md border-b">
-          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
             <button
             onClick={() => (exercises.length > 0 ? setShowCancelConfirm(true) : handleCancel())}
             aria-label="Quitter la planification"
@@ -454,7 +454,7 @@ function GymSession() {
     <div className="bg-background min-h-screen">
       {/* Header */}
       <div className="sticky top-[calc(env(safe-area-inset-top)+var(--offline-h,0px))] z-10 bg-background/80 backdrop-blur-md border-b">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
           <button
             onClick={() => navigate('/')}
             aria-label="Retour à l'accueil"
@@ -462,8 +462,8 @@ function GymSession() {
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="flex flex-col items-center">
-            <h1 className="font-bold text-lg leading-none">Musculation</h1>
+          <div className="flex min-w-0 flex-col items-center">
+            <h1 className="max-w-full truncate font-bold text-lg leading-none">Musculation</h1>
             <div className="flex items-center gap-1 text-xs text-primary font-medium">
               <Weight className="w-3 h-3" />
               <span>{completedSets}/{plural(totalSets, 'série')}</span>
@@ -625,7 +625,7 @@ function GymSession() {
             />
           )}
 
-          <div className="flex gap-2">
+          <div className="session-actions flex gap-2">
             <button
               onClick={() => showRestTimer ? dismissRestTimer() : startRestTimer()}
               aria-label={showRestTimer ? 'Arrêter le minuteur de repos' : `Lancer un repos de ${restLabel}`}
@@ -638,7 +638,7 @@ function GymSession() {
               )}
             >
               <TimerIcon className="h-4 w-4" aria-hidden />
-              {showRestTimer ? 'Arrêter' : restLabel}
+              {showRestTimer ? <span className="rest-stop-label">Arrêter</span> : restLabel}
             </button>
 
             <Button
@@ -647,7 +647,7 @@ function GymSession() {
               className={cn('flex-1 min-w-0 font-semibold', allSetsCompleted && 'bg-green-600 hover:bg-green-700')}
               onClick={handleEndSession}
             >
-              {ending ? <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin" /> : <Square className="mr-2 h-4 w-4 shrink-0 fill-current" />}
+              {ending ? <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin" /> : <Square className="end-icon mr-2 h-4 w-4 shrink-0 fill-current" />}
               <span className="truncate">{allSetsCompleted ? 'Terminer\u00a0!' : 'Terminer'}</span>
             </Button>
 
