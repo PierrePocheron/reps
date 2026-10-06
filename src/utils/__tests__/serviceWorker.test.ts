@@ -29,4 +29,14 @@ describe('registerServiceWorker', () => {
     await vi.waitFor(() => expect(unregister).toHaveBeenCalled());
     expect(sw.register).not.toHaveBeenCalled();
   });
+
+  it('Android app: the old worker caches go too (they stayed on the device for ever)', async () => {
+    vi.spyOn(Capacitor, 'isNativePlatform').mockReturnValue(true);
+    const del = vi.fn(async () => true);
+    vi.stubGlobal('caches', { keys: vi.fn(async () => ['workbox-precache-v2', 'exercise-photos']), delete: del });
+    registerServiceWorker();
+    await vi.waitFor(() => expect(del).toHaveBeenCalledTimes(2));
+    expect(del).toHaveBeenCalledWith('exercise-photos');
+    vi.unstubAllGlobals();
+  });
 });
