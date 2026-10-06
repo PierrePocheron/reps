@@ -24,13 +24,6 @@ service cloud.firestore {
                 && getAfter(/databases/$(database)/documents/friend_requests/$(b + '_' + a)).data.status in statuses);
     }
 
-    function requestBetween(a, b, statuses) {
-      return (exists(/databases/$(database)/documents/friend_requests/$(a + '_' + b))
-                && get(/databases/$(database)/documents/friend_requests/$(a + '_' + b)).data.status in statuses)
-          || (exists(/databases/$(database)/documents/friend_requests/$(b + '_' + a))
-                && get(/databases/$(database)/documents/friend_requests/$(b + '_' + a)).data.status in statuses);
-    }
-
     // ─── users ──────────────────────────────────────────────────────────────
     // Le doc public ne doit contenir AUCUNE donnée sensible : les champs
     // privés (email, fcmToken, poids, taille, date de naissance, genre)
@@ -211,9 +204,8 @@ service cloud.firestore {
     }
 
     // ─── notifications ──────────────────────────────────────────────────────
-    // Création : en son propre nom, vers soi, vers un ami, ou vers l'autre
-    // partie d'une demande d'ami (pending suffit : la notif d'acceptation
-    // part dans le même batch que le passage à accepted).
+    // Création : en son propre nom, vers soi ou vers un ami. Une demande en attente ne suffit plus : un inconnu
+    // pouvait spammer n'importe qui (la notif d'acceptation part après le batch, les listes d'amis sont déjà liées).
     match /notifications/{notificationId} {
       allow read: if isOwner(resource.data.userId);
 
@@ -224,10 +216,12 @@ service cloud.firestore {
         && request.resource.data.message is string && request.resource.data.message.size() <= 300
         && request.resource.data.type is string && request.resource.data.type.size() <= 40
         && request.resource.data.read == false
+        // the home kudos banner shows fromName; the app stamps createdAt with serverTimestamp()
+        && (!('fromName' in request.resource.data) || (request.resource.data.fromName is string && request.resource.data.fromName.size() <= 50))
+        && request.resource.data.createdAt == request.time
         && (
           request.resource.data.userId == request.auth.uid
           || get(/databases/$(database)/documents/users/$(request.resource.data.userId)).data.friends.hasAny([request.auth.uid])
-          || requestBetween(request.auth.uid, request.resource.data.userId, ['pending', 'accepted'])
         );
 
       allow update: if isOwner(resource.data.userId)

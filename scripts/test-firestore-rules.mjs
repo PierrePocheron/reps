@@ -185,8 +185,17 @@ await test('pas de notification forgée vers un inconnu', () =>
   assertFails(addDoc(collection(mallory, 'notifications'), { userId: 'carol', fromUserId: 'mallory', title: 'SPAM', message: 'spam', type: 'friend_activity', read: false })));
 await test('pas de notification en se faisant passer pour un autre', () =>
   assertFails(addDoc(collection(mallory, 'notifications'), { userId: 'alice', fromUserId: 'bob', title: 'x', message: 'x', type: 'friend_activity', read: false })));
-await test('notification légitime vers un ami', () =>
-  assertSucceeds(addDoc(collection(bob, 'notifications'), { userId: 'alice', fromUserId: 'bob', title: 'Bravo', message: 'gg', type: 'friend_activity', read: false })));
+// what the app sends: a kudos (giveKudos) and the acceptance notice once both friends lists are linked (acceptFriendRequest)
+const kudosNotif = (from, to, extra = {}) => ({ userId: to, fromUserId: from, fromName: from, type: 'kudos', read: false, sessionId: 'b1',
+  title: 'Encouragement 👏', message: `${from} a encouragé ta séance`, createdAt: serverTimestamp(), ...extra });
+await test('encouragement notifié à un ami (forme réelle)', () => assertSucceeds(addDoc(collection(alice, 'notifications'), kudosNotif('alice', 'bob'))));
+await test('acceptation notifiée après le batch (forme réelle)', () =>
+  assertSucceeds(addDoc(collection(env.authenticatedContext('ivy').firestore(), 'notifications'), { userId: 'jack', fromUserId: 'ivy',
+    title: 'Demande acceptée', message: 'ivy a accepté ta demande d\'ami', type: 'friend_activity', read: false, createdAt: serverTimestamp() })));
+await test('pas de notification grâce à une simple demande en attente', () =>
+  assertFails(addDoc(collection(mallory, 'notifications'), kudosNotif('mallory', 'bob'))));
+await test('fromName borné', () => assertFails(addDoc(collection(alice, 'notifications'), kudosNotif('alice', 'bob', { fromName: 'x'.repeat(51) }))));
+await test('createdAt = heure du serveur', () => assertFails(addDoc(collection(alice, 'notifications'), kudosNotif('alice', 'bob', { createdAt: 'zzz' }))));
 await test('autrui ne lit pas mes notifications', async () => {
   await env.withSecurityRulesDisabled(async (ctx) => {
     await setDoc(doc(ctx.firestore(), 'notifications/n1'), { userId: 'alice', fromUserId: 'bob', title: 'x', message: 'x', type: 'friend_activity', read: false });
