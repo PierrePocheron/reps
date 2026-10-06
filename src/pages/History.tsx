@@ -133,7 +133,7 @@ function RenforcementCard({ session, onRedo, onShare, onDelete, onEdit }: { sess
 
           {/* Exercises */}
           <div className="grid grid-cols-2 gap-2">
-            {session.exercises.map((ex, i) => (
+            {session.exercises.filter((ex) => ex.reps > 0).map((ex, i) => ( // skipped ones stay stored for « Refaire »
               <div key={i} className="flex items-center gap-2 bg-muted/40 rounded-xl px-3 py-2">
                 <span className="text-lg">{ex.emoji}</span>
                 <div className="min-w-0">

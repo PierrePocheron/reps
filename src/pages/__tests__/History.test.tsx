@@ -12,9 +12,10 @@ const gym = (id: string, day: number, exerciseIds: string[]) => ({
   exercises: exerciseIds.map((e) => ({ exerciseId: e, name: e.toUpperCase(), emoji: '🏋️', sets: [{ reps: 5, weight: 100, completed: true }] })),
 });
 let GYM: object[] = []; // loose: tests add fields (timed, title…) the builder does not set
+let RENFO: object[] = [];
 
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
-vi.mock('@/hooks/useSessionHistory', () => ({ useSessionHistory: () => ({ sessions: [], gymSessions: GYM, loading: false, error: false, refetch: () => {} }) }));
+vi.mock('@/hooks/useSessionHistory', () => ({ useSessionHistory: () => ({ sessions: RENFO, gymSessions: GYM, loading: false, error: false, refetch: () => {} }) }));
 vi.mock('@/firebase/firestore', () => ({ onUserStatsComputed: vi.fn(), deleteSession: vi.fn(), updateSession: vi.fn(), updateUserStatsAfterSession: vi.fn(() => Promise.resolve()) }));
 vi.mock('@/firebase/gymSessions', () => ({ deleteGymSession: vi.fn(() => Promise.resolve()), updateGymSession: vi.fn() }));
 vi.mock('@/firebase/templates', () => ({ createUserTemplate: vi.fn() }));
@@ -27,6 +28,7 @@ const openMenu = async (item: string) => {
 
 describe('History', () => {
   beforeEach(() => {
+    RENFO = [];
     useUserStore.setState({ user: { uid: 'u1', displayName: 'P' } as never, refreshStats: vi.fn(() => Promise.resolve()) } as never);
   });
 
@@ -73,6 +75,15 @@ describe('History', () => {
     expect(screen.getByText('2 séries · 82,5 kg max · 1 échauff.')).toBeInTheDocument();
     expect(screen.getByText('2 séries · 75 s max')).toBeInTheDocument();
     expect(screen.getByText('1 série · poids du corps')).toBeInTheDocument();
+  });
+
+  it('a renfo card leaves out the exercises you skipped (0 reps)', () => {
+    RENFO = [{ sessionId: 'R', userId: 'u1', date: ts(new Date(2026, 9, 3)), duration: 600, totalReps: 40, totalCalories: 0,
+      exercises: [{ name: 'Squats', emoji: '🦵', reps: 40 }, { name: 'Pompes', emoji: '💪', reps: 0 }] }];
+    render(<MemoryRouter><History /></MemoryRouter>);
+    fireEvent.click(screen.getByRole('tab', { name: /Renfo/ }));
+    expect(screen.getByText('Squats')).toBeInTheDocument();
+    expect(screen.queryByText('Pompes')).not.toBeInTheDocument();
   });
 
   it('Records says which set it keeps and names the estimate « 1RM estimé », like the progress sheet', () => {
