@@ -100,17 +100,18 @@ await test('le propriétaire lit sa sous-collection privée', () => assertSuccee
 await test('autrui n\'écrit PAS users/{uid}/private', () => assertFails(setDoc(doc(mallory, 'users/alice/private/notifications'), { fcmToken: 'hack' })));
 
 console.log('\n─ Demandes d\'amis ─');
+// each negative case is otherwise valid (createdAt included): it fails only on the check it is named after
 await test('création d\'une demande en son propre nom (ID déterministe)', () =>
   assertSucceeds(setDoc(doc(mallory, 'friend_requests/mallory_bob'), { fromUserId: 'mallory', toUserId: 'bob', status: 'pending', fromDisplayName: 'Mallory', fromAvatarEmoji: '😈', createdAt: serverTimestamp() })));
 // the recipient's listener sorts by createdAt.seconds: one request without it hid all the others
 await test('demande refusée sans createdAt serveur', () =>
   assertFails(setDoc(doc(mallory, 'friend_requests/mallory_carol'), { fromUserId: 'mallory', toUserId: 'carol', status: 'pending', fromDisplayName: 'Mallory' })));
 await test('refusée si l\'ID du doc ne correspond pas à from_to', () =>
-  assertFails(setDoc(doc(mallory, 'friend_requests/whatever'), { fromUserId: 'mallory', toUserId: 'bob', status: 'pending', fromDisplayName: 'Mallory' })));
+  assertFails(setDoc(doc(mallory, 'friend_requests/whatever'), { fromUserId: 'mallory', toUserId: 'bob', status: 'pending', fromDisplayName: 'Mallory', createdAt: serverTimestamp() })));
 await test('pas de création d\'une demande AU NOM d\'autrui', () =>
-  assertFails(addDoc(collection(mallory, 'friend_requests'), { fromUserId: 'alice', toUserId: 'bob', status: 'pending', fromDisplayName: 'Alice' })));
+  assertFails(setDoc(doc(mallory, 'friend_requests/mallory_zed'), { fromUserId: 'alice', toUserId: 'zed', status: 'pending', fromDisplayName: 'Alice', createdAt: serverTimestamp() })));
 await test('pas de création directement en status accepted', () =>
-  assertFails(addDoc(collection(mallory, 'friend_requests'), { fromUserId: 'mallory', toUserId: 'bob', status: 'accepted', fromDisplayName: 'Mallory' })));
+  assertFails(setDoc(doc(mallory, 'friend_requests/mallory_yan'), { fromUserId: 'mallory', toUserId: 'yan', status: 'accepted', fromDisplayName: 'Mallory', createdAt: serverTimestamp() })));
 await test('l\'EXPÉDITEUR ne peut pas s\'auto-accepter', () =>
   assertFails(updateDoc(doc(mallory, 'friend_requests/mallory_alice'), { status: 'accepted' })));
 await test('le destinataire accepte', () => assertSucceeds(updateDoc(doc(alice, 'friend_requests/mallory_alice'), { status: 'accepted' })));
@@ -205,9 +206,9 @@ await test('supprimer son exercice perso', () => assertSucceeds(deleteDoc(mallor
 
 console.log('\n─ Notifications ─');
 await test('pas de notification forgée vers un inconnu', () =>
-  assertFails(addDoc(collection(mallory, 'notifications'), { userId: 'carol', fromUserId: 'mallory', title: 'SPAM', message: 'spam', type: 'friend_activity', read: false })));
+  assertFails(addDoc(collection(mallory, 'notifications'), { userId: 'carol', fromUserId: 'mallory', title: 'SPAM', message: 'spam', type: 'friend_activity', read: false, createdAt: serverTimestamp() })));
 await test('pas de notification en se faisant passer pour un autre', () =>
-  assertFails(addDoc(collection(mallory, 'notifications'), { userId: 'alice', fromUserId: 'bob', title: 'x', message: 'x', type: 'friend_activity', read: false })));
+  assertFails(addDoc(collection(alice, 'notifications'), { userId: 'bob', fromUserId: 'carol', title: 'x', message: 'x', type: 'friend_activity', read: false, createdAt: serverTimestamp() })));
 // what the app sends: a kudos (giveKudos) and the acceptance notice once both friends lists are linked (acceptFriendRequest)
 const kudosNotif = (from, to, extra = {}) => ({ userId: to, fromUserId: from, fromName: from, type: 'kudos', read: false, sessionId: 'b1',
   title: 'Encouragement 👏', message: `${from} a encouragé ta séance`, createdAt: serverTimestamp(), ...extra });
