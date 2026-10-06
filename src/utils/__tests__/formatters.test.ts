@@ -13,6 +13,7 @@ import {
   isRealDay,
   parseDecimal,
   decimalInput,
+  shortDate,
 } from '../formatters';
 
 describe('Formatters Utils', () => {
@@ -154,5 +155,14 @@ describe('parseDecimal / decimalInput (champs de charge et de reps)', () => {
 
   it('affiche la virgule française, sans séparateur de milliers', () => {
     expect([decimalInput(82.5), decimalInput(1000), decimalInput(0)]).toEqual(['82,5', '1000', '0']);
+  });
+});
+
+describe('shortDate', () => {
+  it('adds the year only when it is not the current one, so a past session does not read as this year', () => {
+    const now = new Date(2026, 9, 6);
+    expect(shortDate(new Date(2026, 7, 1), now)).toBe('1er août');
+    expect(shortDate(new Date(2025, 7, 1), now)).toBe('1er août 2025');
+    expect(shortDate(new Date(2025, 11, 28), now)).toBe('28 déc. 2025');
   });
 });

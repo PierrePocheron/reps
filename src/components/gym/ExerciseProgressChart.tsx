@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { frDate } from '@/utils/formatters';
+import { shortDate } from '@/utils/formatters';
 import { TrendingUp, Trophy } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import type { ExercisePoint } from '@/utils/records';
@@ -19,7 +19,6 @@ const PERIODS = [
 
 const W = 320, H = 150, PL = 38, PR = 10, PT = 14, PB = 24;
 const fmt = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 1 }); // 77,5 kg, not 78
-const dayMonth = (d: Date) => frDate(d, { day: 'numeric', month: 'short' });
 
 /** Courbe de progression d'un exercice (Strong / Hevy : graphique par exercice). */
 export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint[]; timed?: boolean }) {
@@ -139,9 +138,9 @@ export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint
             ? <circle key={i} cx={cx} cy={cy} r="5.5" fill="#F59E0B" stroke="hsl(var(--background))" strokeWidth="2" />
             : <circle key={i} cx={cx} cy={cy} r="3" fill="currentColor" />
         ))}
-        <text x={PL} y={H - 6} className="fill-muted-foreground" fontSize="10">{dayMonth(shown[0]!.date)}</text>
+        <text x={PL} y={H - 6} className="fill-muted-foreground" fontSize="10">{shortDate(shown[0]!.date)}</text>
         {shown.length > 1 && (
-          <text x={W - PR} y={H - 6} textAnchor="end" className="fill-muted-foreground" fontSize="10">{dayMonth(shown[shown.length - 1]!.date)}</text>
+          <text x={W - PR} y={H - 6} textAnchor="end" className="fill-muted-foreground" fontSize="10">{shortDate(shown[shown.length - 1]!.date)}</text>
         )}
       </svg>
       {shown.length === 1 && (

@@ -128,3 +128,7 @@ export function isRealDay(day: string): boolean {
 /** Jours avant de pouvoir rechanger de pseudo (7 jours pleins) : arrondi du reste, pas du temps écoulé (débloqué à 6 j 1 h). */
 export const daysBeforeUsernameChange = (lastChange: Date, now = new Date()) =>
   Math.max(0, Math.ceil(7 - (now.getTime() - lastChange.getTime()) / 86_400_000));
+
+/** « 1er août », with the year only when it is not the current one (« 28 déc. 2025 »), as Strong does for past years. */
+export const shortDate = (date: Date, now = new Date()): string =>
+  frDate(date, { day: 'numeric', month: 'short', ...(date.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {}) });
