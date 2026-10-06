@@ -28,6 +28,10 @@ import { GymTemplatePreviewSheet } from '@/components/GymTemplatePreviewSheet';
 
 type Tab = 'renforcement' | 'musculation';
 
+// Per-device convenience: reopen on the last tab used (saves a tap, and the same template name exists in both tabs)
+const TAB_KEY = 'reps_templates_tab';
+const lastTab = (): Tab => { try { return localStorage.getItem(TAB_KEY) === 'musculation' ? 'musculation' : 'renforcement'; } catch { return 'renforcement'; } };
+
 // ─── TemplateCard ─────────────────────────────────────────────────────────────
 
 function TemplateCard({
@@ -114,7 +118,11 @@ function Templates() {
   const haptics = useHaptic();
   const { toast } = useToast();
   const suggested = new URLSearchParams(useLocation().search).get('suggest'); // modèle conseillé par le questionnaire
-  const [activeTab, setActiveTab] = useState<Tab>(suggested?.startsWith('muscu_') ? 'musculation' : 'renforcement');
+  const [activeTab, setTab] = useState<Tab>(() => (suggested ? (suggested.startsWith('muscu_') ? 'musculation' : 'renforcement') : lastTab()));
+  const setActiveTab = (tab: Tab) => {
+    setTab(tab);
+    try { localStorage.setItem(TAB_KEY, tab); } catch { /* stockage indisponible */ }
+  };
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editing, setEditing] = useState<WorkoutTemplate | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<WorkoutTemplate | null>(null);
