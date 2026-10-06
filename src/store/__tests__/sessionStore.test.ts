@@ -95,6 +95,12 @@ describe('sessionStore', () => {
       expect(useSessionStore.getState().exercises).toHaveLength(1);
     });
 
+    it('does not add « pompes » next to « Pompes » (same movement, one row)', () => {
+      useSessionStore.getState().addExercise({ id: 'pushups', name: 'Pompes', emoji: '🔥' } as any);
+      useSessionStore.getState().addExercise({ id: 'custom-1', name: 'pompes', emoji: '💪' } as any);
+      expect(useSessionStore.getState().exercises.map((ex) => ex.name)).toEqual(['Pompes']);
+    });
+
     it('a library exercise keeps its category MET: the saved kcal use it, not the 4.0 fallback', async () => {
       useSessionStore.setState({ isActive: true, startTime: Date.now() - 5000 });
       useSessionStore.getState().addExercise({ id: 'lib_0001', name: 'Sauts écartés', emoji: '🏃', met: 7, timePerRep: 2 } as any);

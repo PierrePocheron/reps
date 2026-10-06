@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { AUTO_END_SECONDS, useSessionStore } from '@/store/sessionStore';
+import { AUTO_END_SECONDS, sameName, useSessionStore } from '@/store/sessionStore';
 import { DEFAULT_EXERCISES } from '@/utils/constants';
 import type { Exercise } from '@/firebase/types';
 
@@ -96,7 +96,7 @@ export function useSession() {
      * Vérifie si un exercice est déjà dans la session
      */
     hasExercise: (exerciseName: string) => {
-      return exercises.some((ex) => ex.name === exerciseName);
+      return exercises.some((ex) => sameName(ex.name, exerciseName));
     },
 
     /**

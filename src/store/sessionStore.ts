@@ -47,6 +47,9 @@ let ending: Promise<void> | null = null; // endSession in flight
 /** Fin automatique d'une séance renfo restée ouverte, et durée maximale enregistrée (2 h). */
 export const AUTO_END_SECONDS = 7200;
 
+/** Same renfo exercise whatever the case: « pompes » must not open a second « Pompes » row. */
+export const sameName = (a: string, b: string) => a.toLocaleLowerCase('fr') === b.toLocaleLowerCase('fr');
+
 export const useSessionStore = create<SessionState>((set, get) => ({
   // État initial
   isActive: false,
@@ -148,7 +151,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     const { exercises } = get();
 
     // Vérifier si l'exercice n'existe pas déjà
-    if (exercises.some((ex) => ex.name === exercise.name)) {
+    if (exercises.some((ex) => sameName(ex.name, exercise.name))) {
       return;
     }
 
