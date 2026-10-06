@@ -183,6 +183,19 @@ describe('GymSession — bouton de repos de la barre', () => {
   });
 });
 
+describe('GymSession — textes de progression', () => {
+  it('accorde « série validée » avec le total, sans « 0/1 série complétées »', async () => {
+    await setup([bench([{ reps: 8, weight: 60 }]), { ...bench([{ reps: 10, weight: 20, completed: true }, { reps: 10, weight: 20, completed: true }, { reps: 10, weight: 20 }]), exerciseId: 'barbell_curl', name: 'Curl barre' }]);
+    expect(screen.getByText('0 sur 1 série validée')).toBeInTheDocument();
+    expect(screen.getByText('2 sur 3 séries validées')).toBeInTheDocument();
+    expect(screen.queryByText(/complétée/)).toBeNull();
+    fireEvent.click(screen.getByLabelText('Valider la série 1'));
+    fireEvent.click(screen.getAllByLabelText('Valider la série 3')[0]!);
+    expect(screen.getByText(/Toutes les séries validées/).textContent).toBe('Toutes les séries validées\u00a0!');
+    expect(screen.getByText(/^Terminer/).textContent).toBe('Terminer\u00a0!');
+  });
+});
+
 describe('GymSession — repos automatique', () => {
   it('démarre aussi après la seule série (ou la dernière) de la séance, quand on ajoute les séries une à une', async () => {
     await setup([bench([{ reps: 8, weight: 60 }])], { autoRest: true });

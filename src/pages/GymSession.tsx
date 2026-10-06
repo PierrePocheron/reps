@@ -574,7 +574,7 @@ function GymSession() {
             <div className="bg-green-500/10 p-4 rounded-full">
               <CheckCircle2 className="h-8 w-8 text-green-500" />
             </div>
-            <p className="font-semibold text-center">Toutes les séries complétées !</p>
+            <p className="font-semibold text-center">Toutes les séries validées&nbsp;!</p>
           </div>
         )}
 
@@ -647,7 +647,7 @@ function GymSession() {
               onClick={handleEndSession}
             >
               {ending ? <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin" /> : <Square className="mr-2 h-4 w-4 shrink-0 fill-current" />}
-              <span className="truncate">{allSetsCompleted ? 'Terminer !' : 'Terminer'}</span>
+              <span className="truncate">{allSetsCompleted ? 'Terminer\u00a0!' : 'Terminer'}</span>
             </Button>
 
             <button
@@ -963,7 +963,8 @@ function ExecuteExerciseCard({
             <Info className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" aria-hidden />
           </span>
           <p className="text-xs text-muted-foreground">
-            {completedCount}/{exercise.sets.length} série{exercise.sets.length !== 1 ? 's' : ''} complétée{completedCount !== 1 ? 's' : ''}
+            {/* « 2 sur 3 séries validées »: agrees with the total (« 0/1 série complétées » did not agree at all) */}
+            {`${completedCount} sur ${plural(exercise.sets.length, 'série')} validée${exercise.sets.length >= 2 ? 's' : ''}`}
           </p>
         </button>
         {isBarbell && (
