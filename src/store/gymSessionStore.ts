@@ -339,6 +339,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   },
 
   startFreeSession: () => {
+    if (get().phase !== 'idle') return; // a session in progress is resumed, never wiped (every caller then opens /gym)
     set({
       phase: 'execute',
       exercises: [],

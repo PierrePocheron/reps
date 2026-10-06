@@ -114,3 +114,20 @@ describe('gymSessionStore — remplacer un exercice (#62)', () => {
     expect(useGymSessionStore.getState().exercises[0]!.exerciseId).toBe('hack_squat');
   });
 });
+
+describe('gymSessionStore — séance libre', () => {
+  it('ne remplace pas une séance déjà en cours (exécution ou planification)', () => {
+    const bench = { exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [{ weight: 60, reps: 8, completed: true }] };
+    useGymSessionStore.setState({ phase: 'execute', startTime: 123, exercises: [bench] });
+    useGymSessionStore.getState().startFreeSession();
+    expect(useGymSessionStore.getState()).toMatchObject({ phase: 'execute', startTime: 123, exercises: [bench] });
+
+    useGymSessionStore.setState({ phase: 'plan', startTime: null, exercises: [bench] });
+    useGymSessionStore.getState().startFreeSession();
+    expect(useGymSessionStore.getState()).toMatchObject({ phase: 'plan', exercises: [bench] });
+
+    useGymSessionStore.setState({ phase: 'idle', exercises: [] });
+    useGymSessionStore.getState().startFreeSession();
+    expect(useGymSessionStore.getState()).toMatchObject({ phase: 'execute', exercises: [] });
+  });
+});
