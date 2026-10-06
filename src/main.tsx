@@ -12,6 +12,7 @@ import {
 } from 'react-router-dom';
 import * as Sentry from '@sentry/react';
 import { reloadOnStaleChunk } from '@/utils/staleChunk';
+import { registerServiceWorker } from '@/utils/serviceWorker';
 
 // Initialiser Sentry pour monitoring production
 if (import.meta.env.VITE_SENTRY_DSN) {
@@ -66,6 +67,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 const SentryBrowserRouter = Sentry.withSentryRouting(BrowserRouter);
 
 window.addEventListener('vite:preloadError', (event) => reloadOnStaleChunk(event));
+if (import.meta.env.PROD) registerServiceWorker(); // sw.js only exists in a build
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

@@ -10,6 +10,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // No registerSW.js: it also ran in the Android app; src/utils/serviceWorker.ts registers on the web only
+      injectRegister: null,
       includeAssets: ['favicon.ico', 'icons/pwa-192x192.png'],
       manifest: {
         name: 'reps',
