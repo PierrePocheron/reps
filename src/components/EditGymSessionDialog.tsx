@@ -20,11 +20,15 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
 }) {
   // Working copy: every set, the done ones are edited on their achieved values. The target and the unfinished sets
   // stay as they were, otherwise the next session's load suggestion read missed reps as « tout réussi »
-  const [exercises, setExercises] = useState<GymSessionExercise[]>(() => session.exercises.map((ex) => ({
+  const [initial] = useState<GymSessionExercise[]>(() => session.exercises.map((ex) => ({
     ...ex,
     sets: ex.sets.map((s) => (s.completed ? { ...s, actualReps: s.actualReps ?? s.reps, actualWeight: s.actualWeight ?? s.weight } : s)),
   })));
+  const [exercises, setExercises] = useState(initial);
   const [saving, setSaving] = useState(false);
+  // A tap beside a field (or Escape) must not throw corrections away: only Annuler and ✕ close once something changed
+  const dirty = JSON.stringify(exercises) !== JSON.stringify(initial);
+  const keepOpen = (e: Event) => { if (dirty) e.preventDefault(); };
 
   const patch = (i: number, j: number, p: Partial<PlannedSet>) =>
     setExercises((list) => list.map((ex, a) => (a !== i ? ex : { ...ex, sets: ex.sets.map((s, b) => (b === j ? { ...s, ...p } : s)) })));
@@ -50,7 +54,7 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
 
   return (
     <Dialog open onOpenChange={(open) => !open && !saving && onCancel()}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto overflow-x-hidden">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto overflow-x-hidden" onInteractOutside={keepOpen} onEscapeKeyDown={keepOpen}>
         <DialogHeader>
           <DialogTitle>Modifier la séance</DialogTitle>
           <DialogDescription>Corrige charges et répétitions ; volume, records et stats sont recalculés.</DialogDescription>

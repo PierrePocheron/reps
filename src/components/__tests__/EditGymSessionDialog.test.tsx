@@ -83,6 +83,20 @@ describe('EditGymSessionDialog', () => {
     expect(screen.getByRole('button', { name: "Retirer l'échauffement 1 de Développé couché" })).toBeInTheDocument();
   });
 
+  it('a tap outside or Escape no longer throws typed corrections away; ✕ still closes', async () => {
+    const onCancel = vi.fn();
+    render(<EditGymSessionDialog session={session} onCancel={onCancel} onSave={async () => {}} />);
+    await new Promise((r) => setTimeout(r, 0)); // Radix listens for outside taps from the next tick
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(onCancel).toHaveBeenCalledTimes(1); // nothing changed yet: closes as before
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Répétitions, série 2 de Squat barre' }), { target: { value: '4' } });
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    fireEvent.pointerDown(document.body);
+    expect(onCancel).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Fermer' }));
+    expect(onCancel).toHaveBeenCalledTimes(2);
+  });
+
   it('a load typed with the French comma is kept (« 82,5 » became 825 or 0)', async () => {
     const onSave = vi.fn(async (_exercises: GymSessionExercise[]) => {});
     render(<EditGymSessionDialog session={session} onCancel={() => {}} onSave={onSave} />);

@@ -13,6 +13,9 @@ export function EditRenfoSessionDialog({ session, onCancel, onSave }: {
 }) {
   const [exercises, setExercises] = useState<SessionExercise[]>(() => session.exercises.map((ex) => ({ ...ex })));
   const [saving, setSaving] = useState(false);
+  // A tap beside a field (or Escape) must not throw corrections away: only Annuler and ✕ close once something changed
+  const dirty = JSON.stringify(exercises) !== JSON.stringify(session.exercises);
+  const keepOpen = (e: Event) => { if (dirty) e.preventDefault(); };
   const kept = exercises.filter((ex) => ex.reps > 0);
   const save = async () => {
     setSaving(true);
@@ -21,7 +24,7 @@ export function EditRenfoSessionDialog({ session, onCancel, onSave }: {
 
   return (
     <Dialog open onOpenChange={(open) => !open && !saving && onCancel()}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto overflow-x-hidden">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto overflow-x-hidden" onInteractOutside={keepOpen} onEscapeKeyDown={keepOpen}>
         <DialogHeader>
           <DialogTitle>Modifier la séance</DialogTitle>
           <DialogDescription>Corrige les répétitions ; total, calories et stats sont recalculés.</DialogDescription>
