@@ -37,6 +37,7 @@ import {
   searchUsers,
   getRandomMotivationalPhrase,
   updateSession,
+  deleteSession,
 } from '../firestore';
 import { getUserGymSessions } from '../gymSessions';
 
@@ -659,5 +660,19 @@ describe('updateSession (renfo edit)', () => {
   it('keeps the MET of a library exercise, so its kcal stay right in the stats', async () => {
     const fields = await updateSession('uid', 's1', [{ name: 'Sauts écartés', emoji: '🏃', reps: 100, met: 7 }, { name: 'Pompes', emoji: '💪', reps: 20 }], 0);
     expect(fields.exercises).toEqual([{ name: 'Sauts écartés', emoji: '🏃', reps: 100, met: 7 }, { name: 'Pompes', emoji: '💪', reps: 20 }]);
+  });
+});
+
+describe('deleteSession (renfo)', () => {
+  it('deletes the kudos the session received with it, in one batch', async () => {
+    const batch = { delete: vi.fn(), commit: vi.fn(async () => {}) };
+    vi.mocked(writeBatch).mockReturnValueOnce(batch as any);
+    const kudosRef = { path: 'sessions/uid/userSessions/s1/kudos/alice' };
+    vi.mocked(getDocs).mockResolvedValueOnce(makeSnapshot([{ ...makeDoc(), ref: kudosRef } as any]) as any);
+    await deleteSession('uid', 's1');
+    expect(batch.delete).toHaveBeenCalledWith(kudosRef);
+    expect(batch.delete).toHaveBeenCalledTimes(2); // the kudos + the session
+    expect(batch.commit).toHaveBeenCalledTimes(1);
+    expect(deleteDoc).not.toHaveBeenCalled();
   });
 });

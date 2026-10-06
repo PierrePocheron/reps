@@ -13,7 +13,7 @@ describe('user-data writes while offline (no server ack)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     for (const write of [addDoc, deleteDoc, setDoc, updateDoc]) vi.mocked(write).mockImplementation(never);
-    vi.mocked(writeBatch).mockImplementation(() => ({ set: vi.fn(), commit: never }) as never);
+    vi.mocked(writeBatch).mockImplementation(() => ({ set: vi.fn(), delete: vi.fn(), commit: never }) as never);
   });
 
   afterEach(() => {

@@ -358,7 +358,13 @@ export async function updateSession(userId: string, sessionId: string, exercises
 
 /** Supprimer une séance renfo (#56) : le classement et le fil lisent les séances en direct ; stats à recalculer. */
 export async function deleteSession(userId: string, sessionId: string): Promise<void> {
-  await queuedIfOffline(deleteDoc(doc(db, 'sessions', userId, 'userSessions', sessionId)));
+  const sessionRef = doc(db, 'sessions', userId, 'userSessions', sessionId);
+  // Kudos are a subcollection: deleting the session alone left them behind, out of reach of account deletion
+  const kudos = await getDocs(collection(sessionRef, 'kudos'));
+  const batch = writeBatch(db);
+  kudos.docs.forEach((k) => batch.delete(k.ref));
+  batch.delete(sessionRef);
+  await queuedIfOffline(batch.commit());
 }
 
 /** Renfo sessions within [from, to): period recaps must not stop at the latest page of history. */
