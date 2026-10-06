@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { addDoc, deleteDoc, setDoc, updateDoc, writeBatch } from 'firebase/firestore';
+import { addDoc, deleteDoc, getDocs, setDoc, updateDoc, writeBatch } from 'firebase/firestore';
 import { createUserTemplate, deleteUserTemplate, updateUserTemplate } from '../templates';
 import { saveBodyEntries } from '../bodyMetrics';
 import { updateGymSession, deleteGymSession, importGymSessions } from '../gymSessions';
@@ -41,6 +41,14 @@ describe('user-data writes while offline (no server ack)', () => {
     let settled = false;
     run().then(() => { settled = true; });
     await vi.advanceTimersByTimeAsync(10_000);
+    expect(settled).toBe(true);
+  });
+
+  it('deleteSession does not hang on its kudos read when the network is dead (12.5 s spinner)', async () => {
+    vi.mocked(getDocs).mockImplementation(never);
+    let settled = false;
+    deleteSession('u1', 's1').then(() => { settled = true; });
+    await vi.advanceTimersByTimeAsync(5_500);
     expect(settled).toBe(true);
   });
 

@@ -359,10 +359,11 @@ export async function updateSession(userId: string, sessionId: string, exercises
 /** Supprimer une séance renfo (#56) : le classement et le fil lisent les séances en direct ; stats à recalculer. */
 export async function deleteSession(userId: string, sessionId: string): Promise<void> {
   const sessionRef = doc(db, 'sessions', userId, 'userSessions', sessionId);
-  // Kudos are a subcollection: deleting the session alone left them behind, out of reach of account deletion
-  const kudos = await getDocs(collection(sessionRef, 'kudos'));
+  // Kudos are a subcollection: deleting the session alone left them behind, out of reach of account deletion.
+  // ponytail: on a dead network the read is capped (it hung the delete ~10 s); those kudos then stay, as offline
+  const kudos = await Promise.race([getDocs(collection(sessionRef, 'kudos')), new Promise<null>((r) => setTimeout(() => r(null), 2500))]);
   const batch = writeBatch(db);
-  kudos.docs.forEach((k) => batch.delete(k.ref));
+  kudos?.docs.forEach((k) => batch.delete(k.ref));
   batch.delete(sessionRef);
   await queuedIfOffline(batch.commit());
 }
