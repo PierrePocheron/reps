@@ -1,6 +1,6 @@
 import type { Exercise, ExerciseCategory, WorkoutType } from '@/firebase/types';
 import type { Language } from '@/hooks/useLanguage';
-import { equipmentLabel } from '@/utils/exerciseLabels';
+import { equipmentLabel, targetLabel } from '@/utils/exerciseLabels';
 
 /**
  * Bibliothèque complète d'exercices (1324) issue du dataset
@@ -125,6 +125,7 @@ export function searchLibrary(
     return (
       normalize(ex.name).includes(q) ||
       normalize(ex.target).includes(q) ||
+      normalize(targetLabel(ex.target, lang)).includes(q) ||
       normalize(equipmentLabel(ex.equipment, lang)).includes(q)
     );
   });

@@ -78,6 +78,12 @@ describe('searchLibrary', () => {
   it('recherche sur le muscle ciblé', () => {
     expect(searchLibrary(LIB, 'lats').map((e) => e.id)).toEqual(['0198']);
   });
+
+  it('recherche sur le libellé du muscle affiché sous chaque ligne', () => {
+    expect(searchLibrary(LIB, 'grand dorsal', 'all', undefined, 'fr').map((e) => e.id)).toEqual(['0198']);
+    expect(searchLibrary(LIB, 'pectoraux', 'all', undefined, 'fr').map((e) => e.id)).toEqual(['0025', '0662']);
+    expect(searchLibrary(LIB, 'chest', 'all', undefined, 'en').map((e) => e.id)).toEqual(['0025', '0662']);
+  });
 });
 
 describe('toExercise', () => {
