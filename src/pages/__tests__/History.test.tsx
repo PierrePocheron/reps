@@ -5,6 +5,7 @@ import History from '@/pages/History';
 import { useUserStore } from '@/store/userStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { createUserTemplate } from '@/firebase/templates';
+import { updateSession, updateUserStatsAfterSession } from '@/firebase/firestore';
 
 const ts = (d: Date) => ({ toDate: () => d, toMillis: () => d.getTime() });
 const gym = (id: string, day: number, exerciseIds: string[]) => ({
@@ -13,8 +14,9 @@ const gym = (id: string, day: number, exerciseIds: string[]) => ({
 });
 let GYM: object[] = []; // loose: tests add fields (timed, title…) the builder does not set
 let RENFO: object[] = [];
+const toast = vi.fn();
 
-vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
+vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast }) }));
 vi.mock('@/hooks/useSessionHistory', () => ({ useSessionHistory: () => ({ sessions: RENFO, gymSessions: GYM, loading: false, error: false, refetch: () => {} }) }));
 vi.mock('@/firebase/firestore', () => ({ onUserStatsComputed: vi.fn(), deleteSession: vi.fn(), updateSession: vi.fn(), updateUserStatsAfterSession: vi.fn(() => Promise.resolve()) }));
 vi.mock('@/firebase/gymSessions', () => ({ deleteGymSession: vi.fn(() => Promise.resolve()), updateGymSession: vi.fn() }));
@@ -29,6 +31,8 @@ const openMenu = async (item: string) => {
 describe('History', () => {
   beforeEach(() => {
     RENFO = [];
+    toast.mockClear();
+    vi.mocked(updateUserStatsAfterSession).mockReset().mockImplementation(() => Promise.resolve()); // also called on mount (streak)
     useUserStore.setState({ user: { uid: 'u1', displayName: 'P' } as never, refreshStats: vi.fn(() => Promise.resolve()) } as never);
   });
 
@@ -79,6 +83,30 @@ describe('History', () => {
     await openMenu('Enregistrer comme modèle');
     await act(async () => { fireEvent.click(await screen.findByRole('button', { name: 'Enregistrer' })); });
     expect(localStorage.getItem('reps_templates_tab')).toBe('musculation');
+  });
+
+  it('a slow stats recompute after a delete leaves the next delete dialog usable', async () => {
+    GYM = [gym('A', 3, ['bench']), gym('B', 2, ['bench'])];
+    vi.mocked(updateUserStatsAfterSession).mockImplementation(() => new Promise(() => {})); // offline: still recomputing
+    render(<MemoryRouter><History /></MemoryRouter>);
+    await openMenu('Supprimer');
+    await act(async () => { fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Supprimer' })); });
+    await openMenu('Supprimer');
+    expect(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Annuler' })).toBeEnabled();
+  });
+
+  it('a failed stats recompute does not report a done delete or renfo edit as failed', async () => {
+    GYM = [gym('A', 3, ['bench'])];
+    RENFO = [{ sessionId: 'R', userId: 'u1', date: ts(new Date(2026, 9, 3)), duration: 600, totalReps: 40, exercises: [{ name: 'Squats', emoji: '🦵', reps: 40 }] }];
+    vi.mocked(updateUserStatsAfterSession).mockRejectedValue(new Error('offline'));
+    vi.mocked(updateSession).mockResolvedValueOnce({ exercises: [{ name: 'Squats', emoji: '🦵', reps: 40 }], totalReps: 40, totalCalories: 0 } as never);
+    render(<MemoryRouter><History /></MemoryRouter>);
+    await openMenu('Supprimer');
+    await act(async () => { fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Supprimer' })); });
+    fireEvent.click(screen.getByRole('tab', { name: /Renfo/ }));
+    await openMenu('Modifier');
+    await act(async () => { fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Enregistrer' })); });
+    expect(toast.mock.calls.map(([t]) => t.title)).toEqual(['Séance supprimée', 'Séance modifiée']);
   });
 
   it('the card sums up an exercise with its heaviest set (longest when timed), not the first one', () => {

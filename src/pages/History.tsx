@@ -379,6 +379,10 @@ function History() {
   // Suppression d'une séance (#56) : confirmation, puis stats, série et totaux recalculés
   const [toDelete, setToDelete] = useState<{ kind: 'gym' | 'renfo'; id: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  // Stats are recomputed in the background: a slow one (offline) locked the next dialog, a failed one reported the done change as failed
+  const recomputeStats = (uid: string) => {
+    updateUserStatsAfterSession(uid, 0).then(() => refreshStats()).catch((err) => logger.error('Recalcul des stats :', err));
+  };
   const saveEdit = async (exercises: GymSession['exercises']) => {
     if (!toEdit || !user) return;
     try {
@@ -400,8 +404,7 @@ function History() {
       setRenfoEdits((e) => ({ ...e, [toEditRenfo.sessionId]: fields }));
       setToEditRenfo(null);
       toast({ title: 'Séance modifiée' });
-      await updateUserStatsAfterSession(user.uid, 0); // le total de reps du profil change
-      await refreshStats();
+      recomputeStats(user.uid); // le total de reps du profil change
     } catch (err) {
       logger.error('Modification de séance renfo :', err);
       toast({ title: 'Erreur', description: 'Impossible de modifier la séance', variant: 'destructive' });
@@ -416,14 +419,14 @@ function History() {
       setDeletedIds((ids) => [...ids, toDelete.id]);
       setToDelete(null);
       toast({ title: 'Séance supprimée' });
-      await updateUserStatsAfterSession(user.uid, 0);
-      await refreshStats();
     } catch (err) {
       logger.error('Suppression de séance :', err);
       toast({ title: 'Erreur', description: 'Impossible de supprimer la séance', variant: 'destructive' });
+      return;
     } finally {
       setDeleting(false);
     }
+    recomputeStats(user.uid);
   };
   const [saveAsTemplate, setSaveAsTemplate] = useState<GymSession | null>(null);
   const [templateName, setTemplateName] = useState('');
