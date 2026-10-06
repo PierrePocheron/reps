@@ -84,6 +84,8 @@ export function GymExerciseCard({
           <div key={i} className="flex items-center gap-2 bg-muted/30 rounded-xl px-3 py-2">
             <span className="text-xs font-bold text-muted-foreground w-6 flex-shrink-0">S{i + 1}</span>
 
+            {/* Like the session rows: only the fields wrap (large font, narrow phone), the bin stays reachable */}
+            <div className="flex flex-1 min-w-0 flex-wrap items-center gap-x-2 gap-y-3">
             <div className="flex items-center gap-1 flex-1">
               <DecimalInput
                 inputMode="numeric"
@@ -91,7 +93,7 @@ export function GymExerciseCard({
                 onValue={(reps) => onUpdateSet(i, { reps })}
                 onFocus={onFocusSelect}
                 aria-label={`${isTimed(exercise) ? 'Durée visée en secondes' : 'Répétitions visées'}, série ${i + 1}`}
-                className={`h-8 w-14 ${NUM_INPUT}`}
+                className={`h-11 -my-1.5 w-0 flex-1 max-w-14 min-w-[calc(3ch_+_0.75rem)] ${NUM_INPUT}`}
               />
               {onToggleTimed
                 ? <UnitToggle timed={isTimed(exercise)} onToggle={onToggleTimed} />
@@ -105,15 +107,16 @@ export function GymExerciseCard({
                 onValue={(weight) => onUpdateSet(i, { weight })}
                 onFocus={onFocusSelect}
                 aria-label={`Charge en kg, série ${i + 1}`}
-                className={`h-8 w-16 ${NUM_INPUT}`}
+                className={`h-11 -my-1.5 w-0 flex-1 max-w-16 min-w-[calc(5ch_+_0.75rem)] ${NUM_INPUT}`}
               />
               <span className="text-xs text-muted-foreground">kg</span>
+            </div>
             </div>
 
             <button
               onClick={() => onRemoveSet(i)}
               aria-label={`Supprimer la série ${i + 1}`}
-              className="h-9 w-9 -my-1 -mr-1 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+              className="h-11 w-11 -my-1.5 -mr-1.5 flex items-center justify-center rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
             >
               <Trash2 className="h-4 w-4" />
             </button>
