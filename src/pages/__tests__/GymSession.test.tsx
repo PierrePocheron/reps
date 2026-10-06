@@ -175,6 +175,14 @@ describe('GymSession — la prochaine série reste visible au-dessus de la barre
   });
 });
 
+describe('GymSession — bouton de repos de la barre', () => {
+  it('dit aux lecteurs d\'écran qu\'il s\'agit du minuteur de repos', async () => {
+    await setup([bench([{ reps: 8, weight: 60 }])], { restDuration: 90 });
+    fireEvent.click(screen.getByRole('button', { name: 'Lancer un repos de 1:30' }));
+    expect(screen.getByRole('button', { name: 'Arrêter le minuteur de repos' })).toBeInTheDocument();
+  });
+});
+
 describe('GymSession — repos automatique', () => {
   it('démarre aussi après la seule série (ou la dernière) de la séance, quand on ajoute les séries une à une', async () => {
     await setup([bench([{ reps: 8, weight: 60 }])], { autoRest: true });

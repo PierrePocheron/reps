@@ -231,6 +231,7 @@ function GymSession() {
   const totalSets = getTotalSets();
   const completedSets = getCompletedSets();
   const allSetsCompleted = phase === 'execute' && completedSets >= totalSets && totalSets > 0;
+  const restLabel = REST_PRESETS.find((p) => p.value === restDuration)?.label ?? `${restDuration}s`;
 
   // Enrichir les exercices avec les images Firestore
   const enrichedExercises = exercises.map((ex) => ({
@@ -626,25 +627,27 @@ function GymSession() {
           <div className="flex gap-2">
             <button
               onClick={() => showRestTimer ? dismissRestTimer() : startRestTimer()}
+              aria-label={showRestTimer ? 'Arrêter le minuteur de repos' : `Lancer un repos de ${restLabel}`}
               className={cn(
-                'flex items-center gap-1.5 min-w-11 px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors',
+                // never squeezed (its icon overflowed at 320 px with a large font): « Terminer » shrinks instead
+                'flex shrink-0 items-center gap-1.5 min-w-11 px-3 py-2.5 rounded-xl border text-sm font-medium whitespace-nowrap transition-colors',
                 showRestTimer
                   ? 'bg-primary/10 border-primary/30 text-primary'
                   : 'border-border text-muted-foreground hover:text-foreground hover:border-primary/30'
               )}
             >
-              <TimerIcon className="h-4 w-4" />
-              {showRestTimer ? 'Arrêter' : (REST_PRESETS.find((p) => p.value === restDuration)?.label ?? `${restDuration}s`)}
+              <TimerIcon className="h-4 w-4" aria-hidden />
+              {showRestTimer ? 'Arrêter' : restLabel}
             </button>
 
             <Button
               size="default"
               disabled={ending || completedSets === 0}
-              className={cn('flex-1 font-semibold', allSetsCompleted && 'bg-green-600 hover:bg-green-700')}
+              className={cn('flex-1 min-w-0 font-semibold', allSetsCompleted && 'bg-green-600 hover:bg-green-700')}
               onClick={handleEndSession}
             >
-              {ending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Square className="mr-2 h-4 w-4 fill-current" />}
-              {allSetsCompleted ? 'Terminer !' : 'Terminer'}
+              {ending ? <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin" /> : <Square className="mr-2 h-4 w-4 shrink-0 fill-current" />}
+              <span className="truncate">{allSetsCompleted ? 'Terminer !' : 'Terminer'}</span>
             </Button>
 
             <button
