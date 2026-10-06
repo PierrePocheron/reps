@@ -406,14 +406,18 @@ function History() {
   };
   const [saveAsTemplate, setSaveAsTemplate] = useState<GymSession | null>(null);
   const [templateName, setTemplateName] = useState('');
+  const [savingTemplate, setSavingTemplate] = useState(false); // a second tap while offline made a duplicate
   const saveTemplate = async () => {
-    if (!user || !saveAsTemplate || !templateName.trim()) return;
+    if (!user || !saveAsTemplate || !templateName.trim() || savingTemplate) return;
+    setSavingTemplate(true);
     try {
       await createUserTemplate(user.uid, templateFromSession(saveAsTemplate, templateName));
       toast({ title: 'Modèle enregistré', description: `« ${templateName.trim()} » est dans tes modèles.` });
       setSaveAsTemplate(null);
     } catch {
       toast({ title: 'Erreur', description: "Le modèle n'a pas pu être enregistré.", variant: 'destructive' });
+    } finally {
+      setSavingTemplate(false);
     }
   };
 
@@ -621,7 +625,9 @@ function History() {
             <DialogDescription>Les séries réalisées (hors échauffement) deviennent un modèle réutilisable.</DialogDescription>
           </DialogHeader>
           <Input value={templateName} onChange={(e) => setTemplateName(e.target.value)} maxLength={40} aria-label="Nom du modèle" />
-          <Button className="w-full min-h-11" onClick={saveTemplate} disabled={!templateName.trim()}>Enregistrer</Button>
+          <Button className="w-full min-h-11" onClick={saveTemplate} disabled={savingTemplate || !templateName.trim()}>
+            {savingTemplate ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enregistrer'}
+          </Button>
         </DialogContent>
       </Dialog>
       {toEdit && <EditGymSessionDialog session={toEdit} onCancel={() => setToEdit(null)} onSave={saveEdit} />}

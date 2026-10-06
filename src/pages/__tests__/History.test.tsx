@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import History from '@/pages/History';
 import { useUserStore } from '@/store/userStore';
+import { createUserTemplate } from '@/firebase/templates';
 
 const ts = (d: Date) => ({ toDate: () => d, toMillis: () => d.getTime() });
 const gym = (id: string, day: number, exerciseIds: string[]) => ({
@@ -36,5 +37,16 @@ describe('History', () => {
     await openMenu('Supprimer');
     await act(async () => { fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Supprimer' })); });
     expect(cards()).toHaveLength(2);
+  });
+
+  it('a double tap on « Enregistrer » creates one template', async () => {
+    GYM = [gym('A', 3, ['bench'])];
+    vi.mocked(createUserTemplate).mockReturnValue(new Promise(() => {})); // slow network / offline: still saving
+    render(<MemoryRouter><History /></MemoryRouter>);
+    await openMenu('Enregistrer comme modèle');
+    const save = await screen.findByRole('button', { name: 'Enregistrer' });
+    fireEvent.click(save);
+    fireEvent.click(save);
+    expect(createUserTemplate).toHaveBeenCalledTimes(1);
   });
 });

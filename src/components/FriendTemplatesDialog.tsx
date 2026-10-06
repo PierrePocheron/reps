@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -14,6 +14,7 @@ export function FriendTemplatesDialog({ friend, onClose }: { friend: User | null
   const { toast } = useToast();
   const [templates, setTemplates] = useState<WorkoutTemplate[] | null>(null);
   const [copied, setCopied] = useState<string[]>([]);
+  const [copying, setCopying] = useState<string | null>(null); // a second tap while offline made a duplicate
 
   useEffect(() => {
     if (!friend) return;
@@ -22,7 +23,8 @@ export function FriendTemplatesDialog({ friend, onClose }: { friend: User | null
   }, [friend]);
 
   const copy = async (t: WorkoutTemplate) => {
-    if (!me) return;
+    if (!me || copying) return;
+    setCopying(t.id);
     try {
       const { id, userId, createdAt, ...data } = t;
       void id; void userId; void createdAt;
@@ -32,6 +34,8 @@ export function FriendTemplatesDialog({ friend, onClose }: { friend: User | null
     } catch (err) {
       logger.error('Copie du modèle :', err);
       toast({ title: 'Erreur', description: "Le modèle n'a pas pu être copié.", variant: 'destructive' });
+    } finally {
+      setCopying(null);
     }
   };
 
@@ -60,9 +64,9 @@ export function FriendTemplatesDialog({ friend, onClose }: { friend: User | null
                       {t.workoutType === 'musculation' ? 'Muscu' : 'Renfo'} · {count} exercice{count > 1 ? 's' : ''}
                     </p>
                   </div>
-                  <Button size="sm" variant={done ? 'ghost' : 'outline'} className="min-h-11" disabled={done} onClick={() => copy(t)}
+                  <Button size="sm" variant={done ? 'ghost' : 'outline'} className="min-h-11" disabled={done || !!copying} onClick={() => copy(t)}
                     aria-label={done ? `${t.name} copié` : `Copier ${t.name}`}>
-                    {done ? <Check className="h-4 w-4" /> : <><Copy className="h-4 w-4 mr-1" /> Copier</>}
+                    {done ? <Check className="h-4 w-4" /> : copying === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Copy className="h-4 w-4 mr-1" /> Copier</>}
                   </Button>
                 </li>
               );
