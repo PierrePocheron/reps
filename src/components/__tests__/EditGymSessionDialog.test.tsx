@@ -45,4 +45,26 @@ describe('EditGymSessionDialog', () => {
     await waitFor(() => expect(onSave).toHaveBeenCalled());
     expect(onSave.mock.calls[0]![0]).toEqual([expect.objectContaining({ exerciseId: 'a', supersetId: undefined })]);
   });
+
+  it('a skipped exercise stays planned for « Refaire » and keeps its superset partner', async () => {
+    const onSave = vi.fn(async (_exercises: GymSessionExercise[]) => {});
+    const skipped = { ...session, exercises: [
+      { exerciseId: 'a', name: 'A', emoji: '🏋️', supersetId: 'ss1', sets: [{ reps: 10, weight: 20, completed: true }] },
+      { exerciseId: 'b', name: 'B', emoji: '🏋️', supersetId: 'ss1', sets: [{ reps: 10, weight: 20, completed: false }] },
+    ] } as unknown as GymSession;
+    render(<EditGymSessionDialog session={skipped} onCancel={() => {}} onSave={onSave} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    await waitFor(() => expect(onSave).toHaveBeenCalled());
+    expect(onSave.mock.calls[0]![0].map((ex) => [ex.exerciseId, ex.supersetId])).toEqual([['a', 'ss1'], ['b', 'ss1']]);
+  });
+
+  it('removing every done set still blocks saving when only skipped exercises are left', () => {
+    const skipped = { ...session, exercises: [
+      { exerciseId: 'a', name: 'A', emoji: '🏋️', sets: [{ reps: 10, weight: 20, completed: true }] },
+      { exerciseId: 'b', name: 'B', emoji: '🏋️', sets: [{ reps: 10, weight: 20, completed: false }] },
+    ] } as unknown as GymSession;
+    render(<EditGymSessionDialog session={skipped} onCancel={() => {}} onSave={async () => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer la série 1 de A' }));
+    expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeDisabled();
+  });
 });

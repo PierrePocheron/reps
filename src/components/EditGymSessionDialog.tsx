@@ -37,7 +37,11 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
       return { ...ex, sets: [...ex.sets, { reps, weight, actualReps: reps, actualWeight: weight, completed: true }] };
     }));
 
-  const kept = dropLoneSupersets(exercises.filter((ex) => ex.sets.some((s) => s.completed))); // a removed partner unlinks the other
+  // drops only the exercises whose done sets were removed here (a removed partner unlinks the other); skipped ones stay
+  // planned for « Refaire ». The working copy is index-aligned with the session: sets change, exercises don't
+  const done = (ex: GymSessionExercise | undefined) => !!ex?.sets.some((s) => s.completed);
+  const kept = dropLoneSupersets(exercises.filter((ex, i) => done(ex) || !done(session.exercises[i])));
+  const empty = !kept.some(done);
   const save = async () => {
     setSaving(true);
     try { await onSave(kept); } finally { setSaving(false); }
@@ -84,11 +88,11 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
             </section>
           ))}
         </div>
-        {kept.length === 0 && <p className="text-xs text-muted-foreground">Plus aucune série : supprime plutôt la séance depuis l'historique.</p>}
+        {empty && <p className="text-xs text-muted-foreground">Plus aucune série : supprime plutôt la séance depuis l'historique.</p>}
         {/* Boutons toujours visibles, même quand la liste défile (séance longue) */}
         <div className="sticky -bottom-6 -mx-6 -mb-6 px-6 pt-3 pb-6 flex flex-wrap gap-2 bg-background border-t">
           <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={onCancel} disabled={saving}>Annuler</Button>
-          <Button className="flex-1 basis-28 min-h-11" onClick={() => void save()} disabled={saving || kept.length === 0}>
+          <Button className="flex-1 basis-28 min-h-11" onClick={() => void save()} disabled={saving || empty}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enregistrer'}
           </Button>
         </div>
