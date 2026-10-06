@@ -59,6 +59,7 @@ export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) 
   };
 
   const switchType = (type: WorkoutType) => {
+    if (type === workoutType) return; // tapping the active segment must not wipe the list
     setWorkoutType(type);
     setSelectedIds([]);
     setMuscuExercises([]);

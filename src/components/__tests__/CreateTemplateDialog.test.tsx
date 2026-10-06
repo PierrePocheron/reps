@@ -18,4 +18,11 @@ describe('CreateTemplateDialog', () => {
       muscuExercises: [expect.objectContaining({ exerciseId: 'lib_0464', timed: true })],
     }));
   });
+
+  it('tapping the type already selected keeps the exercise list', () => {
+    render(<CreateTemplateDialog open onClose={() => {}} onSave={async () => {}} initial={template} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Musculation' }));
+    expect(screen.getByText('Exercices (1)')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Enregistrer le modèle' })).toBeEnabled();
+  });
 });
