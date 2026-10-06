@@ -59,30 +59,37 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
           {exercises.map((ex, i) => (
             <section key={ex.exerciseId} aria-label={ex.name} className="space-y-2">
               <h3 className="text-sm font-semibold">{ex.emoji} {ex.name}</h3>
-              {ex.sets.map((s, j) => (!s.completed ? null : (
+              {ex.sets.map((s, j) => {
+                if (!s.completed) return null;
+                // Numbered like the session (warm-ups apart), over the shown sets only: a skipped one leaves no gap
+                const warmup = s.type === 'warmup';
+                const n = ex.sets.slice(0, j + 1).filter((st) => st.completed && (st.type === 'warmup') === warmup).length;
+                const label = `${warmup ? 'échauffement' : 'série'} ${n}`;
+                return (
                 <div key={j} className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => patch(i, j, { type: nextSetType(s.type) })}
-                    aria-label={`Série ${j + 1} : ${s.type ? SET_TYPE_META[s.type].label : 'normale'} — changer le type`}
+                    aria-label={`${warmup ? 'Échauffement' : 'Série'} ${n} : ${s.type ? SET_TYPE_META[s.type].label : 'normale'} — changer le type`}
                     className={cn('h-11 w-8 shrink-0 rounded-lg text-xs font-bold', s.type ? SET_TYPE_META[s.type].cls : 'text-muted-foreground')}
                   >
-                    {s.type ? SET_TYPE_META[s.type].short : `S${j + 1}`}
+                    {s.type ? SET_TYPE_META[s.type].short : `S${n}`}
                   </button>
                   <Input type="number" min={0} inputMode="numeric" value={s.actualReps || ''} placeholder="0" className={NUM}
-                    aria-label={`Répétitions, série ${j + 1} de ${ex.name}`}
+                    aria-label={`Répétitions, ${label} de ${ex.name}`}
                     onChange={(e) => patch(i, j, { actualReps: Math.max(0, Math.round(Number(e.target.value) || 0)) })} />
                   <span className="text-xs text-muted-foreground">{isTimed(ex) ? 's' : 'reps'}</span>
                   <DecimalInput value={s.actualWeight ?? 0} placeholder="0" className={NUM}
-                    aria-label={`Charge en kg, série ${j + 1} de ${ex.name}`}
+                    aria-label={`Charge en kg, ${label} de ${ex.name}`}
                     onValue={(actualWeight) => patch(i, j, { actualWeight })} />
                   <span className="text-xs text-muted-foreground">kg</span>
-                  <button type="button" onClick={() => removeSet(i, j)} aria-label={`Retirer la série ${j + 1} de ${ex.name}`}
+                  <button type="button" onClick={() => removeSet(i, j)} aria-label={`Retirer ${warmup ? "l'" : 'la '}${label} de ${ex.name}`}
                     className="ml-auto h-11 w-11 -mr-2 flex items-center justify-center rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-              )))}
+                );
+              })}
               <button type="button" onClick={() => addSet(i)} className="min-h-11 inline-flex items-center gap-1.5 text-xs font-medium text-primary">
                 <Plus className="h-3.5 w-3.5" aria-hidden /> Ajouter une série
               </button>

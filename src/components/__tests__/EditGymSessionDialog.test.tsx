@@ -68,6 +68,21 @@ describe('EditGymSessionDialog', () => {
     expect(screen.getByRole('button', { name: 'Enregistrer' })).toBeDisabled();
   });
 
+  it('numbers sets like the session: warm-ups apart, a skipped set leaves no gap (« É, S2, S3 » before)', () => {
+    const bench = { ...session, exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [
+      { reps: 10, weight: 40, completed: true, type: 'warmup' },
+      { reps: 8, weight: 60, completed: false },
+      { reps: 8, weight: 60, completed: true },
+      { reps: 6, weight: 60, completed: true },
+    ] }] } as unknown as GymSession;
+    render(<EditGymSessionDialog session={bench} onCancel={() => {}} onSave={async () => {}} />);
+    expect(screen.getAllByRole('button', { name: /changer le type$/ }).map((b) => b.textContent)).toEqual(['É', 'S1', 'S2']);
+    expect(screen.getByRole('spinbutton', { name: 'Répétitions, échauffement 1 de Développé couché' })).toHaveValue(10);
+    expect(screen.getByRole('spinbutton', { name: 'Répétitions, série 2 de Développé couché' })).toHaveValue(6);
+    expect(screen.getByRole('button', { name: 'Retirer la série 2 de Développé couché' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: "Retirer l'échauffement 1 de Développé couché" })).toBeInTheDocument();
+  });
+
   it('a load typed with the French comma is kept (« 82,5 » became 825 or 0)', async () => {
     const onSave = vi.fn(async (_exercises: GymSessionExercise[]) => {});
     render(<EditGymSessionDialog session={session} onCancel={() => {}} onSave={onSave} />);
