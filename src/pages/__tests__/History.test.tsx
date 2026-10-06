@@ -64,6 +64,13 @@ describe('History', () => {
     expect(createUserTemplate).toHaveBeenCalledTimes(1);
   });
 
+  it('« Enregistrer comme modèle » suggests the session title as the name', async () => {
+    GYM = [{ ...gym('A', 3, ['bench']), title: 'Push A' }];
+    render(<MemoryRouter><History /></MemoryRouter>);
+    await openMenu('Enregistrer comme modèle');
+    expect(await screen.findByRole('textbox', { name: 'Nom du modèle' })).toHaveValue('Push A');
+  });
+
   it('the card sums up an exercise with its heaviest set (longest when timed), not the first one', () => {
     const done = (reps: number, weight: number, type?: 'warmup') => ({ reps, weight, completed: true, type });
     GYM = [{ ...gym('A', 3, []), exercises: [

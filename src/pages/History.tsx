@@ -571,7 +571,7 @@ function History() {
               )}
               {shownGymSessions.map((s) => (
                 <MuscuCard key={s.sessionId} session={s} imageMap={imageMap} onRedo={() => redoGym(s)}
-                  onSaveTemplate={() => { setSaveAsTemplate(s); setTemplateName(`Séance du ${frDate(s.date.toDate(), { day: 'numeric', month: 'long' })}`); }}
+                  onSaveTemplate={() => { setSaveAsTemplate(s); setTemplateName(s.title || `Séance du ${frDate(s.date.toDate(), { day: 'numeric', month: 'long' })}`); }}
                   onShare={() => share(gymCard({ date: s.date.toDate(), duration: s.duration, exercises: s.exercises, title: s.title }))}
                   onDelete={() => setToDelete({ kind: 'gym', id: s.sessionId })}
                   onEdit={() => setToEdit(s)} />
