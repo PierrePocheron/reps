@@ -344,7 +344,9 @@ function History() {
     }
     return [...seen].sort((a, b) => b[1].count - a[1].count);
   }, [gymSessions]);
-  const shownGymSessions = exerciseFilter ? gymSessions.filter((s) => s.exercises.some((ex) => ex.exerciseId === exerciseFilter)) : gymSessions;
+  // a filtered exercise whose last session was deleted or edited away no longer filters (blank list otherwise)
+  const filter = exerciseOptions.some(([id]) => id === exerciseFilter) ? exerciseFilter : '';
+  const shownGymSessions = filter ? gymSessions.filter((s) => s.exercises.some((ex) => ex.exerciseId === filter)) : gymSessions;
   const { imageMap, infoMap } = useExerciseImages();
   const navigate = useNavigate();
   const [detailPr, setDetailPr] = useState<PersonalRecord | null>(null);
@@ -531,7 +533,7 @@ function History() {
             <div className="space-y-3">
               {exerciseOptions.length > 1 && (
                 <select
-                  value={exerciseFilter}
+                  value={filter}
                   onChange={(e) => setExerciseFilter(e.target.value)}
                   aria-label="Filtrer les séances par exercice"
                   className="w-full min-h-11 rounded-xl border bg-card px-3 text-sm"
