@@ -16,4 +16,11 @@ describe('ExerciseProgressChart', () => {
     expect(screen.getByRole('button', { name: 'Reps max' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText(/Record : 18 reps/)).toBeInTheDocument();
   });
+
+  it('one weighted session does not hide the reps curve of the bodyweight ones', () => {
+    const weighted = { ...daysAgo(3, 8), exercises: [{ exerciseId: 'chest_dips', name: 'Dips', emoji: '💪', sets: [{ weight: 10, reps: 8, completed: true }] }] } as unknown as GymSession;
+    render(<ExerciseProgressChart points={exerciseHistory([daysAgo(1, 18), weighted, daysAgo(10, 12)], 'chest_dips')} />);
+    expect(screen.getByRole('button', { name: '1RM estimé' })).toHaveAttribute('aria-pressed', 'true'); // default unchanged
+    expect(screen.getByRole('button', { name: 'Reps max' })).toBeInTheDocument();
+  });
 });

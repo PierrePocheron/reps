@@ -40,6 +40,17 @@ describe('History', () => {
     expect(cards()).toHaveLength(2);
   });
 
+  it('the dropped filter stays dropped when older sessions of that exercise load (« charger plus »)', async () => {
+    GYM = [gym('A', 3, ['bench']), gym('B', 2, ['bench']), gym('C', 1, ['squat'])];
+    const { rerender } = render(<MemoryRouter><History /></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText('Filtrer les séances par exercice'), { target: { value: 'squat' } });
+    await openMenu('Supprimer');
+    await act(async () => { fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Supprimer' })); });
+    GYM = [...GYM, gym('D', 0, ['squat'])]; // an older squat session arrives
+    rerender(<MemoryRouter><History /></MemoryRouter>);
+    expect(cards()).toHaveLength(3);
+  });
+
   it('a double tap on « Enregistrer » creates one template', async () => {
     GYM = [gym('A', 3, ['bench'])];
     vi.mocked(createUserTemplate).mockReturnValue(new Promise(() => {})); // slow network / offline: still saving

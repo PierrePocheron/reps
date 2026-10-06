@@ -29,9 +29,13 @@ export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint
   const days = PERIODS.find((p) => p.key === period)!.days;
   const since = Date.now() - days * 86_400_000;
   const inPeriod = points.filter((p) => p.date.getTime() >= since);
-  // at bodyweight, 1RM, load and volume are all 0: the curve shows reps (it said « aucune séance » otherwise)
-  const kind = timed ? 'time' : inPeriod.some((p) => p.bestWeight > 0) ? 'load' : 'bodyweight';
-  const metrics = METRICS.filter((m) => m.kind === kind);
+  // at bodyweight, 1RM, load and volume are all 0: reps are offered whenever a session has no load (one weighted
+  // session hid them all), the load metrics whenever one has
+  const kinds = timed ? ['time'] : [
+    ...(inPeriod.some((p) => p.bestWeight > 0) ? ['load'] : []),
+    ...(inPeriod.length === 0 || inPeriod.some((p) => p.bestWeight === 0) ? ['bodyweight'] : []),
+  ];
+  const metrics = METRICS.filter((m) => kinds.includes(m.kind));
   const metric = metrics.some((m) => m.key === chosen) ? chosen : metrics[0]!.key;
   const shown = inPeriod.filter((p) => p[metric] > 0);
   const values = shown.map((p) => p[metric]);
