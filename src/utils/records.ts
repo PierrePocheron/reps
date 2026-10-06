@@ -101,21 +101,28 @@ export interface ExerciseLogEntry { date: Date; sets: string; record: boolean }
 export function exerciseLog(sessions: GymSession[], exerciseId: string, limit = 10): ExerciseLogEntry[] {
   const out: ExerciseLogEntry[] = [];
   const num = (n: number) => n.toLocaleString('fr-FR');
-  for (const session of sessions) {
+  // 🏆 rated from the history, oldest first, not from the stored isRecord: editing or deleting an older session re-rates
+  // only that one, so a newer session kept a false trophy or missed the real one. Same rule as markRecords: it beats every
+  // older session in the same unit (best duration when timed), and the first one has none
+  const best = new Map<boolean, number>();
+  for (const session of [...sessions].reverse()) {
     for (const ex of session.exercises) {
       if (ex.exerciseId !== exerciseId) continue;
       const work = ex.sets.filter(isWorkSet);
       if (work.length === 0) continue;
       const reps = (s: (typeof work)[number]) => s.actualReps ?? s.reps;
       const weight = (s: (typeof work)[number]) => s.actualWeight ?? s.weight;
-      const sets = isTimed(ex) ? `${work.map((s) => num(reps(s))).join(' · ')} s`
+      const timed = isTimed(ex);
+      const sets = timed ? `${work.map((s) => num(reps(s))).join(' · ')} s`
         : work.some((s) => weight(s) > 0) ? `${work.map((s) => `${reps(s)}×${num(weight(s))}`).join(' · ')} kg`
         : `${work.map(reps).join(' · ')} reps`;
-      out.push({ date: session.date.toDate(), sets, record: work.some((s) => s.isRecord) });
+      const score = Math.max(...work.map((s) => (timed ? reps(s) : estimate1RM(weight(s), reps(s)))));
+      const top = best.get(timed);
+      best.set(timed, Math.max(top ?? 0, score));
+      out.push({ date: session.date.toDate(), sets, record: top !== undefined && score > top });
     }
-    if (out.length >= limit) break;
   }
-  return out.slice(0, limit);
+  return out.reverse().slice(0, limit);
 }
 
 export interface PersonalRecord {

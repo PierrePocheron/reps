@@ -107,6 +107,20 @@ describe('exerciseLog (#60)', () => {
     ]);
     expect(exerciseLog([sess(2, [{ weight: 0, reps: 60, completed: true }], true)], 'bench_press')[0]!.sets).toBe('60 s');
   });
+
+  it('🏆 follows the history, not the stored flag: an older session edited down hands the record to a newer one', () => {
+    const sess = (day: number, weight: number, reps: number, isRecord: boolean, timed = false) =>
+      ({ date: { toDate: () => new Date(2026, 9, day) }, exercises: [{ exerciseId: 'bench_press', name: 'DC', emoji: '🏋️', timed, sets: [{ weight, reps, completed: true, isRecord }] }] }) as unknown as GymSession;
+    const sessions = [
+      sess(8, 0, 70, false, true), // best duration so far: 70 s > 60 s
+      sess(7, 0, 60, false, true), // first timed one: no record, even after heavier lifts
+      sess(5, 75, 6, false), // 90 kg e1RM now beats 8×70 (88,7)
+      sess(3, 60, 8, true), // was 8×72,5, the record, edited down to 8×60
+      sess(1, 70, 8, false),
+    ];
+    expect(exerciseLog(sessions, 'bench_press').map((e) => e.record)).toEqual([true, false, true, false, false]);
+    expect(exerciseLog(sessions, 'bench_press', 3).map((e) => e.record)).toEqual([true, false, true]); // older ones still count
+  });
 });
 
 describe('personalRecordsOf (onglet Records)', () => {
