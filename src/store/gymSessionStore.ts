@@ -298,8 +298,8 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
         totalVolume: Math.round(totalVolume),
         totalSets,
       });
-      // Série et badges comptent aussi la muscu ; un échec ne doit pas bloquer la fin de séance
-      await updateUserStatsAfterSession(currentUser.uid, 0)
+      // Série et badges comptent aussi la muscu ; ni un échec ni l'attente (2,5 s hors ligne) ne bloquent la fin de séance
+      void updateUserStatsAfterSession(currentUser.uid, 0)
         .catch((err) => logger.error('Mise à jour des stats après séance muscu :', err));
 
       get().cancelSession();

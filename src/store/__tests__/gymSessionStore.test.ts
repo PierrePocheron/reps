@@ -1,8 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
 import { useGymSessionStore } from '../gymSessionStore';
+import { useUserStore } from '../userStore';
 import { cancelRestEnd } from '@/utils/restNotification';
+import { createGymSession } from '@/firebase/gymSessions';
+import { updateUserStatsAfterSession } from '@/firebase/firestore';
 
 vi.mock('@/utils/restNotification', () => ({ scheduleRestEnd: vi.fn(), cancelRestEnd: vi.fn() }));
+vi.mock('@/firebase/gymSessions', async (orig) => ({ ...(await orig<typeof import('@/firebase/gymSessions')>()), createGymSession: vi.fn().mockResolvedValue('id') }));
+vi.mock('@/firebase/firestore', async (orig) => ({ ...(await orig<typeof import('@/firebase/firestore')>()), updateUserStatsAfterSession: vi.fn() }));
 
 describe('gymSessionStore — persistance de la séance en cours', () => {
   it('sauvegarde séries, chrono et repos en cours (rechargement ou WebView arrêtée en plein repos)', () => {
@@ -143,5 +148,24 @@ describe('gymSessionStore — séance libre', () => {
     useGymSessionStore.setState({ phase: 'idle', exercises: [] });
     useGymSessionStore.getState().startFreeSession();
     expect(useGymSessionStore.getState()).toMatchObject({ phase: 'execute', exercises: [] });
+  });
+});
+
+describe('gymSessionStore — fin de séance', () => {
+  it('n\'attend pas la mise à jour des stats (hors ligne, elle attendait encore 2,5 s)', async () => {
+    useUserStore.setState({ currentUser: { uid: 'u1' } as never });
+    useGymSessionStore.setState({
+      phase: 'execute', startTime: Date.now() - 5000, backdate: null,
+      exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [{ weight: 60, reps: 8, completed: true }] }],
+    });
+    vi.mocked(updateUserStatsAfterSession).mockReturnValue(new Promise(() => {})); // never settles
+    const ended = await Promise.race([
+      useGymSessionStore.getState().endSession().then(() => true),
+      new Promise<boolean>((r) => setTimeout(() => r(false), 50)),
+    ]);
+    expect(ended).toBe(true);
+    expect(createGymSession).toHaveBeenCalled();
+    expect(updateUserStatsAfterSession).toHaveBeenCalledWith('u1', 0);
+    expect(useGymSessionStore.getState().phase).toBe('idle');
   });
 });
