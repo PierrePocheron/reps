@@ -43,7 +43,7 @@ export function BottomNav() {
     const active = location.pathname === path;
     return (
       <button
-        onClick={() => navigate(path)}
+        onClick={() => { if (!active) navigate(path); }} // the same page again only stacked history entries for back to pop
         aria-current={active ? 'page' : undefined}
         title={label}
         className="flex flex-1 h-full min-w-[44px] items-center justify-center"

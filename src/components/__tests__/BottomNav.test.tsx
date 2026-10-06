@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BottomNav } from '../BottomNav';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
 
 // Mock navigation
@@ -42,6 +42,12 @@ describe('BottomNav Component', () => {
         renderNav();
         fireEvent.click(screen.getByText('Stats'));
         expect(mockNavigate).toHaveBeenCalledWith('/statistics');
+    });
+
+    it('does not stack history entries when the current tab is tapped again', () => {
+        render(<MemoryRouter initialEntries={['/statistics']}><BottomNav /></MemoryRouter>);
+        fireEvent.click(screen.getByText('Stats'));
+        expect(mockNavigate).not.toHaveBeenCalled();
     });
 
     it('should show notification dot for new badges on Home', () => {
