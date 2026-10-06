@@ -48,4 +48,17 @@ describe('ExerciseProgressChart', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Volume' }));
     expect([...wide.container.querySelectorAll('svg text[text-anchor="end"]')].slice(0, 3).map((t) => t.textContent)).toEqual(['701', '686', '672']);
   });
+
+  it('opens on the shortest period that holds the last session, not on an empty « 3 mois »', () => {
+    const pressed = () => screen.getAllByRole('button', { pressed: true })[0]!.textContent;
+    const { unmount } = render(<ExerciseProgressChart points={exerciseHistory([lifted(140, 125, 5), lifted(150, 120, 5)], 'squat')} />);
+    expect(pressed()).toBe('1 an');
+    expect(screen.queryByText('Aucune séance sur cette période.')).not.toBeInTheDocument();
+    unmount();
+    const old = render(<ExerciseProgressChart points={exerciseHistory([lifted(400, 125, 5)], 'squat')} />);
+    expect(pressed()).toBe('Tout');
+    old.unmount();
+    render(<ExerciseProgressChart points={exerciseHistory([lifted(2, 125, 5), lifted(140, 120, 5)], 'squat')} />);
+    expect(pressed()).toBe('3 mois');
+  });
 });
