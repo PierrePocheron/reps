@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { PageTransition } from '@/components/PageTransition';
 import { Toaster } from '@/components/ui/toaster';
 import { AppInitializer } from '@/components/AppInitializer';
@@ -181,6 +181,8 @@ function App() {
                           </PageTransition>
                         }
                       />
+                    {/* mistyped or outdated link: Home rather than a blank page */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </>
                 </Suspense>
