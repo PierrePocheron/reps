@@ -42,6 +42,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
   const { toast } = useToast();
   const [isValidating, setIsValidating] = useState(false);
   const [confirmAbandon, setConfirmAbandon] = useState(false);
+  const [abandoning, setAbandoning] = useState(false); // offline the write waits up to 2.5 s: no cancel or second tap meanwhile
   const { play } = useSound();
   const { notification } = useHaptic();
 
@@ -134,13 +135,14 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
   }
 
   const handleAbandon = async () => {
-    if (!activeChallenge) return;
+    if (!activeChallenge || abandoning) return;
+    setAbandoning(true);
     try {
         await abandonChallenge(activeChallenge.id);
         setConfirmAbandon(false);
         // no challenge history screen exists: only the validated sessions stay
         toast({
-            title: `« ${def.title} » abandonné`,
+            title: `«\u00a0${def.title}\u00a0» abandonné`,
             description: "Tes séances déjà validées restent dans ton historique.",
         });
         onUpdate?.();
@@ -150,6 +152,8 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
             description: "Impossible d'abandonner le défi.",
             variant: "destructive"
         });
+    } finally {
+        setAbandoning(false);
     }
   };
 
@@ -175,8 +179,8 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
 
         const finished = stepIndex + 1 >= def.durationDays; // the card leaves « En cours » without a word otherwise
         toast(finished ? {
-            title: "Défi terminé ! 🏆",
-            description: `« ${def.title} » : ${plural(def.durationDays, 'jour')} validés.`,
+            title: "Défi terminé ! 🏆",
+            description: `«\u00a0${def.title}\u00a0»\u00a0: ${plural(def.durationDays, 'jour')} validés.`,
         } : {
             title: isLate ? "Rattrapage réussi ! 💪" : "Bien joué ! 🔥",
             description: `Jour ${stepIndex + 1} validé !`,
@@ -189,6 +193,7 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
             description: (error as Error).message || "Impossible de valider le défi.", // offline, already up to date…
             variant: "destructive"
         });
+        onUpdate?.(); // a stale card (abandoned or finished elsewhere, already done) shows its real state
     } finally {
         setIsValidating(false);
     }
@@ -401,15 +406,17 @@ export function ChallengeCard({ activeChallenge, template, userId, detailed, onJ
 
       </CardContent>
       {isActive && (
-        <Dialog open={confirmAbandon} onOpenChange={setConfirmAbandon}>
+        <Dialog open={confirmAbandon} onOpenChange={(open) => !abandoning && setConfirmAbandon(open)}>
           <DialogContent className="max-w-sm">
             <DialogHeader>
-              <DialogTitle>Abandonner « {def.title} » ?</DialogTitle>
+              <DialogTitle>Abandonner «&nbsp;{def.title}&nbsp;»&nbsp;?</DialogTitle>
               <DialogDescription>Tes séances déjà validées restent dans ton historique.</DialogDescription>
             </DialogHeader>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={() => setConfirmAbandon(false)}>Annuler</Button>
-              <Button variant="destructive" className="flex-1 basis-28 min-h-11" onClick={() => void handleAbandon()}>Abandonner</Button>
+              <Button variant="outline" className="flex-1 basis-28 min-h-11" onClick={() => setConfirmAbandon(false)} disabled={abandoning}>Annuler</Button>
+              <Button variant="destructive" className="flex-1 basis-28 min-h-11" onClick={() => void handleAbandon()} disabled={abandoning} aria-label={abandoning ? 'Abandon en cours' : undefined}>
+                {abandoning ? <LoadingSpinner size="sm" /> : 'Abandonner'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ChallengeCard } from '../ChallengeCard';
 import { BrowserRouter } from 'react-router-dom';
-import { validateChallengeDay } from '@/firebase/challenges';
+import { validateChallengeDay, abandonChallenge } from '@/firebase/challenges';
 
 // Mocks
 const { toast } = vi.hoisted(() => ({ toast: vi.fn() }));
@@ -194,7 +194,7 @@ describe('ChallengeCard Component', () => {
         renderCard({ activeChallenge: { ...mockActiveChallenge, startDate: { toDate: () => new Date(startDate) }, history } });
         fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
 
-        await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Défi terminé ! 🏆' })));
+        await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Défi terminé\u00a0! 🏆' })));
     });
 
     it('writes reps in French (« 1 215 », no « 0 reps »)', () => {
@@ -217,8 +217,32 @@ describe('ChallengeCard Component', () => {
         fireEvent.click(await screen.findByRole('menuitem', { name: /Abandonner le défi/ }));
         fireEvent.click(await screen.findByRole('button', { name: 'Abandonner' }));
 
-        await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: '« Pompes Débutant » abandonné' })));
+        await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: '«\u00a0Pompes Débutant\u00a0» abandonné' })));
         expect(confirm).not.toHaveBeenCalled();
         expect(JSON.stringify(toast.mock.calls)).not.toMatch(/déplacé/);
+    });
+
+    it('the abandon dialog waits for the write: no cancel or second tap halfway (offline it still abandoned)', async () => {
+        let finish: () => void = () => {};
+        vi.mocked(abandonChallenge).mockImplementationOnce(() => new Promise<void>((r) => { finish = r; }));
+        renderCard({ activeChallenge: mockActiveChallenge, detailed: true });
+
+        fireEvent.keyDown(screen.getByRole('button', { name: 'Options du défi' }), { key: 'Enter' });
+        fireEvent.click(await screen.findByRole('menuitem', { name: /Abandonner le défi/ }));
+        fireEvent.click(await screen.findByRole('button', { name: 'Abandonner' }));
+
+        expect(screen.getByRole('button', { name: 'Annuler' })).toBeDisabled();
+        expect(screen.getByRole('button', { name: /Abandonner|Abandon en cours/ })).toBeDisabled();
+        finish();
+        await waitFor(() => expect(toast).toHaveBeenCalledTimes(1));
+        expect(abandonChallenge).toHaveBeenCalledTimes(1);
+    });
+
+    it('a refused validation refreshes the card (it stayed stale after an abandon elsewhere)', async () => {
+        const onUpdate = vi.fn();
+        vi.mocked(validateChallengeDay).mockRejectedValueOnce(new Error("Ce défi n'est plus en cours."));
+        renderCard({ activeChallenge: mockActiveChallenge, onUpdate });
+        fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
+        await waitFor(() => expect(onUpdate).toHaveBeenCalled());
     });
 });

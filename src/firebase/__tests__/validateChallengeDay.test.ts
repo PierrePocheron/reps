@@ -72,6 +72,12 @@ describe('validateChallengeDay', () => {
     expect(sessionWritten).toBeUndefined();
   });
 
+  it('a challenge abandoned on another device is « plus en cours », not « terminé »', async () => {
+    setup(3, 30, 'pushups', 'abandoned');
+    await expect(validateChallengeDay('c1', 'u1')).rejects.toThrow("Ce défi n'est plus en cours.");
+    expect(challengeUpdate).toBeUndefined();
+  });
+
   it('fails at once with a clear message offline (a transaction needs the network)', async () => {
     setup(0, 0);
     vi.mocked(runTransaction).mockClear();

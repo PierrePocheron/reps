@@ -355,6 +355,7 @@ export const getUserActiveChallenges = async (userId: string): Promise<UserChall
 const OFFLINE_VALIDATION = 'Tu es hors ligne : valider un défi demande une connexion. Reconnecte-toi puis réessaie.';
 const ALREADY_FINISHED = 'Ce défi est déjà terminé !';
 const UP_TO_DATE = 'Tu es déjà à jour ! Reviens demain pour la suite.';
+const NOT_ACTIVE = "Ce défi n'est plus en cours."; // abandoned on another device
 
 export const validateChallengeDay = async (
     userChallengeId: string,
@@ -385,7 +386,8 @@ export const validateChallengeDay = async (
             const maxAllowedIndex = getDayIndex(userChallenge.startDate, new Date());
 
             // The card can be stale (quick second tap before its refresh): the step and its reps come from here, not from it
-            if (userChallenge.status !== 'active' || currentStepIndex >= def.durationDays) {
+            if (userChallenge.status !== 'active' && userChallenge.status !== 'completed') throw new Error(NOT_ACTIVE);
+            if (userChallenge.status === 'completed' || currentStepIndex >= def.durationDays) {
                throw new Error(ALREADY_FINISHED);
             }
             if (currentStepIndex > maxAllowedIndex) {
@@ -477,7 +479,7 @@ export const validateChallengeDay = async (
         logger.error("Validation error:", e);
         if ((e as { code?: string }).code === 'unavailable') throw new Error(OFFLINE_VALIDATION);
         // The card shows the message: only ours, Firestore and internal errors stay in the logs
-        if (e instanceof Error && [ALREADY_FINISHED, UP_TO_DATE].includes(e.message)) throw e;
+        if (e instanceof Error && [ALREADY_FINISHED, UP_TO_DATE, NOT_ACTIVE].includes(e.message)) throw e;
         throw new Error('Impossible de valider le défi, réessaie.');
     }
 };
