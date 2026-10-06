@@ -5,7 +5,7 @@ import { useStreak } from '@/hooks/useStreak';
 import { liveStreak, liveWeeklyStreak } from '@/utils/streak';
 import { useSettingsStore } from '@/store/settingsStore';
 import { Flame, ChevronLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface PageLayoutProps {
     children: ReactNode;
@@ -20,6 +20,9 @@ interface PageLayoutProps {
 export function PageLayout({ children, title, isHome, headerAction, backButton, variant = 'default', className = '' }: PageLayoutProps) {
     const { user } = useUserStore();
     const navigate = useNavigate();
+    const location = useLocation();
+    // Opened directly (link, bookmark, reopened tab): no previous page in the app, so lead into it instead of leaving it
+    const goBack = () => (location.key === 'default' ? navigate('/') : navigate(-1));
 
     // Initialize Streak Logic
     useStreak();
@@ -42,7 +45,7 @@ export function PageLayout({ children, title, isHome, headerAction, backButton, 
                             {/* Secondary: Back + Title */}
                             <div className="flex items-center gap-2">
                                 <button
-                                    onClick={() => navigate(-1)}
+                                    onClick={goBack}
                                     className="p-2.5 -ml-2.5 rounded-full hover:bg-muted active:bg-muted transition-colors"
                                     aria-label="Retour"
                                 >
@@ -103,7 +106,7 @@ export function PageLayout({ children, title, isHome, headerAction, backButton, 
                         <div className="flex items-center gap-1">
                             {backButton && (
                                 <button
-                                    onClick={() => navigate(-1)}
+                                    onClick={goBack}
                                     className="p-2 -ml-2 rounded-full hover:bg-muted active:bg-muted transition-colors"
                                     aria-label="Retour"
                                 >
