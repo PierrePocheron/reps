@@ -788,7 +788,7 @@ export default function Statistics() {
                   </div>
                   <span className="text-2xl mt-4">{ex.emoji}</span>
                   <div className="space-y-0.5 w-full">
-                    <p className="text-xs font-medium truncate px-1" title={ex.name}>
+                    <p className="text-xs font-medium line-clamp-2 hyphens-auto break-words px-1" title={ex.name}>
                       {ex.name}
                     </p>
                     <p className="text-lg font-bold">{formatNumber(ex.totalReps)}</p>
@@ -799,31 +799,38 @@ export default function Statistics() {
             </div>
 
             {/* Liste Détaillée */}
+            {/* A table: the number columns take their widest value (they had a fixed 3rem that squeezed the names
+                to « Tr… » with a large font) and stay aligned row to row */}
             <div className="bg-card border rounded-2xl overflow-hidden">
-               <div className="p-3 bg-muted/30 border-b text-xs font-medium flex justify-between items-center text-muted-foreground">
-                   <span>Exercice</span>
-                   <div className="flex gap-4 text-right">
-                       <span className="w-12">Reps</span>
-                       <span className="w-12">Kcal</span>
-                   </div>
-               </div>
-               <div className="divide-y">
-                 {stats.exercisesDistribution.map((ex) => (
-                   <div key={ex.name} className="p-3 flex items-center justify-between hover:bg-muted/50 transition-colors text-sm">
-                       <div className="flex items-center gap-2 overflow-hidden flex-1 mr-2">
-                           <span className="text-lg shrink-0">{ex.emoji}</span>
-                           <span className="truncate font-medium">{ex.name}</span>
-                       </div>
-                       <div className="flex gap-4 text-right shrink-0">
-                           <span className="w-12 font-bold">{formatNumber(ex.totalReps)}</span>
-                           <div className="w-12 flex items-center justify-end gap-1 text-primary">
-                              <span>{formatNumber(ex.totalCalories)}</span>
-                              <Flame className="w-3 h-3" />
-                           </div>
-                       </div>
-                   </div>
-                 ))}
-               </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/30 border-b text-xs text-muted-foreground">
+                    <th scope="col" className="p-3 pr-2 text-left font-medium">Exercice</th>
+                    <th scope="col" className="py-3 text-right font-medium">Reps</th>
+                    <th scope="col" className="py-3 pl-4 pr-3 text-right font-medium">Kcal</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {stats.exercisesDistribution.map((ex) => (
+                    <tr key={ex.name} className="hover:bg-muted/50 transition-colors">
+                      <td className="w-full p-3 pr-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg shrink-0">{ex.emoji}</span>
+                          {/* anywhere, not break-word: lets the table column shrink below the longest word */}
+                          <span className="line-clamp-2 hyphens-auto [overflow-wrap:anywhere] font-medium">{ex.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 text-right font-bold tabular-nums whitespace-nowrap">{formatNumber(ex.totalReps)}</td>
+                      <td className="py-3 pl-4 pr-3 text-right text-primary tabular-nums whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1">
+                          {formatNumber(ex.totalCalories)}
+                          <Flame className="w-3 h-3" />
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
