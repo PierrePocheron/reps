@@ -25,7 +25,7 @@ export function UserAvatar({ user, emoji, size = 'md', className }: UserAvatarPr
   return (
     <div
       className={cn(
-        'rounded-full bg-muted flex items-center justify-center border border-background shadow-sm overflow-hidden select-none',
+        'shrink-0 rounded-full bg-muted flex items-center justify-center border border-background shadow-sm overflow-hidden select-none',
         sizeClasses[size],
         className
       )}
