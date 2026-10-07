@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
@@ -29,7 +29,10 @@ const renderFriends = (friends: string[] = ['alice'], friendRequests: unknown[] 
   return render(<BrowserRouter><Friends /></BrowserRouter>);
 };
 
+const setOnline = (on: boolean) => Object.defineProperty(window.navigator, 'onLine', { configurable: true, get: () => on });
+
 beforeEach(() => { vi.clearAllMocks(); });
+afterEach(() => { setOnline(true); });
 
 describe('Friends tabs', () => {
   it('opens on the friends tab when a request is pending (the nav badge led to an empty feed)', async () => {
@@ -107,5 +110,31 @@ describe('Friends removal', () => {
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Retirer' })); });
     expect(db.removeFriend).toHaveBeenCalledWith('me', 'alice');
     expect(toast).toHaveBeenCalledWith({ title: 'Ami retiré', description: 'Alice ne fait plus partie de tes amis.' });
+  });
+
+  it('keeps both dialog buttons disabled while removing (« Annuler » looked like it undid it)', async () => {
+    db.removeFriend.mockReturnValueOnce(new Promise(() => {}));
+    await openRemoveDialog();
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer' }));
+    expect(screen.getByRole('button', { name: 'Retirer' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Annuler' })).toBeDisabled();
+  });
+
+  it('refuses to remove a friend offline, with a clear toast', async () => {
+    setOnline(false);
+    await openRemoveDialog();
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer' }));
+    expect(db.removeFriend).not.toHaveBeenCalled();
+    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Hors ligne' }));
+  });
+});
+
+describe('Friends requests', () => {
+  it('refuses to accept a request offline, with a clear toast', async () => {
+    setOnline(false);
+    renderFriends([], [bobRequest]);
+    fireEvent.click(await screen.findByRole('button', { name: 'Accepter la demande de Bob' }));
+    expect(db.acceptFriendRequest).not.toHaveBeenCalled();
+    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Hors ligne' }));
   });
 });

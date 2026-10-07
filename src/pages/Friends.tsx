@@ -8,6 +8,7 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { useUserStore } from '@/store/userStore';
 import { useToast } from '@/hooks/use-toast';
+import { useOffline } from '@/hooks/useOffline';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +43,7 @@ import { FriendTemplatesDialog } from '@/components/FriendTemplatesDialog';
 export default function Friends() {
   const { user, friendRequests } = useUserStore();
   const { toast } = useToast();
+  const { isOffline } = useOffline();
 
   // pending requests (the nav badge) open on the tab that shows them
   const [activeTab, setActiveTab] = useState(friendRequests.length > 0 ? 'friends' : 'activity');
@@ -63,6 +65,14 @@ export default function Friends() {
   const [pendingUid, setPendingUid] = useState<string | null>(null);
   const [pendingRequestId, setPendingRequestId] = useState<string | null>(null);
   const [friendToRemove, setFriendToRemove] = useState<User | null>(null);
+  const [removing, setRemoving] = useState(false);
+
+  // accept and remove read the server first: offline they hung, then ran after an « Annuler »
+  const refuseOffline = (what: string) => {
+    if (!isOffline) return false;
+    toast({ title: 'Hors ligne', description: `Il faut une connexion pour ${what}. Réessaie une fois en ligne.` });
+    return true;
+  };
 
   // Load friends
   useEffect(() => {
@@ -165,7 +175,7 @@ export default function Friends() {
   };
 
   const handleAcceptRequest = async (request: FriendRequest) => {
-    if (!user) return;
+    if (!user || refuseOffline('accepter une demande')) return;
     setPendingRequestId(request.id);
     try {
       await acceptFriendRequest(request.id, request.fromUserId, user.uid);
@@ -204,7 +214,8 @@ export default function Friends() {
   };
 
   const handleRemoveFriend = async (friend: User) => {
-    if (!user) return;
+    if (!user || refuseOffline('retirer un ami')) return;
+    setRemoving(true);
     try {
       await removeFriend(user.uid, friend.uid);
       toast({
@@ -220,6 +231,8 @@ export default function Friends() {
         description: 'Impossible de retirer cet ami',
         variant: 'destructive',
       });
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -598,7 +611,7 @@ export default function Friends() {
         </Tabs>
       </div>
 
-      <Dialog open={!!friendToRemove} onOpenChange={(o) => !o && setFriendToRemove(null)}>
+      <Dialog open={!!friendToRemove} onOpenChange={(o) => !o && !removing && setFriendToRemove(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Retirer cet ami&nbsp;?</DialogTitle>
@@ -607,12 +620,13 @@ export default function Friends() {
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-wrap gap-3 mt-2">
-            <Button variant="outline" className="flex-1 basis-28" onClick={() => setFriendToRemove(null)}>
+            <Button variant="outline" className="flex-1 basis-28" disabled={removing} onClick={() => setFriendToRemove(null)}>
               Annuler
             </Button>
             <Button
               variant="destructive"
               className="flex-1 basis-28"
+              disabled={removing}
               onClick={() => friendToRemove && handleRemoveFriend(friendToRemove)}
             >
               Retirer
