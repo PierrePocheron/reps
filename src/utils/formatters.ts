@@ -2,9 +2,23 @@
  * Utilitaires de formatage pour l'application
  */
 
-/** French date with Intl options, written « 1er octobre » / « 1er oct. » (Intl gives « 1 octobre »). */
-export const frDate = (date: Date, options: Intl.DateTimeFormatOptions): string =>
-  date.toLocaleString('fr-FR', options).replace(/(^|\s)1(?= [a-zéû])/g, '$11er');
+// toLocaleString built a new Intl.DateTimeFormat on every call (~60 µs): three per History card, on every render
+const formats = new Map<string, Intl.DateTimeFormat>();
+
+/**
+ * French date with Intl options, written « 1er octobre » / « 1er oct. » (Intl gives « 1 octobre »).
+ * Options name at least one date or time field: toLocaleString would add a time to the others.
+ */
+export const frDate = (date: Date, options: Intl.DateTimeFormatOptions): string => {
+  const key = JSON.stringify(options);
+  let format = formats.get(key);
+  if (!format) {
+    format = new Intl.DateTimeFormat('fr-FR', options);
+    formats.set(key, format);
+  }
+  const s = Number.isNaN(date.getTime()) ? 'Invalid Date' : format.format(date); // format() throws where toLocaleString did not
+  return s.replace(/(^|\s)1(?= [a-zéû])/g, '$11er');
+};
 
 /**
  * Formate une date en format français

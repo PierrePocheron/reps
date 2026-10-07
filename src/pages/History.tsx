@@ -41,8 +41,10 @@ function formatDate(date: Date): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+const TIME: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
+
 function formatTime(date: Date): string {
-  return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  return frDate(date, TIME); // its cached formatter: toLocaleTimeString built one per call
 }
 
 /** « la séance du samedi 3 octobre 2026 à 18:30 »: every card's buttons had the same names for screen readers. */

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   frDate,
   formatDate,
@@ -129,6 +129,29 @@ describe('frDate', () => {
     expect(frDate(new Date(2026, 9, 11), { day: 'numeric', month: 'long' })).toBe('11 octobre');
     expect(frDate(new Date(2026, 9, 21), { day: 'numeric', month: 'long' })).toBe('21 octobre');
     expect(frDate(new Date(2026, 9, 1), { day: 'numeric', month: 'numeric' })).toBe('01/10');
+  });
+
+  it('formats like toLocaleString for every set of options the app uses, an invalid date included', () => {
+    const d = new Date(2026, 9, 3, 18, 5);
+    for (const o of [
+      { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' },
+      { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' },
+      { day: 'numeric', month: 'short', year: 'numeric' },
+      { hour: '2-digit', minute: '2-digit' },
+    ] as const) expect(frDate(d, o)).toBe(d.toLocaleString('fr-FR', o));
+    expect(frDate(new Date(NaN), { day: 'numeric' })).toBe('Invalid Date');
+  });
+
+  it('builds one formatter per set of options (a new one per call cost ~60 µs, three times per History card)', () => {
+    const Real = Intl.DateTimeFormat;
+    const spy = vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function (...args: ConstructorParameters<typeof Real>) {
+      return new Real(...args);
+    });
+    const options = { day: '2-digit', month: 'long', year: '2-digit' } as const; // used nowhere else: not built yet
+    frDate(new Date(2026, 9, 1), options);
+    frDate(new Date(2026, 9, 2), { ...options });
+    expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
   });
 });
 
