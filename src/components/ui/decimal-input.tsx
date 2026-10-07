@@ -5,6 +5,7 @@ import { decimalInput, parseDecimal } from '@/utils/formatters';
 /**
  * Number field written the French way (« 82,5 »): a type="number" field swallowed the comma in the Android WebView
  * (82,5 → 825). Keeps what is being typed (« 82, ») and follows a value changed elsewhere.
+ * inputMode="numeric" means whole numbers (reps, seconds): a comma or dot is ignored.
  */
 export function DecimalInput({ value, onValue, ...props }: Omit<InputProps, 'value' | 'onChange' | 'type'> & { value: number; onValue: (n: number) => void }) {
   const [text, setText] = useState(() => decimalInput(value));
@@ -16,7 +17,7 @@ export function DecimalInput({ value, onValue, ...props }: Omit<InputProps, 'val
       value={parseDecimal(text) === value ? text : decimalInput(value)}
       onChange={(e) => {
         const n = parseDecimal(e.target.value);
-        if (n === null) return;
+        if (n === null || (props.inputMode === 'numeric' && /[.,]/.test(e.target.value))) return;
         setText(e.target.value);
         onValue(n);
       }}
