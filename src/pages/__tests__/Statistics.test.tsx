@@ -172,4 +172,12 @@ describe('Statistics', () => {
     expect(screen.getByText("Pas de créneau dominant pour l'instant.")).toBeInTheDocument();
     expect(screen.queryByText(/surtout/)).not.toBeInTheDocument();
   });
+
+  it('the heatmap opens on the latest weeks when it is wider than the card (large font)', () => {
+    const width = vi.spyOn(Element.prototype, 'scrollWidth', 'get').mockReturnValue(304);
+    renderPage();
+    const today = frDate(new Date(), { weekday: 'long', day: 'numeric', month: 'long' });
+    expect(screen.getByRole('button', { name: `${today} : 1 séance` }).closest('.overflow-x-auto')!.scrollLeft).toBe(304);
+    width.mockRestore();
+  });
 });

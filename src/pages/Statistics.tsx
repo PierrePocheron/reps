@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { plural, frDate, formatNumber } from '@/utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -32,6 +32,9 @@ const KCAL_EXAMPLES = ([['Tractions', 'Tractions'], ['Dips', 'Dips'], ['Squats',
 
 function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymSessions: GymSession[] }) {
   const [selectedDay, setSelectedDay] = useState<{ date: Date; count: number } | null>(null);
+  // With a large font the grid is wider than the card: open on the latest weeks (today), not the oldest
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { const el = scrollRef.current; if (el) el.scrollLeft = el.scrollWidth; }, []);
   const activityMap = new Map<string, number>();
 
   for (const s of sessions) {
@@ -93,7 +96,7 @@ function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymS
         {activeDays} jour{activeDays !== 1 ? 's' : ''} d'entraînement — chaque case est un jour, touche-la pour le détail
       </p>
 
-      <div className="overflow-x-auto pb-1">
+      <div ref={scrollRef} className="overflow-x-auto pb-1">
         <div className="inline-flex gap-[3px]" onMouseLeave={() => setSelectedDay(null)}>
           {/* Libellés des jours (lignes) */}
           <div className="flex flex-col gap-[3px] pr-1">
