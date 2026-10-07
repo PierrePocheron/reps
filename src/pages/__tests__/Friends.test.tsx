@@ -138,3 +138,24 @@ describe('Friends requests', () => {
     expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Hors ligne' }));
   });
 });
+
+describe('Friends search', () => {
+  const bob = { uid: 'bob', displayName: 'Bob', totalReps: 0, totalSessions: 0, badges: [], friends: [] };
+  const search = async (term: string) => {
+    fireEvent.change(await screen.findByRole('textbox', { name: /Rechercher un utilisateur/ }), { target: { value: term } });
+  };
+
+  it('says the search is unavailable offline (not « aucun utilisateur ») and runs it on reconnection', async () => {
+    setOnline(false);
+    db.searchUsers.mockResolvedValue([bob]);
+    renderFriends([], [bobRequest]);
+    await search('bob');
+    expect(await screen.findByText('Hors ligne : recherche indisponible')).toBeInTheDocument();
+    await act(async () => { await new Promise((r) => setTimeout(r, 600)); });
+    expect(db.searchUsers).not.toHaveBeenCalled();
+    expect(screen.queryByText(/Aucun utilisateur/)).not.toBeInTheDocument();
+    act(() => { setOnline(true); window.dispatchEvent(new Event('online')); });
+    expect(await screen.findByText('Bob', { selector: 'p' }, { timeout: 2000 })).toBeInTheDocument();
+    expect(db.searchUsers).toHaveBeenCalledWith('bob');
+  });
+});

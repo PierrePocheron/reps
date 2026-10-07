@@ -127,10 +127,11 @@ export default function Friends() {
     </div>
   );
 
-  // Debounced search
+  // Debounced search. Offline, Firestore answers from the cache (an empty list read as « aucun utilisateur »):
+  // skipped, and run again on reconnection
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
-      if (searchTerm.length < 2) {
+      if (searchTerm.length < 2 || isOffline) {
         setSearchResults([]);
         return;
       }
@@ -149,7 +150,7 @@ export default function Friends() {
     }, 500); // 500ms delay
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, user]);
+  }, [searchTerm, user, isOffline]);
 
   const handleSendRequest = async (toUserId: string) => {
     if (!user) return;
@@ -454,7 +455,12 @@ export default function Friends() {
             {searchTerm.length >= 2 && (
               <div className="space-y-4">
                 <h3 className="font-semibold text-sm text-muted-foreground">Résultats de recherche</h3>
-                {isSearching ? (
+                {isOffline ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>Hors ligne&nbsp;: recherche indisponible</p>
+                    <p className="text-sm mt-1">Elle reprendra au retour de la connexion.</p>
+                  </div>
+                ) : isSearching ? (
                   <div className="flex justify-center py-4">
                     <LoadingSpinner />
                   </div>
