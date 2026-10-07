@@ -32,6 +32,16 @@ describe('getFriendsActivity', () => {
     expect(items[0]!.exercises).toEqual([]); // not a list: no exercise lines rather than a crash on render
   });
 
+  it('orders by the date the card shows: a forgotten session saved now sits at its own day, not on top', async () => {
+    const at = (day: number, hour: number) => ({ toDate: () => new Date(2026, 9, day, hour) });
+    const d = (id: string, data: Record<string, unknown>) => ({ id, data: () => ({ userId: 'f1', exercises: [], ...data }) });
+    vi.mocked(getDocs)
+      .mockResolvedValueOnce({ docs: [d('forgotten', { date: at(3, 9), createdAt: at(7, 22) }), d('today', { date: at(7, 20), createdAt: at(7, 20) })] } as never)
+      .mockResolvedValueOnce({ docs: [d('badge', { type: 'badge_unlocked', createdAt: at(5, 8) })] } as never);
+    const items = await getFriendsActivity(['f1']);
+    expect(items.map((a) => a.sessionId ?? a.id)).toEqual(['today', 'badge', 'forgotten']);
+  });
+
   it('a read failure is an error, not an empty feed', async () => {
     vi.mocked(getDocs).mockRejectedValue(new Error('offline'));
     await expect(getFriendsActivity(['f1'])).rejects.toThrow('offline');

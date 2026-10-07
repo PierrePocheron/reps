@@ -1090,6 +1090,7 @@ export async function declineFriendRequest(requestId: string): Promise<void> {
 // ==================== SOCIAL TYPES ====================
 export interface ActivityItem {
   createdAt?: { toDate: () => Date };
+  date?: { toDate: () => Date };
   [key: string]: unknown;
 }
 
@@ -1182,12 +1183,10 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
       ...doc.data()
     }));
 
-    // Fusionner et trier
-    const allActivity = [...sessions, ...events].filter((a: ActivityItem) => typeof a.createdAt?.toDate === 'function').sort((a: ActivityItem, b: ActivityItem) => {
-      const dateA = a.createdAt?.toDate() || new Date(0);
-      const dateB = b.createdAt?.toDate() || new Date(0);
-      return dateB.getTime() - dateA.getTime();
-    });
+    // Merged and sorted by the date the card shows: a forgotten session is saved now but dated days ago
+    const shownAt = (a: ActivityItem) => (typeof a.date?.toDate === 'function' ? a.date : a.createdAt)?.toDate().getTime() ?? 0;
+    const allActivity = [...sessions, ...events].filter((a: ActivityItem) => typeof a.createdAt?.toDate === 'function')
+      .sort((a: ActivityItem, b: ActivityItem) => shownAt(b) - shownAt(a));
 
     return allActivity.slice(0, limitCount);
   } catch (error) {
