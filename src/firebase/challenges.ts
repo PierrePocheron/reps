@@ -426,7 +426,9 @@ export const validateChallengeDay = async (
             const userRef = doc(db, 'users', userId);
             const userDoc = await transaction.get(userRef);
             if (!userDoc.exists()) throw new Error("User not found");
-            const userData = userDoc.data() as User;
+            // weight, height and gender live in the private profile, not the public doc (75 kg male default otherwise)
+            const privateDoc = await transaction.get(doc(db, 'users', userId, 'private', 'profile'));
+            const userData = { ...userDoc.data(), ...(privateDoc.exists() ? privateDoc.data() : {}) } as User;
 
             // Calculate Calories precisely
             const calories = Math.round(calculateDynamicCalories(userData, exerciseDef, reps));

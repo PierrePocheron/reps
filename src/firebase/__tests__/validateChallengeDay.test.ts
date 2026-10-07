@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { runTransaction, Timestamp } from 'firebase/firestore';
-import { validateChallengeDay } from '../challenges';
+import { runTransaction, Timestamp, doc } from 'firebase/firestore';
+import { validateChallengeDay, findChallengeExercise } from '../challenges';
+import { calculateDynamicCalories } from '@/utils/calories';
+import type { User } from '../types';
 
 vi.mock('../firestore', () => ({ updateUserStatsAfterSession: vi.fn(async () => {}) }));
 
@@ -8,12 +10,16 @@ const DAY = 86_400_000;
 let challengeUpdate: Record<string, unknown> | undefined;
 
 let sessionWritten: Record<string, unknown> | undefined;
+let privateProfile: Record<string, unknown> | undefined; // users/{uid}/private/profile, absent on old accounts
 const setup = (historyLength: number, startedDaysAgo: number, exerciseId = 'pushups', status = 'active') => {
   const history = Array.from({ length: historyLength }, (_, i) => ({ date: `d${i}`, amount: 10, completed: true }));
   const start = new Date(Date.now() - startedDaysAgo * DAY);
+  vi.mocked(doc).mockImplementation(((_db: unknown, ...segments: string[]) => ({ path: segments.join('/') })) as never);
   vi.mocked(runTransaction).mockImplementation(async (_db, fn) => fn({
-    get: vi.fn(async (ref: { path?: string }) => (ref?.path?.startsWith('users')
-      ? { exists: () => true, data: () => ({ weight: 70 }) }
+    get: vi.fn(async (ref: { path?: string }) => (ref?.path === 'users/u1/private/profile'
+      ? { exists: () => !!privateProfile, data: () => privateProfile }
+      : ref?.path?.startsWith('users')
+      ? { exists: () => true, data: () => ({ totalReps: 0, totalCalories: 0 }) } // the public doc: no weight, height or gender
       : { exists: () => true, data: () => ({
           challengeId: 'pushups_beginner', status, startDate: { toDate: () => new Date(start) }, history,
           definitionSnapshot: { id: 'x', exerciseId, durationDays: 21, baseAmount: 10, increment: 1 },
@@ -24,7 +30,7 @@ const setup = (historyLength: number, startedDaysAgo: number, exerciseId = 'push
 };
 
 describe('validateChallengeDay', () => {
-  beforeEach(() => { challengeUpdate = undefined; sessionWritten = undefined; vi.spyOn(Timestamp, 'now').mockReturnValue({ toDate: () => new Date() } as never); });
+  beforeEach(() => { challengeUpdate = undefined; sessionWritten = undefined; privateProfile = undefined; vi.spyOn(Timestamp, 'now').mockReturnValue({ toDate: () => new Date() } as never); });
   afterEach(() => { vi.restoreAllMocks(); });
 
   it('does not close a challenge whose steps are not all done (catch-up model)', async () => {
@@ -37,6 +43,16 @@ describe('validateChallengeDay', () => {
     setup(20, 25);
     await validateChallengeDay('c1', 'u1');
     expect(challengeUpdate?.status).toBe('completed');
+  });
+
+  it('computes the kcal with the private profile, like a renfo session (not the 75 kg male default)', async () => {
+    privateProfile = { weight: 55, height: 160, gender: 'female' };
+    setup(20, 25); // last step: 10 + 20 = 30 push-ups
+    await validateChallengeDay('c1', 'u1');
+    const pushups = findChallengeExercise('pushups')!;
+    const expected = Math.round(calculateDynamicCalories(privateProfile as unknown as User, pushups, 30));
+    expect(expected).not.toBe(Math.round(calculateDynamicCalories({} as User, pushups, 30)));
+    expect(sessionWritten?.totalCalories).toBe(expected);
   });
 
   it('logs the local calendar date (not the UTC one, a day off just after midnight)', async () => {
