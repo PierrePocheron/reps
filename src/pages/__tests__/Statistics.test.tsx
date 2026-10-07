@@ -157,4 +157,11 @@ describe('Statistics', () => {
     expect(screen.queryByText(/^Encore/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Objectif atteint/)).not.toBeInTheDocument();
   });
+
+  it('the streak cards hold their place with « – » until the stats arrive (no jump of the charts)', () => {
+    renderPage();
+    expect(screen.getByText('Série actuelle')).toBeInTheDocument();
+    expect(screen.getByText('Meilleure série')).toBeInTheDocument();
+    expect(screen.getAllByText('–')).toHaveLength(2);
+  });
 });

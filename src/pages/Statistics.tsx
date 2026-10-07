@@ -821,8 +821,7 @@ export default function Statistics() {
           </div>
         )}
 
-        {/* Séries (Streaks) */}
-        {stats && (
+        {/* Séries (Streaks): « – » until the stats arrive, so the charts below do not jump down */}
             <div className="grid grid-cols-2 gap-3">
                 <div className="bg-card border rounded-2xl p-4 flex flex-col justify-between overflow-hidden relative">
                     <div className="absolute top-2 right-2 opacity-10">
@@ -830,13 +829,13 @@ export default function Statistics() {
                     </div>
                      <span className="text-xs text-muted-foreground uppercase font-semibold">Série actuelle</span>
                      <div className="mt-2">
-                        <span className="text-3xl font-bold">{streakNow}</span>
-                        <span className="text-sm text-muted-foreground ml-1">{streakUnit(streakNow)}</span>
+                        <span className="text-3xl font-bold">{stats ? streakNow : '–'}</span>
+                        <span className="text-sm text-muted-foreground ml-1">{stats && streakUnit(streakNow)}</span>
                      </div>
                      <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
                         {weeklyMode
                           ? `Chaque semaine à ${Math.max(1, weeklyGoal)} séance${weeklyGoal > 1 ? 's' : ''} prolonge ta série.`
-                          : stats.jokerPending
+                          : stats?.jokerPending
                             ? "Joker utilisé hier : une séance aujourd'hui et ta série continue."
                             : '1 jour de repos par semaine ne casse pas ta série.'}
                      </p>
@@ -847,12 +846,11 @@ export default function Statistics() {
                     </div>
                      <span className="text-xs text-muted-foreground uppercase font-semibold">Meilleure série</span>
                      <div className="mt-2">
-                        <span className="text-3xl font-bold">{streakBest}</span>
-                        <span className="text-sm text-muted-foreground ml-1">{streakUnit(streakBest)}</span>
+                        <span className="text-3xl font-bold">{stats ? streakBest : '–'}</span>
+                        <span className="text-sm text-muted-foreground ml-1">{stats && streakUnit(streakBest)}</span>
                      </div>
                 </div>
             </div>
-        )}
 
         {/* Habitudes (Distribution) */}
         {/* Habitudes (Distribution) */}
