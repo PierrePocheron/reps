@@ -521,6 +521,14 @@ export default function Statistics() {
   const navigate = useNavigate();
   const { weeklyGoal, streakMode } = useSettingsStore();
   const { sessions, gymSessions, loading: historyLoading } = useSessionHistory();
+  // Heatmap (up to 96 days with the Monday alignment), weekly chart and muscles by date range: challenge
+  // validations (one session each) can push these days out of the latest 200; recent data meanwhile
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const recentFrom = new Date(today); recentFrom.setDate(today.getDate() - 96);
+  const recentTo = new Date(today); recentTo.setDate(today.getDate() + 1);
+  const recent = usePeriodHistory(recentFrom, recentTo);
+  const chartSessions = recent.loaded ? recent.sessions : sessions;
+  const chartGymSessions = recent.loaded ? recent.gymSessions : gymSessions;
 
   // Séances de la semaine en cours (lundi → dimanche)
   const thisWeekCount = useMemo(() => {
@@ -832,9 +840,9 @@ export default function Statistics() {
           </div>
         ) : (
           <>
-            <ActivityCalendar sessions={sessions} gymSessions={gymSessions} />
-            <WeeklyChart sessions={sessions} gymSessions={gymSessions} />
-            <MuscleDistribution sessions={sessions} gymSessions={gymSessions} />
+            <ActivityCalendar sessions={chartSessions} gymSessions={chartGymSessions} />
+            <WeeklyChart sessions={chartSessions} gymSessions={chartGymSessions} />
+            <MuscleDistribution sessions={chartSessions} gymSessions={chartGymSessions} />
             <PeriodRecap sessions={sessions} gymSessions={gymSessions} />
           </>
         )}
