@@ -53,4 +53,13 @@ describe('Statistics', () => {
     tap(bar);
     expect(bar).toHaveAttribute('aria-pressed', 'true');
   });
+
+  it('recap of a renfo-only month: singular labels, reps instead of a 0 kg volume', () => {
+    renfo = [all[0]!];
+    renderPage();
+    expect(screen.getByText('Séance')).toBeInTheDocument();
+    expect(screen.getByText("Jour d'entraînement")).toBeInTheDocument();
+    expect(screen.getByText('Répétitions')).toBeInTheDocument();
+    expect(screen.queryByText('Volume')).not.toBeInTheDocument();
+  });
 });

@@ -52,8 +52,8 @@ const num = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 1 
 /** Carte partageable du récap (même rendu que la carte de séance). */
 export function recapCard(recap: Recap, label: string, from: Date): SessionCard {
   const stats = [
-    { label: 'Séances', value: String(recap.sessions) },
-    { label: 'Jours', value: String(recap.trainingDays) },
+    { label: recap.sessions > 1 ? 'Séances' : 'Séance', value: String(recap.sessions) },
+    { label: recap.trainingDays > 1 ? 'Jours' : 'Jour', value: String(recap.trainingDays) },
     recap.volume > 0 ? { label: 'Volume', value: `${num(recap.volume)} kg` } : { label: 'Reps', value: num(recap.reps) },
   ];
   if (recap.records > 0) stats.push({ label: recap.records > 1 ? 'Records' : 'Record', value: `🏆 ${recap.records}` });

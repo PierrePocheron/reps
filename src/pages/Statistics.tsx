@@ -409,10 +409,11 @@ function PeriodRecap({ sessions, gymSessions }: { sessions: Session[]; gymSessio
   const fmt = (n: number) => n.toLocaleString('fr-FR');
   const tiles = [
     { label: recap.sessions > 1 ? 'Séances' : 'Séance', value: fmt(recap.sessions) },
-    { label: "Jours d'entraînement", value: fmt(recap.trainingDays) },
-    { label: 'Volume', value: `${fmt(recap.volume)} kg` },
-    // Pas de « 0 record » : la 4e tuile montre alors les répétitions
-    recap.records > 0 ? { label: recap.records > 1 ? 'Records' : 'Record', value: fmt(recap.records) } : { label: 'Répétitions', value: fmt(recap.reps) },
+    { label: recap.trainingDays > 1 ? "Jours d'entraînement" : "Jour d'entraînement", value: fmt(recap.trainingDays) },
+    // Same tiles as the shared card: no « 0 kg » volume (renfo only) nor « 0 record »
+    recap.volume > 0 ? { label: 'Volume', value: `${fmt(recap.volume)} kg` } : { label: 'Répétitions', value: fmt(recap.reps) },
+    ...(recap.records > 0 ? [{ label: recap.records > 1 ? 'Records' : 'Record', value: fmt(recap.records) }]
+      : recap.volume > 0 ? [{ label: 'Répétitions', value: fmt(recap.reps) }] : []),
   ];
 
   return (

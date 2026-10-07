@@ -26,7 +26,7 @@ describe('récap', () => {
     const r = periodRecap(gym, renfo, new Date(2026, 8, 1), new Date(2026, 9, 1));
     expect(r).toMatchObject({ sessions: 2, trainingDays: 1, volume: 1280, reps: 64, records: 1 });
     expect(r.topMuscles[0]).toEqual({ group: 'Jambes', sets: 4 });
-    expect(recapCard(r, 'Septembre 2026', new Date(2026, 8, 1)).stats.map((s) => s.label)).toEqual(['Séances', 'Jours', 'Volume', 'Record']);
+    expect(recapCard(r, 'Septembre 2026', new Date(2026, 8, 1)).stats.map((s) => s.label)).toEqual(['Séances', 'Jour', 'Volume', 'Record']);
   });
 
   it("un exercice en durée n'ajoute ni volume ni répétitions (secondes × kg), son record compte", () => {
@@ -45,5 +45,12 @@ describe('recapCard muscles', () => {
     const lines = recapCard(recap, 'Octobre 2026', new Date(2026, 9, 1)).lines;
     expect(lines[0]!.detail).toBe('29 séries');
     expect(lines[1]!.detail).toBe('1 série');
+  });
+});
+
+describe('recapCard labels', () => {
+  it('singular for one session and one day', () => {
+    const recap = { sessions: 1, trainingDays: 1, volume: 0, reps: 30, records: 0, topMuscles: [] };
+    expect(recapCard(recap, 'Octobre 2026', new Date(2026, 9, 1)).stats.map((s) => s.label)).toEqual(['Séance', 'Jour', 'Reps']);
   });
 });
