@@ -175,6 +175,17 @@ describe('gymSessionStore — chrono d\'un exercice en durée (#59)', () => {
   });
 });
 
+describe('gymSessionStore — retirer un exercice', () => {
+  it('délie son partenaire de superset resté seul', () => {
+    useGymSessionStore.setState({ exercises: [
+      { exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', supersetId: 'ss1', sets: [] },
+      { exerciseId: 'barbell_curl', name: 'Curl barre', emoji: '💪', supersetId: 'ss1', sets: [] },
+    ] });
+    useGymSessionStore.getState().removeExercise('bench_press');
+    expect(useGymSessionStore.getState().exercises).toEqual([{ exerciseId: 'barbell_curl', name: 'Curl barre', emoji: '💪', supersetId: undefined, sets: [] }]);
+  });
+});
+
 describe('gymSessionStore — dé-valider une série', () => {
   it('remet la série à faire en gardant les valeurs saisies', () => {
     useGymSessionStore.setState({ exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [

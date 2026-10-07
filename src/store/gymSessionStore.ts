@@ -5,7 +5,7 @@ import { Timestamp } from 'firebase/firestore';
 import { createGymSession, calculateTotalVolume, sanitizeExercises, NOTE_MAX } from '@/firebase/gymSessions';
 import { updateUserStatsAfterSession } from '@/firebase/firestore';
 import { isWorkSet, isTimed } from '@/utils/records';
-import { toggleSupersetLink, swapWithNext } from '@/utils/superset';
+import { toggleSupersetLink, swapWithNext, dropLoneSupersets } from '@/utils/superset';
 import { logger } from '@/utils/logger';
 import { scheduleRestEnd, cancelRestEnd } from '@/utils/restNotification';
 import { useUserStore } from './userStore';
@@ -135,7 +135,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
 
   removeExercise: (exerciseId: string) => {
     set((state) => ({
-      exercises: state.exercises.filter((ex) => ex.exerciseId !== exerciseId),
+      exercises: dropLoneSupersets(state.exercises.filter((ex) => ex.exerciseId !== exerciseId)), // its partner left alone is unlinked
       chronos: stopChrono(state.chronos, exerciseId),
     }));
   },
