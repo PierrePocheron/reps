@@ -90,7 +90,7 @@ export function EditGymSessionDialog({ session, onCancel, onSave }: {
                     <div className="flex items-center gap-1">
                       <DecimalInput value={s.actualWeight ?? 0} placeholder="0" className={NUM}
                         aria-label={`Charge en kg, ${label} de ${ex.name}`}
-                        onValue={(actualWeight) => patch(i, j, { actualWeight })} />
+                        onValue={(actualWeight) => patch(i, j, { actualWeight })} onFocus={(e) => e.target.select()} />
                       <span className="text-xs text-muted-foreground">kg</span>
                     </div>
                   </div>

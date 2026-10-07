@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { EditGymSessionDialog } from '../EditGymSessionDialog';
 import { suggestNextWeight } from '@/utils/progression';
 import type { GymSession, GymSessionExercise } from '@/firebase/types';
@@ -104,5 +104,15 @@ describe('EditGymSessionDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
     await waitFor(() => expect(onSave).toHaveBeenCalled());
     expect(onSave.mock.calls[0]![0][0]!.sets[0]).toMatchObject({ actualWeight: 82.5 });
+  });
+
+  it('a bodyweight load is selected on focus, so typing replaces the 0 (« 05 » before)', () => {
+    const pullups = { ...session, exercises: [{ exerciseId: 'pull_up', name: 'Tractions', emoji: '🧗', sets: [
+      { reps: 10, weight: 0, completed: true },
+    ] }] } as unknown as GymSession;
+    render(<EditGymSessionDialog session={pullups} onCancel={() => {}} onSave={async () => {}} />);
+    const kg = screen.getByRole('textbox', { name: 'Charge en kg, série 1 de Tractions' }) as HTMLInputElement;
+    act(() => kg.focus());
+    expect([kg.selectionStart, kg.selectionEnd]).toEqual([0, kg.value.length]);
   });
 });
