@@ -12,7 +12,7 @@ vi.mock('@/firebase', () => ({
   getCurrentUserProfile: vi.fn(),
   updateUserDocument: vi.fn(),
   calculateUserStats: vi.fn(),
-  subscribeToUser: vi.fn(),
+  subscribeToUser: vi.fn(() => () => {}),
   markBadgesAsSeen: vi.fn(),
   createUserDocument: vi.fn(),
   clearCurrentSessionFromLocal: vi.fn(),
@@ -130,6 +130,46 @@ describe('userStore', () => {
 
             useUserStore.getState().reset(); // sign-out: without this the listener hit permission-denied
             expect(unsubscribe).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    describe('app shown again on a later day', () => {
+        it('recomputes the stats once per new day, not on every return, and stops on sign-out', async () => {
+            // Android back only minimises the app: Statistics kept an 8-day streak while the header said 0
+            vi.useFakeTimers({ toFake: ['Date'] });
+            const shown = (visible = true) => {
+                Object.defineProperty(document, 'visibilityState', { value: visible ? 'visible' : 'hidden', configurable: true });
+                document.dispatchEvent(new Event('visibilitychange'));
+            };
+            try {
+                useUserStore.getState().reset(); // a listener left by an earlier test
+                vi.setSystemTime(new Date(2026, 9, 5, 20, 0));
+                (firebase.subscribeToUser as any).mockReturnValue(() => {});
+                (firebase.getCurrentUserProfile as any).mockResolvedValue({ uid: 'u1', displayName: 'P' });
+                (firebase.calculateUserStats as any).mockResolvedValue({ totalReps: 0, currentStreak: 8 });
+                useUserStore.setState({ currentUser: { uid: 'u1' } as any });
+                await useUserStore.getState().loadUserProfile();
+                await useUserStore.getState().loadUserProfile(); // listener replaced, not stacked
+                expect(firebase.calculateUserStats).toHaveBeenCalledTimes(2);
+
+                shown(); // same day
+                vi.setSystemTime(new Date(2026, 9, 8, 9, 0));
+                shown(false); // hidden: nothing to show
+                expect(firebase.calculateUserStats).toHaveBeenCalledTimes(2);
+
+                shown(); // Thursday
+                await vi.waitFor(() => expect(firebase.calculateUserStats).toHaveBeenCalledTimes(3));
+                shown(); // Thursday again
+                expect(firebase.calculateUserStats).toHaveBeenCalledTimes(3);
+
+                useUserStore.getState().reset();
+                vi.setSystemTime(new Date(2026, 9, 9, 9, 0));
+                shown();
+                expect(firebase.calculateUserStats).toHaveBeenCalledTimes(3);
+            } finally {
+                vi.useRealTimers();
+                Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+            }
         });
     });
 

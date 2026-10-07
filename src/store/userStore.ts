@@ -49,9 +49,22 @@ let stopAuthListener: (() => void) | null = null;
 let stopUserListener: (() => void) | null = null;
 function listenToUser(uid: string, setUser: (user: User) => void) {
   stopUserListener?.();
-  stopUserListener = subscribeToUser(uid, (updatedUser) => {
+  const stopDoc = subscribeToUser(uid, (updatedUser) => {
     if (updatedUser) setUser(updatedUser);
   });
+  // Resident app (Android back only minimises it, PWA tab) shown again on a later day: Statistics, Profil and Badges
+  // kept the streak of the last calculation while the header and the widget had moved on. Once per new day
+  let day = new Date().toDateString();
+  const onShown = () => {
+    if (document.visibilityState !== 'visible' || day === new Date().toDateString()) return;
+    day = new Date().toDateString();
+    void useUserStore.getState().refreshStats();
+  };
+  document.addEventListener('visibilitychange', onShown);
+  stopUserListener = () => {
+    stopDoc();
+    document.removeEventListener('visibilitychange', onShown);
+  };
 }
 
 /**
