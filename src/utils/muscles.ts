@@ -1,5 +1,5 @@
 import exerciseDetails from '@/data/exerciseDetails.json';
-import { DEFAULT_EXERCISES, MUSCULATION_EXERCISES } from '@/utils/constants';
+import { DEFAULT_EXERCISES, MUSCULATION_EXERCISES, findDefaultExercise } from '@/utils/constants';
 import type { ExerciseCategory, GymSession, Session } from '@/firebase/types';
 import { isWorkSet } from '@/utils/records';
 
@@ -21,7 +21,6 @@ const CATEGORY_GROUP: Partial<Record<ExerciseCategory, MuscleGroup>> = {
 
 const DETAILS = exerciseDetails as Record<string, { target: string; secondaryMuscles: string[] }>;
 const BUILT_IN = [...DEFAULT_EXERCISES, ...MUSCULATION_EXERCISES];
-const ID_BY_NAME = new Map(DEFAULT_EXERCISES.map((e) => [e.name, e.id]));
 
 /** Groupe principal + secondaires (sans doublon) d'un exercice intégré ; inconnu (perso, bibliothèque) → rien. */
 function musclesOf(exerciseId: string): { primary?: MuscleGroup; secondary: MuscleGroup[] } {
@@ -51,7 +50,7 @@ export function setsByMuscle(gymSessions: GymSession[], sessions: Session[], sin
   for (const s of sessions) {
     if (s.date.toDate() < since || s.date.toDate() >= until) continue;
     for (const ex of s.exercises) {
-      const id = ID_BY_NAME.get(ex.name);
+      const id = findDefaultExercise(ex.name)?.id;
       if (id && ex.reps > 0) add(id, Math.max(1, Math.round(ex.reps / REPS_PER_SET)));
     }
   }

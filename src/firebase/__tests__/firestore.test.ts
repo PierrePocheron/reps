@@ -494,6 +494,15 @@ describe('calculateUserStats', () => {
     expect(stats.averageExercises).toBe(1);
   });
 
+  it('« pompes » typed by hand and « Pompes » are one favourite, under the library name', async () => {
+    vi.mocked(getDocs).mockResolvedValueOnce(makeSnapshot([
+      makeSessionDoc({ exercises: [{ name: 'pompes', emoji: '🔥', reps: 30 }] }),
+      makeSessionDoc({ exercises: [{ name: 'Pompes', emoji: '💪', reps: 30 }] }),
+    ]) as any);
+    const stats = await calculateUserStats('uid123');
+    expect(stats.exercisesDistribution).toEqual([expect.objectContaining({ name: 'Pompes', emoji: '💪', totalReps: 60, count: 2 })]);
+  });
+
   it('should calculate totals from sessions', async () => {
     const sessions = [
       makeSessionDoc({ totalReps: 30, duration: 120, totalCalories: 50 }),

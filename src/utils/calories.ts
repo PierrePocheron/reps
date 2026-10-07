@@ -1,5 +1,5 @@
 import type { User, Exercise, SessionExercise } from '@/firebase/types';
-import { DEFAULT_EXERCISES } from '@/utils/constants';
+import { findDefaultExercise } from '@/utils/constants';
 
 /**
  * Calcule les calories dépensées pour un exercice spécifique
@@ -55,4 +55,4 @@ export const calculateDynamicCalories = (
 
 /** Calories d'une séance renfo ; exercice bibliothèque → MET de sa catégorie ; exercice perso → valeurs de repli du calcul. */
 export const renfoCalories = (user: User | null, exercises: SessionExercise[]): number =>
-  exercises.reduce((sum, ex) => sum + calculateDynamicCalories(user, DEFAULT_EXERCISES.find((e) => e.name === ex.name) ?? ({ met: ex.met } as Exercise), ex.reps), 0);
+  exercises.reduce((sum, ex) => sum + calculateDynamicCalories(user, findDefaultExercise(ex.name) ?? ({ met: ex.met } as Exercise), ex.reps), 0);

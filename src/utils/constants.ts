@@ -65,6 +65,10 @@ export const RENFORCEMENT_EXERCISES: Exercise[] = [
 /** Alias pour la compatibilité avec le code existant */
 export const DEFAULT_EXERCISES = RENFORCEMENT_EXERCISES;
 
+/** Library renfo exercise of that name, whatever the case: « pompes » typed by hand is « Pompes ». */
+export const findDefaultExercise = (name: string) =>
+  DEFAULT_EXERCISES.find((e) => e.name.toLocaleLowerCase('fr') === name.toLocaleLowerCase('fr'));
+
 /**
  * Exercices de MUSCULATION (haltères / barre / machines)
  * Objectif : volume (sets × reps × kg)

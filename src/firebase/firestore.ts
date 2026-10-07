@@ -24,7 +24,7 @@ import {
 } from 'firebase/firestore';
 import { db, auth } from './config';
 import type { User, Session, SessionExercise, Exercise, Notification, MotivationalPhrase, UserStats, FriendRequest } from './types';
-import { getUnlockedBadges } from '@/utils/constants';
+import { findDefaultExercise, getUnlockedBadges } from '@/utils/constants';
 import { logger } from '@/utils/logger';
 import { trainingStreaks, weeklyStreaks } from '@/utils/streak';
 import { useSettingsStore } from '@/store/settingsStore';
@@ -533,7 +533,7 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
     let morningSessions = 0;
     let lunchSessions = 0;
     let nightSessions = 0;
-    const exerciseStatsMap = new Map<string, { emoji: string; reps: number; calories: number; count: number }>();
+    const exerciseStatsMap = new Map<string, { name: string; emoji: string; reps: number; calories: number; count: number }>();
 
     // Créneaux (badges lève-tôt, midi, nuit) : renfo + muscu, comme la série et les « Habitudes » (muscu oubliée avant)
     for (const date of dates) {
@@ -553,18 +553,21 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
             const sessionKcal = renfoCalories(user, session.exercises);
             session.exercises.forEach(ex => {
                 if (ex.reps <= 0) return; // skipped in a template session
-                const current = exerciseStatsMap.get(ex.name) || { emoji: ex.emoji, reps: 0, calories: 0, count: 0 };
+                // « pompes » typed by hand and « Pompes » are one row, under the library name
+                const lib = findDefaultExercise(ex.name);
+                const key = ex.name.toLocaleLowerCase('fr');
+                const current = exerciseStatsMap.get(key) || { name: lib?.name ?? ex.name, emoji: lib?.emoji ?? ex.emoji, reps: 0, calories: 0, count: 0 };
                 current.reps += ex.reps;
                 current.count += 1;
                 current.calories += sessionKcal > 0 ? (session.totalCalories || 0) * renfoCalories(user, [ex]) / sessionKcal : 0;
 
-                exerciseStatsMap.set(ex.name, current);
+                exerciseStatsMap.set(key, current);
             });
         }
     });
 
-    const exercisesDistribution = Array.from(exerciseStatsMap.entries()).map(([name, data]) => ({
-        name,
+    const exercisesDistribution = Array.from(exerciseStatsMap.values()).map((data) => ({
+        name: data.name,
         emoji: data.emoji,
         totalReps: data.reps,
         totalCalories: Math.round(data.calories),

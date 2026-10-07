@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { AUTO_END_SECONDS, sameName, useSessionStore } from '@/store/sessionStore';
-import { DEFAULT_EXERCISES } from '@/utils/constants';
+import { DEFAULT_EXERCISES, findDefaultExercise } from '@/utils/constants';
 import type { Exercise } from '@/firebase/types';
 
 /**
@@ -84,7 +84,8 @@ export function useSession() {
      * Ajoute un exercice personnalisé à la session
      */
     addCustomExercise: (name: string, emoji: string) => {
-      const customExercise: Exercise = {
+      // « pompes » typed by hand is the library « Pompes »: one name, MET and muscles across sessions
+      const customExercise: Exercise = findDefaultExercise(name) ?? {
         id: `custom-${Date.now()}`,
         name,
         emoji,

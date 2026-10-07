@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateDynamicCalories } from '../calories';
+import { calculateDynamicCalories, renfoCalories } from '../calories';
 import type { User, Exercise } from '@/firebase/types';
 
 describe('Calories Calculation Logic', () => {
@@ -89,5 +89,11 @@ describe('Calories Calculation Logic', () => {
     // 10 reps = 1.75
     const result = calculateDynamicCalories(baseUser, customExercise, 10);
     expect(result).toBe(1.75);
+  });
+
+  it('a saved « pompes » gets the MET of the library « Pompes » (5 kcal instead of 7 for the same 30 reps)', () => {
+    const user = { weight: 75, height: 175, gender: 'male' } as User;
+    expect(renfoCalories(user, [{ name: 'pompes', emoji: '🔥', reps: 30 }]))
+      .toBe(renfoCalories(user, [{ name: 'Pompes', emoji: '💪', reps: 30 }]));
   });
 });
