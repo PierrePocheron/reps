@@ -57,7 +57,6 @@ function Settings() {
   const [importPreview, setImportPreview] = useState<{ sessions: ImportedSession[]; existing: GymSession[]; skipped: number; exercises: number; known: number; pounds: boolean } | null>(null);
   const [importing, setImporting] = useState(false);
   const importedDates = useRef<Date[]>([]); // déjà importées, avant même le rechargement de l'historique : pas de doublon
-  const refreshStats = useUserStore((st) => st.refreshStats);
   const onPickCsv = async (file: File) => {
     try {
       const [fr, en] = await Promise.all([loadExerciseLibrary('fr'), loadExerciseLibrary('en')]);
@@ -92,7 +91,6 @@ function Settings() {
       setImportPreview(null);
       refetchHistory();
       await updateUserStatsAfterSession(user.uid, 0); // série, totaux et badges comptent l'historique importé
-      await refreshStats();
     } catch (err) {
       logger.error('Import CSV :', err);
       toast({ title: 'Erreur', description: "L'import n'a pas abouti", variant: 'destructive' });

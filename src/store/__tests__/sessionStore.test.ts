@@ -3,6 +3,8 @@ import { useSessionStore } from '../sessionStore';
 import * as firebaseModule from '@/firebase';
 import * as userStoreModule from '../userStore';
 
+const refreshStats = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+
 // Mock firebase module
 vi.mock('@/firebase', () => ({
   createSession: vi.fn().mockResolvedValue('session-id'),
@@ -19,7 +21,7 @@ vi.mock('../userStore', () => ({
     getState: vi.fn(() => ({
       currentUser: { uid: 'uid123' },
       user: { uid: 'uid123', weight: 70, height: 175, gender: 'male' },
-      refreshStats: vi.fn().mockResolvedValue(undefined),
+      refreshStats,
     })),
   },
 }));
@@ -304,6 +306,13 @@ describe('sessionStore', () => {
       await useSessionStore.getState().endSession();
       expect(firebaseModule.createSession).toHaveBeenCalledTimes(1);
       expect(useSessionStore.getState().isActive).toBe(false);
+    });
+
+    it('computes the stats once: updateUserStatsAfterSession already pushes them to the store, no second full read', async () => {
+      useSessionStore.setState({ isActive: true, startTime: Date.now() - 5000, exercises: [{ name: 'Pompes', emoji: '🔥', reps: 20 }], totalReps: 20 });
+      await useSessionStore.getState().endSession();
+      expect(firebaseModule.updateUserStatsAfterSession).toHaveBeenCalledWith('uid123', 20);
+      expect(refreshStats).not.toHaveBeenCalled();
     });
 
     it('saves nothing for a session without any rep (forgotten empty session auto-finished after 2 h)', async () => {
