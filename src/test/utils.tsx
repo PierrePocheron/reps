@@ -30,6 +30,7 @@ export const mockUser: User = {
 export const mockStats: UserStats = {
   totalReps: 100,
   totalSessions: 5,
+  trainingSessions: 5,
   totalCalories: 500,
   averageRepsPerSession: 20,
   averageDuration: 300,

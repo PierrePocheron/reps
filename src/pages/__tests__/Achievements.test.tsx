@@ -58,6 +58,12 @@ describe('Achievements Page', () => {
         expect(progressElements.length).toBeGreaterThan(0);
     });
 
+    it('« 10 séances terminées » progresses with muscu sessions too', () => {
+        useUserStore.setState({ stats: { totalReps: 0, currentStreak: 0, totalSessions: 1, trainingSessions: 5 } as any });
+        renderPage();
+        expect(screen.getByRole('progressbar', { name: 'Progression vers Régulier' })).toHaveAttribute('aria-valuenow', '50');
+    });
+
     it('a locked badge never reads « 100 % » (997 / 1 000 reps while Profil says 3 to go)', () => {
         useUserStore.setState({ stats: { totalReps: 997, currentStreak: 0 } as any });
         renderPage();

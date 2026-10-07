@@ -6,6 +6,7 @@ import { Timestamp } from 'firebase/firestore';
 const mockStats: UserStats = {
   totalReps: 0,
   totalSessions: 0,
+  trainingSessions: 0,
   totalCalories: 0,
   averageRepsPerSession: 0,
   averageDuration: 0,
@@ -54,6 +55,12 @@ describe('Gamification Constants Logic', () => {
         expect(badges).not.toContainEqual(streak7);
       });
 
+    it('session badges count renfo + muscu (a muscu-only user never got « Régulier »)', () => {
+      const stats = { ...mockStats, totalSessions: 1, trainingSessions: 12 };
+      expect(getUnlockedBadges(stats).map((b) => b.id)).toContain('sessions-10');
+      expect(getNextBadge({ ...stats, trainingSessions: 9 })?.id).toBe('sessions-10');
+    });
+
     it('unlocks streak badges from the record too (« Meilleure série 55 jours » with every streak badge locked)', () => {
       const badges = getUnlockedBadges({ ...mockStats, currentStreak: 0, longestStreak: 10 });
       expect(badges.map((b) => b.id)).toEqual(expect.arrayContaining(['streak-3', 'streak-7']));
@@ -87,6 +94,7 @@ describe('Gamification Constants Logic', () => {
             totalReps: 100000,
             currentStreak: 1000,
             totalSessions: 1000,
+            trainingSessions: 1000,
             morningSessions: 1000,
             lunchSessions: 1000,
             nightSessions: 1000,

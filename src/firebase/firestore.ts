@@ -570,6 +570,7 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
     return {
       totalReps,
       totalSessions,
+      trainingSessions: sessions.length + gymSessions.length,
       totalCalories,
       averageRepsPerSession: Math.round(averageRepsPerSession),
       averageDuration: Math.round(averageDuration),

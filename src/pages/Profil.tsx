@@ -220,7 +220,7 @@ function Profil() {
                       nextBadge.category === 'time_morning' ? plural(nextBadge.threshold - (stats!.morningSessions || 0), 'séance') :
                       nextBadge.category === 'time_lunch' ? plural(nextBadge.threshold - (stats!.lunchSessions || 0), 'séance') :
                       nextBadge.category === 'time_night' ? plural(nextBadge.threshold - (stats!.nightSessions || 0), 'séance') :
-                      plural(nextBadge.threshold - stats!.totalSessions, 'séance')
+                      plural(nextBadge.threshold - stats!.trainingSessions, 'séance')
                     }
                   </p>
                 </div>

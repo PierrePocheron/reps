@@ -171,7 +171,8 @@ export interface MotivationalPhrase {
 // Type pour les stats d'un utilisateur
 export interface UserStats {
   totalReps: number;
-  totalSessions: number;
+  totalSessions: number; // renfo only (« Séances renfo », kcal average)
+  trainingSessions: number; // renfo + muscu: the « séances » of the session badges
   totalCalories?: number;
   averageRepsPerSession: number;
   averageDuration: number; // en secondes

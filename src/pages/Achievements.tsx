@@ -122,7 +122,7 @@ export default function Achievements() {
                switch (badge.category) {
                 case 'total_reps': return (stats.totalReps / badge.threshold) * 100;
                 case 'streak': return (stats.currentStreak / badge.threshold) * 100;
-                case 'total_sessions': return (stats.totalSessions / badge.threshold) * 100;
+                case 'total_sessions': return (stats.trainingSessions / badge.threshold) * 100;
                 case 'total_calories': return ((stats.totalCalories || 0) / badge.threshold) * 100;
                 case 'time_morning': return ((stats.morningSessions || 0) / badge.threshold) * 100;
                 case 'time_lunch': return ((stats.lunchSessions || 0) / badge.threshold) * 100;

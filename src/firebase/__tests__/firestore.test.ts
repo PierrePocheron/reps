@@ -476,6 +476,15 @@ describe('calculateUserStats', () => {
     expect(stats.morningSessions).toBe(1);
   });
 
+  it('session badges count gym sessions too, the « Séances renfo » tile stays renfo only', async () => {
+    vi.mocked(getDocs)
+      .mockResolvedValueOnce(makeSnapshot([makeSessionDoc()]) as any) // renfo
+      .mockResolvedValueOnce(makeSnapshot([makeSessionDoc(), makeSessionDoc()]) as any); // muscu
+    const stats = await calculateUserStats('uid123');
+    expect(stats.totalSessions).toBe(1);
+    expect(stats.trainingSessions).toBe(3);
+  });
+
   it('should calculate totals from sessions', async () => {
     const sessions = [
       makeSessionDoc({ totalReps: 30, duration: 120, totalCalories: 50 }),
