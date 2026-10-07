@@ -47,4 +47,30 @@ describe('CreateTemplateDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Retirer la série 2 de Squat barre' }));
     expect(screen.queryByRole('button', { name: /Retirer la série/ })).not.toBeInTheDocument(); // a lone set can't be removed
   });
+
+  it('a tap on the backdrop closes an untouched template but keeps an edited one; ✕ still discards', () => {
+    const onClose = vi.fn();
+    const untouched = render(<CreateTemplateDialog open onClose={onClose} onSave={async () => {}} initial={template} />);
+    fireEvent.click(untouched.container.querySelector('.backdrop-blur-sm')!);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    untouched.unmount();
+
+    const { container } = render(<CreateTemplateDialog open onClose={onClose} onSave={async () => {}} initial={template} />);
+    const backdrop = container.querySelector('.backdrop-blur-sm')!;
+    fireEvent.change(screen.getByRole('textbox', { name: 'Nom du modèle' }), { target: { value: 'Core 2' } });
+    fireEvent.click(backdrop);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('textbox', { name: 'Nom du modèle' })).toHaveValue('Core 2');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Fermer' }));
+    expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
+  it('a new template is protected from a backdrop tap once something is picked', () => {
+    const onClose = vi.fn();
+    const { container } = render(<CreateTemplateDialog open onClose={onClose} onSave={async () => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Icône 🔥' }));
+    fireEvent.click(container.querySelector('.backdrop-blur-sm')!);
+    expect(onClose).not.toHaveBeenCalled();
+  });
 });

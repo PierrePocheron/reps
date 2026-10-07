@@ -24,6 +24,12 @@ interface MuscuExercise {
 
 const EMOJI_OPTIONS = ['💪', '🏋️', '🔥', '⚡', '🦵', '🧗', '⚓', '🏃', '🎯', '🥊', '🧘', '🤸', '🦾', '🏅', '⚽'];
 
+// Form fields of a template as the editor holds them, to tell an edited form from the one it opened with
+const muscuOf = (t: WorkoutTemplate): MuscuExercise[] =>
+  (t.muscuExercises ?? []).map((me) => ({ ...templateExercise(me), sets: me.sets.map((s) => ({ ...s })) }));
+const formOf = (t?: WorkoutTemplate | null) =>
+  JSON.stringify(t ? [t.name, t.emoji, t.workoutType, t.exerciseIds ?? [], muscuOf(t)] : ['', '💪', 'renforcement', [], []]);
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -48,10 +54,13 @@ export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) 
     setEmoji(initial.emoji);
     setWorkoutType(initial.workoutType);
     setSelectedIds(initial.exerciseIds ?? []);
-    setMuscuExercises((initial.muscuExercises ?? []).map((me) => ({ ...templateExercise(me), sets: me.sets.map((s) => ({ ...s })) })));
+    setMuscuExercises(muscuOf(initial));
   }, [open, initial]);
 
   if (!open) return null;
+
+  // A tap on the dimmed area must not throw an edited template away: only ✕ discards once something changed
+  const dirty = JSON.stringify([name, emoji, workoutType, selectedIds, muscuExercises]) !== formOf(initial);
 
   const handleClose = () => {
     setName(''); setEmoji('💪'); setWorkoutType('renforcement');
@@ -173,7 +182,7 @@ export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) 
   return (
     <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={dirty ? undefined : handleClose} />
 
       {/* Sheet */}
       <div className="relative z-10 w-full sm:max-w-md bg-background rounded-t-3xl sm:rounded-2xl shadow-xl flex flex-col max-h-[90dvh]">
