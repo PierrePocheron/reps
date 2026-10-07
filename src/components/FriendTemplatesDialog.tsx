@@ -7,20 +7,33 @@ import { useUserStore } from '@/store/userStore';
 import { createUserTemplate, getUserTemplates } from '@/firebase/templates';
 import type { User, WorkoutTemplate } from '@/firebase/types';
 import { logger } from '@/utils/logger';
+import { isOffline } from '@/firebase/offline';
+
+/** A copy keeps the name, type and exercises: how a template already copied is recognised in mine. */
+const signature = (t: WorkoutTemplate) =>
+  JSON.stringify([t.name, t.workoutType, t.exerciseIds ?? [], (t.muscuExercises ?? []).map((e) => e.exerciseId)]);
 
 /** Modèles d'un ami, copiables en un tap (Hevy) : la copie devient un modèle perso modifiable. */
 export function FriendTemplatesDialog({ friend, onClose }: { friend: User | null; onClose: () => void }) {
   const me = useUserStore((s) => s.user);
+  const myUid = me?.uid;
   const { toast } = useToast();
   const [templates, setTemplates] = useState<WorkoutTemplate[] | null>(null);
   const [copied, setCopied] = useState<string[]>([]);
   const [copying, setCopying] = useState<string | null>(null); // a second tap while offline made a duplicate
+  const [offline, setOffline] = useState(false);
 
   useEffect(() => {
     if (!friend) return;
     setTemplates(null); setCopied([]);
-    getUserTemplates(friend.uid).then(setTemplates); // [] si refusé (règles pas encore déployées)
-  }, [friend]);
+    // [] when refused (rules not deployed yet); mine too: reopening offered « Copier » again on a copied one (duplicate)
+    Promise.all([getUserTemplates(friend.uid), myUid ? getUserTemplates(myUid) : []]).then(([theirs, mine]) => {
+      const owned = new Set(mine.map(signature));
+      setCopied(theirs.filter((t) => owned.has(signature(t))).map((t) => t.id));
+      setOffline(theirs.length === 0 && isOffline()); // nothing cached: « no template » would be a guess
+      setTemplates(theirs);
+    });
+  }, [friend, myUid]);
 
   const copy = async (t: WorkoutTemplate) => {
     if (!me || copying || copied.includes(t.id)) return;
@@ -48,6 +61,8 @@ export function FriendTemplatesDialog({ friend, onClose }: { friend: User | null
         </DialogHeader>
         {templates === null ? (
           <div className="h-24 rounded-xl bg-muted animate-pulse" aria-label="Chargement des modèles" />
+        ) : offline ? (
+          <p className="text-sm text-muted-foreground text-center py-4">Modèles indisponibles hors ligne. Reconnecte-toi pour les voir.</p>
         ) : templates.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">{friend?.displayName} n'a pas encore créé de modèle.</p>
         ) : (

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { FriendTemplatesDialog } from '../FriendTemplatesDialog';
 import { useUserStore } from '@/store/userStore';
 import { createUserTemplate, getUserTemplates } from '@/firebase/templates';
@@ -49,5 +49,32 @@ describe('FriendTemplatesDialog', () => {
     expect(done).toHaveAttribute('aria-disabled', 'true');
     fireEvent.click(done);
     expect(createUserTemplate).toHaveBeenCalledTimes(1);
+  });
+
+  it('after reopening, a template already in my templates stays « Copié » (a second tap made a duplicate)', async () => {
+    const { id, userId, createdAt, ...copy } = push;
+    void id; void userId; void createdAt;
+    const other = { ...push, id: 't2', muscuExercises: [{ exerciseId: 'squat', sets: [] }] }; // same name, other exercises
+    templatesOf([push, other], [{ ...copy, id: 'mine1', userId: 'me' }]);
+    render(<FriendTemplatesDialog friend={friend} onClose={() => {}} />);
+    expect(await screen.findByRole('button', { name: 'Push copié' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'Copier Push' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Push copié' }));
+    expect(createUserTemplate).not.toHaveBeenCalled();
+  });
+
+  it('offline with nothing cached says the templates are unavailable, not that there are none', async () => {
+    templatesOf([]);
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    render(<FriendTemplatesDialog friend={friend} onClose={() => {}} />);
+    await act(async () => {});
+    expect(screen.getByText(/Modèles indisponibles/)).toBeInTheDocument();
+    expect(screen.queryByText(/n'a pas encore créé de modèle/)).not.toBeInTheDocument();
+  });
+
+  it('online, an empty list still says the friend has no template yet', async () => {
+    templatesOf([]);
+    render(<FriendTemplatesDialog friend={friend} onClose={() => {}} />);
+    expect(await screen.findByText(/n'a pas encore créé de modèle/)).toBeInTheDocument();
   });
 });
