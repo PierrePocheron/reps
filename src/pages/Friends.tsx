@@ -320,7 +320,7 @@ export default function Friends() {
 
                   if (item.type === 'badge_unlocked') {
                     return (
-                      <Card key={item.id} className="overflow-hidden border-none shadow-sm bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-l-4 border-l-yellow-500">
+                      <Card key={item.id} className="overflow-hidden border-0 shadow-sm bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-l-4 border-l-yellow-500">
                         <CardContent className="p-4">
                           <div className="flex items-center gap-4">
                             <UserAvatar user={friend} size="md" />
@@ -346,7 +346,7 @@ export default function Friends() {
 
                   if (item.type === 'new_friend') {
                     return (
-                      <Card key={item.id} className="overflow-hidden border-none shadow-sm bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-l-4 border-l-blue-500">
+                      <Card key={item.id} className="overflow-hidden border-0 shadow-sm bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-l-4 border-l-blue-500">
                         <CardContent className="p-4">
                           <div className="flex items-center gap-4">
                             <UserAvatar user={friend} size="md" />
@@ -552,7 +552,7 @@ export default function Friends() {
                   Demandes en attente
                 </h3>
                 {friendRequests.map((request) => (
-                  <Card key={request.id} className="overflow-hidden border-none shadow-sm bg-card/50 border-l-4 border-l-primary">
+                  <Card key={request.id} className="overflow-hidden border-0 shadow-sm bg-card/50 border-l-4 border-l-primary">
                     <CardContent className="p-4 flex items-center justify-between">
                       <div className="flex items-center gap-3 min-w-0">
                         <UserAvatar user={{ displayName: request.fromDisplayName }} emoji={request.fromAvatarEmoji} size="md" />
