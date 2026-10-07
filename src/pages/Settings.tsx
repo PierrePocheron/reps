@@ -102,13 +102,6 @@ function Settings() {
   const [exporting, setExporting] = useState(false);
   const { autoRest, setAutoRest, showRpe, setShowRpe, suggestLoad, setSuggestLoad } = useGymSessionStore();
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
-  // La série hebdo dépend de l'objectif : recalcul quand l'objectif ou le mode change (pas au premier rendu)
-  const firstRender = useRef(true);
-  useEffect(() => {
-    if (firstRender.current) { firstRender.current = false; return; }
-    if (user?.uid) updateUserStatsAfterSession(user.uid, 0).catch((err) => logger.error('Recalcul de la série :', err));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- seulement sur changement d'objectif ou de mode
-  }, [weeklyGoal, streakMode]);
   const [togglingNotif, setTogglingNotif] = useState(false);
 
   const handleExportData = async (format: 'json' | 'csv') => {

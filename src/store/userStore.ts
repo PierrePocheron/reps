@@ -9,11 +9,13 @@ import {
   subscribeToUser,
   markBadgesAsSeen,
   onUserStatsComputed,
+  updateUserStatsAfterSession,
 } from '@/firebase';
 import { deleteUserAccount } from '@/firebase/deleteAccount';
 import { applyThemeColor, type ThemeColor } from '@/utils/theme-colors';
 import { logger } from '@/utils/logger';
 import { updateWidget } from '@/utils/widget';
+import { useSettingsStore } from './settingsStore';
 
 interface UserState {
   // État
@@ -316,3 +318,11 @@ export const useUserStore = create<UserState>((set, get) => ({
 
 // Every stats recalculation (gym session, challenge day, goal change, edits) refreshes Statistics and badges
 onUserStatsComputed((stats) => useUserStore.getState().setStats(stats));
+
+// The weekly streak and the widget follow the goal and the mode: recompute on any change, from any screen (the welcome
+// questionnaire set the goal without it, so the widget kept « x/3 » while Statistics said « x/5 »)
+useSettingsStore.subscribe((now, before) => {
+  if (now.weeklyGoal === before.weeklyGoal && now.streakMode === before.streakMode) return;
+  const uid = useUserStore.getState().currentUser?.uid;
+  if (uid) updateUserStatsAfterSession(uid, 0).catch((err) => logger.error('Recalcul de la série :', err));
+});

@@ -4,6 +4,7 @@ import * as firebase from '@/firebase';
 import * as themeUtils from '@/utils/theme-colors';
 import { updateWidget } from '@/utils/widget';
 import { ThemeColor } from '@/utils/theme-colors';
+import { useSettingsStore } from '../settingsStore';
 
 // Mock dependencies
 vi.mock('@/firebase', () => ({
@@ -16,6 +17,7 @@ vi.mock('@/firebase', () => ({
   createUserDocument: vi.fn(),
   clearCurrentSessionFromLocal: vi.fn(),
   onUserStatsComputed: vi.fn(),
+  updateUserStatsAfterSession: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock('@/utils/theme-colors', () => ({
@@ -258,6 +260,20 @@ describe('userStore', () => {
             expect(firebase.markBadgesAsSeen).toHaveBeenCalledWith('u1');
             expect(useUserStore.getState().user?.newBadgeIds).toEqual([]);
         });
+    });
+
+    it('a weekly goal set from any screen recomputes the weekly streak and the widget (welcome questionnaire)', () => {
+        useUserStore.setState({ currentUser: { uid: 'u1' } as any });
+        const goal = useSettingsStore.getState().weeklyGoal;
+        useSettingsStore.getState().setWeeklyGoal(goal);
+        expect(firebase.updateUserStatsAfterSession).not.toHaveBeenCalled(); // unchanged
+        useSettingsStore.getState().setWeeklyGoal(goal === 5 ? 4 : 5);
+        expect(firebase.updateUserStatsAfterSession).toHaveBeenCalledWith('u1', 0);
+        useSettingsStore.getState().setStreakMode(useSettingsStore.getState().streakMode === 'daily' ? 'weekly' : 'daily');
+        expect(firebase.updateUserStatsAfterSession).toHaveBeenCalledTimes(2);
+        useUserStore.setState({ currentUser: null });
+        useSettingsStore.getState().setWeeklyGoal(2);
+        expect(firebase.updateUserStatsAfterSession).toHaveBeenCalledTimes(2); // signed out: nothing to recompute
     });
 
     it('reset: pending friend requests do not carry over to the next account', () => {
