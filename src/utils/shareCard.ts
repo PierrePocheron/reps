@@ -54,13 +54,14 @@ export function renfoCard(s: { date: Date; duration: number; exercises: SessionE
 }
 
 /**
- * Sets the largest font from `size` down to `min` (steps of 4 px) where `text` fits `maxWidth`, then ellipsizes as a last resort.
+ * Sets the largest font from `size` down to `min` (steps of 4 px) where `text` fits `maxWidth`, then ellipsizes as a last resort
+ * (unless `ellipsis` is false: a number cut to « 1 284 30… » reads wrong).
  * Replaces fillText's maxWidth, which squashed long exercise names to half their width.
  */
-export function fitText(g: Pick<CanvasRenderingContext2D, 'font' | 'measureText'>, text: string, font: (size: number) => string, size: number, min: number, maxWidth: number): string {
+export function fitText(g: Pick<CanvasRenderingContext2D, 'font' | 'measureText'>, text: string, font: (size: number) => string, size: number, min: number, maxWidth: number, ellipsis = true): string {
   g.font = font(size);
   while (size > min && g.measureText(text).width > maxWidth) g.font = font((size = Math.max(min, size - 4)));
-  while (text.length > 1 && g.measureText(text).width > maxWidth) text = `${text.slice(0, -2)}…`;
+  while (ellipsis && text.length > 1 && g.measureText(text).width > maxWidth) text = `${text.slice(0, -2)}…`;
   return text;
 }
 
@@ -91,7 +92,8 @@ export async function renderCard(card: SessionCard): Promise<string> {
     if (g.roundRect) g.roundRect(x, y, tileW, 170, 28); else g.rect(x, y, tileW, 170); // vieilles WebView
     g.fill();
     g.fillStyle = '#FFFFFF';
-    g.fillText(fitText(g, st.value, (s) => font(800, s), card.stats.length > 3 ? 46 : 56, 32, tileW - 56), x + 28, y + 92);
+    // values keep every digit and their unit: smaller font first, then squeezed by fillText if still too wide
+    g.fillText(fitText(g, st.value, (s) => font(800, s), card.stats.length > 3 ? 46 : 56, 24, tileW - 56, false), x + 28, y + 92, tileW - 56);
     g.globalAlpha = 0.75; g.font = font(600, 30); g.fillText(st.label, x + 28, y + 140); g.globalAlpha = 1;
   });
 

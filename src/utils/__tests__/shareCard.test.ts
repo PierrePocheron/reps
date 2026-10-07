@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { fitText, gymCard, renfoCard } from '../shareCard';
+import { describe, it, expect, vi } from 'vitest';
+import { fitText, gymCard, renderCard, renfoCard } from '../shareCard';
 
 describe('cartes de partage', () => {
   it('compte le record de durée (gainage) comme le récap', () => {
@@ -72,5 +72,25 @@ describe('cartes de partage', () => {
       expect(out.endsWith('…')).toBe(true);
       expect(g.measureText(out).width).toBeLessThanOrEqual(300);
     });
+  });
+
+  it('never cuts the digits or the unit of a tile value (a recap volume read « 1 284 30… »)', async () => {
+    const drawn: [string, number | undefined][] = [];
+    const g = {
+      font: '', fillStyle: '', globalAlpha: 1, textAlign: '', textBaseline: '',
+      createLinearGradient: () => ({ addColorStop: () => {} }), fillRect: () => {}, beginPath: () => {}, roundRect: () => {}, fill: () => {},
+      measureText(t: string) { return { width: (t.length * parseInt(this.font.split(' ')[1]!, 10)) / 2 }; }, // every glyph half the size
+      fillText: (t: string, _x: number, _y: number, maxWidth?: number) => { drawn.push([t, maxWidth]); },
+    };
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(g as never);
+    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/png;base64,');
+    const value = '12 841 300 kg'; // too wide for a 4-tile row even at the floor size
+    await renderCard({ title: 'Récap', subtitle: '2026', date: new Date(), lines: [], more: 0, stats: [
+      { label: 'Séances', value: '182' }, { label: 'Durée', value: '160 h' }, { label: 'Volume', value }, { label: 'Records', value: '🏆 40' },
+    ] });
+    vi.restoreAllMocks();
+    const tile = drawn.find(([t]) => t.startsWith('12'));
+    expect(tile?.[0]).toBe(value);
+    expect(tile?.[1]).toBeGreaterThan(0); // fillText squeezes it into the tile as a last resort
   });
 });
