@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
 import { formatNumber } from '@/utils/formatters';
@@ -90,5 +90,22 @@ describe('Friends activity', () => {
     await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
     await act(async () => { useUserStore.setState({ user: { uid: 'me', displayName: 'Moi', friends: [] } as never }); });
     expect(screen.getByText(/Ton fil est vide/)).toBeInTheDocument();
+  });
+});
+
+describe('Friends removal', () => {
+  const openRemoveDialog = async () => {
+    renderFriends(['alice'], [bobRequest]);
+    fireEvent.pointerDown(await screen.findByRole('button', { name: 'Options pour Alice' }), { button: 0, ctrlKey: false, pointerType: 'mouse' });
+    fireEvent.click(await screen.findByText('Retirer'));
+  };
+
+  it('says « retirer » everywhere and names the friend in the toast', async () => {
+    await openRemoveDialog();
+    expect(screen.getByText('Retirer cet ami ?')).toBeInTheDocument();
+    expect(screen.getByText(/Tu pourras l'ajouter de nouveau plus tard\./)).toBeInTheDocument();
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Retirer' })); });
+    expect(db.removeFriend).toHaveBeenCalledWith('me', 'alice');
+    expect(toast).toHaveBeenCalledWith({ title: 'Ami retiré', description: 'Alice ne fait plus partie de tes amis.' });
   });
 });

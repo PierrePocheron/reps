@@ -203,21 +203,21 @@ export default function Friends() {
     }
   };
 
-  const handleRemoveFriend = async (friendId: string) => {
+  const handleRemoveFriend = async (friend: User) => {
     if (!user) return;
     try {
-      await removeFriend(user.uid, friendId);
+      await removeFriend(user.uid, friend.uid);
       toast({
-        title: 'Ami supprimé',
-        description: 'Cet utilisateur a été retiré de ta liste d\'amis.',
+        title: 'Ami retiré',
+        description: `${friend.displayName} ne fait plus partie de tes amis.`,
       });
       // Update local state
-      setFriends(prev => prev.filter(f => f.uid !== friendId));
+      setFriends(prev => prev.filter(f => f.uid !== friend.uid));
       setFriendToRemove(null);
     } catch (error) {
       toast({
         title: 'Erreur',
-        description: 'Impossible de supprimer l\'ami',
+        description: 'Impossible de retirer cet ami',
         variant: 'destructive',
       });
     }
@@ -576,7 +576,7 @@ export default function Friends() {
                               onClick={() => setFriendToRemove(friend)}
                             >
                               <UserMinus className="mr-2 h-4 w-4" />
-                              Supprimer
+                              Retirer
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -601,9 +601,9 @@ export default function Friends() {
       <Dialog open={!!friendToRemove} onOpenChange={(o) => !o && setFriendToRemove(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Supprimer cet ami ?</DialogTitle>
+            <DialogTitle>Retirer cet ami&nbsp;?</DialogTitle>
             <DialogDescription>
-              {friendToRemove?.displayName} ne verra plus ton activité et tu ne verras plus la sienne. Tu pourras le ré-ajouter plus tard.
+              {friendToRemove?.displayName} ne verra plus ton activité et tu ne verras plus la sienne. Tu pourras l'ajouter de nouveau plus tard.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-wrap gap-3 mt-2">
@@ -613,9 +613,9 @@ export default function Friends() {
             <Button
               variant="destructive"
               className="flex-1 basis-28"
-              onClick={() => friendToRemove && handleRemoveFriend(friendToRemove.uid)}
+              onClick={() => friendToRemove && handleRemoveFriend(friendToRemove)}
             >
-              Supprimer
+              Retirer
             </Button>
           </div>
         </DialogContent>
