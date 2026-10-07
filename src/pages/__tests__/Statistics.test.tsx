@@ -66,6 +66,9 @@ describe('Statistics', () => {
     expect(screen.getByText("Jour d'entraînement")).toBeInTheDocument();
     expect(screen.getByText('Répétitions')).toBeInTheDocument();
     expect(screen.queryByText('Volume')).not.toBeInTheDocument();
+    // 3 tiles in 2 columns: the last one takes the whole row, no empty cell beside it
+    expect(screen.getByText('Répétitions').parentElement).toHaveClass('col-span-2');
+    expect(screen.getByText('Séance').parentElement).not.toHaveClass('col-span-2');
   });
 
   it('the calories example table follows the formula (75 kg, 175 cm man) and names sex as a factor', () => {

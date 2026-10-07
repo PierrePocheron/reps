@@ -457,8 +457,9 @@ function PeriodRecap({ sessions, gymSessions, firstDay }: { sessions: Session[];
       ) : (
         <>
           <div className="grid grid-cols-2 gap-2">
-            {tiles.map((t) => (
-              <div key={t.label} className="min-w-0 rounded-xl bg-muted/50 p-3">
+            {tiles.map((t, i) => (
+              // An odd last tile (renfo only: no volume nor records) takes the whole row, no empty cell
+              <div key={t.label} className={`min-w-0 rounded-xl bg-muted/50 p-3${i === tiles.length - 1 && i % 2 === 0 ? ' col-span-2' : ''}`}>
                 <p className="text-xl font-bold hyphens-auto break-words">{t.value}</p>
                 <p className="text-xs text-muted-foreground hyphens-auto break-words">{t.label}</p>
               </div>
