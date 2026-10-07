@@ -43,7 +43,7 @@ n'existe plus (`src/utils/staleChunk.ts`), au lieu d'afficher l'écran d'erreur.
 Les règles ne sont **pas** déployées par la CI. Toujours les tester avant :
 
 ```bash
-yarn test:rules                                          # 80 invariants sur l'émulateur
+yarn test:rules                                          # 81 invariants sur l'émulateur
 firebase deploy --only firestore:rules --project reps    # règles
 firebase deploy --only firestore:indexes --project reps  # index (si firestore.indexes.json change)
 ```
