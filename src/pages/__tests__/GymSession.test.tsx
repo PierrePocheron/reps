@@ -167,7 +167,9 @@ describe('GymSession — retirer pendant la séance', () => {
     await setup([bench([{ reps: 8, weight: 60 }, { reps: 8, weight: 60 }])]);
     fireEvent.click(screen.getByLabelText('Retirer la dernière série'));
     expect(sets()).toHaveLength(1);
-    fireEvent.click(screen.getByLabelText('Valider la série 1'));
+    expect(screen.queryByLabelText('Retirer la dernière série')).toBeNull(); // never empties the exercise (saved without sets)
+    fireEvent.click(screen.getByRole('button', { name: /Série 2/ }));
+    fireEvent.click(screen.getByLabelText('Valider la série 2'));
     expect(screen.queryByLabelText('Retirer la dernière série')).toBeNull(); // validée : on ne la perd pas d'un appui
   });
 

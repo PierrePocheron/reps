@@ -1049,8 +1049,9 @@ function ExecuteExerciseCard({
             <Plus className="h-3.5 w-3.5" />
             Série {exercise.sets.filter((st) => st.type !== 'warmup').length + 1}
           </button>
-          {/* Set added by mistake: removable while not validated (a validated one is un-validated first) */}
-          {exercise.sets.length > 0 && !exercise.sets[exercise.sets.length - 1]!.completed && (
+          {/* Set added by mistake: removable while not validated (a validated one is un-validated first);
+              never the only one, an exercise without sets is removed from its sheet */}
+          {exercise.sets.length > 1 && !exercise.sets[exercise.sets.length - 1]!.completed && (
             <button
               type="button"
               onClick={onRemoveLastSet}
