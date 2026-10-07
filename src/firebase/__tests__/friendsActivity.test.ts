@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getDocs, query, where } from 'firebase/firestore';
-import { getFriendsActivity } from '../firestore';
+import { getFriendsActivity, getLeaderboardStats } from '../firestore';
 
-// Firestore `in` takes at most 10 values: each query answers for the friends it was given
+// Firestore `in` takes at most 30 values: each query answers for the friends it was given
 beforeEach(() => {
   vi.mocked(where).mockImplementation(((field: string, op: string, value: unknown) => ({ field, op, value })) as never);
   vi.mocked(query).mockImplementation(((...parts: unknown[]) => parts) as never);
@@ -35,5 +35,16 @@ describe('getFriendsActivity', () => {
   it('a read failure is an error, not an empty feed', async () => {
     vi.mocked(getDocs).mockRejectedValue(new Error('offline'));
     await expect(getFriendsActivity(['f1'])).rejects.toThrow('offline');
+  });
+});
+
+describe('friend queries', () => {
+  it('ask for up to 30 friends per query, the most `in` accepts', async () => {
+    const friends = Array.from({ length: 31 }, (_, i) => `f${i + 1}`);
+    vi.mocked(getDocs).mockClear().mockResolvedValue({ docs: [], forEach: () => {} } as never);
+    await getFriendsActivity(friends);
+    await getLeaderboardStats(friends, 'weekly');
+    const sizes = vi.mocked(getDocs).mock.calls.map(([q]) => (q as unknown as { op?: string; value?: string[] }[]).find((p) => p?.op === 'in')?.value?.length);
+    expect(sizes).toEqual([30, 1, 30, 1, 30, 1]); // feed sessions, feed badges, leaderboard
   });
 });

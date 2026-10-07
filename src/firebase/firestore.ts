@@ -1118,6 +1118,10 @@ export function subscribeToFriendRequests(userId: string, callback: (requests: F
   });
 }
 
+/** Firestore `in` takes up to 30 values: friend ids split into as few queries as that allows */
+const inChunks = (ids: string[], size = 30): string[][] =>
+  Array.from({ length: Math.ceil(ids.length / size) }, (_, i) => ids.slice(i * size, i * size + size));
+
 /**
  * Obtenir les détails des amis
  */
@@ -1125,17 +1129,10 @@ export async function getFriendsDetails(friendIds: string[]): Promise<User[]> {
   try {
     if (!friendIds || friendIds.length === 0) return [];
 
-    // Firestore 'in' query supporte max 10 éléments.
-    // Si plus de 10 amis, il faut faire plusieurs requêtes ou boucler.
-    // Pour l'instant on gère par lots de 10.
-
+    // Batches of 10, not 30: each query returns its profiles sorted by id and the friends list shows that order;
+    // larger batches would only save round trips, not reads
     const friends: User[] = [];
-    const chunks = [];
-    for (let i = 0; i < friendIds.length; i += 10) {
-      chunks.push(friendIds.slice(i, i + 10));
-    }
-
-    for (const chunk of chunks) {
+    for (const chunk of inChunks(friendIds, 10)) {
       // Utilisation de documentId() pour filtrer par ID de document
       const q = query(collection(db, 'users'), where(documentId(), 'in', chunk));
 
@@ -1157,10 +1154,9 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
   try {
     if (!friendIds || friendIds.length === 0) return [];
 
-    // `in` takes 10 values at most: one pair of queries per 10 friends (friends #11+ were never read), like the
-    // leaderboard; each keeps the top `limitCount`, the global sort below keeps the overall top
-    const chunks: string[][] = [];
-    for (let i = 0; i < friendIds.length; i += 10) chunks.push(friendIds.slice(i, i + 10));
+    // One pair of queries per 30 friends, like the leaderboard; each keeps the top `limitCount`, the global sort
+    // below keeps the overall top
+    const chunks = inChunks(friendIds);
     const recent = (group: string, ids: string[]) =>
       getDocs(query(collectionGroup(db, group), where('userId', 'in', ids), orderBy('createdAt', 'desc'), limit(limitCount)));
     const [sessionSnaps, eventSnaps] = await Promise.all([
@@ -1218,15 +1214,9 @@ export async function getLeaderboardStats(friendIds: string[], period: 'daily' |
 
     const startTimestamp = Timestamp.fromDate(startDate);
 
-    // Traiter par lots de 10 amis (limite Firestore 'in')
-    const chunks = [];
-    for (let i = 0; i < friendIds.length; i += 10) {
-      chunks.push(friendIds.slice(i, i + 10));
-    }
-
     const allSessions: LeaderboardSession[] = [];
 
-    for (const chunk of chunks) {
+    for (const chunk of inChunks(friendIds)) {
       const q = query(
         collectionGroup(db, 'userSessions'),
         where('userId', 'in', chunk),
