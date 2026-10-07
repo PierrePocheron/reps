@@ -92,7 +92,7 @@ export function BodyMetrics() {
 
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between space-y-0">
+      <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 space-y-0">
         <CardTitle className="flex items-center gap-2 text-lg font-bold">
           <Ruler className="h-5 w-5" /> Poids et mensurations
         </CardTitle>
