@@ -57,6 +57,8 @@ export function KudosBanner() {
   if (kudos.length === 0) return null;
   const names = [...new Set(kudos.map((k) => k.fromName).filter(Boolean))] as string[];
   const who = names.length <= 2 ? names.join(' et ') : `${names.slice(0, 2).join(', ')} et ${names.length - 2} autre${names.length > 3 ? 's' : ''}`;
+  // one notification per friend and session: two sessions encouraged said « ta séance » (older ones have no session id)
+  const sessions = new Set(kudos.map((k) => k.sessionId).filter(Boolean)).size;
 
   const dismiss = () => {
     markKudosSeen(kudos.map((k) => k.id)).catch((err) => logger.error('Encouragements vus :', err));
@@ -67,9 +69,9 @@ export function KudosBanner() {
     <div className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary/10 p-4" role="status">
       <span className="text-2xl" aria-hidden>👏</span>
       <p className="flex-1 text-sm">
-        <span className="font-semibold">{who || 'Un ami'}</span> {names.length > 1 ? 'ont' : 'a'} encouragé ta séance
+        <span className="font-semibold">{who || 'Un ami'}</span> {names.length > 1 ? 'ont' : 'a'} encouragé {sessions > 1 ? `tes ${sessions}\u00a0séances` : 'ta séance'}
       </p>
-      <button onClick={dismiss} className="min-h-11 px-3 rounded-xl text-sm font-semibold text-primary hover:bg-primary/10">Merci !</button>
+      <button onClick={dismiss} className="min-h-11 px-3 rounded-xl text-sm font-semibold text-primary hover:bg-primary/10">Merci&nbsp;!</button>
     </div>
   );
 }
