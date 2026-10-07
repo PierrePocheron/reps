@@ -870,19 +870,21 @@ export async function sendFriendRequest(fromUser: User, toUserId: string): Promi
       if (status === 'pending') throw new Error('Une demande est déjà en attente');
       // « accepted » but no longer friends: left by a removal that could not delete it (offline), stale like a rejected one
       if (status === 'accepted' && fromUser.friends?.includes(toUserId)) throw new Error('Vous êtes déjà amis');
-      // rejected or stale: deleted so that a new one can be sent
-      await deleteDoc(outgoingRef);
     }
 
-    // 3. Créer la demande
-    await setDoc(outgoingRef, {
-      fromUserId: fromUser.uid,
-      fromDisplayName: fromUser.displayName,
-      fromAvatarEmoji: fromUser.avatarEmoji || '🐥',
-      toUserId,
-      status: 'pending',
-      createdAt: serverTimestamp(),
-    });
+    // 3. Create the request, after deleting the old one (rejected or stale): issued together, applied in order.
+    // Offline: queued by the persistent cache and sent on reconnection, the button does not spin until then
+    await queuedIfOffline(Promise.all([
+      outgoingSnap?.exists() ? deleteDoc(outgoingRef) : undefined,
+      setDoc(outgoingRef, {
+        fromUserId: fromUser.uid,
+        fromDisplayName: fromUser.displayName,
+        fromAvatarEmoji: fromUser.avatarEmoji || '🐥',
+        toUserId,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+      }),
+    ]));
   } catch (error) {
     logger.error('Erreur lors de l\'envoi de la demande d\'ami:', error);
     throw error;
@@ -1074,7 +1076,7 @@ export async function removeFriend(currentUserId: string, friendId: string): Pro
 export async function declineFriendRequest(requestId: string): Promise<void> {
   try {
     const requestRef = doc(db, 'friend_requests', requestId);
-    await updateDoc(requestRef, { status: 'rejected' });
+    await queuedIfOffline(updateDoc(requestRef, { status: 'rejected' })); // offline: queued, sent on reconnection
   } catch (error) {
     logger.error('Erreur lors du refus de la demande d\'ami:', error);
     throw error;

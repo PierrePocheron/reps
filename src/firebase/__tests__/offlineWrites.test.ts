@@ -3,7 +3,7 @@ import { addDoc, deleteDoc, getDocs, setDoc, updateDoc, writeBatch } from 'fireb
 import { createUserTemplate, deleteUserTemplate, updateUserTemplate } from '../templates';
 import { saveBodyEntries } from '../bodyMetrics';
 import { updateGymSession, deleteGymSession, importGymSessions } from '../gymSessions';
-import { updateSession, deleteSession, updateUserDocument } from '../firestore';
+import { updateSession, deleteSession, updateUserDocument, sendFriendRequest, declineFriendRequest } from '../firestore';
 import { joinChallenge, createCustomChallenge, abandonChallenge } from '../challenges';
 
 // Offline, Firestore only settles a write once the server acknowledges it: the UI must not wait forever
@@ -35,6 +35,8 @@ describe('user-data writes while offline (no server ack)', () => {
     ['joinChallenge', () => joinChallenge('u1', 'c_squats_easy')],
     ['createCustomChallenge', () => createCustomChallenge('u1', 'pushups', 30, 'easy')],
     ['abandonChallenge', () => abandonChallenge('c1')],
+    ['sendFriendRequest', () => sendFriendRequest({ uid: 'alice', displayName: 'alice', friends: [] } as never, 'bob')],
+    ['declineFriendRequest', () => declineFriendRequest('bob_alice')],
   ];
 
   it.each(cases)('%s settles without waiting for the network', async (_, run) => {
