@@ -164,4 +164,12 @@ describe('Statistics', () => {
     expect(screen.getByText('Meilleure série')).toBeInTheDocument();
     expect(screen.getAllByText('–')).toHaveLength(2);
   });
+
+  it('habits: a tie between two slots is not announced as « surtout le matin »', () => {
+    const at = (back: number, hour: number) => ({ ...all[back]!, date: { toDate: () => { const d = day(back); d.setHours(hour); return d; } } }) as Session;
+    renfo = [at(0, 8), at(1, 8), at(2, 20), at(3, 20)];
+    renderPage();
+    expect(screen.getByText("Pas de créneau dominant pour l'instant.")).toBeInTheDocument();
+    expect(screen.queryByText(/surtout/)).not.toBeInTheDocument();
+  });
 });

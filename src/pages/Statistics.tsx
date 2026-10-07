@@ -491,7 +491,9 @@ function TrainingHabits({ sessions, gymSessions }: { sessions: Session[]; gymSes
   const hours = [...sessions, ...gymSessions].map((s) => s.date.toDate().getHours());
   if (hours.length === 0) return null;
   const counts = SLOTS.map((slot) => hours.filter(slot.match).length);
-  const top = counts.indexOf(Math.max(...counts));
+  const max = Math.max(...counts);
+  const top = counts.indexOf(max);
+  const tied = counts.filter((c) => c === max).length > 1; // indexOf picks the first slot of a tie
 
   return (
     <div className="bg-card border rounded-2xl p-4">
@@ -500,7 +502,9 @@ function TrainingHabits({ sessions, gymSessions }: { sessions: Session[]; gymSes
         Habitudes d'entraînement
       </h3>
       <p className="text-xs text-muted-foreground mb-4">
-        Tu t'entraînes surtout {top === 0 ? 'le matin' : top === 1 ? "l'après-midi" : 'le soir'}.
+        {tied
+          ? "Pas de créneau dominant pour l'instant."
+          : `Tu t'entraînes surtout ${top === 0 ? 'le matin' : top === 1 ? "l'après-midi" : 'le soir'}.`}
       </p>
       <div className="space-y-4">
         {SLOTS.map(({ label, hours: range, icon: Icon }, i) => (
