@@ -43,7 +43,8 @@ export default function Friends() {
   const { user, friendRequests } = useUserStore();
   const { toast } = useToast();
 
-  const [activeTab, setActiveTab] = useState('activity');
+  // pending requests (the nav badge) open on the tab that shows them
+  const [activeTab, setActiveTab] = useState(friendRequests.length > 0 ? 'friends' : 'activity');
   const [templatesOf, setTemplatesOf] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);

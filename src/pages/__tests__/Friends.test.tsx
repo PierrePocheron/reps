@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
@@ -6,16 +6,39 @@ import { useUserStore } from '@/store/userStore';
 const db = vi.hoisted(() => ({
   getFriendsDetails: vi.fn(async () => [{ uid: 'alice', displayName: 'Alice', totalReps: 0, totalSessions: 0, badges: [], friends: ['me'] }]),
   getFriendsActivity: vi.fn(async () => [{ type: 'session', sessionId: 's1', userId: 'alice', totalReps: 20, exercises: [], date: { toDate: () => new Date() }, createdAt: { toDate: () => new Date() } }]),
+  searchUsers: vi.fn(async () => [] as unknown[]),
+  sendFriendRequest: vi.fn(async () => {}),
+  acceptFriendRequest: vi.fn(async () => {}),
+  removeFriend: vi.fn(async () => {}),
 }));
-vi.mock('@/firebase/firestore', () => ({
-  ...db, onUserStatsComputed: vi.fn(), searchUsers: vi.fn(), sendFriendRequest: vi.fn(), acceptFriendRequest: vi.fn(),
-  declineFriendRequest: vi.fn(), removeFriend: vi.fn(),
-}));
+const toast = vi.hoisted(() => vi.fn());
+vi.mock('@/firebase/firestore', () => ({ ...db, onUserStatsComputed: vi.fn(), declineFriendRequest: vi.fn() }));
+vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast }) }));
 vi.mock('@/components/layout/PageLayout', () => ({ PageLayout: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock('@/components/Kudos', () => ({ KudosButton: () => null }));
 vi.mock('@/components/FriendTemplatesDialog', () => ({ FriendTemplatesDialog: () => null }));
 
 import Friends from '../Friends';
+
+const bobRequest = { id: 'bob_me', fromUserId: 'bob', fromDisplayName: 'Bob', toUserId: 'me', status: 'pending' };
+const renderFriends = (friends: string[] = ['alice'], friendRequests: unknown[] = []) => {
+  useUserStore.setState({ user: { uid: 'me', displayName: 'Moi', friends } as never, friendRequests } as never);
+  return render(<BrowserRouter><Friends /></BrowserRouter>);
+};
+
+beforeEach(() => { vi.clearAllMocks(); });
+
+describe('Friends tabs', () => {
+  it('opens on the friends tab when a request is pending (the nav badge led to an empty feed)', async () => {
+    renderFriends([], [bobRequest]);
+    expect(await screen.findByText('Demandes en attente')).toBeInTheDocument();
+  });
+
+  it('opens on the activity tab otherwise', async () => {
+    renderFriends([]);
+    expect(await screen.findByText(/Ton fil est vide/)).toBeInTheDocument();
+  });
+});
 
 describe('Friends activity', () => {
   it('lists only the exercises done: no « + 2 autres exercices » for the skipped ones of a template', async () => {
