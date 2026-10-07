@@ -17,6 +17,7 @@ import { Moon, Sun, Monitor, Bell, Dumbbell, Shield, ChevronRight, Target, Downl
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { parseWorkoutsCsv, newSessionsOnly, exerciseResolver, importSummary, POUNDS_HEADER, type ImportedSession } from '@/utils/importCsv';
 import { importGymSessions } from '@/firebase/gymSessions';
+import type { GymSession } from '@/firebase/types';
 import { loadExerciseLibrary, toExercise } from '@/utils/exerciseLibrary';
 import { MUSCULATION_EXERCISES } from '@/utils/constants';
 import { useUserStore } from '@/store/userStore';
@@ -53,7 +54,7 @@ function Settings() {
   const { sessions, gymSessions, loading: historyLoading, refetch: refetchHistory } = useSessionHistory(500);
   // Import d'un export Strong / Hevy (#61) : aperçu, puis confirmation
   const csvInput = useRef<HTMLInputElement>(null);
-  const [importPreview, setImportPreview] = useState<{ sessions: ImportedSession[]; skipped: number; exercises: number; known: number; pounds: boolean } | null>(null);
+  const [importPreview, setImportPreview] = useState<{ sessions: ImportedSession[]; existing: GymSession[]; skipped: number; exercises: number; known: number; pounds: boolean } | null>(null);
   const [importing, setImporting] = useState(false);
   const importedDates = useRef<Date[]>([]); // déjà importées, avant même le rechargement de l'historique : pas de doublon
   const refreshStats = useUserStore((st) => st.refreshStats);
@@ -70,7 +71,7 @@ function Settings() {
       const whole = user ? (await fetchWholeHistory(user.uid)).gymSessions : gymSessions; // duplicates older than a page too
       const fresh = newSessionsOnly(all, [...whole.map((s) => s.date.toDate()), ...importedDates.current]);
       const ids = new Set(fresh.flatMap((s) => s.exercises.map((e) => e.exerciseId)));
-      setImportPreview({ sessions: fresh, skipped: all.length - fresh.length, exercises: ids.size, known: [...ids].filter((id) => !id.startsWith('import_')).length, pounds: POUNDS_HEADER.test(text.split('\n', 1)[0] ?? '') });
+      setImportPreview({ sessions: fresh, existing: whole, skipped: all.length - fresh.length, exercises: ids.size, known: [...ids].filter((id) => !id.startsWith('import_')).length, pounds: POUNDS_HEADER.test(text.split('\n', 1)[0] ?? '') });
     } catch (err) {
       logger.error('Lecture du CSV :', err);
       // the duplicate check reads the whole history from the server
@@ -85,7 +86,7 @@ function Settings() {
     if (!importPreview || !user) return;
     setImporting(true);
     try {
-      await importGymSessions(user.uid, importPreview.sessions);
+      await importGymSessions(user.uid, importPreview.sessions, importPreview.existing); // trophies rated against it
       importedDates.current.push(...importPreview.sessions.map((s) => s.date));
       toast({ title: `${importPreview.sessions.length} séance${importPreview.sessions.length > 1 ? 's' : ''} importée${importPreview.sessions.length > 1 ? 's' : ''}` });
       setImportPreview(null);

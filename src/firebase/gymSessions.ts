@@ -17,7 +17,7 @@ import { db } from './config';
 import { queuedIfOffline } from './offline';
 import type { GymSession, GymSessionExercise } from './types';
 import { logger } from '@/utils/logger';
-import { isWorkSet, isTimed } from '@/utils/records';
+import { isWorkSet, isTimed, markRecords } from '@/utils/records';
 
 /**
  * CRUD Firestore pour les séances de musculation
@@ -143,14 +143,23 @@ export async function updateGymSession(userId: string, sessionId: string, exerci
   return fields;
 }
 
-/** Importer des séances (export Strong / Hevy, #61), par lots de 400 écritures (limite Firestore : 500). */
-export async function importGymSessions(userId: string, sessions: { date: Date; duration: number; exercises: GymSessionExercise[]; title?: string; note?: string }[]): Promise<void> {
+/**
+ * Importer des séances (export Strong / Hevy, #61), par lots de 400 écritures (limite Firestore : 500).
+ * `existing` : tout l'historique, pour noter les trophées des séances importées.
+ */
+export async function importGymSessions(userId: string, sessions: { date: Date; duration: number; exercises: GymSessionExercise[]; title?: string; note?: string }[], existing: GymSession[]): Promise<void> {
   const ref = collection(db, 'gym_sessions', userId, 'userGymSessions');
-  for (let i = 0; i < sessions.length; i += 400) {
+  // Imported sets carried no trophy, so the month recap and the shared card counted 0 records while « Dernières séances »
+  // showed 🏆: rate them oldest first, like a live session, against every session dated before them
+  // ponytail: quadratic over the history, fine for a one-off import; keep running bests if imports get slow
+  const ordered = [...sessions].sort((a, b) => a.date.getTime() - b.date.getTime());
+  const rated: GymSession[] = [];
+  for (let i = 0; i < ordered.length; i += 400) {
     const batch = writeBatch(db);
-    for (const s of sessions.slice(i, i + 400)) {
-      const exercises = sanitizeExercises(s.exercises);
-      batch.set(doc(ref), {
+    for (const s of ordered.slice(i, i + 400)) {
+      const older = [...existing.filter((e) => e.date.toDate() < s.date), ...rated];
+      const exercises = sanitizeExercises(markRecords(s.exercises, older));
+      const data = {
         userId,
         date: Timestamp.fromDate(s.date),
         duration: s.duration,
@@ -160,7 +169,9 @@ export async function importGymSessions(userId: string, sessions: { date: Date; 
         totalVolume: Math.round(calculateTotalVolume(exercises)),
         totalSets: exercises.reduce((n, ex) => n + ex.sets.filter(isWorkSet).length, 0),
         createdAt: Timestamp.now(),
-      });
+      };
+      batch.set(doc(ref), data);
+      rated.push({ sessionId: '', ...data });
     }
     await queuedIfOffline(batch.commit()); // offline: queued by the persistent cache, sent on reconnection
   }
