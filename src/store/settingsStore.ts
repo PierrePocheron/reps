@@ -34,11 +34,15 @@ interface SettingsState {
   setKeepAwake: (on: boolean) => void;
   loadSettings: () => void;
   applyAccountSettings: (account: Pick<User, 'weeklyGoal' | 'streakMode'>) => void;
+  resetAccountSettings: () => void;
   saveSettings: () => void;
   applyTheme: () => void;
 }
 
 const STORAGE_KEY = 'reps_settings';
+
+// Before any choice, and again on sign-out: the next account on the device must not take (nor upload) the previous one's
+const ACCOUNT_DEFAULTS = { weeklyGoal: 3, streakMode: 'daily' } as const;
 
 // OS dark-mode listener for the « Système » theme (one at a time)
 let systemQuery: MediaQueryList | null = null;
@@ -90,8 +94,8 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     notificationTime: storedSettings.notificationTime || '18:00',
     hapticFeedback: storedSettings.hapticFeedback ?? true,
     soundEnabled: storedSettings.soundEnabled ?? true,
-    weeklyGoal: storedSettings.weeklyGoal ?? 3,
-    streakMode: storedSettings.streakMode ?? 'daily',
+    weeklyGoal: storedSettings.weeklyGoal ?? ACCOUNT_DEFAULTS.weeklyGoal,
+    streakMode: storedSettings.streakMode ?? ACCOUNT_DEFAULTS.streakMode,
     language: storedSettings.language ?? 'auto',
     keepAwake: storedSettings.keepAwake ?? true,
 
@@ -168,13 +172,25 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
       }
     },
 
-    /** At sign-in the account values win; localStorage keeps them as a cache. Absent (older versions): device values stay */
+    /**
+     * At sign-in the account values win; localStorage keeps them as a cache. One the account does not hold yet (older
+     * versions, new account) is uploaded from the device: the device's own value, or the default since sign-out resets them
+     */
     applyAccountSettings: ({ weeklyGoal, streakMode }) => {
       const account: Partial<SettingsState> = {};
+      const missing: Pick<User, 'weeklyGoal' | 'streakMode'> = {};
       if (typeof weeklyGoal === 'number') account.weeklyGoal = weeklyGoal;
+      else missing.weeklyGoal = get().weeklyGoal;
       if (streakMode === 'daily' || streakMode === 'weekly') account.streakMode = streakMode;
+      else missing.streakMode = get().streakMode;
+      if (Object.keys(missing).length > 0) saveToAccount(missing);
       if (Object.keys(account).length === 0) return;
       set(account);
+      get().saveSettings();
+    },
+
+    resetAccountSettings: () => {
+      set(ACCOUNT_DEFAULTS);
       get().saveSettings();
     },
 

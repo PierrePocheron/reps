@@ -350,7 +350,8 @@ describe('userStore', () => {
             expect(firebase.updateUserDocument).not.toHaveBeenCalled();
         });
 
-        it('an account that never saved them (older versions) keeps the device values', async () => {
+        it('an account that never saved them (older versions) keeps the device values and uploads them on cold start', async () => {
+            // Without the upload, another account signing in on this device (or a new device) replaced them for good
             useSettingsStore.setState({ weeklyGoal: 5, streakMode: 'weekly' });
             (firebase.getCurrentUserProfile as any).mockResolvedValue({ uid: 'u1', displayName: 'P' });
             (firebase.calculateUserStats as any).mockResolvedValue({ totalReps: 0 });
@@ -359,6 +360,56 @@ describe('userStore', () => {
             await useUserStore.getState().loadUserProfile();
 
             expect(useSettingsStore.getState()).toMatchObject({ weeklyGoal: 5, streakMode: 'weekly' });
+            await vi.waitFor(() => expect(firebase.updateUserDocument).toHaveBeenCalledWith('u1', { weeklyGoal: 5, streakMode: 'weekly' }));
+            expect(firebase.updateUserStatsAfterSession).not.toHaveBeenCalled(); // nothing changed on the device
+        });
+
+        // Fake backend: what is uploaded to an account comes back at its next sign-in
+        let accounts: Record<string, object> = {};
+        beforeEach(() => { accounts = {}; });
+        const signIn = async (uid: string, held: object = {}) => {
+            accounts[uid] = { ...accounts[uid], ...held };
+            (firebase.updateUserDocument as any).mockImplementation(async (id: string, change: object) => {
+                accounts[id] = { ...accounts[id], ...change };
+            });
+            (firebase.getCurrentUserProfile as any).mockResolvedValue({ uid, displayName: uid, ...accounts[uid] });
+            (firebase.calculateUserStats as any).mockResolvedValue({ totalReps: 0 });
+            useUserStore.setState({ currentUser: { uid } as any });
+            await useUserStore.getState().loadUserProfile();
+            await new Promise((r) => setTimeout(r, 0)); // upload, if any
+        };
+
+        it('sign-out puts the device back to the defaults: the next account does not inherit them', async () => {
+            useSettingsStore.setState({ weeklyGoal: 2, streakMode: 'daily' });
+            await signIn('A', { weeklyGoal: 5, streakMode: 'weekly' });
+            vi.clearAllMocks();
+
+            useUserStore.getState().reset();
+
+            expect(useSettingsStore.getState()).toMatchObject({ weeklyGoal: 3, streakMode: 'daily' });
+            expect(cached()).toMatchObject({ weeklyGoal: 3, streakMode: 'daily' });
+            expect(firebase.updateUserStatsAfterSession).not.toHaveBeenCalled(); // signed out: no streak to recompute
+            await new Promise((r) => setTimeout(r, 0));
+            expect(firebase.updateUserDocument).not.toHaveBeenCalled(); // A keeps its own values
+
+            await signIn('B'); // holds none: gets the defaults, not A's goal
+            expect(useSettingsStore.getState()).toMatchObject({ weeklyGoal: 3, streakMode: 'daily' });
+            expect(firebase.updateUserDocument).toHaveBeenCalledWith('B', { weeklyGoal: 3, streakMode: 'daily' });
+        });
+
+        it('shared device A → B → A: each account comes back with its own values', async () => {
+            useSettingsStore.setState({ weeklyGoal: 5, streakMode: 'weekly' }); // A chose them before this version
+            await signIn('A'); // cold start
+            useUserStore.getState().reset();
+            await signIn('B', { weeklyGoal: 2, streakMode: 'daily' });
+            expect(useSettingsStore.getState()).toMatchObject({ weeklyGoal: 2, streakMode: 'daily' });
+            useUserStore.getState().reset();
+
+            await signIn('A');
+
+            expect(useSettingsStore.getState()).toMatchObject({ weeklyGoal: 5, streakMode: 'weekly' });
+            expect(cached()).toMatchObject({ weeklyGoal: 5, streakMode: 'weekly' });
+            expect(accounts['B']).toMatchObject({ weeklyGoal: 2, streakMode: 'daily' });
         });
     });
 

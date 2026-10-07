@@ -328,6 +328,8 @@ export const useUserStore = create<UserState>((set, get) => ({
       isLoading: false,
       isAuthenticated: false,
     });
+    // Once signed out (no streak recomputed for nobody): the next account on this device starts from the defaults
+    useSettingsStore.getState().resetAccountSettings();
   },
 }));
 
