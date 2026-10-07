@@ -34,7 +34,7 @@ export function BottomNav() {
   const location = useLocation();
   const { friendRequests, user } = useUserStore();
   const { isActive: sessionIsActive } = useSession();
-  const { phase: gymPhase } = useGymSessionStore();
+  const gymPhase = useGymSessionStore((s) => s.phase); // phase only: other gym changes must not re-render the bar
   const hasActiveSession = sessionIsActive || gymPhase !== 'idle';
   const [showPicker, setShowPicker] = useState(false);
   const [compact, setCompact] = useCompactOnScroll(location.pathname);

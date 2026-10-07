@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { Profiler } from 'react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { BottomNav } from '../BottomNav';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
@@ -14,6 +15,9 @@ vi.mock('react-router-dom', async () => {
         useNavigate: () => mockNavigate,
     };
 });
+
+// The picker subscribes to the gym store on its own; stubbed so the render count below is the bar's alone
+vi.mock('@/components/SessionTypePicker', () => ({ SessionTypePicker: () => null }));
 
 describe('BottomNav Component', () => {
     beforeEach(() => {
@@ -57,6 +61,15 @@ describe('BottomNav Component', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Reprendre la séance en cours' }));
         expect(mockNavigate).not.toHaveBeenCalled();
         useGymSessionStore.setState({ phase: 'idle' } as never);
+    });
+
+    it('does not re-render on gym store changes other than the phase', () => {
+        let commits = 0;
+        render(<Profiler id="nav" onRender={() => { commits++; }}><MemoryRouter><BottomNav /></MemoryRouter></Profiler>);
+        const before = commits;
+        act(() => { useGymSessionStore.setState({ restEndsAt: Date.now() + 60_000 }); });
+        expect(commits).toBe(before);
+        useGymSessionStore.setState({ restEndsAt: null });
     });
 
     it('should show notification dot for new badges on Home', () => {

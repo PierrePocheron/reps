@@ -167,15 +167,6 @@ function GymSession() {
   }, [uid, phase]);
 
 
-  // Mise à jour du timer
-  useEffect(() => {
-    if (phase !== 'execute' || !startTime) return;
-    const interval = setInterval(() => {
-      useGymSessionStore.setState({ duration: Math.floor((Date.now() - startTime) / 1000) });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [phase, startTime]);
-
   // Android 14+ : sans alarmes exactes, la notification de fin de repos peut arriver en retard — on le propose une fois
   useEffect(() => {
     if (!showRestTimer || localStorage.getItem(EXACT_ALARM_ASKED)) return;
