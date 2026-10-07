@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import type { VitePWAOptions } from 'vite-plugin-pwa';
 
 // Captures the options vite.config.ts hands to the PWA plugin
@@ -32,5 +33,12 @@ describe('PWA config', () => {
     const sent = await willFetch?.({ request, event: new Event('fetch') as never, state: {} });
     expect(sent?.url).toBe(url);
     expect(sent?.headers.has('Range')).toBe(false);
+  });
+
+  it('ships the sounds without tags: a 436 KB cover image sat ahead of a few KB of audio in each', () => {
+    for (const name of ['success', 'complete', 'tap']) {
+      const file = readFileSync(`public/sounds/${name}.mp3`); // vitest runs from the project root
+      expect(file.subarray(0, 3).toString('latin1')).not.toBe('ID3');
+    }
   });
 });
