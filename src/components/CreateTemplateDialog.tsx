@@ -180,7 +180,7 @@ export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) 
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b shrink-0">
           <h2 className="font-semibold text-base">{initial ? 'Modifier le modèle' : 'Nouveau modèle'}</h2>
-          <button onClick={handleClose} className="text-muted-foreground hover:text-foreground">
+          <button type="button" onClick={handleClose} aria-label="Fermer" className="h-11 w-11 -my-2.5 -mr-3 flex items-center justify-center text-muted-foreground hover:text-foreground">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -261,7 +261,7 @@ export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) 
                       className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-sm"
                     >
                       {ex.emoji} {ex.name}
-                      <button onClick={() => toggleRenfoExercise(id)}>
+                      <button type="button" onClick={() => toggleRenfoExercise(id)} aria-label={`Retirer ${ex.name}`}>
                         <X className="w-3 h-3 text-muted-foreground hover:text-foreground" />
                       </button>
                     </span>
@@ -334,7 +334,12 @@ export function CreateTemplateDialog({ open, onClose, onSave, initial }: Props) 
                             <span className="text-xs text-muted-foreground">kg</span>
                           </div>
                           {m.sets.length > 1 && (
-                            <button onClick={() => removeSet(m.exerciseId, i)}>
+                            <button
+                              type="button"
+                              onClick={() => removeSet(m.exerciseId, i)}
+                              aria-label={`Retirer la série ${i + 1} de ${m.name}`}
+                              className="h-11 w-11 -my-2 -ml-2 -mr-3 shrink-0 flex items-center justify-center"
+                            >
                               <X className="w-4 h-4 text-muted-foreground hover:text-destructive" />
                             </button>
                           )}

@@ -38,4 +38,13 @@ describe('CreateTemplateDialog', () => {
       muscuExercises: [expect.objectContaining({ sets: [expect.objectContaining({ weight: 82.5 })] })],
     }));
   });
+
+  it('the set remove and close buttons are named', () => {
+    const gym = { ...template, muscuExercises: [{ exerciseId: 'barbell_squat', name: 'Squat barre', emoji: '🦵', sets: [{ reps: 5, weight: 80 }, { reps: 5, weight: 80 }] }] };
+    render(<CreateTemplateDialog open onClose={() => {}} onSave={async () => {}} initial={gym} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Séries de Squat barre' }));
+    expect(screen.getByRole('button', { name: 'Fermer' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer la série 2 de Squat barre' }));
+    expect(screen.queryByRole('button', { name: /Retirer la série/ })).not.toBeInTheDocument(); // a lone set can't be removed
+  });
 });
