@@ -128,7 +128,7 @@ function Templates() {
   const [previewTemplate, setPreviewTemplate] = useState<WorkoutTemplate | null>(null);
   const [templateToDelete, setTemplateToDelete] = useState<WorkoutTemplate | null>(null);
   const { isActive, loadExercisesFromTemplate } = useSessionStore();
-  const { phase: gymPhase, loadGymTemplate, startExecution } = useGymSessionStore();
+  const { phase: gymPhase, loadGymTemplate, startExecution, startFreeSession } = useGymSessionStore();
   const { templates: userTemplates, loading: templatesLoading, create, remove, update } = useUserTemplates();
 
   const hasActiveSession = isActive || gymPhase !== 'idle';
@@ -280,7 +280,9 @@ function Templates() {
           <button
             onClick={() => {
               if (guardSession()) return;
-              navigate(activeTab === 'renforcement' ? '/session' : '/gym');
+              if (activeTab === 'renforcement') return navigate('/session');
+              startFreeSession(); // an idle /gym sends the user back to Home
+              navigate('/gym');
             }}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-border hover:border-primary/40 hover:bg-muted transition-all text-sm text-muted-foreground hover:text-foreground"
           >

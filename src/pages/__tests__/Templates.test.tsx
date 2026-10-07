@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import Templates from '../Templates';
+import { useGymSessionStore } from '@/store/gymSessionStore';
 
 vi.mock('@/hooks/useUserTemplates', () => ({
   useUserTemplates: () => ({ templates: [], loading: false, create: vi.fn(), remove: vi.fn(), update: vi.fn() }),
@@ -38,5 +39,21 @@ describe('Templates tabs', () => {
     expect(selectedTab()).toBe('Renforcement');
     fireEvent.click(screen.getByRole('tab', { name: 'Musculation' }));
     expect(selectedTab()).toBe('Musculation');
+  });
+
+  it('« Séance libre » on the Musculation tab starts a free session (it bounced back to Home)', () => {
+    useGymSessionStore.setState({ phase: 'idle' });
+    render(
+      <MemoryRouter initialEntries={['/templates']}>
+        <Routes>
+          <Route path="/templates" element={<Templates />} />
+          <Route path="/gym" element={<p>séance muscu</p>} />
+        </Routes>
+      </MemoryRouter>
+    );
+    fireEvent.click(screen.getByRole('tab', { name: 'Musculation' }));
+    fireEvent.click(screen.getByRole('button', { name: /Séance libre/ }));
+    expect(screen.getByText('séance muscu')).toBeInTheDocument();
+    expect(useGymSessionStore.getState().phase).toBe('execute');
   });
 });
