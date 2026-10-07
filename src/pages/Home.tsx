@@ -110,7 +110,8 @@ function Home() {
           { icon: Activity, className: 'text-muted-foreground', value: String(lastSessionDetail.totalReps), unit: 'reps' },
           { icon: Flame, className: 'text-orange-500', value: String(lastSessionDetail.totalCalories || 0), unit: 'kcal' },
         ],
-        items: lastSessionDetail.exercises.map((ex) => ({ key: ex.name, emoji: ex.emoji, name: ex.name, detail: `${ex.reps} reps` })),
+        // Template exercises left at 0 are kept for « Refaire », not done: hidden like in the recap and History
+        items: lastSessionDetail.exercises.filter((ex) => ex.reps > 0).map((ex) => ({ key: ex.name, emoji: ex.emoji, name: ex.name, detail: `${ex.reps} reps` })),
       };
 
   if (isLoading) {

@@ -6,6 +6,7 @@ import { useUserStore } from '@/store/userStore';
 import { useChallenges } from '@/hooks/useChallenges';
 import { useSession } from '@/hooks/useSession';
 import { useAuth } from '@/hooks/useAuth';
+import { getLastSession } from '@/firebase/firestore';
 
 // Mocks
 vi.mock('@/hooks/useAuth', () => ({
@@ -100,6 +101,15 @@ describe('Home Page', () => {
 
         const cards = screen.getAllByTestId('challenge-card');
         expect(cards).toHaveLength(2);
+    });
+
+    it('« Dernière activité » leaves out the template exercises skipped at 0 reps, like the recap and History', async () => {
+        const now = new Date();
+        vi.mocked(getLastSession).mockResolvedValueOnce({ sessionId: 's1', date: { toDate: () => now, toMillis: () => now.getTime() }, totalReps: 20, totalCalories: 5,
+            exercises: [{ name: 'Pompes', emoji: '💪', reps: 20 }, { name: 'Tractions', emoji: '🧗', reps: 0 }] } as any);
+        renderHome();
+        expect(await screen.findByText('Pompes')).toBeInTheDocument();
+        expect(screen.queryByText('Tractions')).not.toBeInTheDocument();
     });
 
     it('should render Timer component', () => {
