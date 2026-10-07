@@ -252,6 +252,12 @@ describe('getLastSession', () => {
     vi.mocked(getDocs).mockRejectedValueOnce(new Error('Read failed'));
     await expect(getLastSession('uid123')).rejects.toThrow('Read failed');
   });
+
+  it('before a date: the last session dated before it (recap of a forgotten session)', async () => {
+    const before = new Date(2026, 9, 1, 18);
+    await getLastSession('uid123', before);
+    expect(where).toHaveBeenCalledWith('date', '<', expect.objectContaining({ seconds: before.getTime() / 1000 }));
+  });
 });
 
 describe('getUserSessions', () => {

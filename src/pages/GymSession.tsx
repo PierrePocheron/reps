@@ -293,7 +293,7 @@ function GymSession() {
     const history = await Promise.race([historyLoad.current, new Promise<GymSessionData[]>((r) => setTimeout(() => r(gymHistory), 3000))]);
     // Récap et carte de partage figés avant que endSession ne vide le store
     const duration = backdate ? backdate.duration : startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
-    const sum = gymSummary(exercises, history);
+    const sum = gymSummary(exercises, history, backdate?.at);
     setSummary({
       card: gymCard({ date: new Date(backdate?.at ?? Date.now()), duration, exercises, title }),
       comparison: comparisonText(sum.deltaPct),

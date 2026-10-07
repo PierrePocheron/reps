@@ -18,7 +18,7 @@ import { renfoCalories } from '@/utils/calories';
 import { logger } from '@/utils/logger';
 import { useKeepAwake } from '@/hooks/useKeepAwake';
 import { renfoCard, shareSessionCard, type SessionCard } from '@/utils/shareCard';
-import { getUserSessions } from '@/firebase/firestore';
+import { getLastSession } from '@/firebase/firestore';
 import { comparisonText, deltaPct } from '@/utils/summary';
 import { formatDurationLong, frDate } from '@/utils/formatters';
 import { SessionSummary, type SummaryStat } from '@/components/SessionSummary';
@@ -60,10 +60,13 @@ function Session() {
   const setBackdate = useSessionStore((st) => st.setBackdate);
   const [showBackdate, setShowBackdate] = useState(false);
   const uid = user?.uid;
+  const backdateAt = backdate?.at;
   useEffect(() => {
     if (!uid) return;
-    previousReps.current = getUserSessions(uid, 1).then(([last]) => last?.totalReps ?? null).catch(() => null); // comparison is optional
-  }, [uid]);
+    // A forgotten (backdated) session compares with the one dated before it, not with the latest. Comparison is optional
+    previousReps.current = getLastSession(uid, backdateAt === undefined ? undefined : new Date(backdateAt))
+      .then((last) => last?.totalReps ?? null).catch(() => null);
+  }, [uid, backdateAt]);
   const { play } = useSound();
   const haptics = useHaptic();
 

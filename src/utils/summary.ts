@@ -5,10 +5,11 @@ import type { GymSession, GymSessionExercise } from '@/firebase/types';
 /**
  * Récap de fin de séance muscu (Hevy « Workout complete ») : volume, séries, records, et écart de volume
  * avec la dernière séance qui partage au moins un exercice. `history` : du plus récent au plus ancien.
+ * `at` (séance oubliée, antidatée) : comparée à la dernière séance d'avant cette date, pas à la plus récente.
  */
-export function gymSummary(exercises: GymSessionExercise[], history: Pick<GymSession, 'exercises' | 'totalVolume'>[]) {
+export function gymSummary(exercises: GymSessionExercise[], history: Pick<GymSession, 'exercises' | 'totalVolume' | 'date'>[], at?: number) {
   const ids = new Set(exercises.map((ex) => ex.exerciseId));
-  const previous = history.find((s) => s.exercises.some((ex) => ids.has(ex.exerciseId)));
+  const previous = history.find((s) => (at === undefined || s.date.toDate().getTime() < at) && s.exercises.some((ex) => ids.has(ex.exerciseId)));
   const volume = Math.round(calculateTotalVolume(exercises));
   return {
     volume,

@@ -7,6 +7,7 @@ import { useGymSessionStore } from '@/store/gymSessionStore';
 import { useUserStore } from '@/store/userStore';
 import * as gs from '@/firebase/gymSessions';
 import { shareSessionCard } from '@/utils/shareCard';
+import { Timestamp } from 'firebase/firestore';
 import type { GymSessionExercise } from '@/firebase/types';
 
 const toast = vi.fn();
@@ -24,8 +25,8 @@ vi.mock('@/utils/shareCard', async (orig) => ({ ...(await orig<typeof import('@/
 const bench = (sets: { reps: number; weight: number; completed?: boolean }[]): GymSessionExercise =>
   ({ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: sets.map((s) => ({ completed: false, ...s })) });
 
-const setup = async (exercises: GymSessionExercise[], extra: Record<string, unknown> = {}) => {
-  vi.mocked(gs.getUserGymSessions).mockResolvedValue([]);
+const setup = async (exercises: GymSessionExercise[], extra: Record<string, unknown> = {}, history: unknown[] = []) => {
+  vi.mocked(gs.getUserGymSessions).mockResolvedValue(history as never);
   useUserStore.setState({ user: { uid: 'u1', displayName: 'P' } as never });
   useGymSessionStore.setState({
     phase: 'execute', startTime: Date.now(), autoRest: false, showRpe: false, suggestLoad: false, backdate: null,
@@ -280,6 +281,17 @@ describe('GymSession — partage depuis le récap', () => {
     vi.mocked(shareSessionCard).mockResolvedValueOnce(false); // annulé : saveFile résout false
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Partager ma séance/ })); });
     expect(toast).not.toHaveBeenCalled();
+  });
+});
+
+describe('GymSession — récap', () => {
+  it('une séance oubliée se compare à la séance d\'avant sa date, pas à la plus récente', async () => {
+    const past = (day: number, totalVolume: number) => ({ sessionId: `s${day}`, date: Timestamp.fromDate(new Date(2026, 9, day, 18)), totalVolume, exercises: [bench([])] });
+    useUserStore.setState({ currentUser: { uid: 'u1' } as never });
+    await setup([bench([{ reps: 8, weight: 60, completed: true }])], { backdate: { at: new Date(2026, 9, 3, 18).getTime(), duration: 3600 } },
+      [past(5, 960), past(1, 240)]);
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Terminer/ })); });
+    expect(screen.getByText(/\+100 % de volume par rapport à ta dernière séance/)).toBeInTheDocument(); // 480 kg vs 240, not -50 % vs 960
   });
 });
 

@@ -318,12 +318,14 @@ export async function createSession(userId: string, sessionData: Omit<Session, '
 }
 
 /**
- * Obtenir la dernière session d'un utilisateur
+ * Obtenir la dernière session d'un utilisateur (`before` : la dernière datée avant, pour une séance oubliée)
  */
-export async function getLastSession(userId: string): Promise<Session | null> {
+export async function getLastSession(userId: string, before?: Date): Promise<Session | null> {
   try {
     const sessionsRef = collection(db, 'sessions', userId, 'userSessions');
-    const q = query(sessionsRef, orderBy('date', 'desc'), limit(1));
+    const q = before
+      ? query(sessionsRef, where('date', '<', Timestamp.fromDate(before)), orderBy('date', 'desc'), limit(1))
+      : query(sessionsRef, orderBy('date', 'desc'), limit(1));
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
