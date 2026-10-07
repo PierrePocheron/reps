@@ -125,12 +125,53 @@ describe('gymSessionStore — remplacer un exercice (#62)', () => {
 
 describe('gymSessionStore — chrono d\'un exercice en durée (#59)', () => {
   it('est sauvegardé avec la séance et oublié quand elle se termine', () => {
-    useGymSessionStore.getState().setChrono({ exerciseId: 'plank', startedAt: 789 });
+    useGymSessionStore.getState().setChrono('plank', { setIndex: 0, startedAt: 789 });
     const saved = JSON.parse(localStorage.getItem('reps_gym_session') ?? '{}').state;
-    expect(saved.chrono).toEqual({ exerciseId: 'plank', startedAt: 789 });
+    expect(saved.chronos).toEqual({ plank: { setIndex: 0, startedAt: 789 } });
 
     useGymSessionStore.getState().cancelSession();
-    expect(useGymSessionStore.getState().chrono).toBeNull();
+    expect(useGymSessionStore.getState().chronos).toEqual({});
+  });
+
+  it('un chrono par exercice : lancer celui d\'un autre exercice ne coupe pas le premier', () => {
+    const { setChrono } = useGymSessionStore.getState();
+    setChrono('plank', { setIndex: 0, startedAt: 1 });
+    setChrono('side_plank', { setIndex: 0, startedAt: 2 });
+    expect(useGymSessionStore.getState().chronos).toEqual({ plank: { setIndex: 0, startedAt: 1 }, side_plank: { setIndex: 0, startedAt: 2 } });
+    setChrono('plank', null);
+    expect(useGymSessionStore.getState().chronos).toEqual({ side_plank: { setIndex: 0, startedAt: 2 } });
+  });
+
+  it('s\'arrête avec la série qu\'il mesure : retirée, validée autrement, ou son exercice retiré', () => {
+    const plank = { exerciseId: 'plank', name: 'Gainage', emoji: '🧘', timed: true, sets: [{ weight: 0, reps: 60, completed: true }, { weight: 0, reps: 60, completed: false }] };
+    const store = useGymSessionStore.getState;
+    const run = () => store().setChrono('plank', { setIndex: 1, startedAt: 1 });
+    useGymSessionStore.setState({ exercises: [plank], chronos: { side_plank: { setIndex: 0, startedAt: 2 } } });
+
+    run();
+    store().removeSet('plank', 1);
+    expect(store().chronos.plank).toBeUndefined();
+    store().addSet('plank', { weight: 0, reps: 60 }); // the new set 2 does not inherit the time
+    expect(store().chronos.plank).toBeUndefined();
+
+    run();
+    store().completeSetAt('plank', 0, 60, 0); // another set: keeps running
+    expect(store().chronos.plank).toEqual({ setIndex: 1, startedAt: 1 });
+    store().completeSetAt('plank', 1, 45, 0); // its set validated with the check
+    expect(store().chronos.plank).toBeUndefined();
+
+    useGymSessionStore.setState({ exercises: [plank] });
+    run();
+    store().removeExercise('plank');
+    expect(store().chronos).toEqual({ side_plank: { setIndex: 0, startedAt: 2 } }); // the other exercise's chrono runs on
+  });
+
+  it('relit sans planter l\'ancien chrono unique sauvegardé ({ exerciseId, startedAt })', async () => {
+    useGymSessionStore.setState({ chronos: {} });
+    localStorage.setItem('reps_gym_session', JSON.stringify({ state: { phase: 'execute', chrono: { exerciseId: 'plank', startedAt: 1 } }, version: 0 }));
+    await useGymSessionStore.persist.rehydrate();
+    expect(useGymSessionStore.getState().chronos).toEqual({});
+    expect(useGymSessionStore.getState().phase).toBe('execute');
   });
 });
 

@@ -12,6 +12,14 @@ import { useUserStore } from './userStore';
 
 export type GymPhase = 'idle' | 'plan' | 'execute';
 export { NOTE_MAX };
+/** Chrono of a timed exercise (#59): it measures one set, the one it validates when stopped. */
+type Chrono = { setIndex: number; startedAt: number };
+
+/** Stops the chrono of `exerciseId` when `hit` says its set is gone, moved or validated (by default: always). */
+const stopChrono = (chronos: Record<string, Chrono>, exerciseId: string, hit: (c: Chrono) => boolean = () => true) => {
+  const c = chronos[exerciseId];
+  return c && hit(c) ? Object.fromEntries(Object.entries(chronos).filter(([id]) => id !== exerciseId)) : chronos;
+};
 
 interface GymSessionState {
   // État
@@ -26,7 +34,7 @@ interface GymSessionState {
   restEndsAt: number | null; // horodatage de fin du repos (le décompte en dérive)
   restExerciseId: string | null; // exercice dont le repos est en cours (null : repos lancé à la main)
   restByExercise: Record<string, number>; // durée retenue par exercice, comme Hevy (préférence, persistée)
-  chrono: { exerciseId: string; startedAt: number } | null; // running chrono of a timed exercise (#59), saved like the rest
+  chronos: Record<string, Chrono>; // running chronos of timed exercises, by exercise (#59), saved like the rest
   autoRest: boolean; // lancer le repos quand une série est validée (préférence, persistée)
   showRpe: boolean; // saisir le RPE des séries validées (préférence, persistée)
   suggestLoad: boolean; // proposer la charge suivante quand tout a été réussi (préférence, persistée)
@@ -55,7 +63,7 @@ interface GymSessionState {
   uncompleteSet: (exerciseId: string, setIndex: number) => void;
   startRestTimer: (exerciseId?: string) => void;
   dismissRestTimer: () => void;
-  setChrono: (chrono: { exerciseId: string; startedAt: number } | null) => void;
+  setChrono: (exerciseId: string, chrono: Chrono | null) => void;
   setRestDuration: (seconds: number) => void;
   adjustRest: (deltaSeconds: number) => void;
   setAutoRest: (on: boolean) => void;
@@ -97,7 +105,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   restEndsAt: null,
   restExerciseId: null,
   restByExercise: {},
-  chrono: null,
+  chronos: {},
   autoRest: true,
   showRpe: false,
   suggestLoad: true,
@@ -128,6 +136,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   removeExercise: (exerciseId: string) => {
     set((state) => ({
       exercises: state.exercises.filter((ex) => ex.exerciseId !== exerciseId),
+      chronos: stopChrono(state.chronos, exerciseId),
     }));
   },
 
@@ -161,6 +170,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
           ? { ...ex, sets: ex.sets.filter((_, i) => i !== setIndex) }
           : ex
       ),
+      chronos: stopChrono(state.chronos, exerciseId, (c) => setIndex <= c.setIndex), // its set removed or shifted
     }));
   },
 
@@ -168,6 +178,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     const warmup: PlannedSet[] = sets.map((s) => ({ ...s, completed: false, type: 'warmup' }));
     set((state) => ({
       exercises: state.exercises.map((ex) => (ex.exerciseId === exerciseId ? { ...ex, sets: [...warmup, ...ex.sets] } : ex)),
+      chronos: stopChrono(state.chronos, exerciseId), // its set shifted
     }));
   },
 
@@ -179,6 +190,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
       ...ex, exerciseId: by.id, name: by.name, emoji: by.emoji, imageUrl: by.imageUrl, note: undefined, timed: undefined,
       sets: ex.sets.map((s) => ({ ...s, isRecord: false })),
     })),
+    chronos: stopChrono(state.chronos, exerciseId),
   })),
   toggleTimed: (exerciseId: string) => set((state) => ({ exercises: state.exercises.map((ex) => (ex.exerciseId === exerciseId ? { ...ex, timed: !isTimed(ex) } : ex)) })),
 
@@ -232,6 +244,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
             }
           : ex
       ),
+      chronos: stopChrono(state.chronos, exerciseId, (c) => c.setIndex === setIndex), // validated another way (the check)
     }));
   },
 
@@ -258,7 +271,9 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     if (restEndsAt && Date.now() < restEndsAt) cancelRestEnd();
   },
 
-  setChrono: (chrono) => set({ chrono }),
+  setChrono: (exerciseId, chrono) => set((state) => ({
+    chronos: chrono ? { ...state.chronos, [exerciseId]: chrono } : stopChrono(state.chronos, exerciseId),
+  })),
 
   setRestDuration: (seconds: number) => {
     const { showRestTimer, restExerciseId: id } = get();
@@ -330,7 +345,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
       duration: 0,
       showRestTimer: false,
       restEndsAt: null,
-      chrono: null,
+      chronos: {},
       backdate: null,
       title: '',
       sessionNote: '',
@@ -394,7 +409,7 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     showRestTimer: s.showRestTimer,
     restEndsAt: s.restEndsAt,
     restExerciseId: s.restExerciseId,
-    chrono: s.chrono,
+    chronos: s.chronos, // renamed from the single `chrono`: an old saved one is left out, never read
     restDuration: s.restDuration,
     restByExercise: s.restByExercise,
     autoRest: s.autoRest,

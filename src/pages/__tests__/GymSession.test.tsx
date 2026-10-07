@@ -65,12 +65,40 @@ describe('GymSession — chrono d\'un exercice en durée', () => {
     fireEvent.click(screen.getByLabelText('Lancer le chrono de la série 1'));
     view.unmount();
 
-    await setup([plank], { chrono: useGymSessionStore.getState().chrono });
+    await setup([plank], { chronos: useGymSessionStore.getState().chronos });
     const chrono = screen.getByLabelText('Arrêter le chrono et valider la série 1');
     expect(chrono).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(chrono);
     expect(sets()[0]).toMatchObject({ completed: true, actualReps: 1 });
-    expect(useGymSessionStore.getState().chrono).toBeNull();
+    expect(useGymSessionStore.getState().chronos).toEqual({});
+  });
+
+  it('retirer la série chronométrée arrête son chrono : la série ajoutée ensuite repart de zéro', async () => {
+    const plank = { ...bench([{ reps: 60, weight: 0, completed: true }, { reps: 60, weight: 0 }]), exerciseId: 'plank', name: 'Gainage', timed: true };
+    await setup([plank], { chronos: {} });
+    fireEvent.click(screen.getByLabelText('Lancer le chrono de la série 2'));
+    fireEvent.click(screen.getByLabelText('Retirer la dernière série'));
+    fireEvent.click(screen.getByRole('button', { name: /Série 2/ }));
+    expect(screen.getByLabelText('Lancer le chrono de la série 2')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('deux exercices en durée se chronomètrent en parallèle', async () => {
+    const plank = { ...bench([{ reps: 60, weight: 0 }]), exerciseId: 'plank', name: 'Gainage', timed: true };
+    const side = { ...plank, exerciseId: 'side_plank', name: 'Gainage latéral' };
+    await setup([plank, side], { chronos: {} });
+    const [a, b] = screen.getAllByLabelText('Lancer le chrono de la série 1');
+    fireEvent.click(a!);
+    fireEvent.click(b!);
+    expect(screen.getAllByLabelText('Arrêter le chrono et valider la série 1')).toHaveLength(2);
+  });
+
+  it('reste sur la série qu\'il mesure quand une série d\'avant est dé-validée', async () => {
+    const plank = { ...bench([{ reps: 60, weight: 0, completed: true }, { reps: 60, weight: 0 }]), exerciseId: 'plank', name: 'Gainage', timed: true };
+    await setup([plank], { chronos: {} });
+    fireEvent.click(screen.getByLabelText('Lancer le chrono de la série 2'));
+    fireEvent.click(screen.getByLabelText('Annuler la validation de la série 1'));
+    fireEvent.click(screen.getByLabelText('Arrêter le chrono et valider la série 2'));
+    expect(sets().map((s) => s.completed)).toEqual([false, true]);
   });
 });
 

@@ -915,10 +915,10 @@ function ExecuteExerciseCard({
   const completedCount = exercise.sets.filter((s) => s.completed).length;
   const [showPlates, setShowPlates] = useState(false);
   // Chrono d'un exercice en durée (#59) : mesure la prochaine série, l'arrêter la remplit et la valide.
-  // In the store, so leaving the page or a reload does not lose the time already held
-  const chronoStart = useGymSessionStore((s) => (s.chrono?.exerciseId === exercise.exerciseId ? s.chrono.startedAt : null));
-  const setChronoStart = (startedAt: number | null) =>
-    useGymSessionStore.getState().setChrono(startedAt === null ? null : { exerciseId: exercise.exerciseId, startedAt });
+  // In the store, so leaving the page or a reload does not lose the time already held; one per exercise,
+  // bound to its set (the store stops it when that set is removed or validated another way)
+  const chrono = useGymSessionStore((s) => s.chronos[exercise.exerciseId] ?? null);
+  const chronoStart = chrono?.startedAt ?? null;
   const [now, setNow] = useState(Date.now());
   const chronoHaptics = useHaptic();
   const { play: chronoPlay } = useSound();
@@ -928,15 +928,17 @@ function ExecuteExerciseCard({
     return () => clearInterval(id);
   }, [chronoStart]);
   const pendingIndex = exercise.sets.findIndex((s) => !s.completed);
+  const chronoIndex = chrono ? chrono.setIndex : pendingIndex; // the set it measures, or will measure
   const elapsed = chronoStart === null ? 0 : Math.max(0, Math.floor((now - chronoStart) / 1000));
   const toggleChrono = () => {
-    if (chronoStart === null) { setNow(Date.now()); setChronoStart(Date.now()); return; }
-    const set = exercise.sets[pendingIndex];
-    setChronoStart(null);
+    const { setChrono } = useGymSessionStore.getState();
+    if (!chrono) { setNow(Date.now()); setChrono(exercise.exerciseId, { setIndex: pendingIndex, startedAt: Date.now() }); return; }
+    const set = exercise.sets[chrono.setIndex];
+    setChrono(exercise.exerciseId, null);
     if (!set) return;
     chronoHaptics.impact();
     chronoPlay('success');
-    onCompleteSet(exercise.exerciseId, pendingIndex, Math.max(1, Math.round((Date.now() - chronoStart) / 1000)), set.actualWeight ?? set.weight);
+    onCompleteSet(exercise.exerciseId, chrono.setIndex, Math.max(1, Math.round((Date.now() - chrono.startedAt) / 1000)), set.actualWeight ?? set.weight);
   };
   const nextSet = exercise.sets.find((s) => !s.completed) ?? exercise.sets[exercise.sets.length - 1];
   const nextWeight = nextSet ? (nextSet.actualWeight ?? nextSet.weight) : 0;
@@ -1068,12 +1070,12 @@ function ExecuteExerciseCard({
               Échauffement ({warmups.length})
             </button>
           )}
-          {isTimed(exercise) && pendingIndex >= 0 && (
+          {isTimed(exercise) && chronoIndex >= 0 && (
             <button
               type="button"
               onClick={toggleChrono}
               aria-pressed={chronoStart !== null}
-              aria-label={chronoStart === null ? `Lancer le chrono de la série ${pendingIndex + 1}` : `Arrêter le chrono et valider la série ${pendingIndex + 1}`}
+              aria-label={chronoStart === null ? `Lancer le chrono de la série ${chronoIndex + 1}` : `Arrêter le chrono et valider la série ${chronoIndex + 1}`}
               className={cn('flex-1 min-h-11 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-medium tabular-nums transition-all',
                 chronoStart === null ? 'border-dashed border-primary/40 text-primary hover:bg-primary/5' : 'border-primary bg-primary/10 text-primary')}
             >
