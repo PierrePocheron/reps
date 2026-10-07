@@ -21,8 +21,10 @@ export function PageLayout({ children, title, isHome, headerAction, backButton, 
     const { user } = useUserStore();
     const navigate = useNavigate();
     const location = useLocation();
-    // Opened directly (link, bookmark, reopened tab): no previous page in the app, so lead into it instead of leaving it
-    const goBack = () => (location.key === 'default' ? navigate('/') : navigate(-1));
+    // Opened directly (link, bookmark, reopened tab): no previous page in the app, so lead into it instead of leaving it.
+    // The router keeps idx 0 on that first entry across replaces (History's tab, filter), which give it a new key;
+    // the 'default' key covers MemoryRouter, which has no window.history state
+    const goBack = () => (location.key === 'default' || (window.history.state as { idx?: number } | null)?.idx === 0 ? navigate('/') : navigate(-1));
 
     // Initialize Streak Logic
     useStreak();
