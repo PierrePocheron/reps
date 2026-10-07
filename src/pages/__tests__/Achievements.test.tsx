@@ -58,6 +58,14 @@ describe('Achievements Page', () => {
         expect(progressElements.length).toBeGreaterThan(0);
     });
 
+    it('a locked badge never reads « 100 % » (997 / 1 000 reps while Profil says 3 to go)', () => {
+        useUserStore.setState({ stats: { totalReps: 997, currentStreak: 0 } as any });
+        renderPage();
+        const bar = screen.getByRole('progressbar', { name: 'Progression vers Tié un moustique' });
+        expect(bar).toHaveAttribute('aria-valuenow', '99');
+        expect(bar.parentElement).toHaveTextContent(/^99\s%$/);
+    });
+
     it('keeps a badge earned for good when the streak is broken (stats back to 0)', () => {
         useUserStore.setState({ user: { uid: 'u1', badges: ['streak-7'], newBadgeIds: [] } as any, stats: { totalReps: 0, currentStreak: 0 } as any });
         renderPage();

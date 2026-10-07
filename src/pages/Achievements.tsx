@@ -167,12 +167,12 @@ export default function Achievements() {
                           className="h-1.5"
                           role="progressbar"
                           aria-label={`Progression vers ${badge.name}`}
-                          aria-valuenow={Math.round(clamped)}
+                          aria-valuenow={Math.floor(clamped)}
                           aria-valuemin={0}
                           aria-valuemax={100}
                         />
                         <p className="text-xs text-muted-foreground text-right">
-                          {Math.round(clamped)}&nbsp;%
+                          {Math.floor(clamped)}&nbsp;%
                         </p>
                       </div>
                     )}
