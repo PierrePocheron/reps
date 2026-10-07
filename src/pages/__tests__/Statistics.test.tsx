@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
 import { frDate } from '@/utils/formatters';
@@ -61,5 +61,19 @@ describe('Statistics', () => {
     expect(screen.getByText("Jour d'entraînement")).toBeInTheDocument();
     expect(screen.getByText('Répétitions')).toBeInTheDocument();
     expect(screen.queryByText('Volume')).not.toBeInTheDocument();
+  });
+
+  it('the calories example table follows the formula (75 kg, 175 cm man) and names sex as a factor', () => {
+    renderPage();
+    const details = within(screen.getByText(/^Comment sont calculées les calories/).closest('details')!);
+    const kcal = (name: string) => details.getByText(name).parentElement;
+    expect(kcal('Tractions')).toHaveTextContent('~5,3 kcal');
+    expect(kcal('Dips')).toHaveTextContent('~3,8 kcal');
+    expect(kcal('Squats')).toHaveTextContent('~2,7 kcal');
+    expect(kcal('Pompes')).toHaveTextContent('~2,2 kcal');
+    expect(kcal('Abdos')).toHaveTextContent('~1,3 kcal');
+    expect(kcal('Fentes')).toHaveTextContent('~2,2 kcal');
+    expect(details.getByText(/\(poids, taille, sexe\)/)).toBeInTheDocument();
+    expect(details.getByText(/Facteurs.*Sexe/)).toBeInTheDocument();
   });
 });

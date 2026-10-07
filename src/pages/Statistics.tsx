@@ -10,7 +10,9 @@ import { AdSpace } from '@/components/AdSpace';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ADS_CONFIG } from '@/config/ads';
 import { useSessionHistory, usePeriodHistory } from '@/hooks/useSessionHistory';
-import type { Session, GymSession } from '@/firebase/types';
+import type { Session, GymSession, User } from '@/firebase/types';
+import { calculateDynamicCalories } from '@/utils/calories';
+import { findDefaultExercise } from '@/utils/constants';
 import { setsByMuscle, MUSCLE_GROUPS, REPS_PER_SET } from '@/utils/muscles';
 import { periodRecap, recapCard, recapRange, type RecapKind } from '@/utils/recap';
 import { shareSessionCard } from '@/utils/shareCard';
@@ -21,6 +23,10 @@ import { useToast } from '@/hooks/use-toast';
 function toDateKey(date: Date): string {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 }
+
+// « Comment sont calculées les calories ? » example table, from the app's own formula so it cannot drift
+const KCAL_EXAMPLES = ([['Tractions', 'Tractions'], ['Dips', 'Dips'], ['Squats', 'Squats'], ['Pompes', 'Pompes'], ['Abdos', 'Abdos'], ['Fentes', 'Fentes avant']] as const)
+  .map(([label, name]) => ({ label, kcal: calculateDynamicCalories({ weight: 75, height: 175, gender: 'male' } as User, findDefaultExercise(name)!, 10) }));
 
 // ─── Activity Heatmap ─────────────────────────────────────────────────────────
 
@@ -862,44 +868,26 @@ export default function Statistics() {
         {/* Note informative */}
         <details className="bg-muted/50 p-4 rounded-2xl text-xs text-muted-foreground">
           <summary className="cursor-pointer font-semibold min-h-[44px] flex items-center">
-            Comment sont calculées les calories ?
+            Comment sont calculées les calories&nbsp;?
           </summary>
           <div className="mt-3">
             <p>
-              Le calcul des calories est personnalisé selon ton profil (poids, taille) et l'intensité (MET) de chaque exercice.
+              Le calcul des calories est personnalisé selon ton profil (poids, taille, sexe) et l'intensité (MET) de chaque exercice.
             </p>
             <ul className="list-disc list-inside mt-2 space-y-1 ml-1 opacity-80">
-              <li>Formule : ACSM (American College of Sports Medicine)</li>
-              <li>Facteurs : Poids, Taille, MET, Temps sous tension</li>
+              <li>Formule&nbsp;: ACSM (American College of Sports Medicine)</li>
+              <li>Facteurs&nbsp;: Poids, Taille, Sexe, MET, Temps sous tension</li>
             </ul>
 
             <div className="mt-4 pt-4 border-t border-border/50">
-              <p className="font-semibold mb-2">Moyenne pour 10 reps (75&nbsp;kg)&nbsp;:</p>
+              <p className="font-semibold mb-2">Pour 10 reps (homme de 75&nbsp;kg, 1,75&nbsp;m)&nbsp;:</p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 opacity-80">
-                  <div className="flex justify-between">
-                      <span>Tractions</span>
-                      <span className="text-primary font-medium">~5,0&nbsp;kcal</span>
+                {KCAL_EXAMPLES.map(({ label, kcal }) => (
+                  <div key={label} className="flex justify-between">
+                    <span>{label}</span>
+                    <span className="text-primary font-medium">~{kcal.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}&nbsp;kcal</span>
                   </div>
-                  <div className="flex justify-between">
-                      <span>Dips</span>
-                      <span className="text-primary font-medium">~3,6&nbsp;kcal</span>
-                  </div>
-                   <div className="flex justify-between">
-                      <span>Squats</span>
-                      <span className="text-primary font-medium">~2,6&nbsp;kcal</span>
-                  </div>
-                  <div className="flex justify-between">
-                      <span>Pompes</span>
-                      <span className="text-primary font-medium">~2,1&nbsp;kcal</span>
-                  </div>
-                   <div className="flex justify-between">
-                      <span>Abdos</span>
-                      <span className="text-primary font-medium">~1,3&nbsp;kcal</span>
-                  </div>
-                  <div className="flex justify-between">
-                      <span>Fentes</span>
-                      <span className="text-primary font-medium">~3,0&nbsp;kcal</span>
-                  </div>
+                ))}
               </div>
             </div>
           </div>
