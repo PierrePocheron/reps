@@ -72,6 +72,15 @@ describe('Achievements Page', () => {
         expect(bar.parentElement).toHaveTextContent(/^99\s%$/);
     });
 
+    it('shows the exact percentage, not one point below (29 / 50 sessions is 58 %)', () => {
+        useUserStore.setState({ stats: { totalReps: 0, currentStreak: 0, trainingSessions: 29 } as any });
+        renderPage();
+        const bar = screen.getByRole('progressbar', { name: 'Progression vers Acharné' });
+        expect(bar).toHaveAttribute('aria-valuenow', '58');
+        expect(bar.parentElement).toHaveTextContent(/^58\s%$/);
+        expect(screen.getByRole('progressbar', { name: 'Progression vers Légende' })).toHaveAttribute('aria-valuenow', '29');
+    });
+
     it('keeps a badge earned for good when the streak is broken (stats back to 0)', () => {
         useUserStore.setState({ user: { uid: 'u1', badges: ['streak-7'], newBadgeIds: [] } as any, stats: { totalReps: 0, currentStreak: 0 } as any });
         renderPage();

@@ -119,14 +119,15 @@ export default function Achievements() {
 
             const progress = !isUnlocked ? (() => {
                // ... (existing progress logic)
+               // x * 100 / t, not x / t * 100: 29 / 50 * 100 is 57.999… and floors to 57
                switch (badge.category) {
-                case 'total_reps': return (stats.totalReps / badge.threshold) * 100;
-                case 'streak': return (stats.currentStreak / badge.threshold) * 100;
-                case 'total_sessions': return (stats.trainingSessions / badge.threshold) * 100;
-                case 'total_calories': return ((stats.totalCalories || 0) / badge.threshold) * 100;
-                case 'time_morning': return ((stats.morningSessions || 0) / badge.threshold) * 100;
-                case 'time_lunch': return ((stats.lunchSessions || 0) / badge.threshold) * 100;
-                case 'time_night': return ((stats.nightSessions || 0) / badge.threshold) * 100;
+                case 'total_reps': return (stats.totalReps * 100) / badge.threshold;
+                case 'streak': return (stats.currentStreak * 100) / badge.threshold;
+                case 'total_sessions': return (stats.trainingSessions * 100) / badge.threshold;
+                case 'total_calories': return ((stats.totalCalories || 0) * 100) / badge.threshold;
+                case 'time_morning': return ((stats.morningSessions || 0) * 100) / badge.threshold;
+                case 'time_lunch': return ((stats.lunchSessions || 0) * 100) / badge.threshold;
+                case 'time_night': return ((stats.nightSessions || 0) * 100) / badge.threshold;
                 default: return 0;
               }
             })() : 100;
