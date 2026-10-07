@@ -36,6 +36,9 @@ export interface User {
   lastJokerDay?: number | null; // jour (minuit local, ms) couvert par le dernier joker de repos de la série
   weeklyStreak?: number; // semaines d'affilée à l'objectif (mode série hebdo)
   lastMetWeek?: number | null; // lundi (ms) de la dernière semaine à l'objectif
+  /** Own profile only (private/profile): the settings that follow the account, cached in localStorage */
+  weeklyGoal?: number;
+  streakMode?: 'daily' | 'weekly';
 
   createdAt: Timestamp;
   updatedAt: Timestamp;

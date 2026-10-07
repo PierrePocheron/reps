@@ -183,6 +183,12 @@ describe('updateUserDocument', () => {
     expect(updateDoc).toHaveBeenCalledTimes(1);
     expect(vi.mocked(updateDoc).mock.calls[0]![1]).not.toHaveProperty('weight');
   });
+
+  it('keeps the weekly goal and the streak mode in the private profile (they follow the account, not the device)', async () => {
+    await updateUserDocument('uid123', { weeklyGoal: 2, streakMode: 'weekly' });
+    expect(vi.mocked(setDoc).mock.calls[0]![1]).toEqual({ weeklyGoal: 2, streakMode: 'weekly' });
+    expect(updateDoc).not.toHaveBeenCalled(); // not in the doc every signed-in user can read
+  });
 });
 
 describe('subscribeToUser', () => {

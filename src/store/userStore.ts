@@ -81,7 +81,9 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   // Actions
   setUser: (user) => {
+    const signedIn = !!user && user.uid !== get().user?.uid; // not on every live update: a fresh local change would be undone
     set({ user, isAuthenticated: !!user });
+    if (signedIn) useSettingsStore.getState().applyAccountSettings(user);
     if (user?.colorTheme) {
       applyThemeColor(user.colorTheme);
     }

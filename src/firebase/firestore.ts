@@ -42,9 +42,9 @@ import { renfoCalories } from '@/utils/calories';
 /**
  * Champs sensibles : jamais dans le doc public users/{uid} (lisible par tout
  * utilisateur authentifié), toujours dans users/{uid}/private/profile
- * (owner-only, cf. firestore.rules).
+ * (owner-only, cf. firestore.rules). Settings that follow the account (weekly goal, streak mode) live there too.
  */
-const PRIVATE_PROFILE_FIELDS = ['email', 'weight', 'height', 'birthDate', 'gender'] as const;
+const PRIVATE_PROFILE_FIELDS = ['email', 'weight', 'height', 'birthDate', 'gender', 'weeklyGoal', 'streakMode'] as const;
 
 function splitUserFields(data: Partial<User>): { publicData: Partial<User>; privateData: Partial<User> } {
   const publicData: Record<string, unknown> = {};

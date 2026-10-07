@@ -316,6 +316,52 @@ describe('userStore', () => {
         expect(firebase.updateUserStatsAfterSession).toHaveBeenCalledTimes(2); // signed out: nothing to recompute
     });
 
+    describe('weekly goal and streak mode follow the account', () => {
+        // A new device came back to 3× and « Jours »: the weekly streak was then recomputed with the wrong goal
+        beforeEach(() => { useUserStore.getState().reset(); vi.clearAllMocks(); });
+        const cached = () => JSON.parse(localStorage.getItem('reps_settings') ?? '{}');
+
+        it('saves a change to the private profile when signed in, only locally when signed out', async () => {
+            useUserStore.setState({ currentUser: { uid: 'u1' } as any });
+            useSettingsStore.getState().setWeeklyGoal(2);
+            await vi.waitFor(() => expect(firebase.updateUserDocument).toHaveBeenCalledWith('u1', { weeklyGoal: 2 }));
+            useSettingsStore.getState().setStreakMode('weekly');
+            await vi.waitFor(() => expect(firebase.updateUserDocument).toHaveBeenCalledWith('u1', { streakMode: 'weekly' }));
+
+            useUserStore.setState({ currentUser: null });
+            useSettingsStore.getState().setWeeklyGoal(4);
+            await new Promise((r) => setTimeout(r, 0));
+            expect(firebase.updateUserDocument).toHaveBeenCalledTimes(2);
+            expect(cached().weeklyGoal).toBe(4);
+        });
+
+        it('at sign-in the account values win over the device ones, stay cached, and are not written back', async () => {
+            useSettingsStore.setState({ weeklyGoal: 3, streakMode: 'daily' });
+            (firebase.getCurrentUserProfile as any).mockResolvedValue({ uid: 'u1', displayName: 'P', weeklyGoal: 0, streakMode: 'weekly' });
+            (firebase.calculateUserStats as any).mockResolvedValue({ totalReps: 0 });
+            useUserStore.setState({ currentUser: { uid: 'u1' } as any });
+
+            await useUserStore.getState().loadUserProfile();
+
+            expect(useSettingsStore.getState()).toMatchObject({ weeklyGoal: 0, streakMode: 'weekly' });
+            expect(cached()).toMatchObject({ weeklyGoal: 0, streakMode: 'weekly' });
+            expect(firebase.updateUserStatsAfterSession).toHaveBeenCalledWith('u1', 0); // streak recomputed with the account goal
+            await new Promise((r) => setTimeout(r, 0));
+            expect(firebase.updateUserDocument).not.toHaveBeenCalled();
+        });
+
+        it('an account that never saved them (older versions) keeps the device values', async () => {
+            useSettingsStore.setState({ weeklyGoal: 5, streakMode: 'weekly' });
+            (firebase.getCurrentUserProfile as any).mockResolvedValue({ uid: 'u1', displayName: 'P' });
+            (firebase.calculateUserStats as any).mockResolvedValue({ totalReps: 0 });
+            useUserStore.setState({ currentUser: { uid: 'u1' } as any });
+
+            await useUserStore.getState().loadUserProfile();
+
+            expect(useSettingsStore.getState()).toMatchObject({ weeklyGoal: 5, streakMode: 'weekly' });
+        });
+    });
+
     it('reset: pending friend requests do not carry over to the next account', () => {
         useUserStore.setState({ friendRequests: [{ id: 'x_A', fromUserName: 'alice', toUserId: 'A' } as any] });
         useUserStore.getState().reset();

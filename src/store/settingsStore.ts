@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import type { ThemeColor } from '@/utils/theme-colors';
+import type { User } from '@/firebase/types';
 import { logger } from '@/utils/logger';
 
 /** Langue des contenus d'exercices : auto = langue de l'appareil */
@@ -32,6 +33,7 @@ interface SettingsState {
   setLanguage: (language: LanguageSetting) => void;
   setKeepAwake: (on: boolean) => void;
   loadSettings: () => void;
+  applyAccountSettings: (account: Pick<User, 'weeklyGoal' | 'streakMode'>) => void;
   saveSettings: () => void;
   applyTheme: () => void;
 }
@@ -41,6 +43,17 @@ const STORAGE_KEY = 'reps_settings';
 // OS dark-mode listener for the « Système » theme (one at a time)
 let systemQuery: MediaQueryList | null = null;
 let systemListener: ((e: MediaQueryListEvent) => void) | null = null;
+
+// The weekly goal and the streak mode follow the account (users/{uid}/private/profile): a new device came back to
+// 3× and « Jours », and recomputed the weekly streak saved on the profile with its own goal
+function saveToAccount(change: Pick<User, 'weeklyGoal' | 'streakMode'>) {
+  void Promise.all([import('./userStore'), import('@/firebase')])
+    .then(([{ useUserStore }, { updateUserDocument }]) => {
+      const uid = useUserStore.getState().currentUser?.uid;
+      return uid ? updateUserDocument(uid, change) : undefined;
+    })
+    .catch((error) => logger.error('Réglage non enregistré sur le compte', error));
+}
 
 function setDark(dark: boolean) {
   document.documentElement.classList.toggle('dark', dark);
@@ -125,11 +138,13 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     setStreakMode: (mode) => {
       set({ streakMode: mode });
       get().saveSettings();
+      saveToAccount({ streakMode: mode });
     },
 
     setWeeklyGoal: (goal) => {
       set({ weeklyGoal: goal });
       get().saveSettings();
+      saveToAccount({ weeklyGoal: goal });
     },
 
     setLanguage: (language) => {
@@ -151,6 +166,16 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
         set({ ...stored, notificationTime: stored.notificationTime || '18:00' }); // '' saved by older versions
         get().applyTheme();
       }
+    },
+
+    /** At sign-in the account values win; localStorage keeps them as a cache. Absent (older versions): device values stay */
+    applyAccountSettings: ({ weeklyGoal, streakMode }) => {
+      const account: Partial<SettingsState> = {};
+      if (typeof weeklyGoal === 'number') account.weeklyGoal = weeklyGoal;
+      if (streakMode === 'daily' || streakMode === 'weekly') account.streakMode = streakMode;
+      if (Object.keys(account).length === 0) return;
+      set(account);
+      get().saveSettings();
     },
 
     /**
