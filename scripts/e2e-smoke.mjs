@@ -271,7 +271,7 @@ const steps = [
     await page.getByRole('button', { name: /Tour de bras 36,5 cm/ }).waitFor();
     await page.goto(`${BASE}/statistics`);
     const recap = page.locator('div.bg-card', { has: page.getByRole('heading', { name: 'Récap' }) });
-    await recap.getByRole('button', { name: 'Période précédente' }).click();
+    await recap.getByRole('button', { name: 'Mois précédent' }).click();
     await recap.getByText(/Séances?$/).first().waitFor();
     await page.getByRole('heading', { name: 'Muscles travaillés' }).waitFor();
     await assertAlive('mensurations et récap');

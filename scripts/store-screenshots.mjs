@@ -63,7 +63,7 @@ const SHOTS = [
     go: async (p) => {
       await p.goto(`${BASE}/statistics`);
       const recap = p.locator('div.bg-card', { has: p.getByRole('heading', { name: 'Récap' }) });
-      await recap.getByRole('button', { name: 'Période précédente' }).click(); // mois complet
+      await recap.getByRole('button', { name: 'Mois précédent' }).click(); // mois complet
       await recap.evaluate((el) => { el.scrollIntoView({ block: 'start' }); window.scrollBy(0, -90); });
     },
   },
