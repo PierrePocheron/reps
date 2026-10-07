@@ -896,14 +896,14 @@ export default function Statistics() {
             <p>
               Le calcul des calories est personnalisé selon ton profil (poids, taille, sexe) et l'intensité (MET) de chaque exercice.
             </p>
-            <ul className="list-disc list-inside mt-2 space-y-1 ml-1 opacity-80">
+            <ul className="list-disc list-inside mt-2 space-y-1 ml-1">
               <li>Formule&nbsp;: ACSM (American College of Sports Medicine)</li>
               <li>Facteurs&nbsp;: Poids, Taille, Sexe, MET, Temps sous tension</li>
             </ul>
 
             <div className="mt-4 pt-4 border-t border-border/50">
               <p className="font-semibold mb-2">Pour 10 reps (homme de 75&nbsp;kg, 1,75&nbsp;m)&nbsp;:</p>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1 opacity-80">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                 {KCAL_EXAMPLES.map(({ label, kcal }) => (
                   <div key={label} className="flex justify-between">
                     <span>{label}</span>
