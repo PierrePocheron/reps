@@ -1,32 +1,56 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
-import type { Session } from '@/firebase/types';
+import { frDate } from '@/utils/formatters';
+import type { Session, GymSession } from '@/firebase/types';
 
 // One renfo session a day for 90 days; the page only holds the latest 20 (challenge validations fill it fast)
 const day = (back: number) => { const d = new Date(); d.setDate(d.getDate() - back); d.setHours(12, 0, 0, 0); return d; };
 const all = Array.from({ length: 90 }, (_, i) => ({ sessionId: `s${i}`, date: { toDate: () => day(i) }, totalReps: 10, exercises: [] }) as unknown as Session);
 
+// The whole history of the test user; the page holds its latest 20, a period read gets its whole range
+let renfo: Session[] = all;
+let gym: GymSession[] = [];
+let loading = false;
+const inRange = (from: Date, to: Date) => (s: Session | GymSession) => s.date.toDate() >= from && s.date.toDate() < to;
 vi.mock('@/hooks/useSessionHistory', () => ({
-  useSessionHistory: () => ({ sessions: all.slice(0, 20), gymSessions: [], loading: false, error: false, refetch: vi.fn() }),
+  useSessionHistory: () => ({ sessions: renfo.slice(0, 20), gymSessions: gym.slice(0, 20), loading, error: false, refetch: vi.fn() }),
   usePeriodHistory: (from: Date, to: Date) => ({
-    sessions: all.filter((s) => s.date.toDate() >= from && s.date.toDate() < to), gymSessions: [], loaded: true,
+    sessions: renfo.filter(inRange(from, to)), gymSessions: gym.filter(inRange(from, to)), loaded: true,
   }),
 }));
 vi.mock('@/components/AdSpace', () => ({ AdSpace: () => null }));
 
 import Statistics from '../Statistics';
 
+const renderPage = () => render(<BrowserRouter><Statistics /></BrowserRouter>);
+// A finger tap fires mouseenter and focus before the click
+const tap = (el: HTMLElement) => { fireEvent.mouseEnter(el); fireEvent.focus(el); fireEvent.click(el); };
+
 describe('Statistics', () => {
-  beforeEach(() => useUserStore.setState({ user: { uid: 'u1', totalReps: 900, totalSessions: 90, totalCalories: 100 } as never, stats: null }));
+  beforeEach(() => {
+    renfo = all; gym = []; loading = false;
+    useUserStore.setState({ user: { uid: 'u1', totalReps: 900, totalSessions: 90, totalCalories: 100 } as never, stats: null });
+  });
 
   it('builds the 90-day heatmap and the 8-week chart from the date range, not the latest page', () => {
-    render(<BrowserRouter><Statistics /></BrowserRouter>);
+    renderPage();
     expect(screen.getByText(/^90 jours d'entraînement/)).toBeInTheDocument();
     // every one of the 8 weeks has sessions: none of the bars is empty
     const bars = screen.getAllByRole('button', { name: /^(Semaine du|Cette semaine)/ });
     expect(bars).toHaveLength(8);
     for (const bar of bars) expect(bar).not.toHaveAccessibleName(/ : 0 reps$/);
+  });
+
+  it('a tap on a heatmap day or a weekly bar shows its detail at once', () => {
+    renderPage();
+    const today = frDate(new Date(), { weekday: 'long', day: 'numeric', month: 'long' });
+    tap(screen.getByRole('button', { name: `${today} : 1 séance` }));
+    expect(screen.getByText((_, el) => el?.tagName === 'P' && el.textContent === `${today} — 1 séance`)).toBeInTheDocument();
+
+    const bar = screen.getByRole('button', { name: /^Cette semaine/ });
+    tap(bar);
+    expect(bar).toHaveAttribute('aria-pressed', 'true');
   });
 });

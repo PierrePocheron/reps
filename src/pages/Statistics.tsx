@@ -119,7 +119,7 @@ function ActivityCalendar({ sessions, gymSessions }: { sessions: Session[]; gymS
                     aria-label={`${dateLabel} : ${cell.count > 0 ? `${cell.count} séance${cell.count > 1 ? 's' : ''}` : 'repos'}`}
                     onMouseEnter={() => setSelectedDay(cell)}
                     onFocus={() => setSelectedDay(cell)}
-                    onClick={() => setSelectedDay((cur) => (cur?.date.getTime() === cell.date.getTime() ? null : cell))}
+                    onClick={() => setSelectedDay(cell)} // a tap fires mouseenter and focus first: a toggle cleared it
                     className={`w-3 h-3 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${cellColor(cell.count, isSelected)}`}
                   />
                 );
@@ -276,7 +276,7 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
               onMouseEnter={() => setSelectedBar(i)}
               onFocus={() => setSelectedBar(i)}
               onBlur={() => setSelectedBar((cur) => (cur === i ? null : cur))}
-              onClick={() => setSelectedBar((cur) => (cur === i ? null : i))}
+              onClick={() => setSelectedBar(i)}
               className="relative h-full flex-1 flex flex-col items-center justify-end rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {isSelected && (
