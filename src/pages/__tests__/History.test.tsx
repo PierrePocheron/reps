@@ -112,6 +112,16 @@ describe('History', () => {
     expect(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Annuler' })).toBeEnabled();
   });
 
+  it('a delete recomputes the stats once: the recompute already hands them to the store, no second full read', async () => {
+    GYM = [gym('A', 3, ['bench'])];
+    render(<MemoryRouter><History /></MemoryRouter>);
+    await openMenu('Supprimer');
+    await act(async () => { fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Supprimer' })); });
+    await act(async () => {});
+    expect(updateUserStatsAfterSession).toHaveBeenCalledWith('u1', 0);
+    expect(useUserStore.getState().refreshStats).not.toHaveBeenCalled();
+  });
+
   it('a failed stats recompute does not report a done delete or renfo edit as failed', async () => {
     GYM = [gym('A', 3, ['bench'])];
     RENFO = [{ sessionId: 'R', userId: 'u1', date: ts(new Date(2026, 9, 3)), duration: 600, totalReps: 40, exercises: [{ name: 'Squats', emoji: '🦵', reps: 40 }] }];

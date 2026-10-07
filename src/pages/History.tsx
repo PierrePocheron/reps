@@ -387,13 +387,13 @@ function History() {
   const { isActive: renfoActive, loadExercises } = useSessionStore();
   const { toast } = useToast();
   const user = useUserStore((st) => st.user);
-  const refreshStats = useUserStore((st) => st.refreshStats);
   // Suppression d'une séance (#56) : confirmation, puis stats, série et totaux recalculés
   const [toDelete, setToDelete] = useState<{ kind: 'gym' | 'renfo'; id: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
-  // Stats are recomputed in the background: a slow one (offline) locked the next dialog, a failed one reported the done change as failed
+  // Stats are recomputed in the background: a slow one (offline) locked the next dialog, a failed one reported the done change as failed.
+  // The recompute hands the stats to the store itself (onUserStatsComputed): no refreshStats after it, that read every session again
   const recomputeStats = (uid: string) => {
-    updateUserStatsAfterSession(uid, 0).then(() => refreshStats()).catch((err) => logger.error('Recalcul des stats :', err));
+    updateUserStatsAfterSession(uid, 0).catch((err) => logger.error('Recalcul des stats :', err));
   };
   const saveEdit = async (exercises: GymSession['exercises']) => {
     if (!toEdit || !user) return;
