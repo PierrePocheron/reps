@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
+import { useSettingsStore } from '@/store/settingsStore';
 import { frDate, formatNumber } from '@/utils/formatters';
 import type { Session, GymSession } from '@/firebase/types';
 
@@ -146,5 +147,14 @@ describe('Statistics', () => {
     expect(screen.queryByText('Calories brûlées')).not.toBeInTheDocument();
     expect(screen.queryByText('Séances renfo')).not.toBeInTheDocument();
     expect(screen.queryByText(/^Moyenne par séance/)).not.toBeInTheDocument();
+  });
+
+  it('weekly goal while the sessions load: no « Encore 3 séances » next to « –/3 »', () => {
+    useSettingsStore.setState({ weeklyGoal: 3 });
+    renfo = []; loading = true;
+    renderPage();
+    expect(screen.getByText('–/3 séances')).toBeInTheDocument();
+    expect(screen.queryByText(/^Encore/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Objectif atteint/)).not.toBeInTheDocument();
   });
 });

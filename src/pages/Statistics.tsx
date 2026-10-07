@@ -612,7 +612,9 @@ export default function Statistics() {
                 transition={{ duration: 0.6, ease: 'easeOut' }}
               />
             </div>
-            {thisWeekCount >= weeklyGoal ? (
+            {historyLoading ? (
+              <p className="text-xs min-h-4" /> // the sessions are not counted yet: same height, no « Encore 3 séances »
+            ) : thisWeekCount >= weeklyGoal ? (
               <p className="text-xs text-green-700 dark:text-green-400 font-medium">
                 🎉 Objectif atteint ! Bravo !
               </p>
