@@ -32,8 +32,10 @@ export async function removeKudos(ownerId: string, sessionId: string, myUid: str
  * s'affichent, une par ami et par séance ; les autres passent en lues.
  */
 export async function getUnreadKudos(uid: string): Promise<Notification[]> {
-  const snap = await getDocs(query(collection(db, 'notifications'), where('userId', '==', uid), where('read', '==', false)));
-  const unread = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Notification).filter((n) => n.type === 'kudos');
+  // the type filter skips friend notifications nothing ever marks read, which were billed on every Home visit
+  const snap = await getDocs(query(collection(db, 'notifications'), where('userId', '==', uid), where('read', '==', false),
+    where('type', '==', 'kudos')));
+  const unread = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Notification);
   const sessions = [...new Set(unread.map((n) => n.sessionId).filter((id): id is string => !!id))];
   const givers = new Map(await Promise.all(sessions.map(async (id) => [id, new Set(await getKudos(uid, id))] as const)));
   const seen = new Set<string>(), shown: Notification[] = [], stale: string[] = [];
