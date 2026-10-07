@@ -145,6 +145,12 @@ await test("acceptation en un seul batch depuis une demande en attente (comme l'
   b.set(doc(collection(ivy, 'users/ivy/userEvents')), { type: 'new_friend', userId: 'ivy', friendId: 'jack', friendName: 'jack', createdAt: serverTimestamp() });
   return assertSucceeds(b.commit());
 });
+// sendFriendRequest after a removal that could not delete the request (offline): « accepted » but no longer friends
+await test("demande « accepted » périmée : l'expéditeur la supprime puis en renvoie une", async () => {
+  const jack = env.authenticatedContext('jack').firestore();
+  await assertSucceeds(deleteDoc(doc(jack, 'friend_requests/jack_ivy')));
+  await assertSucceeds(setDoc(doc(jack, 'friend_requests/jack_ivy'), { fromUserId: 'jack', toUserId: 'ivy', status: 'pending', fromDisplayName: 'jack', fromAvatarEmoji: '🐥', createdAt: serverTimestamp() }));
+});
 await test("pas d'écriture croisée dans un batch qui laisse la demande en attente", () => {
   const kim = env.authenticatedContext('kim').firestore(), b = writeBatch(kim);
   b.update(doc(kim, 'users/kim'), { friends: ['leo'] });

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
+  doc,
   getDoc,
   getDocs,
   getDocsFromServer,
@@ -33,6 +34,8 @@ import {
   markBadgesAsSeen,
   markNotificationAsRead,
   declineFriendRequest,
+  sendFriendRequest,
+  removeFriend,
   subscribeToFriendRequests,
   getFriendsDetails,
   searchUsers,
@@ -371,6 +374,52 @@ describe('declineFriendRequest', () => {
   it('should throw on error', async () => {
     vi.mocked(updateDoc).mockRejectedValueOnce(new Error('Update failed'));
     await expect(declineFriendRequest('request-id')).rejects.toThrow('Update failed');
+  });
+});
+
+// Requests have deterministic ids (`${from}_${to}`): each ref carries its id, each read answers from `byId`
+const friendDocs = (byId: Record<string, Record<string, unknown> | Error>) => {
+  vi.mocked(doc).mockImplementation(((_db: unknown, _col: string, id: string) => ({ id })) as never);
+  vi.mocked(getDoc).mockImplementation((async (ref: { id: string }) => {
+    const found = byId[ref.id];
+    if (found instanceof Error) throw found;
+    return makeDoc(found, !!found);
+  }) as never);
+};
+const firestoreError = (code: string) => Object.assign(new Error(code), { code });
+
+describe('sendFriendRequest', () => {
+  afterEach(() => vi.mocked(doc).mockReset());
+  const alice = { uid: 'alice', displayName: 'alice', friends: [] as string[] };
+
+  it('an « accepted » request left from a removed friendship is replaced by a new one (« Vous êtes déjà amis » before)', async () => {
+    friendDocs({ alice_bob: { status: 'accepted' } });
+    await sendFriendRequest(alice as never, 'bob');
+    expect(deleteDoc).toHaveBeenCalledWith({ id: 'alice_bob' });
+    expect(setDoc).toHaveBeenCalledWith({ id: 'alice_bob' }, expect.objectContaining({ status: 'pending' }));
+    expect(vi.mocked(deleteDoc).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(setDoc).mock.invocationCallOrder[0]!);
+  });
+
+  it('still friends: no new request', async () => {
+    friendDocs({ alice_bob: { status: 'accepted' } });
+    await expect(sendFriendRequest({ ...alice, friends: ['bob'] } as never, 'bob')).rejects.toThrow('Vous êtes déjà amis');
+    expect(deleteDoc).not.toHaveBeenCalled();
+    expect(setDoc).not.toHaveBeenCalled();
+  });
+});
+
+describe('removeFriend', () => {
+  afterEach(() => vi.mocked(doc).mockReset());
+
+  it('a request this device could not read offline is still deleted (left « accepted », the ex-friend could not re-add)', async () => {
+    friendDocs({
+      alice: { friends: ['bob'] }, bob: { friends: ['alice'] },
+      alice_bob: firestoreError('permission-denied'), // missing: the rules deny reading it
+      bob_alice: firestoreError('unavailable'), // offline and never cached
+    });
+    await removeFriend('alice', 'bob');
+    expect(deleteDoc).toHaveBeenCalledWith({ id: 'bob_alice' });
+    expect(deleteDoc).not.toHaveBeenCalledWith({ id: 'alice_bob' });
   });
 });
 

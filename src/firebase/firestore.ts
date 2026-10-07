@@ -868,8 +868,9 @@ export async function sendFriendRequest(fromUser: User, toUserId: string): Promi
     if (outgoingSnap?.exists()) {
       const status = outgoingSnap.data().status;
       if (status === 'pending') throw new Error('Une demande est déjà en attente');
-      if (status === 'accepted') throw new Error('Vous êtes déjà amis');
-      // rejected : on supprime l'ancienne demande pour pouvoir en renvoyer une
+      // « accepted » but no longer friends: left by a removal that could not delete it (offline), stale like a rejected one
+      if (status === 'accepted' && fromUser.friends?.includes(toUserId)) throw new Error('Vous êtes déjà amis');
+      // rejected or stale: deleted so that a new one can be sent
       await deleteDoc(outgoingRef);
     }
 
@@ -1030,12 +1031,16 @@ export async function removeFriend(currentUserId: string, friendId: string): Pro
     // pourrait se ré-ajouter via la demande « accepted » restante)
     const reqAB = doc(db, 'friend_requests', `${currentUserId}_${friendId}`);
     const reqBA = doc(db, 'friend_requests', `${friendId}_${currentUserId}`);
-    const [snapAB, snapBA] = await Promise.all([
-      getDoc(reqAB).catch(() => null),
-      getDoc(reqBA).catch(() => null),
-    ]);
-    if (snapAB?.exists()) batch.delete(reqAB);
-    if (snapBA?.exists()) batch.delete(reqBA);
+    // A missing request cannot be read (rules: permission-denied) nor deleted, so only those that exist go in the
+    // batch. Offline, one this device never cached cannot be read either ('unavailable'): deleted on its own,
+    // outside the batch (refused there if it does not exist, without failing the removal)
+    const exists = (ref: typeof reqAB) => getDoc(ref).then((snap) => snap.exists(), (error: { code?: string }) => {
+      if (error?.code === 'unavailable') deleteDoc(ref).catch(() => { /* best-effort */ });
+      return false;
+    });
+    const [hasAB, hasBA] = await Promise.all([exists(reqAB), exists(reqBA)]);
+    if (hasAB) batch.delete(reqAB);
+    if (hasBA) batch.delete(reqBA);
 
     await batch.commit();
 
