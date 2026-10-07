@@ -665,6 +665,8 @@ export default function Statistics() {
           </div>
         ) : (
         <>
+        {/* Renfo totals (calories, reps, sessions, average): hidden for a muscu-only user rather than four zeros */}
+        {totals.totalSessions > 0 && (<>
         {/* Résumé Calories */}
         <motion.div
            initial={{ opacity: 0, y: 20 }}
@@ -686,7 +688,7 @@ export default function Statistics() {
               <span className="text-primary font-medium">kcal</span>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              Estimation basée sur tes répétitions
+              Estimation basée sur tes répétitions en renfo (la muscu n'est pas comptée)
             </p>
           </div>
         </motion.div>
@@ -705,7 +707,7 @@ export default function Statistics() {
               </div>
               <div className="space-y-0.5">
                 <span className="text-2xl font-bold block">{totals.totalReps.toLocaleString('fr-FR')}</span>
-                <span className="text-xs text-muted-foreground uppercase">Reps au total</span>
+                <span className="text-xs text-muted-foreground uppercase">Reps renfo</span>
               </div>
             </motion.div>
 
@@ -737,7 +739,7 @@ export default function Statistics() {
                     <Zap className="w-6 h-6 text-primary" />
                  </div>
                  <div className="text-left">
-                     <p className="text-sm font-medium text-muted-foreground">Moyenne par séance</p>
+                     <p className="text-sm font-medium text-muted-foreground">Moyenne par séance renfo</p>
                      <p className="text-2xl font-bold">
                         {((totals.totalCalories || 0) / (totals.totalSessions || 1)).toFixed(0)}
                         <span className="text-sm font-medium text-primary ml-1">kcal</span>
@@ -745,6 +747,7 @@ export default function Statistics() {
                  </div>
              </div>
         </motion.div>
+        </>)}
 
         {/* Top Exercices & Détails */}
         {stats?.exercisesDistribution && stats.exercisesDistribution.length > 0 && (

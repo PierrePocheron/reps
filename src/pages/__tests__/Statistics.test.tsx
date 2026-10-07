@@ -129,4 +129,22 @@ describe('Statistics', () => {
     expect(screen.getByText('65')).toBeInTheDocument(); // 2 027 / 31
     expect(screen.queryByText(fr(7013))).not.toBeInTheDocument();
   });
+
+  it('the calories, reps and average tiles say they count renfo only', () => {
+    renderPage();
+    expect(screen.getByText("Estimation basée sur tes répétitions en renfo (la muscu n'est pas comptée)")).toBeInTheDocument();
+    expect(screen.getByText('Reps renfo')).toBeInTheDocument();
+    expect(screen.getByText('Moyenne par séance renfo')).toBeInTheDocument();
+  });
+
+  it('a muscu-only user sees no renfo block full of zeros', () => {
+    useUserStore.setState({ user: { uid: 'u1', totalReps: 0, totalSessions: 0, totalCalories: 0 } as never });
+    renfo = [];
+    gym = [{ sessionId: 'g0', date: { toDate: () => day(0) }, totalVolume: 1000, exercises: [] } as unknown as GymSession];
+    renderPage();
+    expect(screen.getByText('Activité (90 jours)')).toBeInTheDocument();
+    expect(screen.queryByText('Calories brûlées')).not.toBeInTheDocument();
+    expect(screen.queryByText('Séances renfo')).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Moyenne par séance/)).not.toBeInTheDocument();
+  });
 });
