@@ -125,9 +125,10 @@
   }
 }
 
-/* Weekly chart dates: with a large system font (rem grows) they no longer fit side by side: one in two, the last kept */
+/* Weekly chart dates: at 320 px, or with a large system font (rem grows), they no longer fit side by side: one in
+   two, the last kept. Below 17.5rem a column is under ~29 px and the ~26 px dates touch (246 px wide at 320 px) */
 .week-labels { container-type: inline-size; }
-@container (max-width: 15rem) {
+@container (max-width: 17.5rem) {
   .week-labels > :nth-child(odd):not(:last-child) > span { visibility: hidden; }
 }
 
