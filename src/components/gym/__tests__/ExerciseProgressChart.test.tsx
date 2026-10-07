@@ -68,4 +68,13 @@ describe('ExerciseProgressChart', () => {
     expect(screen.getAllByRole('button', { pressed: true })[0]!.textContent).toBe('1 an');
     expect(screen.queryByText('Aucune séance sur cette période.')).not.toBeInTheDocument();
   });
+
+  it('axis: whole reps on a reps curve, never « 10,3 / 9 / 7,7 »', () => {
+    const ticks = (c: HTMLElement) => [...c.querySelectorAll('svg text[text-anchor="end"]')].slice(0, 3).map((t) => t.textContent);
+    const { container, unmount } = render(<ExerciseProgressChart points={exerciseHistory([daysAgo(2, 10), daysAgo(9, 8)], 'chest_dips')} />);
+    expect(ticks(container)).toEqual(['11', '9', '7']);
+    unmount();
+    const single = render(<ExerciseProgressChart points={exerciseHistory([daysAgo(2, 12)], 'chest_dips')} />);
+    expect(ticks(single.container)).toEqual(['14', '12', '10']);
+  });
 });

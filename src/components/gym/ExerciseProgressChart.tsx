@@ -80,8 +80,12 @@ export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint
 
   const unit = METRICS.find((m) => m.key === metric)!.unit;
   const max = Math.max(...values), min = Math.min(...values);
-  const lo = min === max ? min * 0.9 : min - (max - min) * 0.15;
-  const hi = min === max ? max * 1.1 : max + (max - min) * 0.15;
+  let lo = min === max ? min * 0.9 : min - (max - min) * 0.15;
+  let hi = min === max ? max * 1.1 : max + (max - min) * 0.15;
+  if (unit !== 'kg') { // reps and seconds are whole: so are the ticks (an even span keeps the middle one whole)
+    lo = Math.floor(lo); hi = Math.ceil(hi);
+    if ((hi - lo) % 2) hi++;
+  }
   const t0 = shown[0]!.date.getTime(), t1 = shown[shown.length - 1]!.date.getTime();
   const x = (t: number) => (t1 === t0 ? (PL + W - PR) / 2 : PL + ((t - t0) / (t1 - t0)) * (W - PL - PR));
   const tick = (v: number) => v.toLocaleString('fr-FR', { maximumFractionDigits: hi - lo < 10 ? 1 : 0 }); // decimal only on a narrow scale
