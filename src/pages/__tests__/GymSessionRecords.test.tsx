@@ -23,11 +23,11 @@ const HISTORY = [{ id: 'old', userId: 'u1', date: ts(new Date(2026, 9, 1)), dura
   exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [{ reps: 5, weight: 100, completed: true }] }] }];
 
 const BENCH = { exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️' };
-const setup = async (planned: { reps: number; weight: number }[], exercise = BENCH) => {
-  vi.mocked(gs.getUserGymSessions).mockResolvedValue(HISTORY as never);
+const setup = async (planned: { reps: number; weight: number }[], exercise = BENCH, history: unknown[] = HISTORY, backdate: unknown = null) => {
+  vi.mocked(gs.getUserGymSessions).mockResolvedValue(history as never);
   useUserStore.setState({ user: { uid: 'u1', displayName: 'P' } as never });
   useGymSessionStore.setState({
-    phase: 'execute', startTime: Date.now(), autoRest: false, showRpe: false, suggestLoad: false, backdate: null,
+    phase: 'execute', startTime: Date.now(), autoRest: false, showRpe: false, suggestLoad: false, backdate,
     exercises: [{ ...exercise, sets: planned.map((s) => ({ ...s, completed: false })) }],
   } as never);
   render(<MemoryRouter><GymSession /></MemoryRouter>);
@@ -77,5 +77,34 @@ describe('live trophies follow corrections', () => {
     fireEvent.click(screen.getByText('Développé couché'));
     expect(useGymSessionStore.getState().exercises[0]!.exerciseId).toBe('bench_press');
     expect(sets()[0]!.isRecord).toBe(true); // 105 x 5 beats the 100 x 5 of the bench history
+  });
+});
+
+describe('trophies of a forgotten (backdated) session', () => {
+  beforeEach(() => toast.mockClear());
+  const daysAgo = (n: number) => { const d = new Date(); d.setDate(d.getDate() - n); d.setHours(18, 0, 0, 0); return d; };
+  // bench 110 x 5 two days ago, 90 x 5 six days ago; the forgotten session was four days ago
+  const history = [[2, 110], [6, 90]].map(([ago, weight]) => ({ ...HISTORY[0]!, id: `h${ago}`, date: ts(daysAgo(ago!)),
+    exercises: [{ ...HISTORY[0]!.exercises[0]!, sets: [{ reps: 5, weight: weight!, completed: true }] }] }));
+  const localInput = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+
+  it('are rated against the sessions dated before it, not a later one', async () => {
+    await setup([{ reps: 5, weight: 100 }], BENCH, history, { at: daysAgo(4).getTime(), duration: 3600 });
+    fireEvent.click(screen.getByLabelText('Valider la série 1')); // beats 90 x 5, not the later 110 x 5
+    expect(sets()[0]!.isRecord).toBe(true);
+    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Nouveau record ! 🏆' }));
+  });
+
+  it('follow the date set after the sets are validated, and back to now', async () => {
+    await setup([{ reps: 5, weight: 100 }], BENCH, history);
+    fireEvent.click(screen.getByLabelText('Valider la série 1'));
+    expect(sets()[0]!.isRecord).toBeFalsy(); // today: 110 x 5 two days ago is better
+    fireEvent.click(screen.getByText(/Séance faite plus tôt/));
+    fireEvent.change(screen.getByLabelText('Début de la séance'), { target: { value: localInput(daysAgo(4)) } });
+    fireEvent.click(screen.getByRole('button', { name: 'Valider' }));
+    expect(sets()[0]!.isRecord).toBe(true);
+    fireEvent.click(screen.getByText(/Enregistrée le/));
+    fireEvent.click(screen.getByRole('button', { name: 'Maintenant' }));
+    expect(sets()[0]!.isRecord).toBe(false);
   });
 });

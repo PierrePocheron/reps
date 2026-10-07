@@ -250,11 +250,14 @@ function GymSession() {
 
   // Trophies follow the current values, same rule as History edits (markRecords): a corrected typo or a set switched
   // to warm-up re-rates the exercise. A best raised at validation and never lowered kept false trophies and hid the
-  // real record. Returns the exercise's sets as rated
+  // real record. A forgotten session is rated against the sessions dated before it, like History edits and imports.
+  // Returns the exercise's sets as rated
   const syncRecords = (exerciseId: string) => {
-    const ex = useGymSessionStore.getState().exercises.find((e) => e.exerciseId === exerciseId);
+    const state = useGymSessionStore.getState();
+    const ex = state.exercises.find((e) => e.exerciseId === exerciseId);
     if (!ex) return [];
-    const rated = markRecords([ex], gymHistory)[0]!.sets;
+    const at = state.backdate?.at;
+    const rated = markRecords([ex], at === undefined ? gymHistory : gymHistory.filter((s) => s.date.toMillis() < at))[0]!.sets;
     rated.forEach((st, i) => { if (!!ex.sets[i]?.isRecord !== st.isRecord) updateSet(exerciseId, i, { isRecord: st.isRecord }); });
     return rated;
   };
@@ -604,7 +607,7 @@ function GymSession() {
         </button>
       </div>
       {showBackdate && (
-        <BackdateDialog initial={backdate} onCancel={() => setShowBackdate(false)} onSave={(b) => { setBackdate(b); setShowBackdate(false); }} />
+        <BackdateDialog initial={backdate} onCancel={() => setShowBackdate(false)} onSave={(b) => { setBackdate(b); setShowBackdate(false); exercises.forEach((ex) => syncRecords(ex.exerciseId)); }} />
       )}
 
       {/* Barre flottante du bas */}
