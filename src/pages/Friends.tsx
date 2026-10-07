@@ -461,14 +461,14 @@ export default function Friends() {
                 placeholder="Pseudo ou e-mail…"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-10 bg-card/50"
+                className="pl-9 pr-12 bg-card/50"
               />
               {searchTerm && (
                 <button
                   type="button"
                   aria-label="Effacer la recherche"
                   onClick={() => setSearchTerm('')}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 p-2 rounded-full text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-11 w-11 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -519,7 +519,7 @@ export default function Friends() {
                               variant="secondary"
                               disabled={pendingUid === result.uid}
                               onClick={() => handleSendRequest(result)}
-                              className="shrink-0 active:scale-95"
+                              className="shrink-0 min-h-11 active:scale-95"
                             >
                               {pendingUid === result.uid ? (
                                 <LoadingSpinner size="sm" />
@@ -597,12 +597,12 @@ export default function Friends() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem className="cursor-pointer" onClick={() => setTemplatesOf(friend)}>
+                            <DropdownMenuItem className="cursor-pointer min-h-11" onClick={() => setTemplatesOf(friend)}>
                               <Copy className="mr-2 h-4 w-4" />
                               Voir ses modèles
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-100/10"
+                              className="cursor-pointer min-h-11 text-red-600 focus:text-red-600 focus:bg-red-100/10"
                               onClick={() => setFriendToRemove(friend)}
                             >
                               <UserMinus className="mr-2 h-4 w-4" />
