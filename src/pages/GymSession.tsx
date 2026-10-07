@@ -110,6 +110,7 @@ function GymSession() {
   const [showExerciseDialog, setShowExerciseDialog] = useState(false);
   const [replaceTarget, setReplaceTarget] = useState<string | null>(null); // exercice à remplacer (#62)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState<GymSessionExercise | null>(null); // exercice à retirer, avec des séries validées
   const [ending, setEnding] = useState(false);
   const [detailExerciseId, setDetailExerciseId] = useState<string | null>(null);
   const [libDetail, setLibDetail] = useState<LibraryExercise | null>(null);
@@ -686,6 +687,33 @@ function GymSession() {
         </div>
       )}
 
+      {/* Modale confirmation retrait d'un exercice qui a des séries validées */}
+      {removeTarget && (() => {
+        const done = removeTarget.sets.filter((s) => s.completed).length;
+        return (
+          <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setRemoveTarget(null)} />
+            <div role="dialog" aria-modal="true" aria-labelledby="remove-exercise-title" className="relative z-10 w-full sm:max-w-sm bg-background rounded-t-3xl sm:rounded-2xl shadow-xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:pb-6 space-y-4">
+              <div className="text-center space-y-2">
+                <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <Trash2 className="h-6 w-6 text-destructive" />
+                </div>
+                <h3 id="remove-exercise-title" className="font-bold text-lg">Retirer {removeTarget.name}&nbsp;?</h3>
+                <p className="text-sm text-muted-foreground">Tu perdras ses {plural(done, 'série')} validée{done >= 2 ? 's' : ''}.</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Button variant="outline" className="flex-1 basis-28" onClick={() => setRemoveTarget(null)}>
+                  Garder
+                </Button>
+                <Button variant="destructive" className="flex-1 basis-28" onClick={() => { removeExercise(removeTarget.exerciseId); setRemoveTarget(null); }}>
+                  Retirer
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       <AddGymExerciseDialog
         open={showExerciseDialog}
         onOpenChange={(open) => { setShowExerciseDialog(open); if (!open) setReplaceTarget(null); }}
@@ -725,7 +753,11 @@ function GymSession() {
             log={exerciseLog(gymHistory, ex.exerciseId)}
             timed={isTimed(ex)}
             onReplace={() => { setReplaceTarget(ex.exerciseId); setDetailExerciseId(null); setShowExerciseDialog(true); }}
-            onRemove={() => { removeExercise(ex.exerciseId); setDetailExerciseId(null); }}
+            onRemove={() => {
+              setDetailExerciseId(null);
+              if (ex.sets.some((s) => s.completed)) setRemoveTarget(ex); // validated sets are never lost in one tap
+              else removeExercise(ex.exerciseId);
+            }}
             onClose={() => setDetailExerciseId(null)}
           />
         );

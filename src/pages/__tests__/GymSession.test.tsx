@@ -190,6 +190,28 @@ describe('GymSession — retirer pendant la séance', () => {
     expect(useGymSessionStore.getState().exercises.map((e) => e.exerciseId)).toEqual(['barbell_curl']);
     expect(screen.queryByRole('button', { name: /Retirer de la séance/ })).toBeNull(); // fiche refermée
   });
+
+  it('demande confirmation avant de retirer un exercice qui a des séries validées', async () => {
+    const curl = { ...bench([{ reps: 10, weight: 20 }]), exerciseId: 'barbell_curl', name: 'Curl barre' };
+    await setup([bench([{ reps: 8, weight: 60, completed: true }, { reps: 8, weight: 60, completed: true }]), curl]);
+    const ids = () => useGymSessionStore.getState().exercises.map((e) => e.exerciseId);
+    const remove = () => {
+      fireEvent.click(screen.getByLabelText('Développé couché : voir la fiche et ta progression'));
+      fireEvent.click(screen.getByRole('button', { name: /Retirer de la séance/ }));
+    };
+
+    remove();
+    expect(screen.getByRole('dialog', { name: /Retirer Développé couché/ })).toHaveTextContent('2 séries validées');
+    expect(ids()).toEqual(['bench_press', 'barbell_curl']);
+    fireEvent.click(screen.getByRole('button', { name: 'Garder' }));
+    expect(ids()).toEqual(['bench_press', 'barbell_curl']);
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    remove();
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer' }));
+    expect(ids()).toEqual(['barbell_curl']);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
 });
 
 describe('GymSession — la prochaine série reste visible au-dessus de la barre de repos', () => {
