@@ -274,7 +274,7 @@ export default function Friends() {
             ) : activities.length > 0 ? (
               <div className="space-y-4">
                 {activities.map((activityItem) => {
-                  const item = activityItem as unknown as Session & { id?: string; type?: string; badgeName?: string; badgeEmoji?: string };
+                  const item = activityItem as unknown as Session & { id?: string; type?: string; badgeName?: string; badgeEmoji?: string; friendId?: string; friendName?: string };
                   const friend = getFriendDetails(item.userId);
                   // Pour les événements 'new_friend', on veut afficher l'info même si on n'est pas (encore) ami avec la 3ème personne
                   // Mais ici item.userId est celui qui a généré l'événement (donc notre ami).
@@ -313,13 +313,11 @@ export default function Friends() {
                           <div className="flex items-center gap-4">
                             <UserAvatar user={friend} size="md" />
                             <div className="flex-1 min-w-0">
+                              {/* the event is written by the one who accepted: the viewer may be the new friend */}
                               <p className="text-sm">
-                                <span className="font-semibold">{friend.displayName}</span> a un nouvel ami !
+                                <span className="font-semibold">{friend.displayName}</span>
+                                {item.friendId === user.uid ? ' et toi êtes maintenant amis' : ` est maintenant ami avec ${item.friendName ?? ''}`}
                               </p>
-                              <div className="flex items-center gap-2 mt-1 text-blue-600 dark:text-blue-400">
-                                <UserPlus className="h-4 w-4" />
-                                <span className="font-medium">Nouvelle connexion</span>
-                              </div>
                               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
                                 {formatDate(item.createdAt)}

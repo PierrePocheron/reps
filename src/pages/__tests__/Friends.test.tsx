@@ -53,6 +53,16 @@ describe('Friends activity', () => {
     expect(screen.queryByText(/autres? exercices?/)).not.toBeInTheDocument();
   });
 
+  it('names both people on the new-friend card, and says « toi » when it is the viewer', async () => {
+    const event = (id: string, friendId: string, friendName: string) => ({ type: 'new_friend', id, userId: 'alice', friendId, friendName, createdAt: { toDate: () => new Date() } });
+    db.getFriendsActivity.mockResolvedValueOnce([event('e1', 'me', 'Moi'), event('e2', 'bob', 'Bob')] as never);
+    renderFriends();
+    const line = (text: string) => (_: string, el: Element | null) => el?.tagName === 'P' && el.textContent === text;
+    expect(await screen.findByText(line('Alice et toi êtes maintenant amis'))).toBeInTheDocument();
+    expect(screen.getByText(line('Alice est maintenant ami avec Bob'))).toBeInTheDocument();
+    expect(screen.queryByText('Nouvelle connexion')).not.toBeInTheDocument();
+  });
+
   it('shows the empty feed once the last friend is removed (the old items left a blank area)', async () => {
     useUserStore.setState({ user: { uid: 'me', displayName: 'Moi', friends: ['alice'] } as never, friendRequests: [] } as never);
     render(<BrowserRouter><Friends /></BrowserRouter>);
