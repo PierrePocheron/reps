@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, fireEvent, within, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
 import { useSettingsStore } from '@/store/settingsStore';
@@ -15,8 +15,11 @@ let renfo: Session[] = all;
 let gym: GymSession[] = [];
 let loading = false;
 const inRange = (from: Date, to: Date) => (s: Session | GymSession) => s.date.toDate() >= from && s.date.toDate() < to;
+// Like the real hook's state: the same arrays from one render to the next until a refetch
+const pages = new WeakMap<object, unknown[]>();
+const page = <T,>(list: T[]) => { if (!pages.has(list)) pages.set(list, list.slice(0, 20)); return pages.get(list) as T[]; };
 vi.mock('@/hooks/useSessionHistory', () => ({
-  useSessionHistory: () => ({ sessions: renfo.slice(0, 20), gymSessions: gym.slice(0, 20), loading, error: false, refetch: vi.fn() }),
+  useSessionHistory: () => ({ sessions: page(renfo), gymSessions: page(gym), loading, error: false, refetch: vi.fn() }),
   usePeriodHistory: (from: Date, to: Date) => ({
     sessions: renfo.filter(inRange(from, to)), gymSessions: gym.filter(inRange(from, to)), loaded: true,
   }),
@@ -31,6 +34,7 @@ const tap = (el: HTMLElement) => { fireEvent.mouseEnter(el); fireEvent.focus(el)
 
 describe('Statistics', () => {
   beforeEach(() => {
+    vi.useRealTimers();
     renfo = all; gym = []; loading = false;
     useUserStore.setState({ user: { uid: 'u1', totalReps: 900, totalSessions: 90, totalCalories: 100 } as never, stats: null });
   });
@@ -155,6 +159,21 @@ describe('Statistics', () => {
     renderPage();
     expect(screen.getByText('–/3 séances')).toBeInTheDocument();
     expect(screen.queryByText(/^Encore/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Objectif atteint/)).not.toBeInTheDocument();
+  });
+
+  it('the weekly goal moves on to the new week when the app is shown again on Monday', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    const at = (d: number, h: number) => new Date(2026, 9, d, h);
+    vi.setSystemTime(at(11, 21)); // Sunday evening, 3 sessions Fri → Sun
+    useSettingsStore.setState({ weeklyGoal: 3 });
+    renfo = [11, 10, 9].map((d) => ({ ...all[0]!, sessionId: `w${d}`, date: { toDate: () => at(d, 10) } }) as Session);
+    renderPage();
+    expect(screen.getByText('3/3 séances')).toBeInTheDocument();
+    // Monday morning: the resumed app refreshes the stats, the page re-renders with the same sessions
+    vi.setSystemTime(at(12, 8));
+    act(() => { useUserStore.setState({ stats: { currentStreak: 3, longestStreak: 3, totalReps: 30, totalSessions: 3, exercisesDistribution: [] } as never }); });
+    expect(screen.getByText('0/3 séances')).toBeInTheDocument();
     expect(screen.queryByText(/Objectif atteint/)).not.toBeInTheDocument();
   });
 

@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { plural, frDate, formatNumber } from '@/utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -547,18 +547,10 @@ export default function Statistics() {
   const chartSessions = recent.loaded ? recent.sessions : sessions;
   const chartGymSessions = recent.loaded ? recent.gymSessions : gymSessions;
 
-  // Séances de la semaine en cours (lundi → dimanche)
-  const thisWeekCount = useMemo(() => {
-    const now = new Date();
-    const day = now.getDay();
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
-    monday.setHours(0, 0, 0, 0);
-
-    const renfo = sessions.filter((s) => s.date.toDate() >= monday).length;
-    const gym = gymSessions.filter((s) => s.date.toDate() >= monday).length;
-    return renfo + gym;
-  }, [sessions, gymSessions]);
+  // Séances de la semaine en cours (lundi → dimanche), from this render's day: the resident app outlives midnight
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  const thisWeekCount = [...sessions, ...gymSessions].filter((s) => s.date.toDate() >= monday).length;
 
   if (!user) return null;
   const isEmpty = !historyLoading && sessions.length === 0 && gymSessions.length === 0;
