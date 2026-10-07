@@ -87,7 +87,8 @@ export const useUserStore = create<UserState>((set, get) => ({
     // echoes back with the value already set, and a public-doc update still carries the old one, so neither undoes it
     const changed = user?.weeklyGoal !== prev?.weeklyGoal || user?.streakMode !== prev?.streakMode;
     set({ user, isAuthenticated: !!user });
-    if (user && (signedIn || changed)) useSettingsStore.getState().applyAccountSettings(user, signedIn);
+    // an unread private profile looks empty: uploading the device values would replace the account's real ones
+    if (user && (signedIn || changed)) useSettingsStore.getState().applyAccountSettings(user, signedIn && !user.privateUnavailable);
     if (user?.colorTheme) {
       applyThemeColor(user.colorTheme);
     }

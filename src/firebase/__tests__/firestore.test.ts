@@ -157,6 +157,18 @@ describe('getUserDocument', () => {
     vi.mocked(getDoc).mockRejectedValueOnce(new Error('Permission denied'));
     await expect(getUserDocument('uid123')).rejects.toThrow('Permission denied');
   });
+
+  it('says when its own private profile could not be read (the account is not « empty »)', async () => {
+    const config = await import('../config');
+    (config.auth as { currentUser: unknown }).currentUser = { uid: 'uid123' };
+    try {
+      vi.mocked(getDoc).mockResolvedValueOnce(makeDoc({ displayName: 'Pierre' }) as any).mockRejectedValueOnce(new Error('unavailable'));
+      const user = await getUserDocument('uid123');
+      expect(user?.privateUnavailable).toBe(true);
+    } finally {
+      (config.auth as { currentUser: unknown }).currentUser = null;
+    }
+  });
 });
 
 describe('updateUserDocument', () => {

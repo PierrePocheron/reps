@@ -205,6 +205,8 @@ export async function getUserDocument(uid: string): Promise<User | null> {
         }
       } catch (e) {
         logger.warn('Lecture du profil privé impossible', { error: e });
+        // not « an account without private values »: the settings sync must not fill it from the device
+        return { uid, ...publicDoc, privateUnavailable: true } as User;
       }
     }
 

@@ -39,6 +39,8 @@ export interface User {
   /** Own profile only (private/profile): the settings that follow the account, cached in localStorage */
   weeklyGoal?: number;
   streakMode?: 'daily' | 'weekly';
+  /** Set by getUserDocument when its own private profile could not be read: never written back. */
+  privateUnavailable?: boolean;
 
   createdAt: Timestamp;
   updatedAt: Timestamp;

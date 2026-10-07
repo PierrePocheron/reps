@@ -350,6 +350,18 @@ describe('userStore', () => {
             expect(firebase.updateUserDocument).not.toHaveBeenCalled();
         });
 
+        it('a private profile that could not be read uploads nothing (it would replace the real values with the device ones)', async () => {
+            useSettingsStore.setState({ weeklyGoal: 3, streakMode: 'daily' }); // defaults after a sign-out
+            (firebase.getCurrentUserProfile as any).mockResolvedValue({ uid: 'u1', displayName: 'P', privateUnavailable: true });
+            (firebase.calculateUserStats as any).mockResolvedValue({ totalReps: 0 });
+            useUserStore.setState({ currentUser: { uid: 'u1' } as any });
+
+            await useUserStore.getState().loadUserProfile();
+            await new Promise((r) => setTimeout(r, 0));
+
+            expect(firebase.updateUserDocument).not.toHaveBeenCalled();
+        });
+
         it('an account that never saved them (older versions) keeps the device values and uploads them on cold start', async () => {
             // Without the upload, another account signing in on this device (or a new device) replaced them for good
             useSettingsStore.setState({ weeklyGoal: 5, streakMode: 'weekly' });
