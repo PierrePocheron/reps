@@ -402,7 +402,7 @@ function MuscleDistribution({ sessions, gymSessions }: { sessions: Session[]; gy
 
 // ─── Récap du mois / de l'année (Hevy, Strava) ───────────────────────────────
 
-function PeriodRecap({ sessions, gymSessions }: { sessions: Session[]; gymSessions: GymSession[] }) {
+function PeriodRecap({ sessions, gymSessions, firstDay }: { sessions: Session[]; gymSessions: GymSession[]; firstDay: number }) {
   const { toast } = useToast();
   const [kind, setKind] = useState<RecapKind>('month');
   const [offset, setOffset] = useState(0);
@@ -439,11 +439,12 @@ function PeriodRecap({ sessions, gymSessions }: { sessions: Session[]; gymSessio
         </div>
       </div>
       <div className="flex items-center justify-between">
-        <button onClick={() => setOffset(offset - 1)} aria-label="Période précédente" className="h-11 w-11 flex items-center justify-center rounded-full hover:bg-muted">
+        <button onClick={() => setOffset(offset - 1)} disabled={from.getTime() <= firstDay} aria-label={kind === 'month' ? 'Mois précédent' : 'Année précédente'}
+          className="h-11 w-11 flex items-center justify-center rounded-full hover:bg-muted disabled:opacity-30">
           <ChevronRight className="w-4 h-4 rotate-180" />
         </button>
         <p className="font-semibold" aria-live="polite">{label}</p>
-        <button onClick={() => setOffset(offset + 1)} disabled={offset >= 0} aria-label="Période suivante"
+        <button onClick={() => setOffset(offset + 1)} disabled={offset >= 0} aria-label={kind === 'month' ? 'Mois suivant' : 'Année suivante'}
           className="h-11 w-11 flex items-center justify-center rounded-full hover:bg-muted disabled:opacity-30">
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -523,11 +524,13 @@ function TrainingHabits({ sessions, gymSessions }: { sessions: Session[]; gymSes
   );
 }
 
+const HISTORY_PAGE = 200;
+
 export default function Statistics() {
   const { user, stats } = useUserStore();
   const navigate = useNavigate();
   const { weeklyGoal, streakMode } = useSettingsStore();
-  const { sessions, gymSessions, loading: historyLoading } = useSessionHistory();
+  const { sessions, gymSessions, loading: historyLoading } = useSessionHistory(HISTORY_PAGE);
   // Heatmap (up to 96 days with the Monday alignment), weekly chart and muscles by date range: challenge
   // validations (one session each) can push these days out of the latest 200; recent data meanwhile
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -555,6 +558,11 @@ export default function Statistics() {
   const weeklyMode = streakMode === 'weekly';
   const streakNow = stats ? (weeklyMode ? stats.weeklyStreak ?? 0 : stats.currentStreak) : 0;
   const streakBest = stats ? (weeklyMode ? stats.longestWeeklyStreak ?? 0 : stats.longestStreak) : 0;
+  // The recap's back arrow stops at the first period with data: the account's creation, or an older imported
+  // session. A full page may not reach the oldest session: no stop then
+  const firstDay = sessions.length < HISTORY_PAGE && gymSessions.length < HISTORY_PAGE
+    ? Math.min(user.createdAt?.toDate().getTime() ?? Infinity, ...[...sessions, ...gymSessions].map((s) => s.date.toDate().getTime()))
+    : -Infinity;
   const streakUnit = (n: number) => (weeklyMode ? (n > 1 ? 'semaines' : 'semaine') : (n > 1 ? 'jours' : 'jour'));
 
   return (
@@ -851,7 +859,7 @@ export default function Statistics() {
             <ActivityCalendar sessions={chartSessions} gymSessions={chartGymSessions} />
             <WeeklyChart sessions={chartSessions} gymSessions={chartGymSessions} />
             <MuscleDistribution sessions={chartSessions} gymSessions={chartGymSessions} />
-            <PeriodRecap sessions={sessions} gymSessions={gymSessions} />
+            <PeriodRecap sessions={sessions} gymSessions={gymSessions} firstDay={firstDay} />
           </>
         )}
 

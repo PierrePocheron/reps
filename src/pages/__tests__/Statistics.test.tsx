@@ -98,4 +98,21 @@ describe('Statistics', () => {
     expect(screen.getByRole('button', { name: /^Cette semaine/ })).toHaveAccessibleName(/^Cette semaine : 15\s383 kg$/);
     expect(screen.getByText(/^15\s383 kg soulevés$/)).toBeInTheDocument();
   });
+
+  it('recap arrows name the month or the year and stop at the first period with data', () => {
+    useUserStore.setState({ user: { uid: 'u1', totalReps: 10, totalSessions: 1, totalCalories: 1, createdAt: { toDate: () => new Date() } } as never });
+    renfo = [all[0]!];
+    const { unmount } = renderPage();
+    expect(screen.getByRole('button', { name: 'Mois précédent' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Mois suivant' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Année' }));
+    expect(screen.getByRole('button', { name: 'Année précédente' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Année suivante' })).toBeDisabled();
+    unmount();
+
+    // a session imported from before the account: its period stays reachable
+    renfo = [all[0]!, { ...all[0]!, sessionId: 'old', date: { toDate: () => day(400) } } as Session];
+    renderPage();
+    expect(screen.getByRole('button', { name: 'Mois précédent' })).toBeEnabled();
+  });
 });
