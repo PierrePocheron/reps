@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
+import { formatNumber } from '@/utils/formatters';
 
 const db = vi.hoisted(() => ({
   getFriendsDetails: vi.fn(async () => [{ uid: 'alice', displayName: 'Alice', totalReps: 0, totalSessions: 0, badges: [], friends: ['me'] }]),
@@ -20,6 +21,8 @@ vi.mock('@/components/FriendTemplatesDialog', () => ({ FriendTemplatesDialog: ()
 
 import Friends from '../Friends';
 
+// Testing Library collapses the narrow no-break space of fr-FR numbers into a plain space
+const num = (n: number) => formatNumber(n).replace(/\s/g, ' ');
 const bobRequest = { id: 'bob_me', fromUserId: 'bob', fromDisplayName: 'Bob', toUserId: 'me', status: 'pending' };
 const renderFriends = (friends: string[] = ['alice'], friendRequests: unknown[] = []) => {
   useUserStore.setState({ user: { uid: 'me', displayName: 'Moi', friends } as never, friendRequests } as never);
@@ -61,6 +64,24 @@ describe('Friends activity', () => {
     expect(await screen.findByText(line('Alice et toi êtes maintenant amis'))).toBeInTheDocument();
     expect(screen.getByText(line('Alice est maintenant ami avec Bob'))).toBeInTheDocument();
     expect(screen.queryByText('Nouvelle connexion')).not.toBeInTheDocument();
+  });
+
+  it('writes feed numbers the French way: thousands separator, rounded kcal, « rep » singular', async () => {
+    const day = { toDate: () => new Date() };
+    db.getFriendsActivity.mockResolvedValueOnce([
+      { type: 'session', sessionId: 's3', userId: 'alice', totalReps: 1050, totalCalories: 120.4, exercises: [{ name: 'Pompes', emoji: '💪', reps: 1050 }], date: day, createdAt: day },
+      { type: 'session', sessionId: 's4', userId: 'alice', totalReps: 1, exercises: [], date: day, createdAt: day },
+    ] as never);
+    renderFriends();
+    expect(await screen.findAllByText(num(1050))).toHaveLength(2); // session total + the exercise line
+    expect(screen.getByText('120 kcal')).toBeInTheDocument();
+    expect(screen.getByText('rep')).toBeInTheDocument();
+  });
+
+  it('shows the friend stats with French plurals (« 1 rep », not « 1 reps »)', async () => {
+    db.getFriendsDetails.mockResolvedValueOnce([{ uid: 'alice', displayName: 'Alice', totalReps: 1, totalSessions: 1, badges: [], friends: ['me'] }] as never);
+    renderFriends(['alice'], [bobRequest]);
+    expect(await screen.findByText('1 séance • 1 rep')).toBeInTheDocument();
   });
 
   it('shows the empty feed once the last friend is removed (the old items left a blank area)', async () => {

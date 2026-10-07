@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { formatNumber, frDate } from '@/utils/formatters';
+import { formatNumber, formatReps, frDate, plural } from '@/utils/formatters';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -346,12 +346,12 @@ export default function Friends() {
                                 </p>
                               </div>
                               <div className="text-right shrink-0 ml-2">
-                                <span className="text-lg font-bold text-primary">{item.totalReps}</span>
-                                <span className="text-xs text-muted-foreground ml-1">reps</span>
+                                <span className="text-lg font-bold text-primary">{formatNumber(item.totalReps)}</span>
+                                <span className="text-xs text-muted-foreground ml-1">rep{item.totalReps > 1 ? 's' : ''}</span>
                                 {(item.totalCalories || 0) > 0 && (
                                   <div className="flex items-center justify-end gap-1 text-orange-700 dark:text-orange-400 mt-1">
                                     <Flame className="h-3 w-3" />
-                                    <span className="text-xs font-bold">{item.totalCalories} kcal</span>
+                                    <span className="text-xs font-bold">{formatNumber(Math.round(item.totalCalories ?? 0))} kcal</span>
                                   </div>
                                 )}
                               </div>
@@ -367,7 +367,7 @@ export default function Friends() {
                                     <span>{exo.emoji}</span>
                                     <span className="truncate">{exo.name}</span>
                                   </span>
-                                  <span className="font-medium text-muted-foreground">{exo.reps}</span>
+                                  <span className="font-medium text-muted-foreground">{formatNumber(exo.reps)}</span>
                                 </div>
                               ))}
                               {done.length > 3 && (
@@ -555,7 +555,7 @@ export default function Friends() {
                           <div className="min-w-0">
                             <p className="font-medium truncate">{friend.displayName}</p>
                             <p className="text-xs text-muted-foreground truncate">
-                              {friend.totalSessions} séance{friend.totalSessions > 1 ? 's' : ''} • {formatNumber(friend.totalReps)} reps
+                              {plural(friend.totalSessions, 'séance')} • {formatReps(friend.totalReps)}
                             </p>
                           </div>
                         </div>
