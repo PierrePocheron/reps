@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
 const s = vi.hoisted(() => ({ isActive: true, totalReps: 40, startSession: vi.fn(), exercises: [] as { name: string; emoji: string; reps: number; met?: number }[] }));
@@ -35,5 +35,15 @@ describe('Session page', () => {
     useUserStore.setState({ user: { uid: 'u1', weight: 75, height: 175, gender: 'male' } as never });
     render(<MemoryRouter><Session /></MemoryRouter>);
     expect(screen.getByText('31 kcal')).toBeInTheDocument(); // the 4.0 fallback showed 18
+  });
+
+  it('the recap counts only the exercises done, not the skipped ones of a template', async () => {
+    s.isActive = true;
+    s.exercises = [{ name: 'Pompes', emoji: '💪', reps: 30 }, { name: 'Tractions', emoji: '🧗', reps: 0 }, { name: 'Abdos', emoji: '🍫', reps: 25 }];
+    const { rerender } = render(<MemoryRouter><Session /></MemoryRouter>);
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Terminer la séance/ })); });
+    s.isActive = false; // endSession emptied the store
+    rerender(<MemoryRouter><Session /></MemoryRouter>);
+    expect(screen.getByText('Exercices').nextElementSibling).toHaveTextContent('2');
   });
 });

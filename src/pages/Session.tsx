@@ -103,7 +103,7 @@ function Session() {
         { label: 'Durée', value: formatDurationLong(duration) },
         { label: 'Reps', value: totalReps.toLocaleString('fr-FR') },
         { label: 'Calories', value: `${Math.round(currentCalories)} kcal` },
-        { label: 'Exercices', value: String(exercises.length) },
+        { label: 'Exercices', value: String(exercises.filter((e) => e.reps > 0).length) }, // skipped template ones stay stored
       ],
     });
     try {

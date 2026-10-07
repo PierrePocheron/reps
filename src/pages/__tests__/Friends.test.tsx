@@ -18,6 +18,18 @@ vi.mock('@/components/FriendTemplatesDialog', () => ({ FriendTemplatesDialog: ()
 import Friends from '../Friends';
 
 describe('Friends activity', () => {
+  it('lists only the exercises done: no « + 2 autres exercices » for the skipped ones of a template', async () => {
+    const ex = (name: string, reps: number) => ({ name, emoji: '💪', reps });
+    db.getFriendsActivity.mockResolvedValueOnce([{ type: 'session', sessionId: 's2', userId: 'alice', totalReps: 95,
+      exercises: [ex('Pompes', 30), ex('Squats', 40), ex('Tractions', 0), ex('Burpees', 0), ex('Abdos', 25)],
+      date: { toDate: () => new Date() }, createdAt: { toDate: () => new Date() } }] as never);
+    useUserStore.setState({ user: { uid: 'me', displayName: 'Moi', friends: ['alice'] } as never, friendRequests: [] } as never);
+    render(<BrowserRouter><Friends /></BrowserRouter>);
+    expect(await screen.findByText('Abdos')).toBeInTheDocument();
+    expect(screen.queryByText('Tractions')).not.toBeInTheDocument();
+    expect(screen.queryByText(/autres? exercices?/)).not.toBeInTheDocument();
+  });
+
   it('shows the empty feed once the last friend is removed (the old items left a blank area)', async () => {
     useUserStore.setState({ user: { uid: 'me', displayName: 'Moi', friends: ['alice'] } as never, friendRequests: [] } as never);
     render(<BrowserRouter><Friends /></BrowserRouter>);

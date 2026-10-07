@@ -330,7 +330,8 @@ export default function Friends() {
                     );
                   }
 
-                  // C'est une session
+                  // C'est une session. Exercises skipped in a template (0 reps) stay stored for « Refaire »: not shown
+                  const done = (item.exercises ?? []).filter((exo) => exo.reps > 0);
                   return (
                     <Card key={item.sessionId} className="overflow-hidden border-none shadow-sm bg-card/50">
                       <CardContent className="p-4">
@@ -358,7 +359,7 @@ export default function Friends() {
                             </div>
 
                             <div className="mt-3 space-y-1">
-                              {item.exercises && item.exercises
+                              {done
                                 .sort((a, b) => b.reps - a.reps)
                                 .slice(0, 3)
                                 .map((exo, idx) => (
@@ -370,9 +371,9 @@ export default function Friends() {
                                   <span className="font-medium text-muted-foreground">{exo.reps}</span>
                                 </div>
                               ))}
-                              {item.exercises && item.exercises.length > 3 && (
+                              {done.length > 3 && (
                                 <p className="text-xs text-center text-muted-foreground pt-1">
-                                  {`+ ${item.exercises.length - 3} autre${item.exercises.length - 3 > 1 ? 's' : ''} exercice${item.exercises.length - 3 > 1 ? 's' : ''}`}
+                                  {`+ ${done.length - 3} autre${done.length - 3 > 1 ? 's' : ''} exercice${done.length - 3 > 1 ? 's' : ''}`}
                                 </p>
                               )}
                             </div>

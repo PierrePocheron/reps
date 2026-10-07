@@ -504,7 +504,8 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
 
     const totalReps = sessions.reduce((sum, session) => sum + session.totalReps, 0);
     const totalDuration = sessions.reduce((sum, session) => sum + session.duration, 0);
-    const totalExercises = sessions.reduce((sum, session) => sum + session.exercises.length, 0);
+    // exercises skipped in a template session (0 reps) stay stored for « Refaire », but were not done
+    const totalExercises = sessions.reduce((sum, session) => sum + session.exercises.filter((ex) => ex.reps > 0).length, 0);
     const totalCalories = sessions.reduce((sum, session) => sum + (session.totalCalories || 0), 0);
     const totalSessions = sessions.length;
 
@@ -548,6 +549,7 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
         // Stats par exercice
         if (session.exercises) {
             session.exercises.forEach(ex => {
+                if (ex.reps <= 0) return; // skipped in a template session
                 const current = exerciseStatsMap.get(ex.name) || { emoji: ex.emoji, reps: 0, calories: 0, count: 0 };
                 current.reps += ex.reps;
                 current.count += 1;

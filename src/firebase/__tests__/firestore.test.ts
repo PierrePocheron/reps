@@ -485,6 +485,15 @@ describe('calculateUserStats', () => {
     expect(stats.trainingSessions).toBe(3);
   });
 
+  it('exercises skipped in a template session (0 reps) are not favourites nor counted in the average', async () => {
+    vi.mocked(getDocs).mockResolvedValueOnce(makeSnapshot([makeSessionDoc({
+      exercises: [{ name: 'Pompes', emoji: '💪', reps: 30 }, { name: 'Tractions', emoji: '🧗', reps: 0 }],
+    })]) as any);
+    const stats = await calculateUserStats('uid123');
+    expect(stats.exercisesDistribution.map((e) => e.name)).toEqual(['Pompes']);
+    expect(stats.averageExercises).toBe(1);
+  });
+
   it('should calculate totals from sessions', async () => {
     const sessions = [
       makeSessionDoc({ totalReps: 30, duration: 120, totalCalories: 50 }),
