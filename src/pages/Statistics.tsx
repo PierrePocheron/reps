@@ -359,7 +359,7 @@ function MuscleDistribution({ sessions, gymSessions }: { sessions: Session[]; gy
 
   return (
     <div className="bg-card border rounded-2xl p-4">
-      <div className="flex items-center justify-between gap-2 mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <Target className="w-4 h-4 text-primary" />
           Muscles travaillés
@@ -370,7 +370,7 @@ function MuscleDistribution({ sessions, gymSessions }: { sessions: Session[]; gy
               key={p.days}
               onClick={() => setDays(p.days)}
               aria-pressed={days === p.days}
-              className={`px-3 min-h-11 rounded-md text-xs font-medium transition-all active:scale-95 ${
+              className={`px-3 min-h-11 rounded-md text-xs font-medium whitespace-nowrap transition-all active:scale-95 ${
                 days === p.days ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'
               }`}
             >
@@ -427,7 +427,7 @@ function PeriodRecap({ sessions, gymSessions, firstDay }: { sessions: Session[];
 
   return (
     <div className="bg-card border rounded-2xl p-4 space-y-4">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <Trophy className="w-4 h-4 text-primary" />
           Récap
@@ -435,7 +435,7 @@ function PeriodRecap({ sessions, gymSessions, firstDay }: { sessions: Session[];
         <div className="flex gap-1 p-0.5 bg-muted rounded-lg" role="group" aria-label="Période du récap">
           {(['month', 'year'] as const).map((k) => (
             <button key={k} onClick={() => { setKind(k); setOffset(0); }} aria-pressed={kind === k}
-              className={`px-3 min-h-11 rounded-md text-xs font-medium ${kind === k ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'}`}>
+              className={`px-3 min-h-11 rounded-md text-xs font-medium whitespace-nowrap ${kind === k ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground'}`}>
               {k === 'month' ? 'Mois' : 'Année'}
             </button>
           ))}
@@ -443,12 +443,12 @@ function PeriodRecap({ sessions, gymSessions, firstDay }: { sessions: Session[];
       </div>
       <div className="flex items-center justify-between">
         <button onClick={() => setOffset(offset - 1)} disabled={from.getTime() <= firstDay} aria-label={kind === 'month' ? 'Mois précédent' : 'Année précédente'}
-          className="h-11 w-11 flex items-center justify-center rounded-full hover:bg-muted disabled:opacity-30">
+          className="h-11 w-11 shrink-0 flex items-center justify-center rounded-full hover:bg-muted disabled:opacity-30">
           <ChevronRight className="w-4 h-4 rotate-180" />
         </button>
-        <p className="font-semibold" aria-live="polite">{label}</p>
+        <p className="font-semibold text-center" aria-live="polite">{label}</p>
         <button onClick={() => setOffset(offset + 1)} disabled={offset >= 0} aria-label={kind === 'month' ? 'Mois suivant' : 'Année suivante'}
-          className="h-11 w-11 flex items-center justify-center rounded-full hover:bg-muted disabled:opacity-30">
+          className="h-11 w-11 shrink-0 flex items-center justify-center rounded-full hover:bg-muted disabled:opacity-30">
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
@@ -458,16 +458,16 @@ function PeriodRecap({ sessions, gymSessions, firstDay }: { sessions: Session[];
         <>
           <div className="grid grid-cols-2 gap-2">
             {tiles.map((t) => (
-              <div key={t.label} className="rounded-xl bg-muted/50 p-3">
-                <p className="text-xl font-bold">{t.value}</p>
-                <p className="text-xs text-muted-foreground">{t.label}</p>
+              <div key={t.label} className="min-w-0 rounded-xl bg-muted/50 p-3">
+                <p className="text-xl font-bold hyphens-auto break-words">{t.value}</p>
+                <p className="text-xs text-muted-foreground hyphens-auto break-words">{t.label}</p>
               </div>
             ))}
           </div>
           {recap.topMuscles[0] && (
             <p className="text-sm">
-              Muscle le plus travaillé : <span className="font-semibold">{recap.topMuscles[0].group}</span>
-              <span className="text-muted-foreground"> ({plural(Math.round(recap.topMuscles[0].sets), 'série')})</span>
+              Muscle le plus travaillé&nbsp;: <span className="font-semibold">{recap.topMuscles[0].group}</span>
+              {' '}<span className="text-muted-foreground whitespace-nowrap">({plural(Math.round(recap.topMuscles[0].sets), 'série')})</span>
             </p>
           )}
           <button
