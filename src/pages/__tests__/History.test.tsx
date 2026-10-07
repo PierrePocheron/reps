@@ -80,6 +80,18 @@ describe('History', () => {
     expect(await screen.findByRole('textbox', { name: 'Nom du modèle' })).toHaveValue('Push A');
   });
 
+  it('a long session title is suggested as the name the template is stored under (40 characters)', async () => {
+    const title = 'Haut du corps lourd : pecs, épaules et triceps'; // 46: session titles go up to 60
+    GYM = [{ ...gym('A', 3, ['bench']), title }];
+    vi.mocked(createUserTemplate).mockResolvedValueOnce(undefined as never);
+    render(<MemoryRouter><History /></MemoryRouter>);
+    await openMenu('Enregistrer comme modèle');
+    expect(await screen.findByRole('textbox', { name: 'Nom du modèle' })).toHaveValue(title.slice(0, 40));
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' })); });
+    const stored = vi.mocked(createUserTemplate).mock.lastCall?.[1].name;
+    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ description: `« ${stored} » est dans tes modèles.` }));
+  });
+
   it('a saved template opens on the Muscu tab of the Templates page', async () => {
     GYM = [gym('A', 3, ['bench'])];
     localStorage.removeItem('reps_templates_tab'); // Templates then opens on Renfo, where the new template is not
