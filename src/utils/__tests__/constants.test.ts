@@ -53,6 +53,12 @@ describe('Gamification Constants Logic', () => {
         expect(badges).toContainEqual(streak3);
         expect(badges).not.toContainEqual(streak7);
       });
+
+    it('unlocks streak badges from the record too (« Meilleure série 55 jours » with every streak badge locked)', () => {
+      const badges = getUnlockedBadges({ ...mockStats, currentStreak: 0, longestStreak: 10 });
+      expect(badges.map((b) => b.id)).toEqual(expect.arrayContaining(['streak-3', 'streak-7']));
+      expect(badges.map((b) => b.id)).not.toContain('streak-30');
+    });
   });
 
   describe('getNextBadge', () => {

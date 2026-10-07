@@ -451,7 +451,8 @@ export function getUnlockedBadges(stats: UserStats): Badge[] {
       case 'total_reps':
         return stats.totalReps >= badge.threshold;
       case 'streak':
-        return stats.currentStreak >= badge.threshold;
+        // the record counts: imported history or a broken run earned it (Statistics shows « Meilleure série »)
+        return Math.max(stats.currentStreak, stats.longestStreak ?? 0) >= badge.threshold;
       case 'total_sessions':
         return stats.totalSessions >= badge.threshold;
       case 'time_morning':
