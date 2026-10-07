@@ -508,7 +508,7 @@ export default function Friends() {
                               ) : sentTo.has(result.uid) ? (
                                 <p className="text-xs text-muted-foreground">Demande envoyée</p>
                               ) : (
-                                <p className="text-xs text-muted-foreground truncate">Envoie-lui une demande d'ami</p>
+                                <p className="text-xs text-muted-foreground">Envoie-lui une demande d'ami</p>
                               )}
                             </div>
                           </div>
@@ -584,7 +584,7 @@ export default function Friends() {
                           <UserAvatar user={friend} size="md" />
                           <div className="min-w-0">
                             <p className="font-medium truncate">{friend.displayName}</p>
-                            <p className="text-xs text-muted-foreground truncate">
+                            <p className="text-xs text-muted-foreground">
                               {plural(friend.totalSessions, 'séance')} • {formatReps(friend.totalReps)}
                             </p>
                           </div>
