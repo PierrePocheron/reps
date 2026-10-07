@@ -1,8 +1,10 @@
+import { Profiler } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import Templates from '../Templates';
 import { useGymSessionStore } from '@/store/gymSessionStore';
+import { useSessionStore } from '@/store/sessionStore';
 
 vi.mock('@/hooks/useUserTemplates', () => ({
   useUserTemplates: () => ({ templates: [], loading: false, create: vi.fn(), remove: vi.fn(), update: vi.fn() }),
@@ -55,5 +57,15 @@ describe('Templates tabs', () => {
     fireEvent.click(screen.getByRole('button', { name: /Séance libre/ }));
     expect(screen.getByText('séance muscu')).toBeInTheDocument();
     expect(useGymSessionStore.getState().phase).toBe('execute');
+  });
+
+  it('a running renfo session does not re-render the page every second (its timer is not shown here)', () => {
+    useSessionStore.setState({ isActive: true, duration: 0 });
+    const onRender = vi.fn();
+    render(<MemoryRouter><Profiler id="templates" onRender={onRender}><Templates /></Profiler></MemoryRouter>);
+    onRender.mockClear();
+    act(() => useSessionStore.setState({ duration: 1 })); // useSession's 1 s tick, from the bottom bar
+    expect(onRender).not.toHaveBeenCalled();
+    useSessionStore.setState({ isActive: false });
   });
 });

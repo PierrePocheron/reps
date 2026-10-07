@@ -127,7 +127,9 @@ function Templates() {
   const [editing, setEditing] = useState<WorkoutTemplate | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<WorkoutTemplate | null>(null);
   const [templateToDelete, setTemplateToDelete] = useState<WorkoutTemplate | null>(null);
-  const { isActive, loadExercisesFromTemplate } = useSessionStore();
+  // selectors: the whole store re-rendered the page each second of a renfo session (its timer ticks from the bottom bar)
+  const isActive = useSessionStore((st) => st.isActive);
+  const loadExercisesFromTemplate = useSessionStore((st) => st.loadExercisesFromTemplate);
   const { phase: gymPhase, loadGymTemplate, startExecution, startFreeSession } = useGymSessionStore();
   const { templates: userTemplates, loading: templatesLoading, create, remove, update } = useUserTemplates();
 

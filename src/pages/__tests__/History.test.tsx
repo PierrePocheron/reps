@@ -1,9 +1,11 @@
+import { Profiler } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act, within } from '@testing-library/react';
 import { MemoryRouter, useLocation, useNavigationType } from 'react-router-dom';
 import History from '@/pages/History';
 import { useUserStore } from '@/store/userStore';
 import { useSettingsStore } from '@/store/settingsStore';
+import { useSessionStore } from '@/store/sessionStore';
 import { createUserTemplate } from '@/firebase/templates';
 import { updateSession, updateUserStatsAfterSession } from '@/firebase/firestore';
 
@@ -120,6 +122,18 @@ describe('History', () => {
     await act(async () => {});
     expect(updateUserStatsAfterSession).toHaveBeenCalledWith('u1', 0);
     expect(useUserStore.getState().refreshStats).not.toHaveBeenCalled();
+  });
+
+  it('a running renfo session does not re-render the list every second (its timer is not shown here)', async () => {
+    GYM = Array.from({ length: 3 }, (_, i) => gym(`G${i}`, 1, ['bench']));
+    useSessionStore.setState({ isActive: true, duration: 0 });
+    const onRender = vi.fn();
+    render(<MemoryRouter><Profiler id="history" onRender={onRender}><History /></Profiler></MemoryRouter>);
+    await act(async () => {});
+    onRender.mockClear();
+    act(() => useSessionStore.setState({ duration: 1 })); // useSession's 1 s tick, from the bottom bar
+    expect(onRender).not.toHaveBeenCalled();
+    useSessionStore.setState({ isActive: false });
   });
 
   it('a failed stats recompute does not report a done delete or renfo edit as failed', async () => {

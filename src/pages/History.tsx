@@ -384,7 +384,9 @@ function History() {
     return () => { cancelled = true; };
   }, [detailPr, lang]);
   const { phase: gymPhase, startFreeSession, loadGymTemplate, startExecution } = useGymSessionStore();
-  const { isActive: renfoActive, loadExercises } = useSessionStore();
+  // selectors: the whole store re-rendered every card each second of a renfo session (its timer ticks from the bottom bar)
+  const renfoActive = useSessionStore((st) => st.isActive);
+  const loadExercises = useSessionStore((st) => st.loadExercises);
   const { toast } = useToast();
   const user = useUserStore((st) => st.user);
   // Suppression d'une séance (#56) : confirmation, puis stats, série et totaux recalculés
