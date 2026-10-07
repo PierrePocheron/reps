@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { collection, getDocs, limit, orderBy, query, startAfter, type QueryDocumentSnapshot } from 'firebase/firestore';
+import { db } from '@/firebase/config';
 import { getUserSessions, getUserSessionsBetween } from '@/firebase/firestore';
 import { getUserGymSessions, getUserGymSessionsBetween } from '@/firebase/gymSessions';
 import { useUserStore } from '@/store/userStore';
+import { logger } from '@/utils/logger';
 import type { Session, GymSession } from '@/firebase/types';
 
 export interface SessionHistory {
@@ -20,10 +23,23 @@ export async function fetchWholeHistory(uid: string): Promise<{ sessions: Sessio
   return { sessions, gymSessions };
 }
 
+type Cursor = QueryDocumentSnapshot | undefined;
+const RENFO = ['sessions', 'userSessions'] as const;
+const GYM = ['gym_sessions', 'userGymSessions'] as const;
+
+/** n sessions of one collection, newest first, after the `after` document (a cursor: only these n are read). */
+async function readPage<T>([root, sub]: readonly [string, string], uid: string, n: number, after: Cursor): Promise<{ items: T[]; last: Cursor }> {
+  const { docs } = await getDocs(query(collection(db, root, uid, sub), orderBy('date', 'desc'), ...(after ? [startAfter(after)] : []), limit(n)));
+  return { items: docs.map((d) => ({ sessionId: d.id, ...d.data() })) as T[], last: docs[docs.length - 1] ?? after };
+}
+
+interface Loaded { uid: string; tick: number; n: number; sessions: Session[]; gymSessions: GymSession[]; lastRenfo: Cursor; lastGym: Cursor }
+
 export function useSessionHistory(limitCount = 200): SessionHistory {
   const uid = useUserStore().user?.uid;
   const [sessions, setSessions] = useState<Session[]>([]);
   const [gymSessions, setGymSessions] = useState<GymSession[]>([]);
+  const done = useRef<Loaded | null>(null); // the last list read, for the next page's cursors
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [tick, setTick] = useState(0);
@@ -34,18 +50,33 @@ export function useSessionHistory(limitCount = 200): SessionHistory {
       return;
     }
 
+    // A bigger count (« Voir les séances plus anciennes ») reads only the next sessions, after the last one loaded, of each
+    // collection that filled its page: re-reading from the top billed every page again. Anything else reads from the top.
+    const prev = done.current;
+    const older = prev && prev.uid === uid && prev.tick === tick && limitCount > prev.n ? prev : null;
+    const n = limitCount - (older?.n ?? 0);
+    let alive = true;
     setLoading(true);
     setError(false);
     Promise.all([
-      getUserSessions(uid, limitCount),
-      getUserGymSessions(uid, limitCount),
+      older && older.sessions.length < older.n ? { items: [], last: older.lastRenfo } : readPage<Session>(RENFO, uid, n, older?.lastRenfo),
+      older && older.gymSessions.length < older.n ? { items: [], last: older.lastGym } : readPage<GymSession>(GYM, uid, n, older?.lastGym),
     ])
-      .then(([s, g]) => {
-        setSessions(s);
-        setGymSessions(g);
+      .then(([r, g]) => {
+        if (!alive) return;
+        done.current = {
+          uid, tick, n: limitCount, lastRenfo: r.last, lastGym: g.last,
+          sessions: [...(older?.sessions ?? []), ...r.items], gymSessions: [...(older?.gymSessions ?? []), ...g.items],
+        };
+        setSessions(done.current.sessions);
+        setGymSessions(done.current.gymSessions);
       })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        logger.error('Historique des séances :', err);
+        if (alive) setError(true);
+      })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
   }, [uid, limitCount, tick]);
 
   return { sessions, gymSessions, loading, error, refetch: () => setTick((t) => t + 1) };

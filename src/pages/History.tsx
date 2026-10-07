@@ -317,7 +317,7 @@ function LoadOlder({ loading, onClick }: { loading: boolean; onClick: () => void
   );
 }
 
-// ponytail: « load more » raises the limit and re-reads from the top (simple); cursor pages if reads cost matters
+// « load more » raises the count in the URL; useSessionHistory then reads only the next page of each collection (cursor)
 const PAGE = 100;
 
 function History() {
