@@ -24,7 +24,7 @@ import { useUserStore } from '@/store/userStore';
 import { cn } from '@/utils/cn';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { useSessionHistory, fetchWholeHistory } from '@/hooks/useSessionHistory';
+import { fetchWholeHistory } from '@/hooks/useSessionHistory';
 import { saveFile } from '@/utils/saveFile';
 import { localDay } from '@/utils/formatters';
 import { useGymSessionStore } from '@/store/gymSessionStore';
@@ -51,7 +51,6 @@ function Settings() {
   const { notificationsEnabled, notificationTime, hapticFeedback, soundEnabled, weeklyGoal, language, streakMode, keepAwake, setNotificationsEnabled, setNotificationTime, setHapticFeedback, setSoundEnabled, setWeeklyGoal, setLanguage, setStreakMode, setKeepAwake } = useSettingsStore();
   const deviceLanguage = detectDeviceLanguage();
   const { scheduleDailyReminder, cancelReminder } = useNotifications();
-  const { sessions, gymSessions, loading: historyLoading, refetch: refetchHistory } = useSessionHistory(500);
   // Import d'un export Strong / Hevy (#61) : aperçu, puis confirmation
   const csvInput = useRef<HTMLInputElement>(null);
   const [importPreview, setImportPreview] = useState<{ sessions: ImportedSession[]; existing: GymSession[]; skipped: number; exercises: number; known: number; pounds: boolean } | null>(null);
@@ -67,7 +66,7 @@ function Settings() {
         toast({ title: 'Aucune séance trouvée', description: "Ce fichier n'est pas un export Strong ou Hevy.", variant: 'destructive' });
         return;
       }
-      const whole = user ? (await fetchWholeHistory(user.uid)).gymSessions : gymSessions; // duplicates older than a page too
+      const whole = user ? (await fetchWholeHistory(user.uid)).gymSessions : []; // duplicates older than a page too
       const fresh = newSessionsOnly(all, [...whole.map((s) => s.date.toDate()), ...importedDates.current]);
       const ids = new Set(fresh.flatMap((s) => s.exercises.map((e) => e.exerciseId)));
       setImportPreview({ sessions: fresh, existing: whole, skipped: all.length - fresh.length, exercises: ids.size, known: [...ids].filter((id) => !id.startsWith('import_')).length, pounds: POUNDS_HEADER.test(text.split('\n', 1)[0] ?? '') });
@@ -89,7 +88,6 @@ function Settings() {
       importedDates.current.push(...importPreview.sessions.map((s) => s.date));
       toast({ title: `${importPreview.sessions.length} séance${importPreview.sessions.length > 1 ? 's' : ''} importée${importPreview.sessions.length > 1 ? 's' : ''}` });
       setImportPreview(null);
-      refetchHistory();
       await updateUserStatsAfterSession(user.uid, 0); // série, totaux et badges comptent l'historique importé
     } catch (err) {
       logger.error('Import CSV :', err);
@@ -107,7 +105,7 @@ function Settings() {
     setExporting(true);
     try {
       const day = localDay(new Date());
-      const all = user?.uid ? await fetchWholeHistory(user.uid) : { sessions, gymSessions }; // every session, not a page
+      const all = user?.uid ? await fetchWholeHistory(user.uid) : { sessions: [], gymSessions: [] }; // every session, not a page
       if (format === 'csv') {
         // BOM : Excel lit alors les accents correctement
         const done = await saveFile(`reps-export-${day}.csv`, '\uFEFF' + sessionsToCsv(all.gymSessions, all.sessions), 'text/csv');
@@ -418,7 +416,7 @@ function Settings() {
           <CardContent className="p-0 divide-y">
             <button
               onClick={() => handleExportData('json')}
-              disabled={exporting || historyLoading} // exporter avant la fin du chargement donnait un fichier vide
+              disabled={exporting}
               className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 active:bg-muted transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
               <div className="flex items-center gap-3">
@@ -436,7 +434,7 @@ function Settings() {
             </button>
             <button
               onClick={() => handleExportData('csv')}
-              disabled={exporting || historyLoading} // exporter avant la fin du chargement donnait un fichier vide
+              disabled={exporting}
               className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 active:bg-muted transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
               <div className="flex items-center gap-3">
@@ -455,7 +453,7 @@ function Settings() {
             <button
               id="import"
               onClick={() => csvInput.current?.click()}
-              disabled={historyLoading || importing} // l'historique sert à écarter les doublons
+              disabled={importing}
               className="w-full flex items-center justify-between px-6 py-4 hover:bg-muted/50 active:bg-muted transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
               <div className="flex items-center gap-3">

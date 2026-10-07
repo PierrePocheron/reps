@@ -19,7 +19,8 @@ vi.mock('@/utils/exerciseLibrary', async (importOriginal) => ({
 }));
 
 import Settings from '../Settings';
-import { updateUserStatsAfterSession } from '@/firebase/firestore';
+import { getUserSessions, updateUserStatsAfterSession } from '@/firebase/firestore';
+import { getUserGymSessions } from '@/firebase/gymSessions';
 
 const renderPage = () => render(<MemoryRouter><Settings /></MemoryRouter>);
 const refreshStats = vi.fn(async () => {});
@@ -30,7 +31,16 @@ describe('Settings', () => {
     useUserStore.setState({ user: { uid: 'u1', displayName: 'Test' } as never, refreshStats });
   });
 
-  it('an import recomputes the stats once', async () => {
+  it('opening the page reads no session: export and import read the whole history themselves', () => {
+    renderPage();
+    expect(getUserSessions).not.toHaveBeenCalled();
+    expect(getUserGymSessions).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /Exporter mes données/ })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Exporter mes séances/ })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Importer depuis Strong/ })).toBeEnabled();
+  });
+
+  it('an import recomputes the stats once and reads no page of history afterwards', async () => {
     const { container } = renderPage();
     const csv = [
       'Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE',
@@ -42,5 +52,7 @@ describe('Settings', () => {
     await waitFor(() => expect(updateUserStatsAfterSession).toHaveBeenCalledWith('u1', 0));
     // the stats listener already hands the fresh stats to the store: no second full read
     expect(refreshStats).not.toHaveBeenCalled();
+    // only the duplicate check's whole-history read, no page refetch
+    expect(vi.mocked(getUserSessions).mock.calls).toEqual([['u1', 100_000, true]]);
   });
 });
