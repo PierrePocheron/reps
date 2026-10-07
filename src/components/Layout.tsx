@@ -12,7 +12,7 @@ interface LayoutProps {
  * Layout principal de l'application avec gestion du mode offline
  */
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App } from '@capacitor/app';
 
@@ -32,8 +32,12 @@ export function Layout({ children }: LayoutProps) {
   const [showOnboarding] = useState(() => !onboardingDone());
 
   // Nouvelle page = en haut (sinon « Refaire » sur une carte basse de l'historique ouvrait la séance au milieu) ;
-  // pas au retour arrière, pour ne pas gêner une éventuelle restauration de position
+  // pas au retour arrière, pour ne pas gêner une éventuelle restauration de position.
+  // Same page, new URL (History's tab, filter, « plus anciennes » replace it): the list stays where it is
+  const scrolledPath = useRef<string | null>(null);
   useEffect(() => {
+    if (scrolledPath.current === location.pathname) return;
+    scrolledPath.current = location.pathname;
     if (navigationType !== 'POP') window.scrollTo(0, 0);
   }, [location.pathname, navigationType]);
 
