@@ -548,12 +548,15 @@ export async function calculateUserStats(userId: string): Promise<UserStats> {
 
         // Stats par exercice
         if (session.exercises) {
+            // The stored session total (profile of that day, rounded) split by each exercise's share: the rows add
+            // up to « Calories brûlées » even after a profile change
+            const sessionKcal = renfoCalories(user, session.exercises);
             session.exercises.forEach(ex => {
                 if (ex.reps <= 0) return; // skipped in a template session
                 const current = exerciseStatsMap.get(ex.name) || { emoji: ex.emoji, reps: 0, calories: 0, count: 0 };
                 current.reps += ex.reps;
                 current.count += 1;
-                current.calories += renfoCalories(user, [ex]); // same formula as the session total
+                current.calories += sessionKcal > 0 ? (session.totalCalories || 0) * renfoCalories(user, [ex]) / sessionKcal : 0;
 
                 exerciseStatsMap.set(ex.name, current);
             });

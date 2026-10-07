@@ -546,6 +546,23 @@ describe('calculateUserStats', () => {
     expect(stats.exercisesDistribution[0]!.totalCalories).toBe(84); // MET 8, 4 s/rep, 90 kg (was 10)
   });
 
+  it('per-exercise kcal add up to « Calories brûlées » (stored totals, not the current profile)', async () => {
+    // 10 × 10 push-ups saved at 2 kcal each (default profile, rounded per session): the row said 22 for a total of 20
+    vi.mocked(getDocs).mockResolvedValueOnce(makeSnapshot(Array.from({ length: 10 }, () =>
+      makeSessionDoc({ totalReps: 10, exercises: [{ name: 'Pompes', emoji: '💪', reps: 10 }], totalCalories: 2 })),
+    ) as any);
+    const stats = await calculateUserStats('uid123');
+    expect(stats.exercisesDistribution[0]!.totalCalories).toBe(stats.totalCalories);
+
+    // profile filled in afterwards (95 kg / 185 cm): the rows summed to 422 for a total of 310
+    vi.mocked(getDoc).mockResolvedValue(makeDoc({ weight: 95, height: 185, gender: 'male' }) as any);
+    vi.mocked(getDocs).mockResolvedValueOnce(makeSnapshot([makeSessionDoc({ totalReps: 90, totalCalories: 31,
+      exercises: [{ name: 'Pompes', emoji: '💪', reps: 30 }, { name: 'Squats', emoji: '🦵', reps: 40 }, { name: 'Burpees', emoji: '💀', reps: 20 }] })]) as any);
+    const mixed = await calculateUserStats('uid123');
+    const rows = mixed.exercisesDistribution.reduce((sum, e) => sum + e.totalCalories, 0);
+    expect(Math.abs(rows - 31)).toBeLessThanOrEqual(1); // one rounding per row
+  });
+
   it('should throw on Firestore error', async () => {
     vi.mocked(getDocs).mockRejectedValueOnce(new Error('Read failed'));
     await expect(calculateUserStats('uid123')).rejects.toThrow('Read failed');
