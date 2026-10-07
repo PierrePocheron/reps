@@ -10,7 +10,7 @@ const toast = vi.fn();
 vi.mock('@/hooks/use-toast', () => ({ useToast: () => ({ toast }) }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ isAuthenticated: true }) }));
 vi.mock('@/hooks/useKeepAwake', () => ({ useKeepAwake: () => {} }));
-vi.mock('@/hooks/useHaptic', () => ({ useHaptic: () => ({ impact: vi.fn(), notification: vi.fn() }) }));
+vi.mock('@/hooks/useHaptic', () => ({ useHaptic: () => ({ impact: vi.fn(), notification: vi.fn(), selection: vi.fn() }) }));
 vi.mock('@/hooks/useSound', () => ({ useSound: () => ({ play: vi.fn() }) }));
 vi.mock('canvas-confetti', () => ({ default: vi.fn() }));
 vi.mock('@/utils/restNotification', () => ({ scheduleRestEnd: vi.fn(), cancelRestEnd: vi.fn(), exactAlarmDenied: () => Promise.resolve(false), openExactAlarmSettings: vi.fn() }));
@@ -22,12 +22,13 @@ const ts = (d: Date) => ({ toDate: () => d, toMillis: () => d.getTime() });
 const HISTORY = [{ id: 'old', userId: 'u1', date: ts(new Date(2026, 9, 1)), duration: 3000, totalVolume: 500, totalSets: 1,
   exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: [{ reps: 5, weight: 100, completed: true }] }] }];
 
-const setup = async (planned: { reps: number; weight: number }[]) => {
+const BENCH = { exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️' };
+const setup = async (planned: { reps: number; weight: number }[], exercise = BENCH) => {
   vi.mocked(gs.getUserGymSessions).mockResolvedValue(HISTORY as never);
   useUserStore.setState({ user: { uid: 'u1', displayName: 'P' } as never });
   useGymSessionStore.setState({
     phase: 'execute', startTime: Date.now(), autoRest: false, showRpe: false, suggestLoad: false, backdate: null,
-    exercises: [{ exerciseId: 'bench_press', name: 'Développé couché', emoji: '🏋️', sets: planned.map((s) => ({ ...s, completed: false })) }],
+    exercises: [{ ...exercise, sets: planned.map((s) => ({ ...s, completed: false })) }],
   } as never);
   render(<MemoryRouter><GymSession /></MemoryRouter>);
   await act(async () => { await new Promise((r) => setTimeout(r, 0)); }); // history loaded
@@ -56,5 +57,25 @@ describe('live trophies follow corrections', () => {
     expect(sets()[0]).toMatchObject({ type: 'warmup', isRecord: false });
     fireEvent.click(screen.getByLabelText('Valider la série 2')); // 105 x 5 still beats the history
     expect(sets()[1]!.isRecord).toBe(true);
+  });
+
+  it('switching reps ⇄ s after validating re-rates the set in the new unit', async () => {
+    await setup([{ reps: 5, weight: 105 }]);
+    fireEvent.click(screen.getByLabelText('Valider la série 1')); // 105 x 5 beats 100 x 5
+    expect(sets()[0]!.isRecord).toBe(true);
+    fireEvent.click(screen.getAllByLabelText('Unité : répétitions, passer en secondes')[0]!); // 5 s: no timed history
+    expect(sets()[0]!.isRecord).toBe(false);
+  });
+
+  it('replacing an exercise rates its validated sets against the new one', async () => {
+    await setup([{ reps: 5, weight: 105 }], { exerciseId: 'import_presse', name: 'Presse', emoji: '🏋️' });
+    fireEvent.click(screen.getByLabelText('Valider la série 1')); // never done: no trophy
+    expect(sets()[0]!.isRecord).toBeFalsy();
+    fireEvent.click(screen.getByLabelText('Presse : voir la fiche et ta progression'));
+    fireEvent.click(screen.getByText(/Remplacer par un autre exercice/));
+    fireEvent.change(screen.getByPlaceholderText('Rechercher…'), { target: { value: 'developpe couche' } });
+    fireEvent.click(screen.getByText('Développé couché'));
+    expect(useGymSessionStore.getState().exercises[0]!.exerciseId).toBe('bench_press');
+    expect(sets()[0]!.isRecord).toBe(true); // 105 x 5 beats the 100 x 5 of the bench history
   });
 });

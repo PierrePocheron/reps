@@ -532,7 +532,7 @@ function GymSession() {
             isBarbell={infoMap[exercise.exerciseId]?.equipment === 'barbell'}
             onAddWarmup={(sets) => prependWarmup(exercise.exerciseId, sets)}
             suggestion={suggestLoad && !isTimed(exercise) ? suggestNextWeight(gymHistory, exercise.exerciseId) : null}
-            onToggleTimed={() => toggleTimed(exercise.exerciseId)}
+            onToggleTimed={() => { toggleTimed(exercise.exerciseId); syncRecords(exercise.exerciseId); }} // validated sets: re-rate in the new unit
             previousSets={lastWorkSets(gymHistory, exercise.exerciseId)}
             onApplySuggestion={(s) => exercise.sets.forEach((set, i) => {
               if (!set.completed && isLoadSet(set) && (set.actualWeight ?? set.weight) < s.to) updateSet(exercise.exerciseId, i, { weight: s.to, actualWeight: s.to }); // a planned drop set keeps its lighter load
@@ -718,7 +718,8 @@ function GymSession() {
         open={showExerciseDialog}
         onOpenChange={(open) => { setShowExerciseDialog(open); if (!open) setReplaceTarget(null); }}
         onAdd={(exercise) => {
-          if (replaceTarget) { replaceExercise(replaceTarget, exercise); setReplaceTarget(null); return; }
+          // validated sets kept: rated against the new exercise's history
+          if (replaceTarget) { replaceExercise(replaceTarget, exercise); syncRecords(exercise.id); setReplaceTarget(null); return; }
           addExercise(exercise);
           // Comme Hevy : les séries de la dernière fois, sinon une série par défaut
           const last = lastWorkSets(gymHistory, exercise.id);
