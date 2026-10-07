@@ -293,6 +293,13 @@ describe('GymSession — récap', () => {
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Terminer/ })); });
     expect(screen.getByText(/\+100 % de volume par rapport à ta dernière séance/)).toBeInTheDocument(); // 480 kg vs 240, not -50 % vs 960
   });
+
+  it('dit « Record » au singulier pour un seul record, comme l\'image partagée', async () => {
+    useUserStore.setState({ currentUser: { uid: 'u1' } as never });
+    await setup([bench([{ reps: 8, weight: 60, completed: true, isRecord: true } as never])]);
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Terminer/ })); });
+    expect(screen.getByText('🏆 1').previousSibling).toHaveTextContent(/^Record$/);
+  });
 });
 
 describe('GymSession — repos automatique', () => {

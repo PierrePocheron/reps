@@ -304,7 +304,7 @@ function GymSession() {
         { label: 'Durée', value: formatDurationLong(duration) },
         { label: 'Volume', value: `${sum.volume.toLocaleString('fr-FR')} kg` },
         { label: 'Séries', value: String(sum.sets) },
-        { label: 'Records', value: sum.records ? `🏆 ${sum.records}` : '0' },
+        { label: sum.records > 1 ? 'Records' : 'Record', value: sum.records ? `🏆 ${sum.records}` : '0' }, // like gymCard
       ],
     });
     try {
