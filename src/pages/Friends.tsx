@@ -330,14 +330,14 @@ export default function Friends() {
                               </p>
                               <div className="flex items-center gap-2 mt-1">
                                 <span className="text-2xl">{item.badgeEmoji}</span>
-                                <span className="font-bold text-primary truncate">{item.badgeName}</span>
+                                <span className="font-bold text-primary">{item.badgeName}</span>
                               </div>
                               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
                                 {formatDate(item.createdAt)}
                               </p>
                             </div>
-                            <Award className="h-8 w-8 text-yellow-500 opacity-50" />
+                            <Award className="hidden min-[360px]:block shrink-0 h-8 w-8 text-yellow-500 opacity-50" />
                           </div>
                         </CardContent>
                       </Card>
@@ -394,29 +394,29 @@ export default function Friends() {
                                 )}
                               </div>
                             </div>
-
-                            <div className="mt-3 space-y-1">
-                              {done
-                                .sort((a, b) => b.reps - a.reps)
-                                .slice(0, 3)
-                                .map((exo, idx) => (
-                                <div key={idx} className="flex items-center justify-between text-sm bg-muted/30 p-1.5 rounded-md">
-                                  <span className="flex items-center gap-2 truncate">
-                                    <span>{exo.emoji}</span>
-                                    <span className="truncate">{exo.name}</span>
-                                  </span>
-                                  <span className="font-medium text-muted-foreground">{formatNumber(exo.reps)}</span>
-                                </div>
-                              ))}
-                              {done.length > 3 && (
-                                <p className="text-xs text-center text-muted-foreground pt-1">
-                                  {`+ ${done.length - 3} autre${done.length - 3 > 1 ? 's' : ''} exercice${done.length - 3 > 1 ? 's' : ''}`}
-                                </p>
-                              )}
-                            </div>
-                            <KudosButton ownerId={item.userId} sessionId={item.sessionId} ownerName={friend.displayName} />
                           </div>
                         </div>
+
+                        <div className="mt-3 space-y-1">
+                          {done
+                            .sort((a, b) => b.reps - a.reps)
+                            .slice(0, 3)
+                            .map((exo, idx) => (
+                            <div key={idx} className="flex items-center justify-between text-sm bg-muted/30 p-1.5 rounded-md">
+                              <span className="flex items-center gap-2 truncate">
+                                <span>{exo.emoji}</span>
+                                <span className="truncate">{exo.name}</span>
+                              </span>
+                              <span className="font-medium text-muted-foreground">{formatNumber(exo.reps)}</span>
+                            </div>
+                          ))}
+                          {done.length > 3 && (
+                            <p className="text-xs text-center text-muted-foreground pt-1">
+                              {`+ ${done.length - 3} autre${done.length - 3 > 1 ? 's' : ''} exercice${done.length - 3 > 1 ? 's' : ''}`}
+                            </p>
+                          )}
+                        </div>
+                        <KudosButton ownerId={item.userId} sessionId={item.sessionId} ownerName={friend.displayName} />
                       </CardContent>
                     </Card>
                   );
