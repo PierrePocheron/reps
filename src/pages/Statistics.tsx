@@ -563,6 +563,9 @@ export default function Statistics() {
   const firstDay = sessions.length < HISTORY_PAGE && gymSessions.length < HISTORY_PAGE
     ? Math.min(user.createdAt?.toDate().getTime() ?? Infinity, ...[...sessions, ...gymSessions].map((s) => s.date.toDate().getTime()))
     : -Infinity;
+  // Recomputed from the sessions at each sign-in: the user document's counters lag behind when the app is closed
+  // right after an edit (its recalculation runs in the background), and the favourites below come from stats too
+  const totals = stats ?? user;
   const streakUnit = (n: number) => (weeklyMode ? (n > 1 ? 'semaines' : 'semaine') : (n > 1 ? 'jours' : 'jour'));
 
   return (
@@ -678,7 +681,7 @@ export default function Statistics() {
             </h2>
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-bold tracking-tight">
-                {(user.totalCalories || 0).toLocaleString('fr-FR')}
+                {(totals.totalCalories || 0).toLocaleString('fr-FR')}
               </span>
               <span className="text-primary font-medium">kcal</span>
             </div>
@@ -701,7 +704,7 @@ export default function Statistics() {
                 <Dumbbell className="w-5 h-5 text-red-500" />
               </div>
               <div className="space-y-0.5">
-                <span className="text-2xl font-bold block">{user.totalReps.toLocaleString('fr-FR')}</span>
+                <span className="text-2xl font-bold block">{totals.totalReps.toLocaleString('fr-FR')}</span>
                 <span className="text-xs text-muted-foreground uppercase">Reps au total</span>
               </div>
             </motion.div>
@@ -716,7 +719,7 @@ export default function Statistics() {
                 <Calendar className="w-5 h-5 text-blue-500" />
               </div>
               <div className="space-y-0.5">
-                <span className="text-2xl font-bold block">{user.totalSessions}</span>
+                <span className="text-2xl font-bold block">{totals.totalSessions}</span>
                 <span className="text-xs text-muted-foreground uppercase">Séances renfo</span>
               </div>
             </motion.div>
@@ -736,7 +739,7 @@ export default function Statistics() {
                  <div className="text-left">
                      <p className="text-sm font-medium text-muted-foreground">Moyenne par séance</p>
                      <p className="text-2xl font-bold">
-                        {((user.totalCalories || 0) / (user.totalSessions || 1)).toFixed(0)}
+                        {((totals.totalCalories || 0) / (totals.totalSessions || 1)).toFixed(0)}
                         <span className="text-sm font-medium text-primary ml-1">kcal</span>
                      </p>
                  </div>

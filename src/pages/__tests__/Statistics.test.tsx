@@ -78,7 +78,7 @@ describe('Statistics', () => {
   });
 
   it('favourite exercises: French thousands separator and a reps unit under the podium numbers', () => {
-    useUserStore.setState({ stats: { currentStreak: 0, longestStreak: 0, exercisesDistribution: [
+    useUserStore.setState({ stats: { currentStreak: 0, longestStreak: 0, totalReps: 1051, totalSessions: 31, totalCalories: 1234, exercisesDistribution: [
       { name: 'Pompes', emoji: '💪', totalReps: 1050, totalCalories: 1234, count: 30 },
       { name: 'Squats', emoji: '🦵', totalReps: 1, totalCalories: 0, count: 1 },
     ] } as never });
@@ -114,5 +114,19 @@ describe('Statistics', () => {
     renfo = [all[0]!, { ...all[0]!, sessionId: 'old', date: { toDate: () => day(400) } } as Session];
     renderPage();
     expect(screen.getByRole('button', { name: 'Mois précédent' })).toBeEnabled();
+  });
+
+  it('renfo totals come from the computed stats when the user document lags behind (edit then app closed)', () => {
+    useUserStore.setState({
+      user: { uid: 'u1', totalReps: 7013, totalSessions: 29, totalCalories: 1818 } as never,
+      stats: { currentStreak: 0, longestStreak: 0, exercisesDistribution: [], totalReps: 8513, totalSessions: 31, totalCalories: 2027 } as never,
+    });
+    renderPage();
+    const fr = (n: number) => formatNumber(n).replace(/\s/g, ' ');
+    expect(screen.getByText(fr(8513))).toBeInTheDocument();
+    expect(screen.getByText(fr(2027))).toBeInTheDocument();
+    expect(screen.getByText('31')).toBeInTheDocument();
+    expect(screen.getByText('65')).toBeInTheDocument(); // 2 027 / 31
+    expect(screen.queryByText(fr(7013))).not.toBeInTheDocument();
   });
 });
