@@ -23,14 +23,14 @@ export function FriendTemplatesDialog({ friend, onClose }: { friend: User | null
   }, [friend]);
 
   const copy = async (t: WorkoutTemplate) => {
-    if (!me || copying) return;
+    if (!me || copying || copied.includes(t.id)) return;
     setCopying(t.id);
     try {
       const { id, userId, createdAt, ...data } = t;
       void id; void userId; void createdAt;
       await createUserTemplate(me.uid, data);
       setCopied((c) => [...c, t.id]);
-      toast({ title: 'Modèle copié', description: `« ${t.name} » est dans tes modèles.` });
+      toast({ title: 'Modèle copié', description: `«\u00a0${t.name}\u00a0» est dans tes modèles.` });
     } catch (err) {
       logger.error('Copie du modèle :', err);
       toast({ title: 'Erreur', description: "Le modèle n'a pas pu être copié.", variant: 'destructive' });
@@ -43,7 +43,7 @@ export function FriendTemplatesDialog({ friend, onClose }: { friend: User | null
     <Dialog open={!!friend} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Modèles de {friend?.displayName}</DialogTitle>
+          <DialogTitle className="[overflow-wrap:anywhere]">Modèles de {friend?.displayName}</DialogTitle>
           <DialogDescription>Copie un modèle pour l'utiliser et le modifier à ta façon.</DialogDescription>
         </DialogHeader>
         {templates === null ? (
@@ -59,14 +59,14 @@ export function FriendTemplatesDialog({ friend, onClose }: { friend: User | null
                 <li key={t.id} className="flex items-center gap-3 rounded-xl border p-3">
                   <span className="text-2xl" aria-hidden>{t.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm truncate">{t.name}</p>
+                    <p className="font-semibold text-sm line-clamp-2 [overflow-wrap:anywhere]">{t.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {t.workoutType === 'musculation' ? 'Muscu' : 'Renfo'} · {count} exercice{count > 1 ? 's' : ''}
+                      {t.workoutType === 'musculation' ? 'Muscu' : 'Renfo'} · {count}&nbsp;exercice{count > 1 ? 's' : ''}
                     </p>
                   </div>
-                  <Button size="sm" variant={done ? 'ghost' : 'outline'} className="min-h-11" disabled={done || !!copying} onClick={() => copy(t)}
+                  <Button size="sm" variant={done ? 'ghost' : 'outline'} className="min-h-11" disabled={!done && !!copying} aria-disabled={done} onClick={() => copy(t)}
                     aria-label={done ? `${t.name} copié` : `Copier ${t.name}`}>
-                    {done ? <Check className="h-4 w-4" /> : copying === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Copy className="h-4 w-4 mr-1" /> Copier</>}
+                    {done ? <><Check className="h-4 w-4 mr-1" /> Copié</> : copying === t.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Copy className="h-4 w-4 mr-1" /> Copier</>}
                   </Button>
                 </li>
               );
