@@ -602,7 +602,7 @@ export default function Friends() {
                               Voir ses modèles
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="cursor-pointer min-h-11 text-red-600 focus:text-red-600 focus:bg-red-100/10"
+                              className="cursor-pointer min-h-11 text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400 focus:bg-red-100/10"
                               onClick={() => setFriendToRemove(friend)}
                             >
                               <UserMinus className="mr-2 h-4 w-4" />
