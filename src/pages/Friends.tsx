@@ -63,6 +63,7 @@ export default function Friends() {
   const [retry, setRetry] = useState(0);
 
   const [pendingUid, setPendingUid] = useState<string | null>(null);
+  const [sentTo, setSentTo] = useState<Set<string>>(() => new Set()); // requests sent from this page: the result stays, « Demande envoyée »
   const [pendingRequestId, setPendingRequestId] = useState<string | null>(null);
   const [friendToRemove, setFriendToRemove] = useState<User | null>(null);
   const [removing, setRemoving] = useState(false);
@@ -152,19 +153,24 @@ export default function Friends() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, user, isOffline]);
 
-  const handleSendRequest = async (toUserId: string) => {
+  const handleSendRequest = async (to: User) => {
     if (!user) return;
-    setPendingUid(toUserId);
+    setPendingUid(to.uid);
     try {
-      await sendFriendRequest(user, toUserId);
+      await sendFriendRequest(user, to.uid);
+      setSentTo(prev => new Set(prev).add(to.uid));
       toast({
         title: 'Demande envoyée',
-        description: 'Ta demande d\'ami a été envoyée !',
+        description: 'Ta demande d\'ami a été envoyée\u00a0!',
       });
-      // Remove from search results to give feedback
-      setSearchResults(prev => prev.filter(u => u.uid !== toUserId));
     } catch (error) {
       const err = error as Error;
+      // sent earlier (another visit, another device): not an error, sendFriendRequest only says it by its message
+      if (err.message === 'Une demande est déjà en attente') {
+        setSentTo(prev => new Set(prev).add(to.uid));
+        toast({ title: 'Demande déjà envoyée', description: `${to.displayName} n'a pas encore répondu.` });
+        return;
+      }
       toast({
         title: 'Erreur',
         description: err.message || 'Impossible d\'envoyer la demande',
@@ -254,11 +260,29 @@ export default function Friends() {
     return frDate(date, { day: 'numeric', month: 'short' }) + ` à ${timeStr}`;
   };
 
-
-
-
-
-
+  const requestButtons = (request: FriendRequest) => (
+    <div className="flex gap-2 shrink-0">
+      <Button
+        size="icon"
+        aria-label={`Accepter la demande de ${request.fromDisplayName}`}
+        className="rounded-full shrink-0 active:scale-95"
+        disabled={pendingRequestId === request.id}
+        onClick={() => handleAcceptRequest(request)}
+      >
+        <Check className="h-4 w-4" />
+      </Button>
+      <Button
+        size="icon"
+        variant="outline"
+        aria-label={`Refuser la demande de ${request.fromDisplayName}`}
+        className="rounded-full shrink-0 text-muted-foreground hover:text-destructive hover:border-destructive/40 active:scale-95"
+        disabled={pendingRequestId === request.id}
+        onClick={() => handleDeclineRequest(request.id)}
+      >
+        <X className="h-4 w-4" />
+      </Button>
+    </div>
+  );
 
   if (!user) return null;
 
@@ -465,45 +489,52 @@ export default function Friends() {
                     <LoadingSpinner />
                   </div>
                 ) : searchResults.length > 0 ? (
-                  searchResults.map((result) => (
-                    <Card key={result.uid} className="overflow-hidden border-none shadow-sm bg-card/50">
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <UserAvatar user={result} size="md" />
-                          <div className="min-w-0">
-                            <p className="font-medium truncate">{result.displayName}</p>
-                            {user.friends?.includes(result.uid) ? (
-                              <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
-                                <Check className="h-3 w-3" /> Ami
-                              </p>
-                            ) : friendRequests.some(req => req.fromUserId === result.uid) ? (
-                              <p className="text-xs text-blue-600 dark:text-blue-400">Demande reçue</p>
-                            ) : (
-                              <p className="text-xs text-muted-foreground truncate">Envoie-lui une demande d'ami</p>
-                            )}
+                  searchResults.map((result) => {
+                    const isFriend = user.friends?.includes(result.uid);
+                    const received = friendRequests.find(req => req.fromUserId === result.uid);
+                    return (
+                      <Card key={result.uid} className="overflow-hidden border-none shadow-sm bg-card/50">
+                        <CardContent className="p-4 flex items-center justify-between">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <UserAvatar user={result} size="md" />
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{result.displayName}</p>
+                              {isFriend ? (
+                                <p className="text-xs text-green-700 dark:text-green-400 flex items-center gap-1">
+                                  <Check className="h-3 w-3" /> Ami
+                                </p>
+                              ) : received ? (
+                                <p className="text-xs text-blue-600 dark:text-blue-400">Demande reçue</p>
+                              ) : sentTo.has(result.uid) ? (
+                                <p className="text-xs text-muted-foreground">Demande envoyée</p>
+                              ) : (
+                                <p className="text-xs text-muted-foreground truncate">Envoie-lui une demande d'ami</p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                        {!user.friends?.includes(result.uid) && !friendRequests.some(req => req.fromUserId === result.uid) && (
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            disabled={pendingUid === result.uid}
-                            onClick={() => handleSendRequest(result.uid)}
-                            className="shrink-0 active:scale-95"
-                          >
-                            {pendingUid === result.uid ? (
-                              <LoadingSpinner size="sm" />
-                            ) : (
-                              <>
-                                <UserPlus className="h-4 w-4 mr-2" />
-                                Ajouter
-                              </>
-                            )}
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))
+                          {!isFriend && received && requestButtons(received)}
+                          {!isFriend && !received && !sentTo.has(result.uid) && (
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              disabled={pendingUid === result.uid}
+                              onClick={() => handleSendRequest(result)}
+                              className="shrink-0 active:scale-95"
+                            >
+                              {pendingUid === result.uid ? (
+                                <LoadingSpinner size="sm" />
+                              ) : (
+                                <>
+                                  <UserPlus className="h-4 w-4 mr-2" />
+                                  Ajouter
+                                </>
+                              )}
+                            </Button>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <p>Aucun utilisateur ne correspond à «&nbsp;{searchTerm}&nbsp;».</p>
@@ -530,27 +561,7 @@ export default function Friends() {
                           <p className="text-xs text-muted-foreground">veut t'ajouter</p>
                         </div>
                       </div>
-                      <div className="flex gap-2 shrink-0">
-                        <Button
-                          size="icon"
-                          aria-label={`Accepter la demande de ${request.fromDisplayName}`}
-                          className="rounded-full shrink-0 active:scale-95"
-                          disabled={pendingRequestId === request.id}
-                          onClick={() => handleAcceptRequest(request)}
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          aria-label={`Refuser la demande de ${request.fromDisplayName}`}
-                          className="rounded-full shrink-0 text-muted-foreground hover:text-destructive hover:border-destructive/40 active:scale-95"
-                          disabled={pendingRequestId === request.id}
-                          onClick={() => handleDeclineRequest(request.id)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      {requestButtons(request)}
                     </CardContent>
                   </Card>
                 ))}

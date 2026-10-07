@@ -158,4 +158,38 @@ describe('Friends search', () => {
     expect(await screen.findByText('Bob', { selector: 'p' }, { timeout: 2000 })).toBeInTheDocument();
     expect(db.searchUsers).toHaveBeenCalledWith('bob');
   });
+
+  it('keeps the result after « Ajouter » and shows « Demande envoyée » without a button', async () => {
+    db.searchUsers.mockResolvedValue([bob]);
+    renderFriends([]);
+    fireEvent.click(await screen.findByRole('tab', { name: 'Amis' }));
+    await search('bob');
+    const add = await screen.findByRole('button', { name: 'Ajouter' }, { timeout: 2000 });
+    await act(async () => { fireEvent.click(add); });
+    expect(db.sendFriendRequest).toHaveBeenCalledWith(expect.objectContaining({ uid: 'me' }), 'bob');
+    expect(screen.getByText('Bob', { selector: 'p' })).toBeInTheDocument();
+    expect(screen.getByText('Demande envoyée')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ajouter' })).not.toBeInTheDocument();
+  });
+
+  it('treats « déjà en attente » as sent, with a neutral toast', async () => {
+    db.searchUsers.mockResolvedValue([bob]);
+    db.sendFriendRequest.mockRejectedValueOnce(new Error('Une demande est déjà en attente'));
+    renderFriends([]);
+    fireEvent.click(await screen.findByRole('tab', { name: 'Amis' }));
+    await search('bob');
+    const add = await screen.findByRole('button', { name: 'Ajouter' }, { timeout: 2000 });
+    await act(async () => { fireEvent.click(add); });
+    expect(toast).toHaveBeenCalledWith({ title: 'Demande déjà envoyée', description: "Bob n'a pas encore répondu." });
+    expect(screen.getByText('Demande envoyée')).toBeInTheDocument();
+  });
+
+  it('lets you accept a received request from the search result', async () => {
+    db.searchUsers.mockResolvedValue([bob]);
+    renderFriends([], [bobRequest]);
+    await search('bob');
+    const accept = await screen.findByRole('button', { name: 'Accepter la demande de Bob' }, { timeout: 2000 });
+    await act(async () => { fireEvent.click(accept); });
+    expect(db.acceptFriendRequest).toHaveBeenCalledWith('bob_me', 'bob', 'me');
+  });
 });
