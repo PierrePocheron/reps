@@ -42,6 +42,18 @@ describe('getFriendsActivity', () => {
     expect(items.map((a) => a.sessionId ?? a.id)).toEqual(['today', 'badge', 'forgotten']);
   });
 
+  it('one « new friend » card per pair (the latest), none for a friendship removed since', async () => {
+    const at = (min: number) => ({ toDate: () => new Date(2026, 9, 4, 8, min) });
+    const ev = (id: string, friendId: string, min: number) => ({ id, data: () => ({ type: 'new_friend', userId: 'f1', friendId, createdAt: at(min) }) });
+    const authors = [{ id: 'f1', data: () => ({ friends: ['alice'] }) }];
+    vi.mocked(getDocs)
+      .mockResolvedValueOnce({ docs: [] } as never)
+      .mockResolvedValueOnce({ docs: [ev('readded', 'alice', 3), ev('gone', 'bob', 2), ev('first', 'alice', 1)] } as never)
+      .mockResolvedValueOnce({ docs: authors, forEach: (fn: (d: unknown) => void) => authors.forEach(fn) } as never);
+    const items = await getFriendsActivity(['f1']);
+    expect(items.map((a) => a.id)).toEqual(['readded']);
+  });
+
   it('a read failure is an error, not an empty feed', async () => {
     vi.mocked(getDocs).mockRejectedValue(new Error('offline'));
     await expect(getFriendsActivity(['f1'])).rejects.toThrow('offline');

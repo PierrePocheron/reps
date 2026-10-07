@@ -1188,7 +1188,21 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
     const allActivity = [...sessions, ...events].filter((a: ActivityItem) => typeof a.createdAt?.toDate === 'function')
       .sort((a: ActivityItem, b: ActivityItem) => shownAt(b) - shownAt(a));
 
-    return allActivity.slice(0, limitCount);
+    // « New friend »: each re-add wrote one more event. Only the latest per pair, and none once the two are no
+    // longer friends
+    const pairs = new Set<string>();
+    const latest = allActivity.filter((a: ActivityItem) => {
+      if (a.type !== 'new_friend') return true;
+      const pair = `${String(a.userId)}_${String(a.friendId)}`;
+      if (pairs.has(pair)) return false;
+      pairs.add(pair);
+      return true;
+    });
+    const authors = [...new Set(latest.filter((a: ActivityItem) => a.type === 'new_friend').map((a: ActivityItem) => String(a.userId)))];
+    const friendsOf = new Map((await getFriendsDetails(authors)).map((u) => [u.uid, u.friends ?? []]));
+
+    return latest.filter((a: ActivityItem) => a.type !== 'new_friend' || friendsOf.get(String(a.userId))?.includes(String(a.friendId)))
+      .slice(0, limitCount);
   } catch (error) {
     logger.error('Erreur lors de la récupération de l\'activité des amis:', error);
     throw error; // a failed read is not an empty feed
