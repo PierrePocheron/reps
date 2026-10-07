@@ -61,4 +61,11 @@ describe('ExerciseProgressChart', () => {
     render(<ExerciseProgressChart points={exerciseHistory([lifted(2, 125, 5), lifted(140, 120, 5)], 'squat')} />);
     expect(pressed()).toBe('3 mois');
   });
+
+  it('picks its period when the history arrives after the sheet opened (session resumed, slow network)', () => {
+    const { rerender } = render(<ExerciseProgressChart points={[]} />);
+    rerender(<ExerciseProgressChart points={exerciseHistory([lifted(120, 125, 5)], 'squat')} />);
+    expect(screen.getAllByRole('button', { pressed: true })[0]!.textContent).toBe('1 an');
+    expect(screen.queryByText('Aucune séance sur cette période.')).not.toBeInTheDocument();
+  });
 });

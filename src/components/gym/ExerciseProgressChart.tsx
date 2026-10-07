@@ -23,11 +23,11 @@ const fmt = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 1 
 /** Courbe de progression d'un exercice (Strong / Hevy : graphique par exercice). */
 export function ExerciseProgressChart({ points, timed }: { points: ExercisePoint[]; timed?: boolean }) {
   const [chosen, setMetric] = useState<(typeof METRICS)[number]['key']>(timed ? 'bestSeconds' : 'e1rm');
-  // shortest period holding the last session: « 3 mois » was empty for an exercise not done lately (« Tout » always holds it)
-  const [period, setPeriod] = useState<(typeof PERIODS)[number]['key']>(() => {
-    const last = points[points.length - 1]?.date.getTime() ?? Date.now();
-    return PERIODS.find((p) => last >= Date.now() - p.days * 86_400_000)!.key;
-  });
+  // shortest period holding the last session: « 3 mois » was empty for an exercise not done lately (« Tout » always holds it).
+  // Only the user's pick is state: the history can arrive after the sheet opened
+  const [picked, setPeriod] = useState<(typeof PERIODS)[number]['key'] | null>(null);
+  const lastAt = points[points.length - 1]?.date.getTime() ?? Date.now();
+  const period = picked ?? PERIODS.find((p) => lastAt >= Date.now() - p.days * 86_400_000)!.key;
 
   const days = PERIODS.find((p) => p.key === period)!.days;
   const since = Date.now() - days * 86_400_000;
