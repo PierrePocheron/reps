@@ -6,23 +6,28 @@ import { useSettingsStore } from '@/store/settingsStore';
 import { frDate, formatNumber } from '@/utils/formatters';
 import type { Session, GymSession } from '@/firebase/types';
 
-// One renfo session a day for 90 days; the page only holds the latest 20 (challenge validations fill it fast)
+// One renfo session a day for 90 days: the page of 200 holds them all
 const day = (back: number) => { const d = new Date(); d.setDate(d.getDate() - back); d.setHours(12, 0, 0, 0); return d; };
 const all = Array.from({ length: 90 }, (_, i) => ({ sessionId: `s${i}`, date: { toDate: () => day(i) }, totalReps: 10, exercises: [] }) as unknown as Session);
+// Three a day (challenge validations fill the page fast): the latest 200 stop about 66 days back
+const busy = Array.from({ length: 270 }, (_, i) => ({ sessionId: `b${i}`, date: { toDate: () => day(Math.floor(i / 3)) }, totalReps: 10, exercises: [] }) as unknown as Session);
 
-// The whole history of the test user; the page holds its latest 20, a period read gets its whole range
+// The whole history of the test user; the page holds its latest `limit`, a period read gets its whole range
 let renfo: Session[] = all;
 let gym: GymSession[] = [];
 let loading = false;
+const periodReads = new Set<string>(); // date ranges actually read
 const inRange = (from: Date, to: Date) => (s: Session | GymSession) => s.date.toDate() >= from && s.date.toDate() < to;
 // Like the real hook's state: the same arrays from one render to the next until a refetch
 const pages = new WeakMap<object, unknown[]>();
-const page = <T,>(list: T[]) => { if (!pages.has(list)) pages.set(list, list.slice(0, 20)); return pages.get(list) as T[]; };
+const page = <T,>(list: T[], limit: number) => { if (!pages.has(list)) pages.set(list, list.slice(0, limit)); return pages.get(list) as T[]; };
 vi.mock('@/hooks/useSessionHistory', () => ({
-  useSessionHistory: () => ({ sessions: page(renfo), gymSessions: page(gym), loading, error: false, refetch: vi.fn() }),
-  usePeriodHistory: (from: Date, to: Date) => ({
-    sessions: renfo.filter(inRange(from, to)), gymSessions: gym.filter(inRange(from, to)), loaded: true,
-  }),
+  useSessionHistory: (limit: number) => ({ sessions: page(renfo, limit), gymSessions: page(gym, limit), loading, error: false, refetch: vi.fn() }),
+  usePeriodHistory: (from: Date, to: Date, enabled = true) => {
+    if (!enabled) return { sessions: [], gymSessions: [], loaded: false };
+    periodReads.add(`${from.getTime()}:${to.getTime()}`);
+    return { sessions: renfo.filter(inRange(from, to)), gymSessions: gym.filter(inRange(from, to)), loaded: true };
+  },
 }));
 vi.mock('@/components/AdSpace', () => ({ AdSpace: () => null }));
 
@@ -35,17 +40,32 @@ const tap = (el: HTMLElement) => { fireEvent.mouseEnter(el); fireEvent.focus(el)
 describe('Statistics', () => {
   beforeEach(() => {
     vi.useRealTimers();
-    renfo = all; gym = []; loading = false;
+    renfo = all; gym = []; loading = false; periodReads.clear();
     useUserStore.setState({ user: { uid: 'u1', totalReps: 900, totalSessions: 90, totalCalories: 100 } as never, stats: null });
   });
 
   it('builds the 90-day heatmap and the 8-week chart from the date range, not the latest page', () => {
+    renfo = busy;
     renderPage();
+    expect(periodReads.size).toBeGreaterThan(0); // the page stops after the range start: read by dates
     expect(screen.getByText(/^90 jours d'entraînement/)).toBeInTheDocument();
     // every one of the 8 weeks has sessions: none of the bars is empty
     const bars = screen.getAllByRole('button', { name: /^(Semaine du|Cette semaine)/ });
     expect(bars).toHaveLength(8);
     for (const bar of bars) expect(bar).not.toHaveAccessibleName(/ : 0 reps$/);
+  });
+
+  it('reads no date range the loaded page already holds (whole history, or a full page reaching further back)', () => {
+    const { unmount } = renderPage(); // 90 sessions: the whole history
+    expect(periodReads.size).toBe(0);
+    expect(screen.getByText(/^90 jours d'entraînement/)).toBeInTheDocument(); // same heatmap, filtered locally
+    expect(screen.getAllByRole('button', { name: /^(Semaine du|Cette semaine)/ })).toHaveLength(8);
+    unmount();
+
+    renfo = Array.from({ length: 300 }, (_, i) => ({ ...all[0]!, sessionId: `l${i}`, date: { toDate: () => day(i) } }) as Session);
+    renderPage(); // full page, but its oldest session is 199 days back
+    expect(periodReads.size).toBe(0);
+    expect(screen.getByText(/^9\d jours d'entraînement/)).toBeInTheDocument();
   });
 
   it('a tap on a heatmap day or a weekly bar shows its detail at once', () => {

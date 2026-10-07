@@ -405,13 +405,14 @@ function MuscleDistribution({ sessions, gymSessions }: { sessions: Session[]; gy
 
 // ─── Récap du mois / de l'année (Hevy, Strava) ───────────────────────────────
 
-function PeriodRecap({ sessions, gymSessions, firstDay }: { sessions: Session[]; gymSessions: GymSession[]; firstDay: number }) {
+function PeriodRecap({ sessions, gymSessions, firstDay, pageStart }: { sessions: Session[]; gymSessions: GymSession[]; firstDay: number; pageStart: number }) {
   const { toast } = useToast();
   const [kind, setKind] = useState<RecapKind>('month');
   const [offset, setOffset] = useState(0);
   const { from, to, label } = recapRange(kind, offset);
-  // The whole period (a busy year exceeds the 200 sessions loaded for the page); recent data meanwhile
-  const period = usePeriodHistory(from, to);
+  // The whole period (a busy year exceeds the 200 sessions loaded for the page); recent data meanwhile. Not read
+  // again when the page already holds it: periodRecap filters the page by the same range
+  const period = usePeriodHistory(from, to, from.getTime() <= pageStart);
   const recap = period.loaded
     ? periodRecap(period.gymSessions, period.sessions, from, to)
     : periodRecap(gymSessions, sessions, from, to);
@@ -539,14 +540,20 @@ export default function Statistics() {
   const navigate = useNavigate();
   const { weeklyGoal, streakMode } = useSettingsStore();
   const { sessions, gymSessions, loading: historyLoading } = useSessionHistory(HISTORY_PAGE);
+  // The page holds every session after this time (all of them while neither list is full): a range starting after it
+  // is filtered locally instead of being read again
+  const pageStart = Math.max(...[sessions, gymSessions].map((list) =>
+    list.length < HISTORY_PAGE ? -Infinity : Math.min(...list.map((s) => s.date.toDate().getTime()))));
   // Heatmap (up to 96 days with the Monday alignment), weekly chart and muscles by date range: challenge
   // validations (one session each) can push these days out of the latest 200; recent data meanwhile
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const recentFrom = new Date(today); recentFrom.setDate(today.getDate() - 96);
   const recentTo = new Date(today); recentTo.setDate(today.getDate() + 1);
-  const recent = usePeriodHistory(recentFrom, recentTo);
-  const chartSessions = recent.loaded ? recent.sessions : sessions;
-  const chartGymSessions = recent.loaded ? recent.gymSessions : gymSessions;
+  const recentInPage = recentFrom.getTime() > pageStart;
+  const recent = usePeriodHistory(recentFrom, recentTo, !historyLoading && !recentInPage);
+  const inRecent = (s: Session | GymSession) => s.date.toDate() >= recentFrom && s.date.toDate() < recentTo;
+  const chartSessions = recent.loaded ? recent.sessions : recentInPage ? sessions.filter(inRecent) : sessions;
+  const chartGymSessions = recent.loaded ? recent.gymSessions : recentInPage ? gymSessions.filter(inRecent) : gymSessions;
 
   // Séances de la semaine en cours (lundi → dimanche), from this render's day: the resident app outlives midnight
   const monday = new Date(today);
@@ -872,7 +879,7 @@ export default function Statistics() {
             <ActivityCalendar sessions={chartSessions} gymSessions={chartGymSessions} />
             <WeeklyChart sessions={chartSessions} gymSessions={chartGymSessions} />
             <MuscleDistribution sessions={chartSessions} gymSessions={chartGymSessions} />
-            <PeriodRecap sessions={sessions} gymSessions={gymSessions} firstDay={firstDay} />
+            <PeriodRecap sessions={sessions} gymSessions={gymSessions} firstDay={firstDay} pageStart={pageStart} />
           </>
         )}
 

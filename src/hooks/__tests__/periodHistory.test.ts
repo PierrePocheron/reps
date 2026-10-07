@@ -21,4 +21,14 @@ describe('usePeriodHistory', () => {
     expect(result.current.sessions).toEqual(renfo);
     expect(result.current.gymSessions).toEqual(gym);
   });
+
+  it('reads nothing while disabled (the caller already holds the range)', async () => {
+    vi.mocked(getUserSessionsBetween).mockClear();
+    vi.mocked(getUserGymSessionsBetween).mockClear();
+    const { result } = renderHook(() => usePeriodHistory(new Date(2026, 0, 1), new Date(2026, 1, 1), false));
+    await Promise.resolve();
+    expect(getUserSessionsBetween).not.toHaveBeenCalled();
+    expect(getUserGymSessionsBetween).not.toHaveBeenCalled();
+    expect(result.current.loaded).toBe(false);
+  });
 });
