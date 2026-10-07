@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { plural, frDate } from '@/utils/formatters';
+import { plural, frDate, formatNumber } from '@/utils/formatters';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -768,7 +768,8 @@ export default function Statistics() {
                     <p className="text-xs font-medium truncate px-1" title={ex.name}>
                       {ex.name}
                     </p>
-                    <p className="text-lg font-bold">{ex.totalReps}</p>
+                    <p className="text-lg font-bold">{formatNumber(ex.totalReps)}</p>
+                    <p className="text-xs text-muted-foreground">{ex.totalReps > 1 ? 'reps' : 'rep'}</p>
                   </div>
                 </div>
               ))}
@@ -791,9 +792,9 @@ export default function Statistics() {
                            <span className="truncate font-medium">{ex.name}</span>
                        </div>
                        <div className="flex gap-4 text-right shrink-0">
-                           <span className="w-12 font-bold">{ex.totalReps}</span>
+                           <span className="w-12 font-bold">{formatNumber(ex.totalReps)}</span>
                            <div className="w-12 flex items-center justify-end gap-1 text-primary">
-                              <span>{ex.totalCalories}</span>
+                              <span>{formatNumber(ex.totalCalories)}</span>
                               <Flame className="w-3 h-3" />
                            </div>
                        </div>

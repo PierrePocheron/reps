@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
-import { frDate } from '@/utils/formatters';
+import { frDate, formatNumber } from '@/utils/formatters';
 import type { Session, GymSession } from '@/firebase/types';
 
 // One renfo session a day for 90 days; the page only holds the latest 20 (challenge validations fill it fast)
@@ -75,5 +75,19 @@ describe('Statistics', () => {
     expect(kcal('Fentes')).toHaveTextContent('~2,2 kcal');
     expect(details.getByText(/\(poids, taille, sexe\)/)).toBeInTheDocument();
     expect(details.getByText(/Facteurs.*Sexe/)).toBeInTheDocument();
+  });
+
+  it('favourite exercises: French thousands separator and a reps unit under the podium numbers', () => {
+    useUserStore.setState({ stats: { currentStreak: 0, longestStreak: 0, exercisesDistribution: [
+      { name: 'Pompes', emoji: '💪', totalReps: 1050, totalCalories: 1234, count: 30 },
+      { name: 'Squats', emoji: '🦵', totalReps: 1, totalCalories: 0, count: 1 },
+    ] } as never });
+    renderPage();
+    const favourites = within(screen.getByText('Exercices favoris').parentElement!);
+    const fr = (n: number) => formatNumber(n).replace(/\s/g, ' '); // the query collapses the narrow no-break space
+    expect(favourites.getAllByText(fr(1050))).toHaveLength(2); // podium and list
+    expect(favourites.getByText(fr(1234))).toBeInTheDocument();
+    expect(favourites.getByText('reps')).toBeInTheDocument();
+    expect(favourites.getByText('rep')).toBeInTheDocument();
   });
 });
