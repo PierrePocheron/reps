@@ -56,6 +56,16 @@ describe('GymSession — saisie des charges', () => {
     fireEvent.click(screen.getByLabelText('Valider la série 1'));
     expect(sets()[0]).toMatchObject({ completed: true, actualWeight: 85.5, actualReps: 8 });
   });
+
+  it('refuse les répétitions non entières (« 8,5 »)', async () => {
+    await setup([bench([{ reps: 8, weight: 60 }])]);
+    const reps = screen.getByLabelText('Répétitions, série 1') as HTMLInputElement;
+    for (const value of ['8,', '8,5', '8.5']) fireEvent.change(reps, { target: { value } });
+    expect(reps.value).toBe('8');
+    expect(sets()[0]!.actualReps).toBeUndefined();
+    fireEvent.change(reps, { target: { value: '10' } });
+    expect(sets()[0]!.actualReps).toBe(10);
+  });
 });
 
 describe('GymSession — chrono d\'un exercice en durée', () => {

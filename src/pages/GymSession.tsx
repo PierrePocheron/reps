@@ -801,7 +801,7 @@ function SetExecuteRow({
           value={reps}
           onChange={(e) => {
             const n = parseDecimal(e.target.value);
-            if (n === null) return;
+            if (n === null || /[.,]/.test(e.target.value)) return; // whole reps (or seconds): no « 8,5 »
             setReps(e.target.value);
             onUpdate(exerciseId, setIndex, n, num(weight));
           }}
