@@ -33,7 +33,7 @@ interface SettingsState {
   setLanguage: (language: LanguageSetting) => void;
   setKeepAwake: (on: boolean) => void;
   loadSettings: () => void;
-  applyAccountSettings: (account: Pick<User, 'weeklyGoal' | 'streakMode'>) => void;
+  applyAccountSettings: (account: Pick<User, 'weeklyGoal' | 'streakMode'>, signedIn: boolean) => void;
   resetAccountSettings: () => void;
   saveSettings: () => void;
   applyTheme: () => void;
@@ -173,17 +173,17 @@ export const useSettingsStore = create<SettingsState>((set, get) => {
     },
 
     /**
-     * At sign-in the account values win; localStorage keeps them as a cache. One the account does not hold yet (older
-     * versions, new account) is uploaded from the device: the device's own value, or the default since sign-out resets them
+     * The account values win; localStorage keeps them as a cache. One the account does not hold yet (older versions, new
+     * account) is uploaded from the device at sign-in: the device's own value, or the default since sign-out resets them
      */
-    applyAccountSettings: ({ weeklyGoal, streakMode }) => {
+    applyAccountSettings: ({ weeklyGoal, streakMode }, signedIn) => {
       const account: Partial<SettingsState> = {};
       const missing: Pick<User, 'weeklyGoal' | 'streakMode'> = {};
       if (typeof weeklyGoal === 'number') account.weeklyGoal = weeklyGoal;
       else missing.weeklyGoal = get().weeklyGoal;
       if (streakMode === 'daily' || streakMode === 'weekly') account.streakMode = streakMode;
       else missing.streakMode = get().streakMode;
-      if (Object.keys(missing).length > 0) saveToAccount(missing);
+      if (signedIn && Object.keys(missing).length > 0) saveToAccount(missing);
       if (Object.keys(account).length === 0) return;
       set(account);
       get().saveSettings();

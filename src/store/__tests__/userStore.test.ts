@@ -411,6 +411,32 @@ describe('userStore', () => {
             expect(cached()).toMatchObject({ weeklyGoal: 5, streakMode: 'weekly' });
             expect(accounts['B']).toMatchObject({ weeklyGoal: 2, streakMode: 'daily' });
         });
+
+        it('app left open: a change made on another device applies, a local change is never undone', async () => {
+            // The phone kept 3× until a cold start, and its next session rewrote the weekly streak with that goal
+            let emit!: (user: object) => void;
+            (firebase.subscribeToUser as any).mockImplementation((_uid: string, cb: (user: object) => void) => {
+                emit = cb;
+                return () => {};
+            });
+            useSettingsStore.setState({ weeklyGoal: 3, streakMode: 'daily' });
+            await signIn('u1', { weeklyGoal: 3, streakMode: 'daily' });
+            vi.clearAllMocks();
+
+            emit({ uid: 'u1', displayName: 'u1', weeklyGoal: 5, streakMode: 'weekly' }); // set on the tablet
+            expect(useSettingsStore.getState()).toMatchObject({ weeklyGoal: 5, streakMode: 'weekly' });
+            expect(cached()).toMatchObject({ weeklyGoal: 5, streakMode: 'weekly' });
+            expect(firebase.updateUserStatsAfterSession).toHaveBeenCalledWith('u1', 0);
+
+            useSettingsStore.getState().setStreakMode('daily'); // here, before its echo...
+            emit({ uid: 'u1', displayName: 'u1', weeklyGoal: 5, streakMode: 'weekly', totalReps: 10 }); // ...a public-doc update
+            expect(useSettingsStore.getState().streakMode).toBe('daily');
+            emit({ uid: 'u1', displayName: 'u1', weeklyGoal: 5, streakMode: 'daily', totalReps: 10 }); // the echo
+            emit({ uid: 'u1', displayName: 'u1', totalReps: 10 }); // public doc before the private one (listener restarted)
+            expect(useSettingsStore.getState()).toMatchObject({ weeklyGoal: 5, streakMode: 'daily' });
+            await new Promise((r) => setTimeout(r, 0));
+            expect(firebase.updateUserDocument).toHaveBeenCalledTimes(1); // the local change only: nothing written back
+        });
     });
 
     it('reset: pending friend requests do not carry over to the next account', () => {

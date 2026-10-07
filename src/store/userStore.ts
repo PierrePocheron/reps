@@ -81,9 +81,13 @@ export const useUserStore = create<UserState>((set, get) => ({
 
   // Actions
   setUser: (user) => {
-    const signedIn = !!user && user.uid !== get().user?.uid; // not on every live update: a fresh local change would be undone
+    const prev = get().user;
+    const signedIn = !!user && user.uid !== prev?.uid;
+    // A live update applies what another device changed. Compared with the previous doc, not the device: a local change
+    // echoes back with the value already set, and a public-doc update still carries the old one, so neither undoes it
+    const changed = user?.weeklyGoal !== prev?.weeklyGoal || user?.streakMode !== prev?.streakMode;
     set({ user, isAuthenticated: !!user });
-    if (signedIn) useSettingsStore.getState().applyAccountSettings(user);
+    if (user && (signedIn || changed)) useSettingsStore.getState().applyAccountSettings(user, signedIn);
     if (user?.colorTheme) {
       applyThemeColor(user.colorTheme);
     }
