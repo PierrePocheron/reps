@@ -172,16 +172,16 @@ export default function Leaderboard() {
                   return (
                     <div key={stat.userId}>
                         <Card className={`overflow-hidden border-2 shadow-sm transition-all ${getRankStyle(onPodium ? rank : -1)}`}>
-                        <CardContent className="p-4 flex items-center gap-3 min-[360px]:gap-4">
+                        <CardContent className="p-3 min-[360px]:p-4 flex items-center gap-3 min-[360px]:gap-4">
                             <div className="flex-shrink-0 w-8 flex justify-center">
                             {onPodium ? getRankIcon(rank) : <span className="font-bold text-muted-foreground w-6 text-center">–</span>}
                             </div>
 
-                            <UserAvatar user={player} size="lg" className="border-2 border-background" />
+                            <UserAvatar user={player} size="md" className="border-2 border-background min-[360px]:w-12 min-[360px]:h-12 min-[360px]:text-2xl" />
 
                             <div className="flex-1 min-w-0">
                             <div className="flex flex-wrap items-center gap-x-2">
-                                <h3 className="font-bold truncate">{player.displayName}</h3>
+                                <h3 className="font-bold line-clamp-2 [overflow-wrap:anywhere]">{player.displayName}</h3>
                                 {player.uid === user.uid && (
                                 <span className="shrink-0 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
                                     Moi
