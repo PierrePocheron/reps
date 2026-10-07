@@ -217,7 +217,7 @@ function WeeklyChart({ sessions, gymSessions }: { sessions: Session[]; gymSessio
 
   // Auto-switch to volume if no reps data
   const activeMode = mode === 'reps' && !hasReps ? 'volume' : mode === 'volume' && !hasVolume ? 'reps' : mode;
-  const values = buckets.map((b) => (activeMode === 'reps' ? b.reps : b.volume));
+  const values = buckets.map((b) => (activeMode === 'reps' ? b.reps : Math.round(b.volume))); // whole kilos, like the recap
   const maxVal = Math.max(...values, 1);
   const BAR_HEIGHT = 72;
 

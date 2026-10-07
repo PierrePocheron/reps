@@ -90,4 +90,12 @@ describe('Statistics', () => {
     expect(favourites.getByText('reps')).toBeInTheDocument();
     expect(favourites.getByText('rep')).toBeInTheDocument();
   });
+
+  it('weekly volume is rounded to the kilo, like the recap', () => {
+    renfo = [];
+    gym = [{ sessionId: 'g0', date: { toDate: () => day(0) }, totalVolume: 15382.5, exercises: [] } as unknown as GymSession];
+    renderPage();
+    expect(screen.getByRole('button', { name: /^Cette semaine/ })).toHaveAccessibleName(/^Cette semaine : 15\s383 kg$/);
+    expect(screen.getByText(/^15\s383 kg soulevés$/)).toBeInTheDocument();
+  });
 });
