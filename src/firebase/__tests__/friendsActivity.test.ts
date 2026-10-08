@@ -54,6 +54,29 @@ describe('getFriendsActivity', () => {
     expect(items.map((a) => a.id)).toEqual(['readded']);
   });
 
+  it('a forgotten session older than the full window is left out (a silent gap hid the days in between)', async () => {
+    const at = (day: number) => ({ toDate: () => new Date(2026, 9, day, 9) });
+    const d = (id: string, data: Record<string, unknown>) => ({ id, data: () => ({ userId: 'f1', exercises: [], ...data }) });
+    vi.mocked(getDocs)
+      // limit 2 reached: sessions created before the 6th exist but were not read
+      .mockResolvedValueOnce({ docs: [d('forgotten', { date: at(1), createdAt: at(7) }), d('sixth', { date: at(6), createdAt: at(6) })] } as never)
+      .mockResolvedValueOnce({ docs: [] } as never);
+    const items = await getFriendsActivity(['f1'], 2);
+    expect(items.map((a) => a.sessionId)).toEqual(['sixth']);
+  });
+
+  it('one « new friend » card per friendship, whichever side accepted', async () => {
+    const at = (min: number) => ({ toDate: () => new Date(2026, 9, 4, 8, min) });
+    const ev = (id: string, userId: string, friendId: string, min: number) => ({ id, data: () => ({ type: 'new_friend', userId, friendId, createdAt: at(min) }) });
+    const authors = [{ id: 'f1', data: () => ({ friends: ['f2'] }) }, { id: 'f2', data: () => ({ friends: ['f1'] }) }];
+    vi.mocked(getDocs)
+      .mockResolvedValueOnce({ docs: [] } as never)
+      .mockResolvedValueOnce({ docs: [ev('readded', 'f2', 'f1', 3), ev('first', 'f1', 'f2', 1)] } as never)
+      .mockResolvedValueOnce({ docs: authors, forEach: (fn: (d: unknown) => void) => authors.forEach(fn) } as never);
+    const items = await getFriendsActivity(['f1', 'f2']);
+    expect(items.map((a) => a.id)).toEqual(['readded']);
+  });
+
   it('a read failure is an error, not an empty feed', async () => {
     vi.mocked(getDocs).mockRejectedValue(new Error('offline'));
     await expect(getFriendsActivity(['f1'])).rejects.toThrow('offline');

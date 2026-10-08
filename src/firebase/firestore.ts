@@ -22,6 +22,7 @@ import {
   collectionGroup,
   deleteField,
 } from 'firebase/firestore';
+import type { DocumentData } from 'firebase/firestore';
 import { db, auth } from './config';
 import type { User, Session, SessionExercise, Exercise, Notification, MotivationalPhrase, UserStats, FriendRequest } from './types';
 import { findDefaultExercise, getUnlockedBadges } from '@/utils/constants';
@@ -1185,7 +1186,14 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
 
     // Merged and sorted by the date the card shows: a forgotten session is saved now but dated days ago
     const shownAt = (a: ActivityItem) => (typeof a.date?.toDate === 'function' ? a.date : a.createdAt)?.toDate().getTime() ?? 0;
+    // Each query keeps the latest `limitCount` by createdAt: once one is full, older items of that friend may be
+    // missing, so nothing shown before that window's floor is kept (a forgotten session left a silent gap)
+    const createdMs = (d: { data: () => DocumentData }) => d.data().createdAt?.toDate?.().getTime() ?? Infinity;
+    const floors = [...sessionSnaps, ...eventSnaps].filter((snap) => snap.docs.length >= limitCount)
+      .map((snap) => Math.min(...snap.docs.map(createdMs)));
+    const cutoff = floors.length ? Math.max(...floors) : 0;
     const allActivity = [...sessions, ...events].filter((a: ActivityItem) => typeof a.createdAt?.toDate === 'function')
+      .filter((a: ActivityItem) => shownAt(a) >= cutoff)
       .sort((a: ActivityItem, b: ActivityItem) => shownAt(b) - shownAt(a));
 
     // « New friend »: each re-add wrote one more event. Only the latest per pair, and none once the two are no
@@ -1193,7 +1201,7 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
     const pairs = new Set<string>();
     const latest = allActivity.filter((a: ActivityItem) => {
       if (a.type !== 'new_friend') return true;
-      const pair = `${String(a.userId)}_${String(a.friendId)}`;
+      const pair = [String(a.userId), String(a.friendId)].sort().join('_'); // same friendship whoever accepted
       if (pairs.has(pair)) return false;
       pairs.add(pair);
       return true;
