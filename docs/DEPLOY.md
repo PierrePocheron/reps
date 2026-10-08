@@ -12,8 +12,8 @@ Le flux de branches et le versionnage sont dans [RELEASE.md](RELEASE.md), les va
 
 | Cible | Quand | Comment | Qui |
 |---|---|---|---|
-| **Web** (Firebase Hosting) | Merge sur `prod` | CI GitHub Actions, automatique | Pierre (merge) |
-| **Règles / index Firestore** | Quand `firestore.rules` change | `firebase deploy --only firestore` | Pierre |
+| **Web** (Firebase Hosting) | Merge sur `prod` | À la main tant que les secrets `VITE_*` manquent à la CI (§ 1) | Pierre |
+| **Règles / index Firestore** | Quand `firestore.rules` ou `firestore.indexes.json` change | `firebase deploy --only firestore:rules,firestore:indexes --project reps` | Pierre |
 | **Android** (Play Store) | Après une release | AAB signé → Play Console | Pierre |
 | **iOS** (App Store) | Après une release | Archive Xcode → App Store Connect | Pierre |
 
@@ -21,11 +21,14 @@ Le flux de branches et le versionnage sont dans [RELEASE.md](RELEASE.md), les va
 
 ## 1. Web — Firebase Hosting
 
-**Automatique** : la CI ([.github/workflows/ci.yml](../.github/workflows/ci.yml)) déploie à chaque push sur `prod`,
-après tests, type-check, lint et build. Les variables `VITE_*` viennent des secrets GitHub
-(`gh secret set -f .env` depuis la racine, une fois ; à refaire si une variable change).
+**La CI ne déploie pas aujourd'hui** : [ci.yml](../.github/workflows/ci.yml) ne déploie sur un push `prod` que si
+le secret `VITE_FIREBASE_PROJECT_ID` existe. Les secrets `VITE_*` n'étant pas configurés, l'étape est sautée sans
+erreur (job vert) et `pedro-reps.web.app` garde l'ancien build. Pour la réactiver : `gh secret set -f .env` depuis la
+racine (à refaire si une variable change), avec `VITE_LEGAL_NAME` et `VITE_CONTACT_EMAIL` renseignés, sinon la
+politique de confidentialité s'affiche sans éditeur ni e-mail de contact. `VITE_SENTRY_DSN` n'est pas transmis au
+build de la CI.
 
-**À la main** (dépannage) :
+**À la main** (seule voie tant que la CI ne déploie pas) :
 
 ```bash
 yarn build
@@ -43,10 +46,12 @@ n'existe plus (`src/utils/staleChunk.ts`), au lieu d'afficher l'écran d'erreur.
 Les règles ne sont **pas** déployées par la CI. Toujours les tester avant :
 
 ```bash
-yarn test:rules                                          # 81 invariants sur l'émulateur
-firebase deploy --only firestore:rules --project reps    # règles
-firebase deploy --only firestore:indexes --project reps  # index (si firestore.indexes.json change)
+yarn test:rules                                                          # invariants sur l'émulateur
+firebase deploy --only firestore:rules,firestore:indexes --project reps  # règles et index ensemble
 ```
+
+Après un déploiement d'index, attendre qu'il soit **Activé** dans la console avant de publier l'appli qui s'en sert
+(l'émulateur n'applique pas les index : une requête sans index passe en test et échoue en prod).
 
 **En attente de déploiement** (prêtes sur `dev`, testées) : kudos sur l'activité des amis (#30) — avec leur
 effacement à la suppression du compte (champ `fromUid`, index de groupe de collections `kudos.fromUid` dans
@@ -57,7 +62,8 @@ toute acceptation était refusée, corrigé avec `getAfter`), **rejoindre ou cr�
 transférables, plus de notification via une simple demande d'ami en attente, demandes d'ami et kudos horodatés par le
 serveur, kudos seulement sur une séance qui existe, champs du fil typés, listes du profil public plafonnées ; toutes
 les écritures de l'appli actuelle restent acceptées, vérifié par les tests). Déployer **règles et index** avant de
-publier la version de l'appli qui s'en sert.
+publier la version de l'appli qui s'en sert, après la migration des données héritées et avec le web dans la même
+fenêtre : suivre l'[ordre de soumission de PLAYSTORE.md](PLAYSTORE.md#ordre-de-soumission-dans-cet-ordre).
 
 ---
 
@@ -79,6 +85,15 @@ publier la version de l'appli qui s'en sert.
   ```
 
 ### Construire
+
+**Avant la première publication**, suivre l'[ordre de soumission](PLAYSTORE.md#ordre-de-soumission-dans-cet-ordre) :
+1. migration `scripts/migrate-security.mjs` (`--dry-run`, puis réelle avec un compte de service) ;
+2. `yarn test:rules` + `firebase deploy --only firestore:rules,firestore:indexes --project reps`, attendre l'index
+   `kudos.fromUid` ;
+3. `yarn build` + `firebase deploy --only hosting --project reps`, vérifier l'URL de la politique ;
+4. inscription et suppression d'un compte jetable en prod ;
+5. l'AAB ci-dessous ;
+6. les formulaires de la Play Console.
 
 ```bash
 scripts/release.sh prepare X.Y.Z          # sur dev : versionName + versionCode (1.2.3 → 10203)
@@ -105,14 +120,16 @@ Contrôle rapide sur émulateur ou téléphone : voir [TESTS.md › Démo sur l'
       régénérables avec `yarn store:screenshots`) — contenu prêt dans [PLAYSTORE.md](PLAYSTORE.md)
 - [ ] **Règles de confidentialité** : URL publique → `https://pedro-reps.web.app/privacy-policy`
 - [ ] **Suppression de compte** : dans l'appli (Profil › Supprimer mon compte, déjà là : données Firestore, compte et
-      copie locale de l'appareil) **et** une URL web
-      expliquant la démarche (page du site, #24)
+      copie locale de l'appareil) **et** une URL web expliquant la démarche :
+      `https://pedro-reps.web.app/privacy-policy#suppression-compte` (en ligne après le déploiement web)
 - [ ] **Sécurité des données** (Data Safety) : questionnaire rempli d'après [PLAYSTORE.md](PLAYSTORE.md#déclarations-de-données-data-safety--play-console)
 - [ ] **Accès à l'appli** : fournir un **compte de test** (e-mail + mot de passe) aux réviseurs, l'appli exigeant une connexion
 - [ ] **Annonces** : désactivées aujourd'hui (`ENABLED` / `ENABLED_MOBILE` à `false` dans `src/config/ads.ts`) →
-      déclarer « Non » pour la v1. Avant de les activer : vrais identifiants AdMob (l'ID du manifeste
+      déclarer « Non » pour la v1, et « Identifiant publicitaire » = Non (`AD_ID` et `ACCESS_ADSERVICES_*` sont
+      retirés du manifeste). Avant de les activer : vrais identifiants AdMob (l'ID du manifeste
       `android/app/src/main/AndroidManifest.xml` est celui de **test** de Google, ceux de `ads.ts` sont des exemples),
-      déclaration « contient des annonces », Sécurité des données (identifiant publicitaire) et, sur iOS, ATT
+      retirer les `tools:node="remove"` et `DELAY_APP_MEASUREMENT_INIT` du manifeste, déclaration « contient des
+      annonces », identifiant publicitaire, Sécurité des données, politique de confidentialité et, sur iOS, ATT
 - [ ] **Applis santé** : déclarer les données de forme physique (séances, poids, mensurations)
 - [ ] **Classification du contenu** (questionnaire IARC) et **public cible** (pas destiné aux enfants)
 - [ ] Permissions : `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM` (accordée par l'utilisateur, pas de déclaration
@@ -165,6 +182,7 @@ Puis App Store Connect : **TestFlight** (test interne), et soumission à la revu
 | `google-services.json` | `android/app/` | **Non** |
 | `GoogleService-Info.plist` | `ios/App/App/` | **Non** |
 | Keystore + `keystore.properties` | `android/` | **Non** (sauvegarde hors repo) |
+| Clé de compte de service (`scripts/migrate-security.mjs`) | hors du repo (`GOOGLE_APPLICATION_CREDENTIALS`) | **Non** |
 | `FIREBASE_SERVICE_ACCOUNT_REPS_APP` | secret GitHub | — (déploiement Hosting par la CI) |
 | `SONAR_TOKEN`, DSN Sentry | secrets GitHub / `.env` | Non |
 

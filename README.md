@@ -94,7 +94,7 @@ Avec un vrai projet Firebase : `cp .env.example .env`, remplir les clés ([ENV.m
 | [docs/RELEASE.md](docs/RELEASE.md) | Branches, versionnage, publication d'une version |
 | [docs/TESTS.md](docs/TESTS.md) | Tests unitaires, règles, e2e, accessibilité, démo Android |
 | [docs/TOOLS.md](docs/TOOLS.md) | Outils du projet et commandes |
-| [docs/PLAYSTORE.md](docs/PLAYSTORE.md) | Fiche Play Store, Data Safety, captures |
+| [docs/PLAYSTORE.md](docs/PLAYSTORE.md) | Fiche Play Store, Data Safety, ordre de soumission (migration, règles, web, AAB) |
 | [docs/COMPETITIVE.md](docs/COMPETITIVE.md) | Analyse concurrentielle (Hevy, Strong…) et écarts restants |
 | [docs/LOOP.md](docs/LOOP.md) | Boucle d'amélioration continue et son journal |
 | [docs/WEBSITE.md](docs/WEBSITE.md) | Réflexion sur le site vitrine |
