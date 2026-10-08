@@ -236,9 +236,39 @@ await test('pas de notification forgée vers un inconnu', () =>
 await test('pas de notification en se faisant passer pour un autre', () =>
   assertFails(addDoc(collection(alice, 'notifications'), { userId: 'bob', fromUserId: 'carol', title: 'x', message: 'x', type: 'friend_activity', read: false, createdAt: serverTimestamp() })));
 // what the app sends: a kudos (giveKudos) and the acceptance notice once both friends lists are linked (acceptFriendRequest)
-const kudosNotif = (from, to, extra = {}) => ({ userId: to, fromUserId: from, fromName: from, type: 'kudos', read: false, sessionId: 'b1',
+const kudosNotif = (from, to, extra = {}) => ({ userId: to, fromUserId: from, fromName: from, type: 'kudos', read: false, sessionId: 'n1',
   title: 'Encouragement 👏', message: `${from} a encouragé ta séance`, createdAt: serverTimestamp(), ...extra });
-await test('encouragement notifié à un ami (forme réelle)', () => assertSucceeds(addDoc(collection(alice, 'notifications'), kudosNotif('alice', 'bob'))));
+await env.withSecurityRulesDisabled(async (ctx) => {
+  for (const id of ['n1', 'n2']) await setDoc(doc(ctx.firestore(), `sessions/bob/userSessions/${id}`), { userId: 'bob', totalReps: 10, exercises: [] });
+});
+await test('encouragement notifié à un ami (forme réelle : le kudos, puis la notification)', async () => {
+  await assertSucceeds(setDoc(doc(alice, 'sessions/bob/userSessions/n1/kudos/alice'), { createdAt: serverTimestamp(), fromUid: 'alice' }));
+  await assertSucceeds(addDoc(collection(alice, 'notifications'), kudosNotif('alice', 'bob')));
+});
+// the home banner reads every unread kudos notification and fans out one kudos query per sessionId: a friend could
+// pile up ~1 MB ones, of any type, with invented sessions
+await test('notification avec une clé en plus refusée', () =>
+  assertFails(addDoc(collection(alice, 'notifications'), kudosNotif('alice', 'bob', { junk: 'x'.repeat(1000) }))));
+await test('type limité à ceux de l\'appli', () =>
+  assertFails(addDoc(collection(alice, 'notifications'), kudosNotif('alice', 'bob', { type: 'support' }))));
+await test('notification de kudos sans sessionId refusée', async () => {
+  const { sessionId, ...noSession } = kudosNotif('alice', 'bob');
+  void sessionId;
+  await assertFails(addDoc(collection(alice, 'notifications'), noSession));
+});
+await test('notification de kudos avec un sessionId non textuel refusée', () =>
+  assertFails(addDoc(collection(alice, 'notifications'), kudosNotif('alice', 'bob', { sessionId: 7 }))));
+await test('notification de kudos sans kudos réel refusée (séance inventée)', () =>
+  assertFails(addDoc(collection(alice, 'notifications'), kudosNotif('alice', 'bob', { sessionId: 'n2' }))));
+// getUnreadKudos (limit 50) then markKudosSeen
+await test('lecture des kudos non lus (forme réelle)', () => assertSucceeds(getDocs(query(collection(bob, 'notifications'),
+  where('userId', '==', 'bob'), where('read', '==', false), where('type', '==', 'kudos'), limit(50)))));
+await test('kudos marqués comme vus (batch)', async () => {
+  const unread = await getDocs(query(collection(bob, 'notifications'), where('userId', '==', 'bob'), where('read', '==', false), where('type', '==', 'kudos'), limit(50)));
+  const b = writeBatch(bob);
+  unread.docs.forEach((d) => b.update(d.ref, { read: true }));
+  await assertSucceeds(b.commit());
+});
 await test('acceptation notifiée après le batch (forme réelle)', () =>
   assertSucceeds(addDoc(collection(env.authenticatedContext('ivy').firestore(), 'notifications'), { userId: 'jack', fromUserId: 'ivy',
     title: 'Demande acceptée', message: 'ivy a accepté ta demande d\'ami', type: 'friend_activity', read: false, createdAt: serverTimestamp() })));

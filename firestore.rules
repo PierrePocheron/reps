@@ -238,7 +238,15 @@ service cloud.firestore {
         && request.resource.data.userId is string
         && request.resource.data.title is string && request.resource.data.title.size() <= 100
         && request.resource.data.message is string && request.resource.data.message.size() <= 300
-        && request.resource.data.type is string && request.resource.data.type.size() <= 40
+        // the home banner reads every unread kudos notification and queries the kudos of each sessionId: a friend
+        // piled up ~1 MB ones, of any type, with invented sessions. Only what giveKudos / acceptFriendRequest write,
+        // and a kudos notification only for a kudos that exists (giveKudos writes it first)
+        && request.resource.data.keys().hasOnly(['userId', 'fromUserId', 'fromName', 'type', 'read', 'sessionId', 'title', 'message', 'createdAt'])
+        && request.resource.data.type in ['kudos', 'friend_activity']
+        && (!('sessionId' in request.resource.data)
+            || (request.resource.data.sessionId is string && request.resource.data.sessionId.size() <= 128))
+        && (request.resource.data.type != 'kudos' || (request.resource.data.get('sessionId', null) is string
+            && exists(/databases/$(database)/documents/sessions/$(request.resource.data.userId)/userSessions/$(request.resource.data.sessionId)/kudos/$(request.auth.uid))))
         && request.resource.data.read == false
         // the home kudos banner shows fromName; the app stamps createdAt with serverTimestamp()
         && (!('fromName' in request.resource.data) || (request.resource.data.fromName is string && request.resource.data.fromName.size() <= 50))
