@@ -117,9 +117,11 @@ describe('History', () => {
   it('a delete recomputes the stats once: the recompute already hands them to the store, no second full read', async () => {
     GYM = [gym('A', 3, ['bench'])];
     render(<MemoryRouter><History /></MemoryRouter>);
+    vi.mocked(updateUserStatsAfterSession).mockClear(); // the streak hook already recomputes on mount
     await openMenu('Supprimer');
     await act(async () => { fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Supprimer' })); });
     await act(async () => {});
+    expect(updateUserStatsAfterSession).toHaveBeenCalledTimes(1);
     expect(updateUserStatsAfterSession).toHaveBeenCalledWith('u1', 0);
     expect(useUserStore.getState().refreshStats).not.toHaveBeenCalled();
   });
