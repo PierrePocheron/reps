@@ -9,6 +9,11 @@ const config: CapacitorConfig = {
     iosScheme: 'https',
   },
   plugins: {
+    // Only Google sign-in is used: `cap sync` then builds the plugin with stubs instead of the Facebook SDK
+    // (no exported Facebook activity, no extra SDK to declare on Play)
+    SocialLogin: {
+      providers: { facebook: false },
+    },
     LocalNotifications: {
       smallIcon: 'ic_stat_reps', // res/drawable/ic_stat_reps.xml (sinon icône générique « i »)
       iconColor: '#7C3AED',
