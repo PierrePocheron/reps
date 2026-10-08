@@ -23,11 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment variables
+# Environment variables (Vite also loads .env.production, .env.development…): only the templates are versioned
 .env
-.env.local
-.env.production.local
-.env.development.local
+.env.*
+!.env.example
+!.env.demo
 
 # Firebase
 .firebase/
@@ -46,12 +46,15 @@ android/.idea/
 android/local.properties
 # Artefacts de release
 android/app/release/
-# La keystore et ses credentials ne doivent JAMAIS être commités
-android/keystore.properties
-android/*.keystore
-android/*.jks
-android/app/*.keystore
-android/app/*.jks
+# Signing keys and their credentials, wherever they land: never committed
+*.keystore
+*.jks
+*.p12
+*keystore.properties
+# Firebase / Google Cloud service-account keys (scripts/migrate-security.mjs)
+*-firebase-adminsdk-*.json
+serviceAccount*.json
+service-account*.json
 
 # Build
 build/
