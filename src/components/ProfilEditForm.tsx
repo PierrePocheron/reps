@@ -93,8 +93,8 @@ export function ProfilEditForm({ user, onSuccess }: ProfilEditFormProps) {
          if (!isRealDay(formData.birthDate)) throw new Error("Cette date n'existe pas 🤔"); // 31 février…
          const age = ageFrom(formData.birthDate);
 
-         if (age < 5) {
-             throw new Error("T'es un peu jeune non ? 👶");
+         if (age < 13) { // the privacy policy and the Play target audience exclude under-13s
+             throw new Error('Il faut avoir au moins 13 ans pour utiliser Reps.');
          }
          if (age > 100) {
              throw new Error("T'abuses un peu sur l'âge 👀");
