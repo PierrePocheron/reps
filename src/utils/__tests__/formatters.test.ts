@@ -120,6 +120,18 @@ describe('plural', () => {
 });
 
 describe('frDate', () => {
+  it('follows a time zone change while the app stays in memory (a cached formatter kept the old zone)', () => {
+    const tz = process.env.TZ;
+    try {
+      process.env.TZ = 'America/New_York';
+      frDate(new Date(), { hour: '2-digit', minute: '2-digit' }); // builds and caches the formatter
+      process.env.TZ = 'Europe/Paris';
+      expect(frDate(new Date('2026-10-06T22:30:00Z'), { hour: '2-digit', minute: '2-digit' })).toBe('00:30');
+    } finally {
+      if (tz === undefined) delete process.env.TZ; else process.env.TZ = tz;
+    }
+  });
+
   it('writes « 1er » before a month name', () => {
     expect(frDate(new Date(2026, 9, 1), { weekday: 'long', day: 'numeric', month: 'long' })).toBe('jeudi 1er octobre');
     expect(frDate(new Date(2026, 9, 1), { day: 'numeric', month: 'short' })).toBe('1er oct.');

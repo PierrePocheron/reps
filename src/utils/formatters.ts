@@ -10,7 +10,8 @@ const formats = new Map<string, Intl.DateTimeFormat>();
  * Options name at least one date or time field: toLocaleString would add a time to the others.
  */
 export const frDate = (date: Date, options: Intl.DateTimeFormatOptions): string => {
-  const key = JSON.stringify(options);
+  // the offset joins the key: a formatter keeps the zone it was built in, and an app left in memory can change zone
+  const key = new Date().getTimezoneOffset() + JSON.stringify(options);
   let format = formats.get(key);
   if (!format) {
     format = new Intl.DateTimeFormat('fr-FR', options);
