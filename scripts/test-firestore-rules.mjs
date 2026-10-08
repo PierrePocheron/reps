@@ -15,7 +15,7 @@ import {
   assertSucceeds,
   assertFails,
 } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp, arrayRemove, writeBatch, Timestamp, limit, orderBy, runTransaction, increment, deleteField } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp, arrayRemove, writeBatch, Timestamp, limit, orderBy, runTransaction, increment, deleteField, documentId } from 'firebase/firestore';
 
 const PROJECT = 'reps-rules-test';
 let passed = 0, failed = 0;
@@ -216,6 +216,23 @@ await test('migration de l\'ancien profil vers emailHash (forme réelle)', () =>
   { email: deleteField(), weight: deleteField(), emailHash: sha('oldie@example.com') })));
 await test('un emailHash existant inchangé ne bloque pas les mises à jour', () =>
   assertSucceeds(updateDoc(doc(withEmail('hashed', 'other@example.com'), 'users/hashed'), { totalReps: 3, updatedAt: serverTimestamp() })));
+
+console.log('\n─ Profils : totaux et listes ─');
+// the « Légendes » leaderboard ranks friends by the profile's totalReps
+await test('totalReps du profil borné', () => assertFails(updateDoc(doc(alice, 'users/alice'), { totalReps: 1e308 })));
+await test('totalSessions du profil borné', () => assertFails(updateDoc(doc(alice, 'users/alice'), { totalSessions: 1e7 })));
+// one unbounded list downloaded every profile (names, emailHash, friends): only the app's bounded queries
+const users = collection(mallory, 'users');
+await test('un compte ne liste pas tous les profils', () => assertFails(getDocs(users)));
+await test('pas plus de 30 profils par requête', () => assertFails(getDocs(query(users, limit(31)))));
+await test('détails des amis par paquets de 10 (forme réelle)', () =>
+  assertSucceeds(getDocs(query(users, where(documentId(), 'in', ['alice', 'bob']), limit(10)))));
+await test('recherche par pseudo et par nom (forme réelle)', () => Promise.all([['searchName', 'al'], ['displayName', 'Al']].map(([field, term]) =>
+  assertSucceeds(getDocs(query(users, orderBy(field), where(field, '>=', term), where(field, '<=', term + ''), limit(10)))))));
+await test('recherche par e-mail exact (forme réelle)', () =>
+  assertSucceeds(getDocs(query(users, where('emailHash', '==', sha('newbie@example.com')), limit(1)))));
+// checkUsernameAvailability: only needs to know whether another account holds the pseudo
+await test('disponibilité d\'un pseudo (avec limit)', () => assertSucceeds(getDocs(query(users, where('searchName', '==', 'alice'), limit(2)))));
 
 console.log('\n─ Séances / défis / templates ─');
 await test('séances renfo lisibles par un authentifié (feed social)', () => assertSucceeds(getDoc(doc(bob, 'sessions/alice/userSessions/s1'))));

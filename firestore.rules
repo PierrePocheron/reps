@@ -72,7 +72,10 @@ service cloud.firestore {
     // vivent dans users/{uid}/private/* (owner-only).
 
     match /users/{userId} {
-      allow read: if isAuthenticated();
+      allow get: if isAuthenticated();
+      // one unbounded list downloaded every profile (names, emailHash, friends) in one go: only bounded queries,
+      // like the app's (friends by 10, search by 10, e-mail by 1)
+      allow list: if isAuthenticated() && request.query.limit <= 30;
 
       allow create: if isOwner(userId)
         && validUserDoc(request.resource.data)
@@ -88,8 +91,9 @@ service cloud.firestore {
 
       function validUserDoc(d) {
         return d.displayName is string && d.displayName.size() >= 1 && d.displayName.size() <= 50
-          && d.totalReps is number && d.totalReps >= 0
-          && d.totalSessions is number && d.totalSessions >= 0
+          // the « Légendes » leaderboard ranks friends by these totals (1e308 or Infinity topped it)
+          && d.totalReps is number && d.totalReps >= 0 && d.totalReps <= 100000000
+          && d.totalSessions is number && d.totalSessions >= 0 && d.totalSessions <= 1000000
           && d.badges is list && d.badges.size() <= 300
           && d.friends is list && d.friends.size() <= 500
           && (!('searchName' in d) || (d.searchName is string && d.searchName.size() <= 50))
