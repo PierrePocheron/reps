@@ -153,6 +153,8 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
+    // agents' isolated worktrees live under .claude/: their copies of the tests ran too (old code, double load)
+    exclude: ['**/node_modules/**', '**/dist/**', '.claude/**'], // not vitest/config: pwaConfig.test imports this file in jsdom
     env: {
       VITE_SENTRY_DSN: 'https://test@sentry.io/0', // Ensure Sentry is enabled in CI tests
     },
