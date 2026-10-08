@@ -1110,14 +1110,21 @@ export function subscribeToFriendRequests(userId: string, callback: (requests: F
   const requestsRef = collection(db, 'friend_requests');
   // Simplification de la requête pour éviter les problèmes d'index complexes
   // On triera côté client
+  // Bounded: each account can send one request, and many accounts were all downloaded on every launch
   const q = query(
     requestsRef,
     where('toUserId', '==', userId),
-    where('status', '==', 'pending')
+    where('status', '==', 'pending'),
+    limit(50)
   );
 
   return onSnapshot(q, (snapshot) => {
-    const requests: FriendRequest[] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as FriendRequest));
+    // the sender writes these fields: a map emoji or name took the Friends page (and its « Refuser ») down
+    const requests: FriendRequest[] = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return { ...data, id: doc.id, fromDisplayName: typeof data.fromDisplayName === 'string' ? data.fromDisplayName : '',
+        fromAvatarEmoji: typeof data.fromAvatarEmoji === 'string' ? data.fromAvatarEmoji : undefined } as FriendRequest;
+    });
     // Tri côté client (plus robuste si l'index n'est pas encore prêt)
     // The rules do not require createdAt: one request without it threw here and hid every pending request
     requests.sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0));

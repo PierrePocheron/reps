@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getDocs, query, serverTimestamp, setDoc, where, writeBatch } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs, limit, query, serverTimestamp, setDoc, where, writeBatch } from 'firebase/firestore';
 import { db } from './config';
 import { createNotification } from './firestore';
 import type { Notification } from './types';
@@ -32,16 +32,20 @@ export async function removeKudos(ownerId: string, sessionId: string, myUid: str
  * s'affichent, une par ami et par séance ; les autres passent en lues.
  */
 export async function getUnreadKudos(uid: string): Promise<Notification[]> {
-  // the type filter skips friend notifications nothing ever marks read, which were billed on every Home visit
+  // the type filter skips friend notifications nothing ever marks read, which were billed on every Home visit.
+  // A friend can pile up thousands: 50 at a time, the stale ones are marked read and the next visit reads the rest
   const snap = await getDocs(query(collection(db, 'notifications'), where('userId', '==', uid), where('read', '==', false),
-    where('type', '==', 'kudos')));
-  const unread = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Notification);
-  const sessions = [...new Set(unread.map((n) => n.sessionId).filter((id): id is string => !!id))];
+    where('type', '==', 'kudos'), limit(50)));
+  const unread = snap.docs.map((d) => ({ ...d.data(), id: d.id }) as Notification);
+  // written by the friend, unchecked by the rules: anything but a plain id threw building the kudos path
+  const isId = (id: unknown): id is string => typeof id === 'string' && id !== '' && !id.includes('/');
+  const sessions = [...new Set(unread.map((n) => n.sessionId).filter(isId))];
   const givers = new Map(await Promise.all(sessions.map(async (id) => [id, new Set(await getKudos(uid, id))] as const)));
   const seen = new Set<string>(), shown: Notification[] = [], stale: string[] = [];
   for (const n of unread) {
-    const key = `${n.sessionId}|${n.fromUserId}`;
-    const live = !n.sessionId || !!givers.get(n.sessionId)?.has(n.fromUserId ?? ''); // older ones have no sessionId
+    const live = !n.sessionId // older ones have no sessionId
+      || (isId(n.sessionId) && !!givers.get(n.sessionId)?.has(n.fromUserId ?? ''));
+    const key = live ? `${n.sessionId}|${n.fromUserId}` : '';
     if (live && !seen.has(key)) { seen.add(key); shown.push(n); } else stale.push(n.id);
   }
   if (stale.length) await markKudosSeen(stale).catch(() => {}); // best effort: shown again next time otherwise
@@ -49,7 +53,10 @@ export async function getUnreadKudos(uid: string): Promise<Notification[]> {
 }
 
 export async function markKudosSeen(ids: string[]): Promise<void> {
-  const batch = writeBatch(db);
-  for (const id of ids) batch.update(doc(db, 'notifications', id), { read: true });
-  await batch.commit();
+  // a batch takes at most 500 writes: a bigger one failed every time
+  for (let i = 0; i < ids.length; i += 500) {
+    const batch = writeBatch(db);
+    for (const id of ids.slice(i, i + 500)) batch.update(doc(db, 'notifications', id), { read: true });
+    await batch.commit();
+  }
 }

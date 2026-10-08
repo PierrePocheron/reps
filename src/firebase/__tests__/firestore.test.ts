@@ -11,6 +11,8 @@ import {
   onSnapshot,
   writeBatch,
   where,
+  query,
+  limit,
 } from 'firebase/firestore';
 import {
   createUserDocument,
@@ -431,6 +433,22 @@ describe('subscribeToFriendRequests', () => {
     const req = (id: string, createdAt?: { seconds: number }) => ({ id, data: () => ({ fromUserId: id, status: 'pending', createdAt }) });
     onNext({ docs: [req('old', { seconds: 1 }), req('bad'), req('new', { seconds: 2 })] });
     expect(callback.mock.calls[0]![0].map((r: { id: string }) => r.id)).toEqual(['new', 'old', 'bad']);
+  });
+
+  it('listens to at most 50 requests (many accounts each sending one were all downloaded on every launch)', () => {
+    vi.mocked(query).mockImplementationOnce(((...parts: unknown[]) => parts) as never);
+    vi.mocked(limit).mockImplementationOnce(((n: number) => ({ limit: n })) as never);
+    subscribeToFriendRequests('me', vi.fn());
+    expect(vi.mocked(onSnapshot).mock.calls[0]![0]).toContainEqual({ limit: 50 });
+  });
+
+  it('a request written with odd field types renders as a plain one (a map emoji took the Friends page down)', () => {
+    const callback = vi.fn();
+    subscribeToFriendRequests('me', callback);
+    const onNext = vi.mocked(onSnapshot).mock.calls[0]![1] as unknown as (s: unknown) => void;
+    onNext({ docs: [{ id: 'mallory_me', data: () => ({ id: { a: 1 }, fromUserId: 'mallory', status: 'pending',
+      fromDisplayName: { a: 1 }, fromAvatarEmoji: { boom: 1 } }) }] });
+    expect(callback.mock.calls[0]![0][0]).toMatchObject({ id: 'mallory_me', fromDisplayName: '', fromAvatarEmoji: undefined });
   });
 });
 
