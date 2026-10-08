@@ -252,12 +252,23 @@ service cloud.firestore {
     match /userTemplates/{userId}/templates/{templateId} {
       allow read: if isOwner(userId)
         || (isAuthenticated() && get(/databases/$(database)/documents/users/$(userId)).data.friends.hasAny([request.auth.uid]));
-      allow write: if isOwner(userId);
+      // friends list them and « Copier » duplicates every field into their own: only the template fields, bounded
+      // (changed keys on update: older templates stay editable)
+      allow create, update: if isOwner(userId)
+        && writtenKeys().hasOnly(['name', 'description', 'emoji', 'workoutType', 'exerciseIds', 'muscuExercises', 'userId', 'createdAt'])
+        && shortString(request.resource.data, 'name', 100) && shortString(request.resource.data, 'description', 300)
+        && shortString(request.resource.data, 'emoji', 16) && shortString(request.resource.data, 'workoutType', 20)
+        && shortString(request.resource.data, 'userId', 128)
+        && request.resource.data.get('exerciseIds', []) is list && request.resource.data.get('exerciseIds', []).size() <= 100
+        && request.resource.data.get('muscuExercises', []) is list && request.resource.data.get('muscuExercises', []).size() <= 100
+        && request.resource.data.get('createdAt', request.time) is timestamp;
+      allow delete: if isOwner(userId);
     }
 
     // ─── exercises (personnalisés) ──────────────────────────────────────────
     match /exercises/{exerciseId} {
-      allow read: if isAuthenticated();
+      // the app reads its own only (getUserExercises, account deletion): any account listed everyone's
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
       allow create: if isAuthenticated()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.name is string

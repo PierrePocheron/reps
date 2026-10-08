@@ -335,6 +335,12 @@ await test('abandonner son défi (setDoc merge)', () => assertSucceeds(setDoc(ma
 const malloryExercise = await addDoc(collection(mallory, 'exercises'), { name: 'Burpees', emoji: '🔥', category: 'cardio', userId: 'mallory', createdAt: serverTimestamp() });
 await test('pas de transfert d\'exercice perso à un autre', () => assertFails(updateDoc(malloryExercise, { userId: 'alice' })));
 await test('supprimer son exercice perso', () => assertSucceeds(deleteDoc(malloryExercise)));
+// the app only reads its own custom exercises (getUserExercises, account deletion): any account listed everyone's
+await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'exercises/ax1'), { name: 'Secret', emoji: '🔥', userId: 'alice' }));
+await test('un inconnu ne liste pas les exercices perso', () => assertFails(getDocs(collection(mallory, 'exercises'))));
+await test('un inconnu ne lit pas l\'exercice perso d\'un autre', () => assertFails(getDoc(doc(mallory, 'exercises/ax1'))));
+await test('ses propres exercices perso (forme réelle)', () =>
+  assertSucceeds(getDocs(query(collection(alice, 'exercises'), where('userId', '==', 'alice')))));
 
 console.log('\n─ Notifications ─');
 await test('pas de notification forgée vers un inconnu', () =>
@@ -416,10 +422,29 @@ await test('on retire sa propre réaction', () => assertSucceeds(deleteDoc(kudo(
 
 console.log('\n─ Modèles des amis ─');
 // (bob a toujours alice en ami ; alice ne l'a plus depuis le test de suppression)
-await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'userTemplates/bob/templates/t1'), { name: 'Push', workoutType: 'musculation' }));
+await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'userTemplates/bob/templates/t1'),
+  { name: 'Push', workoutType: 'musculation', userId: 'bob', oldField: 'ancien' }));
 await test('un ami lit les modèles pour les copier', () => assertSucceeds(getDoc(doc(alice, 'userTemplates/bob/templates/t1'))));
 await test('un inconnu ne lit pas les modèles', () => assertFails(getDoc(doc(mallory, 'userTemplates/bob/templates/t1'))));
 await test('un ami ne modifie pas les modèles d\'autrui', () => assertFails(setDoc(doc(alice, 'userTemplates/bob/templates/t1'), { name: 'pwn' })));
+// friends list them and « Copier » duplicates them into their own: only the template fields, bounded
+const renfoTemplate = { name: 'Haut du corps', description: 'Pompes · Dips', emoji: '💪', workoutType: 'renforcement', exerciseIds: ['pushups', 'dips'] };
+const muscuTemplate = { name: 'Push', description: 'Développé couché', emoji: '🏋️', workoutType: 'musculation', muscuExercises: [
+  { exerciseId: 'lib_0001', name: 'Développé couché', emoji: '🏋️', imageUrl: 'https://example.com/x.png', timed: false, sets: [{ reps: 10, weight: 60 }] }] };
+const bobTemplates = collection(bob, 'userTemplates/bob/templates');
+const saved = (data, uid = 'bob') => ({ ...data, userId: uid, createdAt: Timestamp.now() });
+await test('créer un modèle renfo (forme réelle)', () => assertSucceeds(setDoc(doc(bobTemplates, 'tr'), saved(renfoTemplate))));
+await test('créer un modèle muscu (forme réelle)', () => assertSucceeds(setDoc(doc(bobTemplates, 'tm'), saved(muscuTemplate))));
+await test('changer le type d\'un modèle (updateUserTemplate, forme réelle)', () =>
+  assertSucceeds(updateDoc(doc(bobTemplates, 'tr'), { exerciseIds: deleteField(), ...muscuTemplate })));
+await test('ancien modèle avec un champ hérité modifiable', () => assertSucceeds(updateDoc(doc(bobTemplates, 't1'), { name: 'Push 2' })));
+await test('modèle avec une clé en plus refusé', () => assertFails(setDoc(doc(bobTemplates, 'tx'), { ...saved(renfoTemplate), junk: 'x'.repeat(1000) })));
+await test('nom de modèle borné', () => assertFails(setDoc(doc(bobTemplates, 'tx'), saved({ ...renfoTemplate, name: 'x'.repeat(101) }))));
+await test('exercices du modèle bornés', () => assertFails(setDoc(doc(bobTemplates, 'tx'), saved({ ...renfoTemplate, exerciseIds: Array(101).fill('pushups') }))));
+await test('un ami liste les modèles (forme réelle)', () =>
+  assertSucceeds(getDocs(query(collection(alice, 'userTemplates/bob/templates'), orderBy('createdAt', 'desc')))));
+await test('copier le modèle d\'un ami dans les siens (forme réelle)', () =>
+  assertSucceeds(setDoc(doc(collection(alice, 'userTemplates/alice/templates')), saved(muscuTemplate, 'alice'))));
 
 console.log('\n─ Divers ─');
 await test('phrases lisibles par tous', () => assertSucceeds(getDoc(doc(anon, 'phrases/p1'))));
