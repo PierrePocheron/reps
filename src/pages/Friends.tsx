@@ -247,8 +247,9 @@ export default function Friends() {
     return friends.find(f => f.uid === userId);
   };
 
+  // a friend's doc: a date of the wrong type shows no date rather than taking the page down
   const formatDate = (timestamp: Timestamp | null | undefined) => {
-    if (!timestamp) return '';
+    if (typeof timestamp?.toDate !== 'function') return '';
     const date = timestamp.toDate();
     const now = new Date();
     const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();

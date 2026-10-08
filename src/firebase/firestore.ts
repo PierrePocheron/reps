@@ -1173,26 +1173,43 @@ export async function getFriendsActivity(friendIds: string[], limitCount = 20): 
       Promise.all(chunks.map((ids) => recent('userEvents', ids))), // badges
     ]);
 
-    // The rules do not type-check sessions or events: one malformed doc must not break every friend's feed
+    // A friend writes these docs and the rules cannot type list items: one malformed doc took the Friends page
+    // down for every friend. Only what the cards render is kept, typed (the doc id wins over a stored one)
+    const text = (v: unknown) => (typeof v === 'string' ? v : undefined);
+    const isTimestamp = (v: unknown): v is { toDate: () => Date } => typeof (v as { toDate?: unknown } | null)?.toDate === 'function';
     const sessions = sessionSnaps.flatMap((snap) => snap.docs).map(doc => {
       const data = doc.data();
-      return { type: 'session', sessionId: doc.id, ...data, exercises: Array.isArray(data.exercises) ? data.exercises : [] };
+      const exercises: unknown[] = Array.isArray(data.exercises) ? data.exercises : [];
+      return {
+        ...data, type: 'session', sessionId: doc.id,
+        totalReps: Number.isFinite(data.totalReps) ? data.totalReps : 0,
+        totalCalories: Number.isFinite(data.totalCalories) ? data.totalCalories : 0,
+        exercises: exercises.flatMap((e) => {
+          const { name, emoji, reps } = (e ?? {}) as Record<string, unknown>;
+          return typeof name === 'string' && Number.isFinite(reps) ? [{ name, emoji: text(emoji) ?? '', reps }] : [];
+        }),
+      };
     });
 
-    const events = eventSnaps.flatMap((snap) => snap.docs).map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    const events = eventSnaps.flatMap((snap) => snap.docs).map(doc => {
+      const data = doc.data();
+      return { ...data, id: doc.id, friendId: text(data.friendId), friendName: text(data.friendName),
+        badgeName: text(data.badgeName), badgeEmoji: text(data.badgeEmoji) };
+    });
 
     // Merged and sorted by the date the card shows: a forgotten session is saved now but dated days ago
-    const shownAt = (a: ActivityItem) => (typeof a.date?.toDate === 'function' ? a.date : a.createdAt)?.toDate().getTime() ?? 0;
+    const shownAt = (a: ActivityItem) => (a.date ?? a.createdAt)?.toDate().getTime() ?? 0;
     // Each query keeps the latest `limitCount` by createdAt: once one is full, older items of that friend may be
     // missing, so nothing shown before that window's floor is kept (a forgotten session left a silent gap)
-    const createdMs = (d: { data: () => DocumentData }) => d.data().createdAt?.toDate?.().getTime() ?? Infinity;
+    const createdMs = (d: { data: () => DocumentData }) => {
+      const at: unknown = d.data().createdAt;
+      return isTimestamp(at) ? at.toDate().getTime() : Infinity;
+    };
     const floors = [...sessionSnaps, ...eventSnaps].filter((snap) => snap.docs.length >= limitCount)
       .map((snap) => Math.min(...snap.docs.map(createdMs)));
     const cutoff = floors.length ? Math.max(...floors) : 0;
-    const allActivity = [...sessions, ...events].filter((a: ActivityItem) => typeof a.createdAt?.toDate === 'function')
+    const allActivity = [...sessions, ...events]
+      .filter((a: ActivityItem) => isTimestamp(a.createdAt) && (a.date == null || isTimestamp(a.date)))
       .filter((a: ActivityItem) => shownAt(a) >= cutoff)
       .sort((a: ActivityItem, b: ActivityItem) => shownAt(b) - shownAt(a));
 

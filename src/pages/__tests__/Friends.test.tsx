@@ -59,6 +59,13 @@ describe('Friends activity', () => {
     expect(screen.queryByText(/autres? exercices?/)).not.toBeInTheDocument();
   });
 
+  it('a session date that is not a timestamp shows no date instead of taking the page down', async () => {
+    db.getFriendsActivity.mockResolvedValueOnce([{ type: 'session', sessionId: 's5', userId: 'alice', totalReps: 3,
+      exercises: [{ name: 'Pompes', emoji: '💪', reps: 3 }], date: 'zzz', createdAt: { toDate: () => new Date() } }] as never);
+    renderFriends();
+    expect(await screen.findByText('Pompes')).toBeInTheDocument();
+  });
+
   it('names both people on the new-friend card, and says « toi » when it is the viewer', async () => {
     const event = (id: string, friendId: string, friendName: string) => ({ type: 'new_friend', id, userId: 'alice', friendId, friendName, createdAt: { toDate: () => new Date() } });
     db.getFriendsActivity.mockResolvedValueOnce([event('e1', 'me', 'Moi'), event('e2', 'bob', 'Bob')] as never);

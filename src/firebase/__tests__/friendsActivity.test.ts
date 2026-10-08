@@ -32,6 +32,38 @@ describe('getFriendsActivity', () => {
     expect(items[0]!.exercises).toEqual([]); // not a list: no exercise lines rather than a crash on render
   });
 
+  it('whatever a friend wrote, every item is safe to render (one bad item took the Friends page down)', async () => {
+    const at = (min: number) => ({ toDate: () => new Date(2026, 9, 4, 8, min) });
+    const d = (id: string, data: Record<string, unknown>) => ({ id, data: () => ({ userId: 'f1', ...data }) });
+    const authors = [{ id: 'f1', data: () => ({ friends: ['bob'] }) }];
+    vi.mocked(getDocs)
+      .mockResolvedValueOnce({ docs: [
+        d('bad-day', { createdAt: at(5), date: 'zzz', exercises: [] }),
+        d('junk', { createdAt: at(4), date: at(4), sessionId: { a: 1 }, exercises: [null, 'x', { name: { a: 1 }, reps: 3 },
+          { name: 'Squats', reps: '5' }, { name: 'Pompes', emoji: { a: 1 }, reps: 10 }] }), // no totalReps
+      ] } as never)
+      .mockResolvedValueOnce({ docs: [
+        d('badge', { type: 'badge_unlocked', createdAt: at(3), badgeEmoji: { boom: 1 }, badgeName: 7 }),
+        d('odd-friend', { type: 'new_friend', createdAt: at(2), friendId: { toString: 1 } }),
+        d('bob', { type: 'new_friend', createdAt: at(1), friendId: 'bob', friendName: ['x'] }),
+      ] } as never)
+      .mockResolvedValueOnce({ docs: authors, forEach: (fn: (d: unknown) => void) => authors.forEach(fn) } as never);
+    const items = await getFriendsActivity(['f1']);
+    expect(items.map((a) => a.sessionId ?? a.id)).toEqual(['junk', 'badge', 'bob']);
+    expect(items[0]).toMatchObject({ sessionId: 'junk', totalReps: 0, exercises: [{ name: 'Pompes', emoji: '', reps: 10 }] });
+    expect(items[1]).toMatchObject({ badgeEmoji: undefined, badgeName: undefined });
+    expect(items[2]).toMatchObject({ friendName: undefined });
+  });
+
+  it('a createdAt that only looks like a timestamp does not break the feed', async () => {
+    const d = (id: string, createdAt: unknown) => ({ id, data: () => ({ userId: 'f1', exercises: [], createdAt }) });
+    vi.mocked(getDocs)
+      .mockResolvedValueOnce({ docs: [d('ok', { toDate: () => new Date(2026, 9, 4) }), d('fake', { toDate: 1 })] } as never)
+      .mockResolvedValueOnce({ docs: [] } as never);
+    const items = await getFriendsActivity(['f1'], 2); // window full: its floor is computed
+    expect(items.map((a) => a.sessionId)).toEqual(['ok']);
+  });
+
   it('orders by the date the card shows: a forgotten session saved now sits at its own day, not on top', async () => {
     const at = (day: number, hour: number) => ({ toDate: () => new Date(2026, 9, day, hour) });
     const d = (id: string, data: Record<string, unknown>) => ({ id, data: () => ({ userId: 'f1', exercises: [], ...data }) });
