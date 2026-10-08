@@ -823,3 +823,18 @@ describe('deleteSession (renfo)', () => {
     expect(deleteDoc).not.toHaveBeenCalled();
   });
 });
+
+describe('users queries', () => {
+  afterEach(() => { vi.mocked(query).mockReset(); vi.mocked(limit).mockReset(); });
+
+  it('each asks for at most 30 profiles, so a rule « limit <= 30 » on users lists lets them through', async () => {
+    vi.mocked(query).mockImplementation(((...parts: unknown[]) => parts) as never);
+    vi.mocked(limit).mockImplementation(((n: number) => ({ limit: n })) as never);
+    await getFriendsDetails(Array.from({ length: 12 }, (_, i) => `f${i}`)); // 2 queries
+    await searchUsers('someone@example.com'); // e-mail, pseudo, display name
+    await checkUsernameAvailability('pseudo');
+    const limits = vi.mocked(getDocs).mock.calls.map(([q]) => (q as unknown as { limit?: number }[]).find((p) => p?.limit !== undefined)?.limit);
+    expect(limits).toHaveLength(6);
+    for (const n of limits) expect(n).toBeLessThanOrEqual(30);
+  });
+});

@@ -165,8 +165,9 @@ export async function checkUsernameAvailability(username: string, currentUserId?
     const term = username.toLowerCase();
     const usersRef = collection(db, 'users');
 
-    // Vérifier par searchName (qui est le lowercase du displayName)
-    const q = query(usersRef, where('searchName', '==', term));
+    // Vérifier par searchName (qui est le lowercase du displayName). Two are enough to tell « mine » from « taken »;
+    // every users list states its limit (the rules may cap it)
+    const q = query(usersRef, where('searchName', '==', term), limit(2));
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
@@ -803,7 +804,7 @@ export async function searchUsers(searchTerm: string, limitCount = 10): Promise<
 
     // 1. Recherche par email (exacte, via hash — l'email en clair n'est pas stocké)
     if (term.includes('@')) {
-      const emailHashQuery = query(usersRef, where('emailHash', '==', await hashEmail(term)));
+      const emailHashQuery = query(usersRef, where('emailHash', '==', await hashEmail(term)), limit(1)); // one account per e-mail
       const emailSnap = await getDocs(emailHashQuery);
       emailSnap.forEach(doc => results.set(doc.id, { uid: doc.id, ...doc.data() } as User));
     }
@@ -1150,7 +1151,7 @@ export async function getFriendsDetails(friendIds: string[]): Promise<User[]> {
     const friends: User[] = [];
     for (const chunk of inChunks(friendIds, 10)) {
       // Utilisation de documentId() pour filtrer par ID de document
-      const q = query(collection(db, 'users'), where(documentId(), 'in', chunk));
+      const q = query(collection(db, 'users'), where(documentId(), 'in', chunk), limit(10)); // stated: the rules may cap users lists
 
       const snapshot = await getDocs(q);
       snapshot.forEach(doc => friends.push({ uid: doc.id, ...doc.data() } as User));
