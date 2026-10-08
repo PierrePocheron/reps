@@ -1269,10 +1269,13 @@ export async function getLeaderboardStats(friendIds: string[], period: 'daily' |
     const allSessions: LeaderboardSession[] = [];
 
     for (const chunk of inChunks(friendIds)) {
+      // Up to now: a friend's session dated in the future counted in every period and was re-read on every visit
+      // (both bounds on `date` use the same userId + date index)
       const q = query(
         collectionGroup(db, 'userSessions'),
         where('userId', 'in', chunk),
-        where('date', '>=', startTimestamp)
+        where('date', '>=', startTimestamp),
+        where('date', '<=', Timestamp.now())
       );
       const snapshot = await getDocs(q);
       snapshot.forEach(doc => allSessions.push({ userId: doc.data().userId, ...doc.data() }));

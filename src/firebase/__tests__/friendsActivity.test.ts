@@ -125,3 +125,21 @@ describe('friend queries', () => {
     expect(sizes).toEqual([30, 1, 30, 1, 30, 1]); // feed sessions, feed badges, leaderboard
   });
 });
+
+describe('getLeaderboardStats', () => {
+  it('leaves out sessions dated in the future (one dated 2100 counted in every period, and was re-read, for ever)', async () => {
+    type Filter = { field?: string; op?: string; value?: { toDate: () => Date } };
+    const stored = [
+      { userId: 'f1', totalReps: 10, date: new Date() },
+      { userId: 'f1', totalReps: 1e15, date: new Date(2100, 0, 1) },
+    ];
+    const kept = (date: Date, f: Filter) => (f.op === '>=' ? date >= f.value!.toDate() : f.op === '<=' ? date <= f.value!.toDate() : true);
+    vi.mocked(getDocs).mockImplementationOnce((async (q: unknown) => { // filtered on date as Firestore would
+      const filters = (q as Filter[]).filter((p) => p?.field === 'date');
+      const docs = stored.filter((s) => filters.every((f) => kept(s.date, f))).map((s) => ({ data: () => s }));
+      return { docs, forEach: (fn: (d: unknown) => void) => docs.forEach(fn) };
+    }) as never);
+    const [f1] = await getLeaderboardStats(['f1'], 'monthly');
+    expect(f1).toMatchObject({ totalReps: 10, totalSessions: 1 });
+  });
+});
