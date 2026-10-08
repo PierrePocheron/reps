@@ -84,7 +84,7 @@ publier la version de l'appli qui s'en sert.
 scripts/release.sh prepare X.Y.Z          # sur dev : versionName + versionCode (1.2.3 → 10203)
 # … PR dev → main → prod, puis sur prod :
 bash scripts/build-android-release.sh     # yarn build + cap sync + bundleRelease
-# → android/app/release/app-release.aab
+# → android/app/build/outputs/bundle/release/app-release.aab
 ```
 
 Contrôle rapide sur émulateur ou téléphone : voir [TESTS.md › Démo sur l'émulateur Android](TESTS.md).

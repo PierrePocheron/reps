@@ -160,7 +160,7 @@ Première version de Reps !
 - [ ] Fusionner `dev` → `main` (release v1.0.0)
 - [ ] Keystore : `bash scripts/setup-keystore.sh` (crée `android/reps-release.keystore` + `keystore.properties`, tous deux gitignorés — **sauvegarder le keystore et ses mots de passe hors du Mac**, sa perte = impossible de mettre l'app à jour)
 - [ ] `versionCode = 1`, `versionName = "1.0"` — OK pour la première soumission (incrémenter `versionCode` à chaque envoi suivant)
-- [ ] AAB buildé et signé : `bash scripts/build-android-release.sh` → `android/app/release/app-release.aab`
+- [ ] AAB buildé et signé : `bash scripts/build-android-release.sh` → `android/app/build/outputs/bundle/release/app-release.aab`
 - [ ] Licence des illustrations : lire les [CGU Gym visual](https://gymvisual.com/content/3-terms-and-conditions-of-use) (les médias du dataset sont © Gym visual, redistribués avec permission sous condition d'attribution + 180×180 — les deux sont respectées dans l'app) ; en cas de doute, un mail à Gym visual pour confirmer l'usage embarqué
 
 ### Play Console

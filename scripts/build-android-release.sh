@@ -8,13 +8,15 @@
 #   - Variables d'environnement Firebase dans .env
 #
 # Usage : bash scripts/build-android-release.sh
-# Sortie : android/app/release/app-release.aab
+# Sortie : android/app/build/outputs/bundle/release/app-release.aab
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 ANDROID_DIR="$ROOT_DIR/android"
 PROPS_FILE="$ANDROID_DIR/keystore.properties"
+# Where bundleRelease writes the AAB (android/app/release/ holds old Android Studio exports: never report those)
+AAB_PATH="$ANDROID_DIR/app/build/outputs/bundle/release/app-release.aab"
 
 echo ""
 echo "═══════════════════════════════════════════════"
@@ -53,13 +55,12 @@ echo ""
 # ─── Étape 3 : Build AAB Gradle ───────────────────────────────────────────────
 echo "3/4  🔨  Gradle bundleRelease..."
 cd "$ANDROID_DIR"
+rm -f "$AAB_PATH" # a stale AAB must not pass for this build's output
 ./gradlew bundleRelease --no-daemon
 echo "      ✅  AAB généré"
 echo ""
 
 # ─── Étape 4 : Résumé ─────────────────────────────────────────────────────────
-AAB_PATH="$ANDROID_DIR/app/release/app-release.aab"
-
 if [[ -f "$AAB_PATH" ]]; then
   AAB_SIZE=$(du -sh "$AAB_PATH" | cut -f1)
   echo "4/4  📋  Résumé"
