@@ -227,7 +227,7 @@ describe('History', () => {
   });
 
   it('a library exercise keeps its photo in History and Records, and its how-to in the sheet', async () => {
-    const lib = { exerciseId: 'lib_0001', name: 'Relevé de buste 3/4', emoji: '💪', imageUrl: 'https://cdn.example/lib_0001.jpg', sets: [{ reps: 15, weight: 0, completed: true }] };
+    const lib = { exerciseId: 'lib_0001', name: 'Relevé de buste 3/4', emoji: '💪', imageUrl: 'https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0001.jpg', sets: [{ reps: 15, weight: 0, completed: true }] };
     GYM = [{ ...gym('A', 3, []), exercises: [lib] }];
     useSettingsStore.setState({ language: 'fr' });
     render(<MemoryRouter><History /></MemoryRouter>);

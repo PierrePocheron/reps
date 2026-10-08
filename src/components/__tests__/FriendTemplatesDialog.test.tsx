@@ -63,6 +63,24 @@ describe('FriendTemplatesDialog', () => {
     expect(createUserTemplate).not.toHaveBeenCalled();
   });
 
+  it('copies only the template fields, typed (a friend could plant any field, or a tracking image, in my copy)', async () => {
+    const cdn = 'https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/images/0001.jpg';
+    const planted = { ...push, id: 't9', userId: 'alice', junk: 'x', emoji: { a: 1 }, exerciseIds: ['pushups'], muscuExercises: [
+      { exerciseId: 'lib_0001', name: 'Curl', emoji: '💪', imageUrl: cdn, timed: false, sets: [{ reps: 8, weight: 10, junk: 1 }], junk: 1 },
+      { exerciseId: 'bench_press', emoji: { a: 1 }, imageUrl: 'https://tracker.example/p.gif', sets: [{ reps: '8', weight: null }] },
+      null,
+    ] } as never;
+    templatesOf([planted]);
+    vi.mocked(createUserTemplate).mockResolvedValue({ ...push, id: 'c1' });
+    render(<FriendTemplatesDialog friend={friend} onClose={() => {}} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Copier Push' })); // a map emoji no longer breaks the list
+    expect(vi.mocked(createUserTemplate).mock.calls[0]![1]).toEqual({ name: 'Push', description: '', emoji: '🏋️', workoutType: 'musculation',
+      muscuExercises: [
+        { exerciseId: 'lib_0001', name: 'Curl', emoji: '💪', imageUrl: cdn, timed: false, sets: [{ reps: 8, weight: 10 }] },
+        { exerciseId: 'bench_press', sets: [{ reps: 0, weight: 0 }] },
+      ] });
+  });
+
   it('offline with nothing cached says the templates are unavailable, not that there are none', async () => {
     templatesOf([]);
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);

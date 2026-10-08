@@ -8,6 +8,38 @@ import { createUserTemplate, getUserTemplates } from '@/firebase/templates';
 import type { User, WorkoutTemplate } from '@/firebase/types';
 import { logger } from '@/utils/logger';
 import { isOffline } from '@/firebase/offline';
+import { EXERCISE_CDN } from '@/components/ExerciseImage';
+
+const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+const count = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+
+/**
+ * A friend's template holds whatever they wrote (no schema in the rules), and the copy becomes mine: only the fields
+ * the app writes, typed. An image is kept only from the exercise library (catalogue ones come from the app itself).
+ */
+function templateFields(t: WorkoutTemplate): Omit<WorkoutTemplate, 'id' | 'userId' | 'createdAt'> {
+  const text = (v: unknown, fallback: string) => (typeof v === 'string' ? v : fallback);
+  if (t.workoutType !== 'musculation') {
+    return { name: text(t.name, ''), description: text(t.description, ''), emoji: text(t.emoji, '🏋️'), workoutType: 'renforcement',
+      exerciseIds: list(t.exerciseIds).filter((id): id is string => typeof id === 'string') };
+  }
+  const muscuExercises = list(t.muscuExercises).flatMap((e) => {
+    const { exerciseId, name, emoji, imageUrl, timed, sets } = (e ?? {}) as Record<string, unknown>;
+    if (typeof exerciseId !== 'string') return [];
+    return [{
+      exerciseId,
+      ...(typeof name === 'string' ? { name } : {}),
+      ...(typeof emoji === 'string' ? { emoji } : {}),
+      ...(typeof imageUrl === 'string' && imageUrl.startsWith(EXERCISE_CDN) ? { imageUrl } : {}),
+      ...(typeof timed === 'boolean' ? { timed } : {}),
+      sets: list(sets).map((set) => {
+        const { reps, weight } = (set ?? {}) as Record<string, unknown>;
+        return { reps: count(reps), weight: count(weight) };
+      }),
+    }];
+  });
+  return { name: text(t.name, ''), description: text(t.description, ''), emoji: text(t.emoji, '🏋️'), workoutType: 'musculation', muscuExercises };
+}
 
 /** A copy keeps the name, type and exercises: how a template already copied is recognised in mine. */
 const signature = (t: WorkoutTemplate) =>
@@ -29,9 +61,10 @@ export function FriendTemplatesDialog({ friend, onClose }: { friend: User | null
     // [] when refused (rules not deployed yet); mine too: reopening offered « Copier » again on a copied one (duplicate)
     Promise.all([getUserTemplates(friend.uid), myUid ? getUserTemplates(myUid) : []]).then(([theirs, mine]) => {
       const owned = new Set(mine.map(signature));
-      setCopied(theirs.filter((t) => owned.has(signature(t))).map((t) => t.id));
+      const clean = theirs.map((t) => ({ ...templateFields(t), id: t.id })); // shown and copied as typed fields only
+      setCopied(clean.filter((t) => owned.has(signature(t))).map((t) => t.id));
       setOffline(theirs.length === 0 && isOffline()); // nothing cached: « no template » would be a guess
-      setTemplates(theirs);
+      setTemplates(clean);
     });
   }, [friend, myUid]);
 
@@ -39,9 +72,7 @@ export function FriendTemplatesDialog({ friend, onClose }: { friend: User | null
     if (!me || copying || copied.includes(t.id)) return;
     setCopying(t.id);
     try {
-      const { id, userId, createdAt, ...data } = t;
-      void id; void userId; void createdAt;
-      await createUserTemplate(me.uid, data);
+      await createUserTemplate(me.uid, templateFields(t));
       setCopied((c) => [...c, t.id]);
       toast({ title: 'Modèle copié', description: `«\u00a0${t.name}\u00a0» est dans tes modèles.` });
     } catch (err) {
