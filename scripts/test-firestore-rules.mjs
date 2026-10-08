@@ -9,12 +9,13 @@
  */
 
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import {
   initializeTestEnvironment,
   assertSucceeds,
   assertFails,
 } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp, arrayRemove, writeBatch, Timestamp, limit, orderBy, runTransaction, increment } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp, arrayRemove, writeBatch, Timestamp, limit, orderBy, runTransaction, increment, deleteField } from 'firebase/firestore';
 
 const PROJECT = 'reps-rules-test';
 let passed = 0, failed = 0;
@@ -190,6 +191,31 @@ await test('un ami ne gonfle pas la liste friends avec des doublons', () =>
   assertFails(updateDoc(doc(env.authenticatedContext('quinn').firestore(), 'users/pia'), { friends: Array(600).fill('rex') })));
 await test('le propriétaire met toujours ses stats à jour ensuite', () =>
   assertSucceeds(updateDoc(doc(env.authenticatedContext('pia').firestore(), 'users/pia'), { totalReps: 10, totalSessions: 1 })));
+
+console.log('\n─ Recherche par e-mail (emailHash) ─');
+// the e-mail search is an exact match on emailHash: anyone could claim another person's hash and be found as them
+const sha = (email) => createHash('sha256').update(email.trim().toLowerCase()).digest('hex');
+const withEmail = (uid, email) => env.authenticatedContext(uid, { email }).firestore();
+// createUserDocument (setDoc merge), with the e-mail of the Auth account
+const newUserDoc = (name, email) => ({ displayName: name, searchName: name, avatarEmoji: '🐥', colorTheme: 'blue', totalReps: 0, totalSessions: 0,
+  badges: ['poussin'], friends: [], currentStreak: 0, longestStreak: 0, lastTrainingDate: null, weeklyStreak: 0, lastMetWeek: null,
+  createdAt: Timestamp.now(), updatedAt: Timestamp.now(), lastConnection: null, emailHash: sha(email) });
+await test('création avec l\'emailHash d\'un autre e-mail refusée', () => assertFails(setDoc(doc(withEmail('newbie', 'newbie@example.com'), 'users/newbie'),
+  { ...newUserDoc('newbie', 'newbie@example.com'), emailHash: sha('victim@example.com') }, { merge: true })));
+await test('création du profil avec son emailHash (forme réelle)', () => assertSucceeds(setDoc(doc(withEmail('newbie', 'Newbie@Example.com'), 'users/newbie'),
+  newUserDoc('newbie', 'newbie@example.com'), { merge: true })));
+await test('emailHash remplacé par celui d\'un autre e-mail refusé', () =>
+  assertFails(updateDoc(doc(withEmail('newbie', 'newbie@example.com'), 'users/newbie'), { emailHash: sha('victim@example.com') })));
+await test('emailHash posé sans e-mail dans le jeton refusé', () => assertFails(updateDoc(doc(mallory, 'users/mallory'), { emailHash: sha('victim@example.com') })));
+// migrateLegacyPublicFields: the public e-mail (old model) leaves for its hash
+await env.withSecurityRulesDisabled(async (ctx) => {
+  await setDoc(doc(ctx.firestore(), 'users/oldie'), { ...fresh('oldie'), email: 'oldie@example.com', weight: 70 });
+  await setDoc(doc(ctx.firestore(), 'users/hashed'), { ...fresh('hashed'), emailHash: 'a'.repeat(64) });
+});
+await test('migration de l\'ancien profil vers emailHash (forme réelle)', () => assertSucceeds(updateDoc(doc(withEmail('oldie', 'oldie@example.com'), 'users/oldie'),
+  { email: deleteField(), weight: deleteField(), emailHash: sha('oldie@example.com') })));
+await test('un emailHash existant inchangé ne bloque pas les mises à jour', () =>
+  assertSucceeds(updateDoc(doc(withEmail('hashed', 'other@example.com'), 'users/hashed'), { totalReps: 3, updatedAt: serverTimestamp() })));
 
 console.log('\n─ Séances / défis / templates ─');
 await test('séances renfo lisibles par un authentifié (feed social)', () => assertSucceeds(getDoc(doc(bob, 'sessions/alice/userSessions/s1'))));

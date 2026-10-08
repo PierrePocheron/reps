@@ -96,7 +96,11 @@ service cloud.firestore {
           && (!('firstName' in d) || (d.firstName is string && d.firstName.size() <= 50))
           && (!('lastName' in d) || (d.lastName is string && d.lastName.size() <= 50))
           && (!('avatarEmoji' in d) || (d.avatarEmoji is string && d.avatarEmoji.size() <= 16))
-          && (!('emailHash' in d) || (d.emailHash is string && d.emailHash.size() == 64))
+          // the e-mail search is an exact match on emailHash: a hash the client chose let anyone be found as someone
+          // else. A new or changed one is the hash of the account's own e-mail (hashEmail: SHA-256 hex, lowercased)
+          && (!('emailHash' in d)
+              || (resource != null && d.emailHash == resource.data.get('emailHash', null))
+              || d.emailHash == hashing.sha256(request.auth.token.email.lower()).toHexString().lower())
           // every search and friends list downloads this doc: the lists the app writes stay small (generous caps)
           && (!('newBadgeIds' in d) || (d.newBadgeIds is list && d.newBadgeIds.size() <= 300))
           && (!('exercisesDistribution' in d) || (d.exercisesDistribution is list && d.exercisesDistribution.size() <= 500))
