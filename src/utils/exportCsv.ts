@@ -4,9 +4,11 @@ import type { GymSession, Session, SetType } from '@/firebase/types';
 // Colonnes de l'export Strong (en-têtes anglais) : format importable par Hevy et la plupart des carnets
 const HEADER = ['Date', 'Workout Name', 'Duration', 'Exercise Name', 'Set Order', 'Weight', 'Reps', 'Distance', 'Seconds', 'Notes', 'Workout Notes', 'RPE'];
 
+// A text starting like a formula ran in the spreadsheet (names can come from a friend's template): a leading ' keeps
+// it text (OWASP CSV injection). Numbers are written as numbers
 const cell = (v: string | number) => {
-  const s = String(v);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  const s = typeof v === 'string' && /^[=+\-@\t\r]/.test(v) ? `'${v}` : String(v);
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 const pad = (n: number) => String(n).padStart(2, '0');
 const stamp = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
