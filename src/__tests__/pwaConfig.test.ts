@@ -19,6 +19,13 @@ describe('PWA config', () => {
     expect(pwa.options.injectRegister).toBeNull();
   });
 
+  it('never caches Firestore or Firebase answers (account data stayed in Cache Storage after sign-out and deletion)', () => {
+    const urls = ['https://firestore.googleapis.com/google.firestore.v1.Firestore/Listen/channel?gsessionid=x&SID=y&RID=rpc',
+      'https://firebase.googleapis.com/v1alpha/projects/-/apps/x/webConfig'];
+    const routes = pwa.options.workbox?.runtimeCaching ?? [];
+    for (const url of urls) expect(routes.filter((r) => r.urlPattern instanceof RegExp && r.urlPattern.test(url))).toEqual([]);
+  });
+
   it('keeps the sound effects once played, so a session validated offline still makes its sound', () => {
     const url = 'https://pedro-reps.web.app/sounds/success.mp3';
     const route = pwa.options.workbox?.runtimeCaching?.find((r) => r.urlPattern instanceof RegExp && r.urlPattern.test(url));

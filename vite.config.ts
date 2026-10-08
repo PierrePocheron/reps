@@ -137,35 +137,9 @@ export default defineConfig({
                 statuses: [0, 200]
               }
             }
-          },
-          {
-            urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'firestore-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 5 // 5 minutes
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/firebase\.googleapis\.com\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'firebase-cache',
-              expiration: {
-                maxEntries: 30,
-                maxAgeSeconds: 60 * 10 // 10 minutes
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
           }
+          // No Firestore / Firebase route: the SDK's persistent cache works offline, every Listen URL is unique (never
+          // served again), and the cached answers kept account data past sign-out and deletion
         ]
       }
     })

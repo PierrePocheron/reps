@@ -22,6 +22,18 @@ describe('registerServiceWorker', () => {
     expect(sw.register).toHaveBeenCalledWith('/sw.js', { scope: '/' });
   });
 
+  it('web: drops the Firestore answers older workers cached (account data left after sign-out and deletion)', async () => {
+    const del = vi.fn(async () => true);
+    vi.stubGlobal('caches', { keys: vi.fn(async () => []), delete: del });
+    registerServiceWorker();
+    await vi.waitFor(() => expect(del).toHaveBeenCalledTimes(2));
+    expect(del).toHaveBeenCalledWith('firestore-cache');
+    expect(del).toHaveBeenCalledWith('firebase-cache');
+    window.dispatchEvent(new Event('load')); // the worker still registers
+    expect(sw.register).toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+
   it('Android app: no worker (it served the previous build after a store update), and the old one goes', async () => {
     vi.spyOn(Capacitor, 'isNativePlatform').mockReturnValue(true);
     registerServiceWorker();

@@ -13,5 +13,7 @@ export function registerServiceWorker(): void {
     if (typeof caches !== 'undefined') void caches.keys().then((keys) => keys.forEach((k) => void caches.delete(k)));
     return;
   }
+  // older workers kept Firestore answers (profile, sessions) in these caches, past sign-out and account deletion
+  if (typeof caches !== 'undefined') ['firestore-cache', 'firebase-cache'].forEach((k) => void caches.delete(k));
   window.addEventListener('load', () => void navigator.serviceWorker.register('/sw.js', { scope: '/' }), { once: true });
 }
