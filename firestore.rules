@@ -229,9 +229,10 @@ service cloud.firestore {
       }
     }
 
-    // Kudos one has given, found by collection group query (fromUid) to delete them with the account
+    // Kudos one has given, found by collection group query (fromUid) to delete them with the account. Only one's own:
+    // an unfiltered query returned every kudos of every user (a session's kudos stay readable through its match above)
     match /{path=**}/kudos/{fromId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && resource.data.fromUid == request.auth.uid;
     }
 
     match /{path=**}/userSessions/{sessionId} {

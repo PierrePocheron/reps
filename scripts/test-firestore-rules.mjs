@@ -413,6 +413,11 @@ await test('pas de réaction à sa propre séance', () => assertFails(setDoc(kud
 await test('pas de champ en plus', () => assertFails(setDoc(doc(alice, 'sessions/bob/userSessions/b2/kudos/alice'), { ...k('alice'), msg: 'spam' })));
 await test('on retrouve ses propres réactions (suppression du compte)', () =>
   assertSucceeds(getDocs(query(collectionGroup(alice, 'kudos'), where('fromUid', '==', 'alice')))));
+// one unfiltered collection group query returned every kudos of every user (who encourages whom)
+await test('un compte ne liste pas tous les kudos', () => assertFails(getDocs(collectionGroup(mallory, 'kudos'))));
+await test('ni ceux donnés par un autre', () => assertFails(getDocs(query(collectionGroup(mallory, 'kudos'), where('fromUid', '==', 'alice')))));
+await test('les kudos d\'une séance restent lisibles (getKudos, forme réelle)', () =>
+  assertSucceeds(getDocs(collection(mallory, 'sessions/bob/userSessions/b1/kudos'))));
 await test('un tiers ne retire pas la réaction d\'un autre', () => assertFails(deleteDoc(kudo(mallory, 'alice'))));
 await test('le propriétaire de la séance retire les réactions reçues (suppression du compte)', async () => {
   await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'sessions/bob/userSessions/b1/kudos/carol'), { createdAt: new Date(), fromUid: 'carol' }));
