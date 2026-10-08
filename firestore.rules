@@ -113,6 +113,9 @@ service cloud.firestore {
         return isAuthenticated()
           && request.auth.uid != userId
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['friends'])
+          // sets do not see duplicates: hundreds of copies of another friend went over the 500 cap and locked every
+          // write of the owner's own profile. One more entry at most (an older list with duplicates stays valid)
+          && request.resource.data.friends.size() <= resource.data.friends.size() + 1
           // il s'ajoute lui-même (acceptation) ou se retire lui-même (suppression)
           && (
             (added == [request.auth.uid].toSet() && removed.size() == 0

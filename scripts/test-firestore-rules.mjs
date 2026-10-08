@@ -183,6 +183,13 @@ await test('suppression du compte : on se retire des amis d\'un ami (arrayRemove
   assertSucceeds(updateDoc(doc(env.authenticatedContext('frank').firestore(), 'users/erin'), { friends: arrayRemove('frank') })));
 await test('on ne retire pas un autre que soi', () =>
   assertFails(updateDoc(doc(env.authenticatedContext('gus').firestore(), 'users/erin'), { friends: arrayRemove('hal') })));
+// a friend « removing himself » could leave hundreds of copies of another friend: over the 500 cap, every write of the
+// owner's own profile was then refused (stats, badges, pseudo)
+await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'users/pia'), { ...fresh('pia'), friends: ['quinn', 'rex'] }));
+await test('un ami ne gonfle pas la liste friends avec des doublons', () =>
+  assertFails(updateDoc(doc(env.authenticatedContext('quinn').firestore(), 'users/pia'), { friends: Array(600).fill('rex') })));
+await test('le propriétaire met toujours ses stats à jour ensuite', () =>
+  assertSucceeds(updateDoc(doc(env.authenticatedContext('pia').firestore(), 'users/pia'), { totalReps: 10, totalSessions: 1 })));
 
 console.log('\n─ Séances / défis / templates ─');
 await test('séances renfo lisibles par un authentifié (feed social)', () => assertSucceeds(getDoc(doc(bob, 'sessions/alice/userSessions/s1'))));
