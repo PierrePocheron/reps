@@ -24,12 +24,46 @@ service cloud.firestore {
                 && getAfter(/databases/$(database)/documents/friend_requests/$(b + '_' + a)).data.status in statuses);
     }
 
-    // Friends' feed sorts sessions and events by createdAt and lists their exercises: one value of the wrong
-    // type threw for every friend. Checked when present only (legacy docs may lack them).
-    function feedFieldsTyped(d) {
-      return d.get('createdAt', request.time) is timestamp
-        && d.get('exercises', []) is list
-        && d.get('totalReps', 0) is number;
+    // Keys a write sets: all of them on create, only the changed ones on update (older docs keep the fields they have)
+    function writtenKeys() {
+      return resource == null ? request.resource.data.keys() : request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    function shortString(d, key, max) {
+      return d.get(key, '') is string && d.get(key, '').size() <= max;
+    }
+
+    function boundedNumber(d, key, max) {
+      return d.get(key, 0) is number && d.get(key, 0) >= 0 && d.get(key, 0) <= max;
+    }
+
+    // Friends' feed keeps the newest 20 sessions and events by createdAt per query and renders their fields; the
+    // leaderboards sum every session dated in the period. One ill-typed, oversized or future-dated doc crashed,
+    // pinned or skewed them for every friend. Only the keys the app writes; values checked when present (legacy
+    // docs may lack them). Exercise items stay unchecked (rules cannot loop over a list): the client filters them.
+    function feedDocOk(keys) {
+      let d = request.resource.data;
+      return writtenKeys().hasOnly(keys)
+        // createdAt is the server's clock (serverTimestamp()) and never moves afterwards
+        && (resource == null
+              ? (d.get('createdAt', null) == request.time || challengeClock(d))
+              : d.get('createdAt', null) == resource.data.get('createdAt', null))
+        // date comes from the phone's clock (and a queued write refused offline is a lost session): a day of slack
+        && d.get('date', request.time) is timestamp
+        && d.get('date', request.time) <= request.time + duration.value(1, 'd')
+        && d.get('exercises', []) is list && d.get('exercises', []).size() <= 100
+        && d.get('duration', 0) is number
+        && boundedNumber(d, 'totalReps', 100000) && boundedNumber(d, 'totalCalories', 100000)
+        && shortString(d, 'sessionId', 128) && shortString(d, 'category', 40) && shortString(d, 'challengeId', 80)
+        && shortString(d, 'type', 40) && shortString(d, 'badgeId', 80) && shortString(d, 'badgeName', 50)
+        && shortString(d, 'badgeEmoji', 16) && shortString(d, 'friendId', 128) && shortString(d, 'friendName', 50);
+    }
+
+    // validateChallengeDay stamps createdAt with the phone's clock inside its transaction (older versions too):
+    // a little ahead of the server is tolerated, not enough to hold the top of a feed
+    function challengeClock(d) {
+      return d.get('category', '') == 'challenge' && d.get('createdAt', null) is timestamp
+        && d.createdAt <= request.time + duration.value(10, 'm');
     }
 
     // ─── users ──────────────────────────────────────────────────────────────
@@ -98,7 +132,7 @@ service cloud.firestore {
         allow read: if isAuthenticated();
         // the feed attributes an event to its userId field: it may only name the path owner
         allow create, update: if isOwner(userId) && request.resource.data.get('userId', userId) == userId
-          && feedFieldsTyped(request.resource.data);
+          && feedDocOk(['userId', 'type', 'badgeId', 'badgeName', 'badgeEmoji', 'friendId', 'friendName', 'createdAt']);
         allow delete: if isOwner(userId);
       }
     }
@@ -162,7 +196,8 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       // the feed and the leaderboards attribute a session to its userId field: it may only name the path owner
       allow create, update: if isOwner(userId) && request.resource.data.get('userId', userId) == userId
-        && feedFieldsTyped(request.resource.data);
+        && feedDocOk(['userId', 'date', 'duration', 'exercises', 'totalReps', 'totalCalories', 'createdAt',
+          'sessionId', 'category', 'challengeId']);
       allow delete: if isOwner(userId);
 
       // Encouragements (kudos, comme Strava) : l'ID du document est celui de l'ami qui encourage

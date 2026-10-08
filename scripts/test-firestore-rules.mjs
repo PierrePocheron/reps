@@ -14,7 +14,7 @@ import {
   assertSucceeds,
   assertFails,
 } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp, arrayRemove, writeBatch, Timestamp, limit } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp, arrayRemove, writeBatch, Timestamp, limit, orderBy, runTransaction, increment } from 'firebase/firestore';
 
 const PROJECT = 'reps-rules-test';
 let passed = 0, failed = 0;
@@ -199,8 +199,64 @@ await test('pas de séance réattribuée à un autre', () => assertFails(updateD
 await test('événement de badge (forme réelle)', () => assertSucceeds(addDoc(collection(alice, 'users/alice/userEvents'), badgeEvent('alice'))));
 await test('événement au nom d\'un autre refusé', () => assertFails(addDoc(collection(mallory, 'users/mallory/userEvents'), badgeEvent('alice'))));
 // friends' feed sorts sessions and events by createdAt and lists the exercises: one wrong type broke it for all of them
-await test('séance de défi validée (forme réelle)', () => assertSucceeds(addDoc(collection(alice, 'sessions/alice/userSessions'),
-  { ...appSession('alice'), category: 'challenge', challengeId: 'c_pushups_beginner', createdAt: Timestamp.now() })));
+// validateChallengeDay: one transaction (session stamped with the phone's clock + the user's stats)
+const challengeSession = (ref, now) => ({ sessionId: ref.id, userId: 'alice', date: now, duration: 0,
+  exercises: [{ id: 'pushups', name: 'Pompes', emoji: '💪', sets: 1, reps: 10, weight: 0 }], totalReps: 10,
+  category: 'challenge', challengeId: 'c_pushups_beginner', createdAt: now, totalCalories: 3 });
+await test('séance de défi validée (forme réelle, transaction)', () => assertSucceeds(runTransaction(alice, async (tx) => {
+  const ref = doc(collection(alice, 'sessions/alice/userSessions')), now = Timestamp.now();
+  await tx.get(doc(alice, 'users/alice'));
+  tx.set(ref, challengeSession(ref, now));
+  tx.update(doc(alice, 'users/alice'), { totalReps: increment(10), totalSessions: increment(1), totalCalories: increment(3), lastActivity: now });
+})));
+// the feed keeps the newest 20 by createdAt per query and the leaderboards sum every session dated in the period:
+// a future-dated, oversized or ill-typed doc pinned, crashed or skewed them for every friend
+const sessions = collection(alice, 'sessions/alice/userSessions');
+const inDays = (n) => Timestamp.fromDate(new Date(Date.now() + n * 86400000));
+await test('séance oubliée, antidatée (forme réelle)', () => assertSucceeds(addDoc(sessions, { ...appSession('alice'), date: inDays(-3) })));
+await test('séance datée par un téléphone un peu en avance', () => assertSucceeds(addDoc(sessions, { ...appSession('alice'), date: inDays(0.1) })));
+await test('séance avec une clé en plus refusée', () => assertFails(addDoc(sessions, { ...appSession('alice'), junk: 'x'.repeat(1000) })));
+await test('séance datée dans le futur refusée', () => assertFails(addDoc(sessions, { ...appSession('alice'), date: inDays(2) })));
+await test('séance avec une date non datée refusée', () => assertFails(addDoc(sessions, { ...appSession('alice'), date: 'zzz' })));
+await test('séance avec un createdAt du client refusée', () => assertFails(addDoc(sessions, { ...appSession('alice'), createdAt: Timestamp.now() })));
+await test('séance de défi avec un createdAt très en avance refusée', () => {
+  const ref = doc(sessions);
+  return assertFails(setDoc(ref, { ...challengeSession(ref, Timestamp.now()), createdAt: inDays(0.1) }));
+});
+await test('totalReps borné (négatif, NaN, infini, énorme)', () =>
+  Promise.all([-1, NaN, Infinity, 1e15].map((totalReps) => assertFails(addDoc(sessions, { ...appSession('alice'), totalReps })))));
+await test('totalCalories borné', () => assertFails(addDoc(sessions, { ...appSession('alice'), totalCalories: 1e15 })));
+await test('exercises borné', () => assertFails(addDoc(sessions, { ...appSession('alice'),
+  exercises: Array.from({ length: 101 }, () => ({ name: 'Pompes', emoji: '💪', reps: 1 })) })));
+await test('textes de séance bornés', () => assertFails(addDoc(sessions, { ...appSession('alice'), category: 'x'.repeat(41) })));
+await test('durée numérique', () => assertFails(addDoc(sessions, { ...appSession('alice'), duration: 'x'.repeat(1000) })));
+const fresh1 = await addDoc(sessions, appSession('alice'));
+await test('modifier une séance (updateSession, forme réelle)', () => assertSucceeds(updateDoc(fresh1,
+  { exercises: [{ name: 'Pompes', emoji: '💪', reps: 12 }], totalReps: 12, totalCalories: 6 })));
+await test('createdAt figé à la modification', () => assertFails(updateDoc(fresh1, { createdAt: Timestamp.now() })));
+await env.withSecurityRulesDisabled((ctx) => setDoc(doc(ctx.firestore(), 'sessions/alice/userSessions/legacy'),
+  { userId: 'alice', date: inDays(-30), duration: 60, exercises: [], totalReps: 5, notes: 'ancien champ', createdAt: inDays(-30) }));
+await test('séance ancienne avec un champ hérité modifiable', () =>
+  assertSucceeds(updateDoc(doc(alice, 'sessions/alice/userSessions/legacy'), { exercises: [], totalReps: 0, totalCalories: 0 })));
+const events = collection(alice, 'users/alice/userEvents');
+await test('événement avec une clé en plus refusé', () => assertFails(addDoc(events, { ...badgeEvent('alice'), junk: 'x'.repeat(1000) })));
+await test('badgeEmoji en map refusé (le fil plantait)', () => assertFails(addDoc(events, { ...badgeEvent('alice'), badgeEmoji: { boom: 1 } })));
+await test('événement avec un createdAt du client refusé', () => assertFails(addDoc(events, { ...badgeEvent('alice'), createdAt: inDays(1) })));
+await test('nom d\'ami borné', () => assertFails(addDoc(events, { type: 'new_friend', userId: 'alice', friendId: 'bob', friendName: 'x'.repeat(51), createdAt: serverTimestamp() })));
+// updateUserStatsAfterSession when a badge unlocks
+await test('badge débloqué : stats et événement en un batch (forme réelle)', () => {
+  const b = writeBatch(alice);
+  b.update(doc(alice, 'users/alice'), { totalReps: 130, totalSessions: 5, totalCalories: 60, currentStreak: 2, longestStreak: 2,
+    lastTrainingDate: Timestamp.now(), lastJokerDay: null, weeklyStreak: 0, lastMetWeek: null, badges: ['poussin', 'centurion'],
+    updatedAt: serverTimestamp(), morningSessions: 0, lunchSessions: 1, nightSessions: 0, exercisesDistribution: [], newBadgeIds: ['centurion'] });
+  b.set(doc(events), { ...badgeEvent('alice'), badgeId: 'centurion', badgeName: 'Centurion', badgeEmoji: '💯' });
+  return assertSucceeds(b.commit());
+});
+// getFriendsActivity and getLeaderboardStats
+await test('fil des amis : séances et événements (forme réelle)', () => Promise.all(['userSessions', 'userEvents'].map((group) =>
+  assertSucceeds(getDocs(query(collectionGroup(bob, group), where('userId', 'in', ['alice', 'mallory']), orderBy('createdAt', 'desc'), limit(20)))))));
+await test('classement par période (forme réelle)', () => assertSucceeds(getDocs(query(collectionGroup(bob, 'userSessions'),
+  where('userId', 'in', ['alice', 'mallory']), where('date', '>=', inDays(-7))))));
 await test('séance avec createdAt non daté refusée', () =>
   assertFails(addDoc(collection(alice, 'sessions/alice/userSessions'), { ...appSession('alice'), createdAt: 'zzz' })));
 await test('séance avec exercises hors liste refusée', () =>
