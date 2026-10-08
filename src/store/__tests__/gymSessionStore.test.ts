@@ -24,7 +24,7 @@ describe('gymSessionStore — persistance de la séance en cours', () => {
     expect(saved.startTime).toBe(123);
     expect(saved.exercises[0].sets[0].completed).toBe(true);
     expect(saved).toMatchObject({ showRestTimer: true, restEndsAt: 456, restExerciseId: 'bench_press' });
-    expect(saved).not.toHaveProperty('duration'); // recomputed from startTime every second
+    expect(saved).not.toHaveProperty('duration'); // the store keeps no running duration: it derives from startTime
   });
 });
 

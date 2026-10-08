@@ -28,7 +28,6 @@ interface GymSessionState {
   currentExerciseIndex: number;
   currentSetIndex: number;
   startTime: number | null;
-  duration: number; // secondes, mis à jour pendant l'exécution
   restDuration: number; // durée repos entre sets (secondes)
   showRestTimer: boolean;
   restEndsAt: number | null; // horodatage de fin du repos (le décompte en dérive)
@@ -99,7 +98,6 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
   currentExerciseIndex: 0,
   currentSetIndex: 0,
   startTime: null,
-  duration: 0,
   restDuration: 90, // 90 secondes par défaut
   showRestTimer: false,
   restEndsAt: null,
@@ -226,7 +224,6 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
     set({
       phase: 'execute',
       startTime: Date.now(),
-      duration: 0,
       currentExerciseIndex: 0,
       currentSetIndex: 0,
     });
@@ -342,7 +339,6 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
       currentExerciseIndex: 0,
       currentSetIndex: 0,
       startTime: null,
-      duration: 0,
       showRestTimer: false,
       restEndsAt: null,
       chronos: {},
@@ -379,7 +375,6 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
       currentExerciseIndex: 0,
       currentSetIndex: 0,
       startTime: Date.now(),
-      duration: 0,
       showRestTimer: false,
     });
   },
@@ -393,7 +388,6 @@ export const useGymSessionStore = create<GymSessionState>()(persist((set, get) =
       currentExerciseIndex: 0,
       currentSetIndex: 0,
       startTime: null,
-      duration: 0,
       showRestTimer: false,
     });
   },
