@@ -41,8 +41,8 @@ if (import.meta.env.VITE_SENTRY_DSN) {
     // Performance Monitoring
     tracesSampleRate: import.meta.env.MODE === 'production' ? 0.1 : 1.0, // 10% en prod, 100% en dev
 
-    // Session Replay
-    replaysSessionSampleRate: 0.1, // 10% des sessions
+    // Session Replay: never for an ordinary session (privacy policy, Play data safety), only around an error
+    replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 1.0, // 100% des sessions avec erreur
 
     // Release tracking
