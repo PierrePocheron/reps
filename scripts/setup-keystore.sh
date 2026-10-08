@@ -9,6 +9,7 @@
 #     Ces fichiers sont dans .gitignore.
 # ─────────────────────────────────────────────────────────────────────────────
 set -euo pipefail
+umask 077 # keystore and keystore.properties readable by this account only
 
 KEYSTORE_DIR="$(dirname "$0")/../android"
 KEYSTORE_FILE="$KEYSTORE_DIR/reps-release.keystore"
@@ -44,10 +45,13 @@ echo "   Perdre la keystore = impossible de mettre à jour l'app sur le Play Sto
 echo ""
 
 # Collecte des informations
-read -rp "Mot de passe de la keystore (store password) : " STORE_PASSWORD
+# -s: nothing echoed (scrollback, screen sharing)
+read -rsp "Mot de passe de la keystore (store password) : " STORE_PASSWORD
 echo ""
-read -rp "Mot de passe de la clé (key password, peut être identique) : " KEY_PASSWORD
+read -rsp "Mot de passe de la clé (key password, peut être identique) : " KEY_PASSWORD
 echo ""
+# keytool reads them from the environment (:env), never from argv (visible in ps)
+export STORE_PASSWORD KEY_PASSWORD
 read -rp "Votre prénom et nom : " FULL_NAME
 read -rp "Ville : " CITY
 read -rp "Pays (code 2 lettres) [FR] : " COUNTRY
@@ -63,8 +67,8 @@ keytool -genkey -v \
   -keyalg RSA \
   -keysize 2048 \
   -validity 10000 \
-  -storepass "$STORE_PASSWORD" \
-  -keypass "$KEY_PASSWORD" \
+  -storepass:env STORE_PASSWORD \
+  -keypass:env KEY_PASSWORD \
   -dname "CN=$FULL_NAME, OU=Reps, O=Reps, L=$CITY, ST=$CITY, C=$COUNTRY"
 
 echo ""
@@ -77,6 +81,7 @@ storePassword=$STORE_PASSWORD
 keyAlias=reps
 keyPassword=$KEY_PASSWORD
 EOF
+chmod 600 "$KEYSTORE_FILE" "$PROPS_FILE" # umask covers new files; this also tightens an older keystore.properties
 
 echo "✅  Fichier créé  : $PROPS_FILE"
 echo ""
