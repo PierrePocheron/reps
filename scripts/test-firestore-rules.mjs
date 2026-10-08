@@ -14,7 +14,7 @@ import {
   assertSucceeds,
   assertFails,
 } from '@firebase/rules-unit-testing';
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp, arrayRemove, writeBatch, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs, query, where, collectionGroup, serverTimestamp, arrayRemove, writeBatch, Timestamp, limit } from 'firebase/firestore';
 
 const PROJECT = 'reps-rules-test';
 let passed = 0, failed = 0;
@@ -116,6 +116,26 @@ await test('l\'EXPÉDITEUR ne peut pas s\'auto-accepter', () =>
   assertFails(updateDoc(doc(mallory, 'friend_requests/mallory_alice'), { status: 'accepted' })));
 await test('le destinataire accepte', () => assertSucceeds(updateDoc(doc(alice, 'friend_requests/mallory_alice'), { status: 'accepted' })));
 await test('un tiers ne lit pas la demande des autres', () => assertFails(getDoc(doc(bob, 'friend_requests/mallory_alice'))));
+// the recipient's permanent listener downloads every pending request and renders fromAvatarEmoji: only the fields
+// sendFriendRequest writes, a short emoji, and a recipient that exists
+const request = (from, to, extra = {}) => ({ fromUserId: from, toUserId: to, status: 'pending', fromDisplayName: from,
+  fromAvatarEmoji: '😈', createdAt: serverTimestamp(), ...extra });
+await env.withSecurityRulesDisabled(async (ctx) => {
+  for (const n of ['req1', 'req2', 'req3']) await setDoc(doc(ctx.firestore(), `users/${n}`), { displayName: n, searchName: n, totalReps: 0, totalSessions: 0, badges: [], friends: [] });
+});
+await test('demande avec un champ en plus refusée', () =>
+  assertFails(setDoc(doc(mallory, 'friend_requests/mallory_req1'), request('mallory', 'req1', { junk: 'x'.repeat(1000) }))));
+await test('fromAvatarEmoji : un texte court', () =>
+  assertFails(setDoc(doc(mallory, 'friend_requests/mallory_req2'), request('mallory', 'req2', { fromAvatarEmoji: 'x'.repeat(17) }))));
+await test('fromAvatarEmoji : pas une map (la liste des demandes plantait)', () =>
+  assertFails(setDoc(doc(mallory, 'friend_requests/mallory_req3'), request('mallory', 'req3', { fromAvatarEmoji: { boom: 1 } }))));
+await test('pas de demande vers un compte inexistant', () =>
+  assertFails(setDoc(doc(mallory, 'friend_requests/mallory_ghost'), request('mallory', 'ghost'))));
+// subscribeToFriendRequests (limit 50) and the reverse request lookup of acceptFriendRequest
+await test('écoute des demandes reçues en attente (forme réelle)', () => assertSucceeds(getDocs(query(collection(bob, 'friend_requests'),
+  where('toUserId', '==', 'bob'), where('status', '==', 'pending'), limit(50)))));
+await test('recherche de la demande inverse (acceptation)', () => assertSucceeds(getDocs(query(collection(alice, 'friend_requests'),
+  where('fromUserId', '==', 'alice'), where('toUserId', '==', 'mallory'), where('status', '==', 'pending')))));
 
 console.log('\n─ Acceptation : écriture croisée friends ─');
 // carol accepte la demande de dave → elle s'ajoute dans users/dave.friends

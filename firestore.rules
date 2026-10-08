@@ -134,6 +134,12 @@ service cloud.firestore {
         && request.resource.data.status == 'pending'
         && request.resource.data.fromDisplayName is string
         && request.resource.data.fromDisplayName.size() <= 50
+        // the recipient's permanent listener downloads every pending request and renders the emoji: one of ~1 MB, or
+        // a map that crashed the Friends page, was accepted from any account. Only what sendFriendRequest writes
+        && request.resource.data.keys().hasOnly(['fromUserId', 'toUserId', 'status', 'fromDisplayName', 'fromAvatarEmoji', 'createdAt'])
+        && (!('fromAvatarEmoji' in request.resource.data)
+            || (request.resource.data.fromAvatarEmoji is string && request.resource.data.fromAvatarEmoji.size() <= 16))
+        && exists(/databases/$(database)/documents/users/$(request.resource.data.toUserId))
         // the recipient's listener sorts by createdAt (sendFriendRequest stamps serverTimestamp())
         && request.resource.data.createdAt == request.time;
 
